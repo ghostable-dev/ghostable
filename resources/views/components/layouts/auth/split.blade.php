@@ -11,7 +11,7 @@
                     <span class="flex h-10 w-10 items-center justify-center rounded-md">
                         <x-app-logo-icon class="me-2 h-7 fill-current text-white" />
                     </span>
-                    {{ config('app.name', 'Laravel') }}
+                    {{ config('app.name', 'Ghostable') }}
                 </a>
 
                 @php

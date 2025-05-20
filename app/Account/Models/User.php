@@ -1,18 +1,25 @@
 <?php
 
-namespace App\Models;
+namespace App\Account\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
+    use HasApiTokens;
+    use HasFactory;
+    use HasUuids;
+    use Notifiable;
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -45,6 +52,29 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    
+    public static function newFactory(): UserFactory
+    {
+        return UserFactory::new();
+    }
+    
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_users')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+    
+    public function currentTeam(): ?Team
+    {
+        $teamId = session('current_team_id');
+
+        if (! $teamId) {
+            return $this->teams()->first();
+        }
+
+        return $this->teams()->where('id', $teamId)->first();
     }
 
     /**
