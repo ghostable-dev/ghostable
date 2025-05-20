@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EnvironmentFactory extends Factory
 {
     protected $model = Environment::class;
-    
+
     public function definition(): array
     {
         return [
@@ -22,10 +22,10 @@ class EnvironmentFactory extends Factory
                 'development',
                 'testing',
                 'staging']
-            )
+            ),
         ];
     }
-    
+
     public function forProject(Project $project): static
     {
         return $this->state([

@@ -13,10 +13,10 @@ Route::get('/', function () {
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
-    
+
 Route::get('projects', Projects::class)
-    ->middleware(['auth', 'verified'])
-    ->name('projects.index');
+        ->middleware(['auth', 'verified'])
+        ->name('projects.index');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

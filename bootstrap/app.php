@@ -19,5 +19,5 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withProviders([
-        AccountServiceProvider::class
+        AccountServiceProvider::class,
     ])->create();

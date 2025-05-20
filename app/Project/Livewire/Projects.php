@@ -12,10 +12,10 @@ class Projects extends Component
     public function projects(): LengthAwarePaginator
     {
         $team = auth()->user()->currentTeam();
-        
+
         return $team->projects()->paginate();
     }
-    
+
     public function render()
     {
         return view('project.projects-index');

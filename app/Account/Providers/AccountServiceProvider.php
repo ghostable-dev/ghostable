@@ -22,7 +22,7 @@ class AccountServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                AppSetup::class
+                AppSetup::class,
             ]);
         }
     }

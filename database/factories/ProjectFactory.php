@@ -12,15 +12,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ProjectFactory extends Factory
 {
     protected $model = Project::class;
-    
+
     public function definition(): array
     {
         return [
             'name' => fake()->unique()->company(),
-            'team_id' => Team::factory()
+            'team_id' => Team::factory(),
         ];
     }
-    
+
     public function forTeam(Team $team): static
     {
         return $this->state([

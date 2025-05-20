@@ -17,22 +17,22 @@ class Project extends Model
     use HasFactory;
     use HasUuids;
     use SoftDeletes;
-    
+
     protected $fillable = [
         'name',
         'description',
     ];
-    
+
     public static function newFactory(): ProjectFactory
     {
         return ProjectFactory::new();
     }
-    
+
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
-    
+
     public function environments(): HasMany
     {
         return $this->hasMany(Environment::class);

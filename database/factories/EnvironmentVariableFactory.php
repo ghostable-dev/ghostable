@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EnvironmentVariableFactory extends Factory
 {
     protected $model = EnvironmentVariable::class;
-    
+
     public function definition(): array
     {
         $key = strtoupper(fake()->unique()->randomElement([
@@ -50,7 +50,7 @@ class EnvironmentVariableFactory extends Factory
             'value' => $value,
         ];
     }
-    
+
     public function forEnvironment(Environment $environment): static
     {
         return $this->state([

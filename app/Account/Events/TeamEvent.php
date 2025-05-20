@@ -11,6 +11,5 @@ abstract class TeamEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Team $team)
-    {}
+    public function __construct(public Team $team) {}
 }

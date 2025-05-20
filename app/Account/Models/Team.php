@@ -16,20 +16,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
+    use HandlesModelEventsWithAttributes;
     use HasFactory;
     use HasUuids;
-    use HandlesModelEventsWithAttributes;
-    
+
     protected $fillable = [
         'name',
         'slug',
     ];
-    
+
     public static function newFactory(): TeamFactory
     {
         return TeamFactory::new();
     }
-    
+
     #[On('creating')]
     public function handleCreatingEvent(Team $team): void
     {
@@ -37,7 +37,7 @@ class Team extends Model
             name: $team->name
         );
     }
-    
+
     #[On('updating')]
     public function handleUpdateEvent(Team $team): void
     {
@@ -48,17 +48,17 @@ class Team extends Model
             );
         }
     }
-    
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
-    
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_users');
     }
-    
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

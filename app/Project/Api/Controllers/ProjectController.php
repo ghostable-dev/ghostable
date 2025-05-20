@@ -3,7 +3,6 @@
 namespace App\Project\Api\Controllers;
 
 use App\Account\Models\Team;
-use App\Environment\Models\Environment;
 use App\Http\Controllers\Controller;
 use App\Project\Api\Resources\ProjectResource;
 use App\Project\Models\Project;
@@ -23,19 +22,19 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
-        //$this->authorize('view', $project);
+        // $this->authorize('view', $project);
 
         return new ProjectResource($project->load('environments'));
     }
-    
+
     public function store(Request $request, Team $team)
     {
         $name = $request->input('name');
         $description = $request->input('description');
-        
+
         $project = new Project([
             'name' => $name,
-            'description' => $description
+            'description' => $description,
         ]);
         $project->team()->associate($team);
         $project->save();
@@ -45,7 +44,7 @@ class ProjectController extends Controller
             ['name' => 'staging'],
             ['name' => 'production'],
         ]);
-        
+
         return new ProjectResource($project->load('environments'));
     }
 }

@@ -19,7 +19,7 @@ class User extends Authenticatable
     use HasFactory;
     use HasUuids;
     use Notifiable;
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -53,19 +53,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
+
     public static function newFactory(): UserFactory
     {
         return UserFactory::new();
     }
-    
+
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_users')
             ->withPivot('role')
             ->withTimestamps();
     }
-    
+
     public function currentTeam(): ?Team
     {
         $teamId = session('current_team_id');

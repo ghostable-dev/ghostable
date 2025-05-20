@@ -12,12 +12,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class TeamFactory extends Factory
 {
     protected $model = Team::class;
-    
+
     public function definition(): array
     {
         return [
             'name' => fake()->unique()->company(),
-            //'owner_id' => User::factory(),
+            // 'owner_id' => User::factory(),
         ];
     }
 }

@@ -16,21 +16,21 @@ class Environment extends Model
     use HasFactory;
     use HasUuids;
     use SoftDeletes;
-    
+
     protected $fillable = [
         'name',
     ];
-    
+
     public static function newFactory(): EnvironmentFactory
     {
         return EnvironmentFactory::new();
     }
-    
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
-    
+
     public function variables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
