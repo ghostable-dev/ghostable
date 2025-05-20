@@ -74,7 +74,7 @@ class User extends Authenticatable
             return $this->teams()->first();
         }
 
-        return $this->teams()->where('id', $teamId)->first();
+        return $this->teams()->where('team_id', $teamId)->first();
     }
 
     /**

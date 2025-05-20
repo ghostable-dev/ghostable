@@ -35,23 +35,7 @@
                 </flux:navlist.item> --}}
             </flux:navlist>
             
-            <!-- Desktop Team Menu -->
-            <flux:dropdown position="bottom" align="start">
-                <flux:button class="w-full" icon:trailing="chevron-down">
-                    {{ auth()->user()->currentTeam()?->name }}
-                </flux:button>
-                <flux:menu>
-                    <flux:menu.group heading="Manage Team">
-                        <flux:menu.item>Settings</flux:menu.item>
-                        <flux:menu.item>Create New Team</flux:menu.item>
-                    </flux:menu.group>
-                    <flux:menu.group heading="Switch Teams">
-                        <flux:menu.item>
-                            {{ auth()->user()->currentTeam()?->name }} (current)
-                        </flux:menu.item> 
-                    </flux:menu.group>
-                </flux:menu>
-            </flux:dropdown>
+            <livewire:account.livewire.team-dropdown/>
 
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
@@ -152,5 +136,8 @@
         {{ $slot }}
 
         @fluxScripts
+        
+        <livewire:account.livewire.create-team-modal/>
+        
     </body>
 </html>
