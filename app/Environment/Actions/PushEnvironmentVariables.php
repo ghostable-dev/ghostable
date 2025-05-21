@@ -4,7 +4,7 @@ namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
 use App\Environment\Services\EnvParser;
-use App\Environment\Entities\EnvLine
+use App\Environment\Entities\EnvLine;
 use Illuminate\Support\Collection;
 
 class PushEnvironmentVariables
