@@ -23,6 +23,11 @@ class Team extends Model
     protected $fillable = [
         'name',
         'slug',
+        'is_personal'
+    ];
+    
+    protected $attributes = [
+        'is_personal' => true
     ];
 
     public static function newFactory(): TeamFactory

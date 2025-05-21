@@ -65,6 +65,14 @@ class User extends Authenticatable
             ->withPivot('role')
             ->withTimestamps();
     }
+    
+    public function ownedTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_users')
+            ->withPivot('role')
+            ->withTimestamps()
+            ->wherePivot('role', 'owner');
+    }
 
     public function currentTeam(): ?Team
     {
