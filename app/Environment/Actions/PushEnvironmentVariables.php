@@ -12,11 +12,8 @@ class PushEnvironmentVariables
     /**
      * Push a new set of variables to the given environment.
      *
-     * This compares the incoming variables with existing ones and only performs
-     * database operations where necessary — adding, updating, or deleting keys.
-     *
      * @param Environment $env
-     * @param array<int, array{key: string, value: string|null}> $incomingRaw
+     * @param array<int, string> $incomingRaw Raw .env lines
      * @return array{status: string, added: int, updated: int, removed: int}
      */
     public static function handle(Environment $env, array $incomingRaw): array
@@ -40,56 +37,62 @@ class PushEnvironmentVariables
     }
 
     /**
-     * Normalize the incoming raw variables into a keyed collection.
+     * Normalize EnvLine objects into a keyed collection by key.
      *
      * @param array<int, EnvLine> $raw
-     * @return \Illuminate\Support\Collection<string, string>
+     * @return Collection<string, EnvLine>
      */
     private static function normalizeIncoming(array $raw): Collection
     {
         return collect($raw)
-            ->filter(fn($line) => !is_null($line->key))
-            ->mapWithKeys(fn ($line) => [
-                $line->key => $line->value ?? '',
-            ]);
+            ->filter(fn (EnvLine $line) => $line->isValid())
+            ->keyBy(fn($line) => $line->key);
     }
 
     /**
-     * Load the current variables from the environment as a keyed collection.
+     * Load the existing environment variables keyed by `key`.
      *
      * @param Environment $env
-     * @return \Illuminate\Support\Collection<string, array{id: int, value: string}>
+     * @return Collection<string, array{id: int, value: string, is_commented: bool}>
      */
     private static function loadExisting(Environment $env): Collection
     {
         return $env->variables()
-            ->get(['id', 'key', 'value'])
-            ->mapWithKeys(fn ($var) => [
-                $var->key => ['id' => $var->id, 'value' => $var->value],
+            ->get(['id', 'key', 'value', 'is_commented'])
+            ->mapWithKeys(fn($var) => [
+                $var->key => [
+                    'id' => $var->id,
+                    'value' => $var->value,
+                    'is_commented' => (bool) $var->is_commented,
+                ],
             ]);
     }
 
     /**
-     * Determine which existing keys have changed values.
+     * Determine which existing variables need to be updated.
      *
-     * @param Collection<string, string> $incoming
-     * @param Collection<string, array{id: int, value: string}> $existing
-     * @return Collection<string, string>
+     * @param Collection<string, EnvLine> $incoming
+     * @param Collection<string, array{id: int, value: string, is_commented: bool}> $existing
+     * @return Collection<string, EnvLine>
      */
     private static function findUpdates(Collection $incoming, Collection $existing): Collection
     {
-        return $incoming->filter(fn ($value, $key) =>
-            $existing->has($key) && $existing[$key]['value'] !== $value
-        );
+        return $incoming->filter(function (EnvLine $line, string $key) use ($existing) {
+            if (! $existing->has($key)) return false;
+
+            $current = $existing[$key];
+            return $line->value !== $current['value']
+                || $line->commented !== $current['is_commented'];
+        });
     }
 
     /**
-     * Apply the changes to the environment.
+     * Apply variable adds, updates, and deletes to the environment.
      *
      * @param Environment $env
-     * @param Collection<string, string> $incoming
+     * @param Collection<string, EnvLine> $incoming
      * @param Collection<int, string> $added
-     * @param Collection<string, string> $updated
+     * @param Collection<string, EnvLine> $updated
      * @param Collection<int, string> $removed
      * @return void
      */
@@ -100,21 +103,30 @@ class PushEnvironmentVariables
         Collection $updated,
         Collection $removed
     ): void {
+        
         foreach ($added as $key) {
-            $env->variables()->create([
-                'key' => $key,
-                'value' => $incoming[$key],
-            ]);
+            CreateEnvVariable::handle(
+                env: $env,
+                key: $incoming[$key]->key,
+                value: $incoming[$key]->value ?? '',
+                is_commented: $incoming[$key]->commented ?? false
+            );
         }
 
-        foreach ($updated as $key => $value) {
-            $env->variables()->where('key', $key)->update([
-                'value' => $value,
-            ]);
+        foreach ($updated as $key => $line) {
+            UpdateEnvVariable::handle(
+                env: $env,
+                key: $line->key,
+                value: $line->value ?? '',
+                is_commented: $line->commented ?? false
+            );
         }
 
         foreach ($removed as $key) {
-            $env->variables()->where('key', $key)->delete();
+            DeleteEnvVariable::handle(
+                env: $env, 
+                key: $key
+            );
         }
     }
 }

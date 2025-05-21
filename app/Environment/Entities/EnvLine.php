@@ -18,9 +18,9 @@ class EnvLine extends Data
     
     public function isValid(): bool
     {
-        return $this->type === EnvLineType::ENV;
+        return $this->type === EnvLineType::ENV && $this->key !== null;
     }
-
+    
     public function toArray(): array
     {
         return [

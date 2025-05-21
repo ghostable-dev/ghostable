@@ -18,6 +18,7 @@ class EnvironmentVariable extends Model
     protected $fillable = [
         'key',
         'value',
+        'is_commented'
     ];
 
     protected $casts = [
