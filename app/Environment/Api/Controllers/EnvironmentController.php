@@ -8,6 +8,7 @@ use App\Environment\Models\Environment;
 use App\Http\Controllers\Controller;
 use App\Project\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EnvironmentController extends Controller
 {
@@ -20,7 +21,10 @@ class EnvironmentController extends Controller
 
     public function push(Request $request, Project $project, string $name)
     {
+        Log::info($name);
         $env = $project->environmentOrFail($name);
+        
+        Log::info($env->name);
         
         //$request->user()->can('update', $env);
         
