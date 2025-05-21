@@ -33,7 +33,7 @@ class EnvParser
         $results = [];
         
         foreach ($lines as $line) {
-            $result = $this->parseLine($line);
+            $result = $this->parseLine($line ?? '');
 
             if ($result !== null) {
                 $results[] = $result;
