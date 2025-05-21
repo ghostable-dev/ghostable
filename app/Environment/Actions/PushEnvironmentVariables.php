@@ -3,6 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
+use App\Environment\Services\EnvParser;
 use Illuminate\Support\Collection;
 
 class PushEnvironmentVariables
@@ -19,7 +20,8 @@ class PushEnvironmentVariables
      */
     public static function handle(Environment $env, array $incomingRaw): array
     {
-        $incoming = self::normalizeIncoming($incomingRaw);
+        $parser = new EnvParser();
+        $incoming = self::normalizeIncoming($parser->parse($incomingRaw));
         $existing = self::loadExisting($env);
 
         $added = $incoming->keys()->diff($existing->keys());
