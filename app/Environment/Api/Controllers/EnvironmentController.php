@@ -22,7 +22,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
         
-        $request->user()->can('update', $env);
+        //$request->user()->can('update', $env);
         
         $vars = $request->input('vars') ?? [];
         
