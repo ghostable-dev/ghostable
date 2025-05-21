@@ -14,7 +14,9 @@ class EnvironmentPolicy
 
     public function view(User $user, Environment $env): bool
     {
-        return false;
+        return $env->project->team->users()
+            ->where('user_id', $user->id)
+            ->exists();
     }
 
     public function create(User $user): bool

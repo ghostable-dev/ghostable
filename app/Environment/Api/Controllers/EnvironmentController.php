@@ -3,12 +3,11 @@
 namespace App\Environment\Api\Controllers;
 
 use App\Environment\Actions\PushEnvironmentVariables;
+use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Api\Resources\EnvironmentResource;
-use App\Environment\Models\Environment;
 use App\Http\Controllers\Controller;
 use App\Project\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class EnvironmentController extends Controller
 {
@@ -21,30 +20,26 @@ class EnvironmentController extends Controller
 
     public function push(Request $request, Project $project, string $name)
     {
-        Log::info($name);
         $env = $project->environmentOrFail($name);
         
-        Log::info($env->name);
-        
-        //$request->user()->can('update', $env);
+        $request->user()->can('update', $env);
         
         $vars = $request->input('vars') ?? [];
-        
-        Log::info($vars);
         
         $result = PushEnvironmentVariables::handle(env: $env, incomingRaw: $vars);
 
         return response()->json($result);
     }
 
-    public function pull(Environment $environment)
+    public function pull(Request $request, Project $project, string $name)
     {
-        $vars = $environment->variables
-            ->map(fn ($var) => ['key' => $var->key, 'value' => $var->value])
-            ->all();
-
-        return response()->json(
-            ['vars' => $vars]
+        $env = $project->environmentOrFail($name);
+        
+        $request->user()->can('view', $env);
+        
+        return response()->file(
+            RenderEnvFile::handle(env: $env), 
+            ['Content-Type' => 'text/plain']
         );
     }
 }
