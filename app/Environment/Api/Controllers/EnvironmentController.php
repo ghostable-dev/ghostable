@@ -2,7 +2,7 @@
 
 namespace App\Environment\Api\Controllers;
 
-use App\Actions\Environment\PushEnvironmentVariables;
+use App\Environment\Actions\PushEnvironmentVariables;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Models\Environment;
 use App\Http\Controllers\Controller;

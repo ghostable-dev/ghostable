@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Environment;
+namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
 use Illuminate\Support\Collection;
