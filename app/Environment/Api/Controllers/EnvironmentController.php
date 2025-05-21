@@ -30,9 +30,11 @@ class EnvironmentController extends Controller
         
         $vars = $request->input('vars') ?? [];
         
-        PushEnvironmentVariables::handle(env: $env, incomingRaw: $vars);
+        Log::info($vars);
+        
+        $result = PushEnvironmentVariables::handle(env: $env, incomingRaw: $vars);
 
-        return response()->json();
+        return response()->json($result);
     }
 
     public function pull(Environment $environment)
