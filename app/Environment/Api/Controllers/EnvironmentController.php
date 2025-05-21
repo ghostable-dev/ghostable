@@ -39,7 +39,7 @@ class EnvironmentController extends Controller
         
         return response(
             RenderEnvFile::handle(env: $env), 
-            200
+            200,
             ['Content-Type' => 'text/plain']
         );
     }
