@@ -2,6 +2,7 @@
 
 namespace App\Environment\Api\Controllers;
 
+use App\Actions\Environment\PushEnvironmentVariables;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Models\Environment;
 use App\Http\Controllers\Controller;
@@ -12,23 +13,20 @@ class EnvironmentController extends Controller
 {
     public function show(Project $project, string $name)
     {
-        $env = $project->environments()->where('name', $name)->first();
+        $env = $project->environmentOrFail($name);
 
         return new EnvironmentResource($env);
     }
 
-    public function push(Request $request, Environment $environment)
+    public function push(Request $request, Project $project, string $name)
     {
+        $env = $project->environmentOrFail($name);
+        
+        $request->user()->can('update', $env);
+        
         $vars = $request->input('vars') ?? [];
-
-        $environment->variables()->delete();
-
-        $environment->variables()->createMany(
-            collect($vars)->map(fn ($var) => [
-                'key' => $var['key'],
-                'value' => $var['value'] ?? '',
-            ])
-        );
+        
+        PushEnvironmentVariables::handle(env: $env, incomingRaw: $vars);
 
         return response()->json();
     }

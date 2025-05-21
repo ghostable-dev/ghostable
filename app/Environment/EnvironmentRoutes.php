@@ -9,13 +9,20 @@ class EnvironmentRoutes
 {
     public static function api(): void
     {
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::get('projects/{project}/environments/{name}', [
-                EnvironmentController::class, 'show',
-            ]);
-
-            Route::get('environments/{environment}/pull', [EnvironmentController::class, 'pull']);
-            Route::post('environments/{environment}/push', [EnvironmentController::class, 'push']);
+        Route::prefix('projects/{project}/environments/{name}')
+            ->middleware('auth:sanctum')->group(function () {
+                
+                Route::get('/', [
+                    EnvironmentController::class, 'show',
+                ]);
+            
+                Route::post('/push', [
+                    EnvironmentController::class, 'push'
+                ]);
+                
+                Route::get('/pull', [
+                    EnvironmentController::class, 'pull'
+                ]);
         });
     }
 }

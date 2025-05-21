@@ -37,4 +37,11 @@ class Project extends Model
     {
         return $this->hasMany(Environment::class);
     }
+    
+    public function environmentOrFail(string $name): Environment
+    {
+        return $this->environments()
+            ->where('name', $name)
+            ->firstOrFail();
+    }
 }
