@@ -5,18 +5,21 @@ namespace App\Environment\Actions;
 use App\Environment\Models\Environment;
 use App\Environment\Services\EnvParser;
 use App\Environment\Entities\EnvLine;
+use App\Environment\Entities\PushResultData;
 use Illuminate\Support\Collection;
 
-class PushEnvironmentVariables
+class PushEnvVars
 {
     /**
      * Push a new set of variables to the given environment.
      *
      * @param Environment $env
      * @param array<int, string> $incomingRaw Raw .env lines
-     * @return array{status: string, added: int, updated: int, removed: int}
      */
-    public static function handle(Environment $env, array $incomingRaw): array
+    public static function handle(
+        Environment $env, 
+        array $incomingRaw
+    ): PushResultData
     {
         $parser = new EnvParser();
         $incoming = self::normalizeIncoming($parser->parse($incomingRaw));
@@ -27,13 +30,12 @@ class PushEnvironmentVariables
         $updated = self::findUpdates($incoming, $existing);
 
         self::applyChanges($env, $incoming, $added, $updated, $removed);
-
-        return [
-            'status' => 'updated',
-            'added' => $added->count(),
-            'updated' => $updated->count(),
-            'removed' => $removed->count(),
-        ];
+        
+        return new PushResultData(
+            added: $added->count(),
+            updated: $updated->count(),
+            removed: $removed->count(),
+        );
     }
 
     /**
