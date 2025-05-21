@@ -4,6 +4,7 @@ namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
 use App\Environment\Services\EnvParser;
+use App\Environment\Entities\EnvLine
 use Illuminate\Support\Collection;
 
 class PushEnvironmentVariables
@@ -41,15 +42,15 @@ class PushEnvironmentVariables
     /**
      * Normalize the incoming raw variables into a keyed collection.
      *
-     * @param array<int, array{key: string, value: string|null}> $raw
+     * @param array<int, EnvLine> $raw
      * @return \Illuminate\Support\Collection<string, string>
      */
     private static function normalizeIncoming(array $raw): Collection
     {
         return collect($raw)
-            ->filter(fn ($var) => isset($var['key']))
-            ->mapWithKeys(fn ($var) => [
-                $var['key'] => $var['value'] ?? '',
+            ->filter(fn($line) => !is_null($line->key))
+            ->mapWithKeys(fn ($line) => [
+                $line->key => $line->value ?? '',
             ]);
     }
 
