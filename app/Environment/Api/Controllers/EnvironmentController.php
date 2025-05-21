@@ -37,8 +37,9 @@ class EnvironmentController extends Controller
         
         $request->user()->can('view', $env);
         
-        return response()->file(
+        return response(
             RenderEnvFile::handle(env: $env), 
+            200
             ['Content-Type' => 'text/plain']
         );
     }
