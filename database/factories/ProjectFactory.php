@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Account\Models\Team;
+use App\Team\Models\Team;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

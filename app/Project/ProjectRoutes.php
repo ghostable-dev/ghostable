@@ -3,6 +3,7 @@
 namespace App\Project;
 
 use App\Project\Api\Controllers\ProjectController;
+use App\Project\Livewire\TeamProjects;
 use Illuminate\Support\Facades\Route;
 
 class ProjectRoutes
@@ -14,5 +15,10 @@ class ProjectRoutes
             Route::get('/projects/{project}', [ProjectController::class, 'show']);
             Route::post('teams/{team}/projects', [ProjectController::class, 'store']);
         });
+    }
+    
+    public static function web(): void
+    {
+        
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Project\Models;
 
-use App\Account\Models\Team;
+use App\Team\Models\Team;
 use App\Environment\Models\Environment;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

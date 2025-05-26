@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('environment_id')->constrained('environments')->cascadeOnDelete();
             $table->string('key');
             $table->text('value');
+            $table->boolean('is_commented')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

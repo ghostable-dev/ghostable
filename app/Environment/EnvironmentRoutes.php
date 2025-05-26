@@ -3,6 +3,7 @@
 namespace App\Environment;
 
 use App\Environment\Api\Controllers\EnvironmentController;
+use App\Environment\Livewire\EnvironmentView;
 use Illuminate\Support\Facades\Route;
 
 class EnvironmentRoutes
@@ -24,5 +25,11 @@ class EnvironmentRoutes
                     EnvironmentController::class, 'pull'
                 ]);
         });
+    }
+    
+    public static function web(): void
+    {
+        Route::get('environments/{environment}', EnvironmentView::class)
+            ->name('environment.view');
     }
 }

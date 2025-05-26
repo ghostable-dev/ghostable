@@ -10,16 +10,14 @@
             <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
                 <x-app-logo />
             </a>
+            
+            @if(auth()->user()->isVerified())
+                <livewire:team.livewire.team-dropdown/>
+            @endif
 
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    
-                    <flux:navlist.item 
-                        icon="circle-stack" 
-                        :href="route('projects.index')" 
-                        :current="request()->routeIs('projects.*')" 
-                        wire:navigate>{{ __('Projects') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
@@ -35,8 +33,6 @@
                 </flux:navlist.item> --}}
             </flux:navlist>
             
-            <livewire:account.livewire.team-dropdown/>
-
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
                 <flux:profile
@@ -137,7 +133,7 @@
 
         @fluxScripts
         
-        <livewire:account.livewire.create-team-modal/>
+        <livewire:team.livewire.team-create-modal/>
         
     </body>
 </html>

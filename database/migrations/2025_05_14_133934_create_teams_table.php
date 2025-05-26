@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('slug', 100)->nullable();
             $table->string('name', 100);
+            $table->boolean('is_personal')->index()->default(true);
             $table->foreignUuid('owner_id')->nullable()->constrained('users');
             $table->timestamps();
         });

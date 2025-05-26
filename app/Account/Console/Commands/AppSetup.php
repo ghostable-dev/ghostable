@@ -2,11 +2,17 @@
 
 namespace App\Account\Console\Commands;
 
-use App\Account\Models\Team;
+use App\Account\Actions\RegisterUser;
+use App\Account\Entities\Role;
+use App\Account\Managers\ACLManager;
+use App\Team\Models\Team;
 use App\Account\Models\User;
+use App\Account\Providers\ACLServiceProvider;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Project\Models\Project;
+use App\Team\Actions\CreateTeam;
+use App\Team\Actions\CreateTeamInvite;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
@@ -29,6 +35,8 @@ class AppSetup extends Command
         $this->resetDatabase();
 
         $this->seedCurricula();
+        
+        $this->seedHuntress();
     }
 
     protected function resetDatabase(): void
@@ -36,6 +44,9 @@ class AppSetup extends Command
         $this->info('🧹 Resetting database...');
         $this->call('migrate:fresh', ['--force' => true]);
         $this->call('db:seed');
+        
+        $this->info('Cleaing cache...');
+        $this->call('cache:clear');
     }
 
     protected function seedCurricula(): void
@@ -58,13 +69,40 @@ class AppSetup extends Command
         $this->createEnvironment('staging', $phishing);
         $this->createEnvironment('local', $phishing);
         $this->createVariables($phishingProduction);
+        
+        $this->createInvite(team: $curricula, sender: $joe, email: 'nick@curricula.com');
+    }
+    
+    protected function seedHuntress(): void
+    {
+        $joe = $this->createUser(name: 'Joe', email: 'joe@huntress.com');
+        $jake = $this->createUser(name: 'Jake', email: 'jake@huntress.com');
+
+        $huntress = $this->createTeam(
+            name: 'Huntress',
+            owner: $joe,
+            members: [$jake]
+        );
+
+        $primary = $this->createProject('Primary', $huntress);
+        $this->createEnvironment('production', $primary);
+        $this->createEnvironment('staging', $primary);
+
+        $phishing = $this->createProject('Phishing', $huntress);
+        $phishingProduction = $this->createEnvironment('production', $phishing);
+        $this->createEnvironment('staging', $phishing);
+        $this->createEnvironment('local', $phishing);
+        $this->createVariables($phishingProduction);
+        
+        $this->createInvite(team: $huntress, sender: $joe, email: 'joe@curricula.com');
     }
 
     protected function createUser(string $name, string $email): User
     {
-        return User::factory()->create([
+        return app(RegisterUser::class)->handle([
             'name' => $name,
             'email' => $email,
+            'password' => 'password',
         ]);
     }
 
@@ -73,18 +111,29 @@ class AppSetup extends Command
         User $owner,
         array $members = []
     ): Team {
-        $team = Team::factory()->create([
-            'name' => $name,
-            'owner_id' => $owner->id,
-        ]);
-
-        $team->users()->attach($owner->id, ['role' => 'owner']);
+        
+        $team = app(CreateTeam::class)->handle(
+            name: $name,
+            owner: $owner
+        );
 
         foreach ($members as $member) {
-            $team->users()->attach($member->id);
+            $member->assignAsReadWriteDeveloper($team);
         }
 
         return $team;
+    }
+    
+    protected function createInvite(Team $team, User $sender, string $email, ?Role $role = null): void
+    {
+        $role = $role ?? ACLManager::getRole(ACLServiceProvider::ROLE_DEV_READ_WRITE);
+        
+        CreateTeamInvite::handle(
+            team: $team, 
+            user: $sender,
+            email: $email,
+            role: $role
+        );
     }
 
     protected function createProject(string $name, Team $team): Project

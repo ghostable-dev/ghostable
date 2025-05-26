@@ -2,7 +2,7 @@
 
 namespace App\Project\Api\Controllers;
 
-use App\Account\Models\Team;
+use App\Team\Models\Team;
 use App\Http\Controllers\Controller;
 use App\Project\Api\Resources\ProjectResource;
 use App\Project\Models\Project;

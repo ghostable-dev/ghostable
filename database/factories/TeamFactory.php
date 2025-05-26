@@ -2,12 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Account\Models\Team;
-use App\Account\Models\User;
+use App\Team\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Account\Models\Team>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Team\Models\Team>
  */
 class TeamFactory extends Factory
 {
@@ -17,7 +16,6 @@ class TeamFactory extends Factory
     {
         return [
             'name' => fake()->unique()->company(),
-            // 'owner_id' => User::factory(),
         ];
     }
 }

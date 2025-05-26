@@ -2,23 +2,25 @@
 
 namespace App\Account\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
+use App\Team\Concerns\BelongsToTeams;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
+    use BelongsToTeams;
     use HasApiTokens;
     use HasFactory;
     use HasUuids;
     use Notifiable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -58,31 +60,10 @@ class User extends Authenticatable
     {
         return UserFactory::new();
     }
-
-    public function teams(): BelongsToMany
-    {
-        return $this->belongsToMany(Team::class, 'team_users')
-            ->withPivot('role')
-            ->withTimestamps();
-    }
     
-    public function ownedTeams(): BelongsToMany
+    public function isVerified(): bool
     {
-        return $this->belongsToMany(Team::class, 'team_users')
-            ->withPivot('role')
-            ->withTimestamps()
-            ->wherePivot('role', 'owner');
-    }
-
-    public function currentTeam(): ?Team
-    {
-        $teamId = session('current_team_id');
-
-        if (! $teamId) {
-            return $this->teams()->first();
-        }
-
-        return $this->teams()->where('team_id', $teamId)->first();
+        return !is_null($this->email_verified_at);
     }
 
     /**
