@@ -14,6 +14,28 @@ class EnvironmentView extends Component
     
     public array $showing = [];
     
+    public $editing = null;
+public $editedValues = [];
+
+public function edit($id)
+{
+    $variable = $this->environment->variables->firstWhere('id', $id);
+    $this->editing = $id;
+    $this->editedValues[$id] = $variable->value;
+}
+
+public function save($id)
+{
+    $variable = $this->environment->variables->firstWhere('id', $id);
+    $variable->update(['value' => $this->editedValues[$id]]);
+    $this->editing = null;
+}
+
+public function cancelEdit()
+{
+    $this->editing = null;
+}
+    
     public function mount(Environment $environment): void
     {
         $this->envId = $environment->id;
