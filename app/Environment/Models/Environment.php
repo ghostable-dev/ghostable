@@ -2,6 +2,7 @@
 
 namespace App\Environment\Models;
 
+use App\Environment\Enums\EnvironmentType;
 use App\Project\Models\Project;
 use Database\Factories\EnvironmentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -19,6 +20,11 @@ class Environment extends Model
 
     protected $fillable = [
         'name',
+        'type',
+    ];
+
+    protected $casts = [
+        'type' => EnvironmentType::class,
     ];
 
     public static function newFactory(): EnvironmentFactory

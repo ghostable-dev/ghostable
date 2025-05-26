@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,14 +16,11 @@ class EnvironmentFactory extends Factory
 
     public function definition(): array
     {
+        $type = fake()->randomElement(EnvironmentType::cases());
+
         return [
-            'name' => fake()->randomElement([
-                'Production',
-                'local',
-                'development',
-                'testing',
-                'staging']
-            ),
+            'name' => $type->value,
+            'type' => $type->value,
         ];
     }
 
