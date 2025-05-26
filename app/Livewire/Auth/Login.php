@@ -40,6 +40,21 @@ class Login extends Component
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+            Auth::logout();
+
+            session([
+                'login.id' => $user->getKey(),
+                'login.remember' => $this->remember,
+            ]);
+
+            $this->redirectIntended(default: route('two-factor.login', absolute: false), navigate: true);
+
+            return;
+        }
+
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
