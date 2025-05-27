@@ -6,7 +6,7 @@ use App\Environment\Actions\PushEnvVars;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Api\Resources\PushResultResource;
-use App\Http\Controllers\Controller;
+use App\Core\Http\Controllers\Controller;
 use App\Project\Models\Project;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;

@@ -1,6 +1,7 @@
 <?php
 
 use App\Account\AccountRoutes;
+use App\Auth\AuthRoutes;
 use App\Environment\EnvironmentRoutes;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -29,5 +30,4 @@ AccountRoutes::web();
 TeamRoutes::web();
 EnvironmentRoutes::web();
 ProjectRoutes::web();
-
-require __DIR__.'/auth.php';
+AuthRoutes::web();

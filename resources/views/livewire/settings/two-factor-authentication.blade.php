@@ -32,8 +32,8 @@
             @endif
 
             <div class="mt-4 flex gap-2">
-                <flux:button wire:click="regenerateRecoveryCodes" variant="secondary">{{ __('Regenerate Recovery Codes') }}</flux:button>
-                <flux:button wire:click="showRecoveryCodes" variant="secondary">{{ __('Show Recovery Codes') }}</flux:button>
+                <flux:button wire:click="regenerateRecoveryCodes" variant="ghost">{{ __('Regenerate Recovery Codes') }}</flux:button>
+                <flux:button wire:click="showRecoveryCodes" variant="ghost">{{ __('Show Recovery Codes') }}</flux:button>
                 <flux:button wire:click="disableTwoFactorAuthentication" variant="danger">{{ __('Disable') }}</flux:button>
             </div>
         @endif

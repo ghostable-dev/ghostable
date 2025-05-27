@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Auth;
+namespace App\Auth\Livewire;
 
 use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Layout;
@@ -27,6 +27,6 @@ class ForgotPassword extends Component
     
     public function render()
     {
-        return view('livewire.auth.forgot-password');
+        return view('auth.forgot-password');
     }
 }

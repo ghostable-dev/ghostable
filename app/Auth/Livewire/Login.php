@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Auth;
+namespace App\Auth\Livewire;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
@@ -92,6 +92,6 @@ class Login extends Component
     
     public function render()
     {
-        return view('livewire.auth.login');
+        return view('auth.login');
     }
 }
