@@ -2,8 +2,6 @@
 
 namespace App\Environment\Enums;
 
-use Illuminate\Support\Collection;
-
 enum EnvironmentType: string
 {
     case PRODUCTION = 'production';
@@ -27,6 +25,18 @@ enum EnvironmentType: string
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::PRODUCTION   => 'Production',
+            self::STAGING   => 'Staging',
+            self::DEVELOPMENT => 'Development',
+            self::TESTING => 'Testing',
+            self::LOCAL => 'Local',
+            self::QA => 'QA',
+            self::UAT => 'UAT',
+            self::INTEGRATION => 'Integration',
+            self::PREVIEW => 'Preview',
+            self::SANDBOX => 'Sandbox',
+            self::OTHER => 'Other'
+        };
     }
 }

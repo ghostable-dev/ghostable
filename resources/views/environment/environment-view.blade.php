@@ -3,6 +3,9 @@
     @include('environment.partials.environment-breadcrumbs')
     
     <div class="relative w-full">
+        <flux:badge size="sm" class="mb-2">
+            {{ $this->environment->type->label() }}
+        </flux:badge>
         <flux:heading size="xl" level="1">
             {{ $this->environment->project->name }} • <span class="text-gray-400">{{ $this->environment->name }}</span>
         </flux:heading>
