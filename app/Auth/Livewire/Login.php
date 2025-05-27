@@ -3,6 +3,7 @@
 namespace App\Auth\Livewire;
 
 use Illuminate\Auth\Events\Lockout;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
@@ -11,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\Features\SupportRedirects\Redirector;
 
 #[Layout('components.layouts.auth')]
 class Login extends Component
@@ -26,7 +28,7 @@ class Login extends Component
     /**
      * Handle an incoming authentication request.
      */
-    public function login(): void
+    public function login()
     {
         $this->validate();
 
@@ -42,15 +44,16 @@ class Login extends Component
 
         $user = Auth::user();
 
-        if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+        if (!empty($user->two_factor_secret) && $user->two_factor_confirmed_at) {
+            
             Auth::logout();
 
             session([
                 'login.id' => $user->getKey(),
                 'login.remember' => $this->remember,
             ]);
-
-            $this->redirectIntended(default: route('two-factor.login', absolute: false), navigate: true);
+            
+            $this->redirect(route('two-factor.login', absolute: false));
 
             return;
         }
@@ -58,7 +61,10 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(
+            default: route('dashboard', absolute: false), 
+            navigate: true
+        );
     }
 
     /**

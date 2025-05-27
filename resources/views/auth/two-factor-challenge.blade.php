@@ -1,3 +1,4 @@
+<x-layouts.auth title="Ghostable">
 <div class="flex flex-col gap-6">
     <x-auth-header
         :title="__('Two-factor Authentication')"
@@ -28,3 +29,4 @@
         <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
     </form>
 </div>
+</x-layouts.auth>
