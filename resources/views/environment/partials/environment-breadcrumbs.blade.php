@@ -3,7 +3,7 @@
     {{-- Project dropdown --}}
     <flux:breadcrumbs.item separator="slash">
         <div class="flex">
-            <flux:button variant="ghost" inset="left">
+            <flux:button href="{{ route('projects.view', $this->environment->project) }}" variant="ghost" inset="left">
                     {{ $this->environment->project->name }}
                 </flux:button>
             <flux:dropdown>

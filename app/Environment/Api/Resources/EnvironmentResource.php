@@ -12,7 +12,7 @@ class EnvironmentResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            // 'variables' => EnvironmentResource::collection($this->whenLoaded('environments')),
+            'type' => $this->type->value,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
