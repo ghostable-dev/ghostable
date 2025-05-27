@@ -8,6 +8,8 @@ use App\Account\Managers\ACLManager;
 use App\Team\Models\Team;
 use App\Account\Models\User;
 use App\Account\Providers\ACLServiceProvider;
+use App\Environment\Actions\CreateEnv;
+use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Project\Models\Project;
@@ -61,13 +63,13 @@ class AppSetup extends Command
         );
 
         $primary = $this->createProject('Primary', $curricula);
-        $this->createEnvironment('production', $primary);
-        $this->createEnvironment('staging', $primary);
+        $this->createEnvironment('Production', EnvironmentType::PRODUCTION, $primary);
+        $this->createEnvironment('Staging', EnvironmentType::STAGING, $primary);
 
         $phishing = $this->createProject('Phishing', $curricula);
-        $phishingProduction = $this->createEnvironment('production', $phishing);
-        $this->createEnvironment('staging', $phishing);
-        $this->createEnvironment('local', $phishing);
+        $phishingProduction = $this->createEnvironment('Production', EnvironmentType::PRODUCTION, $phishing);
+        $this->createEnvironment('Staging', EnvironmentType::STAGING, $phishing);
+        $this->createEnvironment('Joe Local', EnvironmentType::LOCAL, $phishing);
         $this->createVariables($phishingProduction);
         
         $this->createInvite(team: $curricula, sender: $joe, email: 'nick@curricula.com');
@@ -85,13 +87,13 @@ class AppSetup extends Command
         );
 
         $primary = $this->createProject('Primary', $huntress);
-        $this->createEnvironment('production', $primary);
-        $this->createEnvironment('staging', $primary);
+        $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
+        $this->createEnvironment('staging', EnvironmentType::STAGING, $primary);
 
         $phishing = $this->createProject('Phishing', $huntress);
-        $phishingProduction = $this->createEnvironment('production', $phishing);
-        $this->createEnvironment('staging', $phishing);
-        $this->createEnvironment('local', $phishing);
+        $phishingProduction = $this->createEnvironment('Production', EnvironmentType::PRODUCTION, $phishing);
+        $this->createEnvironment('Staging', EnvironmentType::STAGING, $phishing);
+        $this->createEnvironment('JR Local', EnvironmentType::LOCAL, $phishing);
         $this->createVariables($phishingProduction);
         
         $this->createInvite(team: $huntress, sender: $joe, email: 'joe@curricula.com');
@@ -99,11 +101,16 @@ class AppSetup extends Command
 
     protected function createUser(string $name, string $email): User
     {
-        return app(RegisterUser::class)->handle([
+        $user = app(RegisterUser::class)->handle([
             'name' => $name,
             'email' => $email,
             'password' => 'password',
         ]);
+        
+        $user->markEmailAsVerified();
+        $user->save();
+        
+        return $user;
     }
 
     protected function createTeam(
@@ -145,13 +152,17 @@ class AppSetup extends Command
             ]);
     }
 
-    protected function createEnvironment(string $name, Project $project): Environment
+    protected function createEnvironment(
+        string $name, 
+        EnvironmentType $type,
+        Project $project
+    ): Environment
     {
-        return Environment::factory()
-            ->forProject($project)
-            ->create([
-                'name' => $name,
-            ]);
+        return app(CreateEnv::class)->handle(
+            name: $name, 
+            type: $type,
+            project: $project
+        );
     }
 
     protected function createVariables(Environment $env, int $amount = 5): Collection
