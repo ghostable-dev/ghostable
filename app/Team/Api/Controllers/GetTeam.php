@@ -4,7 +4,7 @@ namespace App\Team\Api\Controllers;
 
 use App\Team\Api\Resources\TeamResource;
 use App\Team\Models\Team;
-use App\Http\Controllers\Controller;
+use App\Core\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class GetTeam extends Controller

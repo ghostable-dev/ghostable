@@ -1,6 +1,7 @@
 <?php
 
 use App\Account\AccountRoutes;
+use App\Auth\AuthRoutes;
 use App\Environment\EnvironmentRoutes;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -8,6 +9,10 @@ use App\Livewire\Settings\Profile;
 use App\Project\ProjectRoutes;
 use App\Team\TeamRoutes;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/debug-session', function () {
+    return session()->all();
+});
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,11 +27,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
+    Route::get('settings/two-factor', \App\Livewire\Settings\TwoFactorAuthentication::class)->name('settings.two-factor');
 });
 
 AccountRoutes::web();
 TeamRoutes::web();
 EnvironmentRoutes::web();
 ProjectRoutes::web();
-
-require __DIR__.'/auth.php';
+AuthRoutes::web();

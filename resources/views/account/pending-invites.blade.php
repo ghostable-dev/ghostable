@@ -1,6 +1,6 @@
 <div class="space-y-3 pb-4">
     @foreach($this->pendingInvites as $invite)
-        <flux:callout icon="users" variant="secondary" inline>
+        <flux:callout icon="users" variant="ghost" inline>
             <flux:callout.heading>
                 Invitation to join <flux:text color="blue">{{ $invite->team->name }}</flux:text> from {{ $invite->user->email }} ({{ $invite->created_at->diffForHumans() }})
             </flux:callout.heading>

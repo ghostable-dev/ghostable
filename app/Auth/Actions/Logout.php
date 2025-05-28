@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Actions;
+namespace App\Auth\Actions;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -12,8 +12,13 @@ class Logout
      */
     public function __invoke()
     {
-        Auth::guard('web')->logout();
+        // If this is NOT a 2FA in-progress logout, wipe the session
+        // if (! session()->has('login.id')) {
+        //     
+        // }
 
+        Auth::guard('web')->logout();
+        
         Session::invalidate();
         Session::regenerateToken();
 

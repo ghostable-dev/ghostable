@@ -3,7 +3,7 @@
 namespace App\Api\Http\Controllers;
 
 use App\Account\Models\User;
-use App\Http\Controllers\Controller;
+use App\Core\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 

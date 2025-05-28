@@ -6,7 +6,7 @@
     </div>
     
     <flux:modal.trigger name="create-project">
-        <flux:button variant="primary">
+        <flux:button variant="primary" class="mb-4">
             Create New Project
         </flux:button>
     </flux:modal.trigger>
