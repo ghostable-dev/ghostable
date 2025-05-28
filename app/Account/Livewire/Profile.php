@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Settings;
+namespace App\Account\Livewire;
 
 use App\Account\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +74,6 @@ class Profile extends Component
 
     public function render()
     {
-        return view('livewire.settings.profile');
+        return view('account.profile');
     }
 }

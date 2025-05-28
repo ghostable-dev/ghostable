@@ -38,6 +38,6 @@
             </div>
         </form>
 
-        <livewire:livewire.settings.delete-user-form />
+        <livewire:account.livewire.delete-user-form />
     </x-settings.layout>
 </section>

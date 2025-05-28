@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Settings;
+namespace App\Account\Livewire;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -43,6 +43,6 @@ class Password extends Component
 
     public function render()
     {
-        return view('livewire.settings.password');
+        return view('account.password');
     }
 }
