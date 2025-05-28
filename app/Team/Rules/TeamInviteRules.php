@@ -11,10 +11,10 @@ class TeamInviteRules
     {
         return [
             'email' => array_merge(
-                UserRules::emailRules(), 
+                UserRules::emailRules(),
                 [new UniqueTeamInvite($team)],
                 [new UniqueEmailForTeam($team)],
-            )
+            ),
         ];
     }
 }

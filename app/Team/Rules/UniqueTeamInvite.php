@@ -9,9 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class UniqueTeamInvite implements ValidationRule
 {
-    public function __construct(protected Team $team)
-    {}
-    
+    public function __construct(protected Team $team) {}
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (DB::table('team_invites')

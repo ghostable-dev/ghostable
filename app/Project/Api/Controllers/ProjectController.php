@@ -2,10 +2,10 @@
 
 namespace App\Project\Api\Controllers;
 
-use App\Team\Models\Team;
 use App\Core\Http\Controllers\Controller;
 use App\Project\Api\Resources\ProjectResource;
 use App\Project\Models\Project;
+use App\Team\Models\Team;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller

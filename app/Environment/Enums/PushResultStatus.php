@@ -6,7 +6,7 @@ enum PushResultStatus: string
 {
     case UPDATED = 'updated';
     case UNCHANGED = 'unchanged';
-    
+
     public function message(): string
     {
         return match ($this) {

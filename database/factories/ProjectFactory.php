@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Team\Models\Team;
 use App\Project\Models\Project;
+use App\Team\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

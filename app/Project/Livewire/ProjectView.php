@@ -11,12 +11,12 @@ class ProjectView extends Component
 {
     #[Locked]
     public string $projectId;
-    
+
     public function mount(Project $project): void
     {
         $this->projectId = $project->id;
     }
-    
+
     #[Computed()]
     public function project(): Project
     {

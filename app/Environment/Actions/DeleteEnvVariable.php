@@ -9,8 +9,7 @@ class DeleteEnvVariable
     public static function handle(
         Environment $env,
         string $key
-    ): void
-    {
+    ): void {
         $env->variables()->where('key', $key)->delete();
     }
 }

@@ -3,21 +3,18 @@
 namespace App\Auth;
 
 use App\Auth\Actions\Logout;
+use App\Auth\Http\Controllers\VerifyEmailController;
+use App\Auth\Livewire\ConfirmPassword;
 use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\Login;
 use App\Auth\Livewire\ResetPassword;
 use App\Auth\Livewire\VerifyEmail;
-use App\Auth\Livewire\ConfirmPassword;
-use App\Auth\Http\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 class AuthRoutes
 {
-    public static function api(): void
-    {
-        
-    }
-    
+    public static function api(): void {}
+
     public static function web(): void
     {
         Route::middleware('guest')->group(function () {
@@ -25,7 +22,7 @@ class AuthRoutes
             Route::get('forgot-password', ForgotPassword::class)->name('password.request');
             Route::get('reset-password/{token}', ResetPassword::class)->name('password.reset');
         });
-        
+
         Route::middleware('auth')->group(function () {
             Route::get('verify-email', VerifyEmail::class)
                 ->name('verification.notice');

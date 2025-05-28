@@ -10,12 +10,12 @@ class CreateEnv
 {
     public function handle(string $name, EnvironmentType $type, Project $project): Environment
     {
-        $env = new Environment();
+        $env = new Environment;
         $env->name = $name;
         $env->type = $type;
         $env->project()->associate($project);
         $env->save();
-        
+
         return $env;
     }
 }

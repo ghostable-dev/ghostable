@@ -10,7 +10,7 @@ class AcceptInvite
     public function handle(User $user, TeamInvite $invite): void
     {
         $user->assignToTeam(team: $invite->team, role: $invite->role);
-        
+
         $invite->markAsAccepted();
     }
 }

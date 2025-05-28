@@ -34,7 +34,7 @@ class ConfirmPassword extends Component
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
-    
+
     public function render()
     {
         return view('auth.confirm-password');

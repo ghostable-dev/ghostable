@@ -16,14 +16,13 @@ use Illuminate\Support\ServiceProvider;
 
 class TeamServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {}
+    public function register(): void {}
 
     public function boot(): void
     {
         Gate::policy(Team::class, TeamPolicy::class);
         Gate::policy(TeamInvite::class, TeamInvitePolicy::class);
-        
+
         Event::listen(InviteCreated::class, SendTeamInvite::class);
         Event::listen(InviteSent::class, UpdateInviteSentTimestamp::class);
     }

@@ -19,15 +19,15 @@ enum EnvironmentType: string
     public static function selectOptions(): array
     {
         return collect(self::cases())
-            ->mapWithKeys(fn(self $type) => [$type->value => $type->label()])
+            ->mapWithKeys(fn (self $type) => [$type->value => $type->label()])
             ->toArray();
     }
 
     public function label(): string
     {
         return match ($this) {
-            self::PRODUCTION   => 'Production',
-            self::STAGING   => 'Staging',
+            self::PRODUCTION => 'Production',
+            self::STAGING => 'Staging',
             self::DEVELOPMENT => 'Development',
             self::TESTING => 'Testing',
             self::LOCAL => 'Local',

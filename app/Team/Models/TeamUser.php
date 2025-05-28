@@ -9,21 +9,21 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class TeamUser extends Pivot
 {
     use HasTimestamps;
-    
+
     protected $fillable = [
         'team_id',
         'user_id',
         'role',
-        'permissions'
+        'permissions',
     ];
-    
+
     protected $casts = [
-        //'permissions' => 'json',
-        'role' => RoleCast::class
+        // 'permissions' => 'json',
+        'role' => RoleCast::class,
     ];
-    
+
     protected $attributes = [
         'permissions' => [],
-        'role' => null
+        'role' => null,
     ];
 }

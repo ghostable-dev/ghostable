@@ -2,5 +2,4 @@
 
 namespace App\Team\Events;
 
-class InviteCreated extends InviteEvent
-{}
+class InviteCreated extends InviteEvent {}

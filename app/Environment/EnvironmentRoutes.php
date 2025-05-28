@@ -18,21 +18,21 @@ class EnvironmentRoutes
             Route::prefix('projects/{project}/environments/{name}')
                 ->group(function () {
 
-                Route::get('/', [
-                    EnvironmentController::class, 'show',
-                ]);
+                    Route::get('/', [
+                        EnvironmentController::class, 'show',
+                    ]);
 
-                Route::post('/push', [
-                    EnvironmentController::class, 'push'
-                ]);
+                    Route::post('/push', [
+                        EnvironmentController::class, 'push',
+                    ]);
 
-                Route::get('/pull', [
-                    EnvironmentController::class, 'pull'
-                ]);
-            });
+                    Route::get('/pull', [
+                        EnvironmentController::class, 'pull',
+                    ]);
+                });
         });
     }
-    
+
     public static function web(): void
     {
         Route::get('environments/{environment}', EnvironmentView::class)

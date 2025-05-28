@@ -9,16 +9,15 @@ use Illuminate\View\Component;
 
 class RoleSelect extends Component
 {
-    public function __construct()
-    {}
-    
+    public function __construct() {}
+
     public function roles(): array
     {
         return collect(ACLManager::getRoles())
             ->reject(fn ($role) => $role->key === 'custom')
             ->toArray();
     }
-    
+
     public function render(): View|Closure|string
     {
         return <<<'blade'

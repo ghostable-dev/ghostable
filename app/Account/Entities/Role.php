@@ -10,11 +10,11 @@ class Role implements JsonSerializable
     public string $description = '';
 
     /**
-     * @param Permission[] $permissions
+     * @param  Permission[]  $permissions
      */
     public function __construct(
-        public string $key, 
-        public string $name, 
+        public string $key,
+        public string $name,
         public array $permissions
     ) {}
 
@@ -24,7 +24,7 @@ class Role implements JsonSerializable
 
         return $this;
     }
-    
+
     public function isCustom(): bool
     {
         return $this->key === ACLServiceProvider::ROLE_CUSTOM;
@@ -37,7 +37,7 @@ class Role implements JsonSerializable
             'key' => $this->key,
             'name' => __($this->name),
             'description' => __($this->description),
-            'permissions' => collect($this->permissions)->map(fn($p) => $p->value)->all(),
+            'permissions' => collect($this->permissions)->map(fn ($p) => $p->value)->all(),
         ];
     }
 }

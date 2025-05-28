@@ -5,7 +5,6 @@ namespace App\Account\Console\Commands;
 use App\Account\Actions\RegisterUser;
 use App\Account\Entities\Role;
 use App\Account\Managers\ACLManager;
-use App\Team\Models\Team;
 use App\Account\Models\User;
 use App\Account\Providers\ACLServiceProvider;
 use App\Environment\Actions\CreateEnv;
@@ -15,6 +14,7 @@ use App\Environment\Models\EnvironmentVariable;
 use App\Project\Models\Project;
 use App\Team\Actions\CreateTeam;
 use App\Team\Actions\CreateTeamInvite;
+use App\Team\Models\Team;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
@@ -37,7 +37,7 @@ class AppSetup extends Command
         $this->resetDatabase();
 
         $this->seedCurricula();
-        
+
         $this->seedHuntress();
     }
 
@@ -46,7 +46,7 @@ class AppSetup extends Command
         $this->info('🧹 Resetting database...');
         $this->call('migrate:fresh', ['--force' => true]);
         $this->call('db:seed');
-        
+
         $this->info('Cleaing cache...');
         $this->call('cache:clear');
     }
@@ -71,10 +71,10 @@ class AppSetup extends Command
         $this->createEnvironment('Staging', EnvironmentType::STAGING, $phishing);
         $this->createEnvironment('Joe Local', EnvironmentType::LOCAL, $phishing);
         $this->createVariables($phishingProduction);
-        
+
         $this->createInvite(team: $curricula, sender: $joe, email: 'nick@curricula.com');
     }
-    
+
     protected function seedHuntress(): void
     {
         $joe = $this->createUser(name: 'Joe', email: 'joe@huntress.com');
@@ -95,7 +95,7 @@ class AppSetup extends Command
         $this->createEnvironment('Staging', EnvironmentType::STAGING, $phishing);
         $this->createEnvironment('JR Local', EnvironmentType::LOCAL, $phishing);
         $this->createVariables($phishingProduction);
-        
+
         $this->createInvite(team: $huntress, sender: $joe, email: 'joe@curricula.com');
     }
 
@@ -106,10 +106,10 @@ class AppSetup extends Command
             'email' => $email,
             'password' => 'password',
         ]);
-        
+
         $user->markEmailAsVerified();
         $user->save();
-        
+
         return $user;
     }
 
@@ -118,7 +118,7 @@ class AppSetup extends Command
         User $owner,
         array $members = []
     ): Team {
-        
+
         $team = app(CreateTeam::class)->handle(
             name: $name,
             owner: $owner
@@ -130,13 +130,13 @@ class AppSetup extends Command
 
         return $team;
     }
-    
+
     protected function createInvite(Team $team, User $sender, string $email, ?Role $role = null): void
     {
         $role = $role ?? ACLManager::getRole(ACLServiceProvider::ROLE_DEV_READ_WRITE);
-        
+
         CreateTeamInvite::handle(
-            team: $team, 
+            team: $team,
             user: $sender,
             email: $email,
             role: $role
@@ -153,13 +153,12 @@ class AppSetup extends Command
     }
 
     protected function createEnvironment(
-        string $name, 
+        string $name,
         EnvironmentType $type,
         Project $project
-    ): Environment
-    {
+    ): Environment {
         return app(CreateEnv::class)->handle(
-            name: $name, 
+            name: $name,
             type: $type,
             project: $project
         );

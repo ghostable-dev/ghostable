@@ -17,7 +17,7 @@ class AccountServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('role-select', RoleSelect::class);
-        
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 AppSetup::class,

@@ -18,13 +18,13 @@ class EnvironmentVariable extends Model
     protected $fillable = [
         'key',
         'value',
-        'is_commented'
+        'is_commented',
     ];
 
     protected $casts = [
         'value' => 'encrypted',
     ];
-    
+
     protected static function booted(): void
     {
         static::saving(function (EnvironmentVariable $variable) {

@@ -9,10 +9,9 @@ use Illuminate\Notifications\Notification;
 class TeamInviteNotification extends Notification
 {
     protected bool $unsubscribable = false;
-    
-    public function __construct(protected TeamInvite $invite)
-    {}
-    
+
+    public function __construct(protected TeamInvite $invite) {}
+
     public function via(object $notifiable): array
     {
         return ['mail'];

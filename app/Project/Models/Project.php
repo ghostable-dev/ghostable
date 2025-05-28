@@ -2,8 +2,8 @@
 
 namespace App\Project\Models;
 
-use App\Team\Models\Team;
 use App\Environment\Models\Environment;
+use App\Team\Models\Team;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,7 +37,7 @@ class Project extends Model
     {
         return $this->hasMany(Environment::class);
     }
-    
+
     public function environmentOrFail(string $name): Environment
     {
         return $this->environments()

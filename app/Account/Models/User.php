@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
-use Laravel\Sanctum\HasApiTokens;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -57,9 +57,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            //'two_factor_confirmed_at' => 'datetime',
-            //'two_factor_secret' => 'encrypted',
-            //'two_factor_recovery_codes' => 'encrypted:array',
+            // 'two_factor_confirmed_at' => 'datetime',
+            // 'two_factor_secret' => 'encrypted',
+            // 'two_factor_recovery_codes' => 'encrypted:array',
         ];
     }
 
@@ -67,10 +67,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return UserFactory::new();
     }
-    
+
     public function isVerified(): bool
     {
-        return !is_null($this->email_verified_at);
+        return ! is_null($this->email_verified_at);
     }
 
     /**

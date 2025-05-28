@@ -11,12 +11,11 @@ class CreateEnvVariable
         string $key,
         string $value,
         bool $is_commented = false
-    ): void
-    {
+    ): void {
         $env->variables()->create([
             'key' => $key,
             'value' => $value,
-            'is_commented' => $is_commented
+            'is_commented' => $is_commented,
         ]);
     }
 }

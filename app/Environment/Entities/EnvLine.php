@@ -15,12 +15,12 @@ class EnvLine extends Data
         public string $raw = '',
         public ?string $error = null,
     ) {}
-    
+
     public function isValid(): bool
     {
         return $this->type === EnvLineType::ENV && $this->key !== null;
     }
-    
+
     public function toArray(): array
     {
         return [

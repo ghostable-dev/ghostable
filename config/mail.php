@@ -36,7 +36,7 @@ return [
     */
 
     'mailers' => [
-        
+
         'mailgun' => [
             'transport' => 'mailgun',
             // 'client' => [

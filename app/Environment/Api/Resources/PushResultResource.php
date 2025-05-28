@@ -2,7 +2,6 @@
 
 namespace App\Environment\Api\Resources;
 
-use App\Environment\Enums\PushResultStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

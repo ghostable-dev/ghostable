@@ -2,5 +2,4 @@
 
 namespace App\Team\Events;
 
-class InviteSent extends InviteEvent
-{}
+class InviteSent extends InviteEvent {}

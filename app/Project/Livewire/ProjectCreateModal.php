@@ -10,20 +10,20 @@ use Livewire\Component;
 class ProjectCreateModal extends Component
 {
     public string $name = '';
-    
+
     public function create()
     {
         app(CreateProject::class)->handle(
             name: $this->name,
             team: Auth::user()->currentTeam()
         );
-        
+
         $this->reset('name');
-        
+
         Flux::modal('create-project')->close();
         Flux::toast('New project has been created.');
     }
-    
+
     public function render()
     {
         return <<<'BLADE'

@@ -11,12 +11,12 @@ class TeamInviteBuilder extends Builder
     {
         return $this->withStatus(TeamInviteStatus::ACCEPTED);
     }
-    
+
     public function expired(): Builder
     {
         return $this->withStatus(TeamInviteStatus::EXPIRED);
     }
-    
+
     public function pending(): Builder
     {
         return $this->withStatus(TeamInviteStatus::PENDING);

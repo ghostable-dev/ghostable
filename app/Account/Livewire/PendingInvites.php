@@ -15,23 +15,23 @@ class PendingInvites extends Component
     #[Computed()]
     public function pendingInvites(): Collection
     {
-        return TeamInvite::where('email', Auth::user()->email)->pending()->get();  
+        return TeamInvite::where('email', Auth::user()->email)->pending()->get();
     }
-    
+
     public function accept(TeamInvite $invite): void
     {
         Auth::user()->can('update', $invite);
-        
+
         app(AcceptInvite::class)->handle(Auth::user(), $invite);
     }
-    
+
     public function decline(TeamInvite $invite): void
     {
         Auth::user()->can('delete', $invite);
-        
+
         app(DeclineInvite::class)->handle($invite);
     }
-    
+
     public function render()
     {
         return view('account.pending-invites');

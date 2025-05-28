@@ -2,9 +2,9 @@
 
 namespace App\Environment\Services;
 
-use Dotenv\Parser\Parser;
 use App\Environment\Entities\EnvLine;
 use App\Environment\Enums\EnvLineType;
+use Dotenv\Parser\Parser;
 
 class EnvParser
 {
@@ -15,7 +15,7 @@ class EnvParser
 
     public function __construct()
     {
-        $this->parser = new Parser();
+        $this->parser = new Parser;
     }
 
     /**
@@ -25,13 +25,13 @@ class EnvParser
      * parse environment variable entries. Commented-out variables and invalid lines
      * are preserved and wrapped as EnvLine objects with appropriate types.
      * Blank lines are skipped.
-     * 
+     *
      * @return array<int, EnvLine>
      */
     public function parse(array $lines): array
     {
         $results = [];
-        
+
         foreach ($lines as $line) {
             $result = $this->parseLine($line ?? '');
 
@@ -39,10 +39,10 @@ class EnvParser
                 $results[] = $result;
             }
         }
-        
+
         return $results;
     }
-    
+
     /**
      * Parse a single line from an .env file into a structured EnvLine object.
      *
@@ -88,7 +88,7 @@ class EnvParser
 
         return null; // fallback, in case parsing yields no entries
     }
-    
+
     /**
      * Determine if a line is a commented-out environment variable.
      *

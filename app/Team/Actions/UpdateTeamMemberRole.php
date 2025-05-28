@@ -12,14 +12,14 @@ class UpdateTeamMemberRole
     {
         // Ensure member is already part of the team
         if (! $member->teams->contains($team->id)) {
-            throw new \RuntimeException("User is not a member of this team.");
+            throw new \RuntimeException('User is not a member of this team.');
         }
 
         // Prepare pivot update attributes
         $attributes = [
             'role' => $role->key,
-            'permissions' => $role->isCustom() 
-                ? $role->permissions 
+            'permissions' => $role->isCustom()
+                ? $role->permissions
                 : null,
         ];
 

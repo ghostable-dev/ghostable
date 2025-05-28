@@ -16,8 +16,8 @@ enum Permission: string
     public function label(): string
     {
         return match ($this) {
-            self::EnvPush   => 'Push environment files',
-            self::EnvPull   => 'Pull environment files',
+            self::EnvPush => 'Push environment files',
+            self::EnvPull => 'Pull environment files',
             self::EnvCreate => 'Create new environments',
             self::EnvUpdate => 'Update environment settings',
             self::EnvDelete => 'Delete environments',

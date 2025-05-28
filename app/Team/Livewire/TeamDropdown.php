@@ -17,13 +17,13 @@ class TeamDropdown extends Component
     {
         return Auth::user()->currentTeam();
     }
-    
+
     #[Computed()]
     public function teams(): Collection
     {
         return Auth::user()->teams;
     }
-    
+
     #[Computed()]
     public function switchableTeams(): Collection
     {
@@ -32,16 +32,16 @@ class TeamDropdown extends Component
             ->where('teams.id', '!=', $this->currentTeam()->id)
             ->get();
     }
-    
+
     public function switchToTeam(Team $team): void
     {
         SwitchToTeam::handle($team);
-        
+
         Flux::toast("Switched to the '{$team->name}' team.");
-        
+
         redirect()->route('dashboard');
     }
-    
+
     public function render()
     {
         return <<<'BLADE'

@@ -4,7 +4,6 @@ namespace App\Livewire\Settings;
 
 use App\Account\Models\User;
 use App\Auth\Concerns\ConfirmsPasswords;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
@@ -16,23 +15,23 @@ use Livewire\Component;
 class TwoFactorAuthentication extends Component
 {
     use ConfirmsPasswords;
-    
+
     public bool $showingQrCode = false;
+
     public bool $showingConfirmation = false;
+
     public bool $showingRecoveryCodes = false;
+
     public string $code = '';
 
-    public function mount(): void
-    {
-        
-    }
-    
+    public function mount(): void {}
+
     #[Computed()]
     public function enabled(): bool
     {
         return ! empty($this->user->two_factor_secret);
     }
-    
+
     #[Computed()]
     public function user(): User
     {
@@ -41,10 +40,9 @@ class TwoFactorAuthentication extends Component
 
     public function enableTwoFactorAuthentication(
         EnableTwoFactorAuthentication $enable
-    ): void
-    {
+    ): void {
         $enable(Auth::user());
-        
+
         $this->showingQrCode = true;
     }
 
@@ -74,7 +72,6 @@ class TwoFactorAuthentication extends Component
     {
         $disable(Auth::user());
 
-        
         $this->showingRecoveryCodes = false;
     }
 

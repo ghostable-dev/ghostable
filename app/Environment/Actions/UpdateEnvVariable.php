@@ -11,11 +11,10 @@ class UpdateEnvVariable
         string $key,
         string $value,
         bool $is_commented = false
-    ): void
-    {
+    ): void {
         $env->variables()->where('key', $key)->update([
             'value' => $value,
-            'is_commented' => $is_commented
+            'is_commented' => $is_commented,
         ]);
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 abstract class BaseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
-    
+
     protected bool $unsubscribable = false;
 
     public function via(object $notifiable): array
@@ -29,7 +29,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ? $this->generateUnsubscribeUrl($notifiable)
             : null;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->markdown('mail::message', [
                 'notifiable' => $notifiable,
                 'unsubscribeUrl' => $unsubscribeUrl,

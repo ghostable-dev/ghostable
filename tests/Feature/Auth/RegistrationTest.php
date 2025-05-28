@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Account\Livewire\Register;
 use Livewire\Livewire;
 

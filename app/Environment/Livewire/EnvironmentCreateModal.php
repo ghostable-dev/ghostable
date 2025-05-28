@@ -13,8 +13,9 @@ use Livewire\Component;
 class EnvironmentCreateModal extends Component
 {
     public string $name = '';
+
     public EnvironmentType $type;
-    
+
     #[Locked]
     public string $projectId;
 
@@ -23,13 +24,13 @@ class EnvironmentCreateModal extends Component
         $this->projectId = $project->id;
         $this->type = EnvironmentType::PRODUCTION;
     }
-    
+
     #[Computed()]
     public function typeOptions(): array
     {
         return EnvironmentType::selectOptions();
     }
-    
+
     public function create()
     {
         app(CreateEnv::class)->handle(
@@ -39,17 +40,17 @@ class EnvironmentCreateModal extends Component
         );
 
         $this->reset('type', 'name');
-        
+
         Flux::modal('create-env')->close();
         Flux::toast('New environment has been created.');
     }
-    
+
     #[Computed()]
     public function project(): Project
     {
         return Project::findOrFail($this->projectId);
     }
-    
+
     public function render()
     {
         return <<<'BLADE'

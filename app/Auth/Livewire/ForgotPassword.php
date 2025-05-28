@@ -24,7 +24,7 @@ class ForgotPassword extends Component
 
         session()->flash('status', __('A reset link will be sent if the account exists.'));
     }
-    
+
     public function render()
     {
         return view('auth.forgot-password');

@@ -13,6 +13,7 @@ class RenderEnvFile
             ->get(['key', 'value', 'is_commented'])
             ->map(function ($var) {
                 $line = "{$var->key}={$var->value}";
+
                 return $var->is_commented ? "#{$line}" : $line;
             })->implode(PHP_EOL);
     }

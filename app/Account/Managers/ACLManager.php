@@ -11,14 +11,14 @@ class ACLManager
      * @var Role[]
      */
     protected static $roles = [];
-    
+
     /**
      * @var Permission[]
      */
     protected static $permissions = [];
-    
+
     /**
-     * @param Permission[] $permissions
+     * @param  Permission[]  $permissions
      */
     public static function defineRole(string $key, string $name, array $permissions): Role
     {
@@ -28,17 +28,17 @@ class ACLManager
             static::$roles[$key] = $role;
         });
     }
-    
+
     /**
-     * @param Permission[] $permissions
+     * @param  Permission[]  $permissions
      */
     protected static function updatePermissions(array $permissions): void
     {
         $merged = array_merge(static::$permissions, $permissions);
-        
+
         static::$permissions = collect($merged)->unique()->sort()->values()->all();
     }
-    
+
     /**
      * @return Permission[]
      */
@@ -46,7 +46,7 @@ class ACLManager
     {
         return static::$roles;
     }
-    
+
     public static function getRole(?string $key): ?Role
     {
         return static::$roles[$key] ?? null;

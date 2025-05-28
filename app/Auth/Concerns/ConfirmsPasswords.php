@@ -21,6 +21,7 @@ trait ConfirmsPasswords
 
         if ($this->passwordIsConfirmed()) {
             $this->dispatch('password-confirmed', id: $confirmableId);
+
             return;
         }
 
@@ -30,7 +31,7 @@ trait ConfirmsPasswords
 
         $this->dispatch('confirming-password');
     }
-    
+
     public function stopConfirmingPassword(): void
     {
         $this->confirmingPassword = false;
@@ -57,25 +58,23 @@ trait ConfirmsPasswords
 
     protected function ensurePasswordIsConfirmed(
         ?int $maximumSecondsSinceConfirmation = null
-    ): void
-    {
-        $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation 
+    ): void {
+        $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation
             ?: config('auth.password_timeout', 900);
 
-        $this->passwordIsConfirmed($maximumSecondsSinceConfirmation) 
-            ? null 
+        $this->passwordIsConfirmed($maximumSecondsSinceConfirmation)
+            ? null
             : abort(403);
     }
 
     protected function passwordIsConfirmed(
         ?int $maximumSecondsSinceConfirmation = null
-    ): bool
-    {
-        $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation 
+    ): bool {
+        $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation
             ?: config('auth.password_timeout', 900);
-        
+
         $confirmedAt = (time() - session('auth.password_confirmed_at', 0));
-        
+
         return $confirmedAt < $maximumSecondsSinceConfirmation;
     }
 }

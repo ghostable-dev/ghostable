@@ -10,20 +10,20 @@ use Livewire\Component;
 class TeamCreateModal extends Component
 {
     public string $name = '';
-    
+
     public function create()
     {
         CreateTeam::handle(
             name: $this->name,
             owner: Auth::user()
         );
-        
+
         $this->name = '';
-        
+
         Flux::modal('create-team')->close();
         Flux::toast('New team has been created.');
     }
-    
+
     public function render()
     {
         return <<<'BLADE'

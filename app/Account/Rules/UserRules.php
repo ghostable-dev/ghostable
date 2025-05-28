@@ -14,41 +14,41 @@ class UserRules
             'name' => self::nameRules(),
             'email' => array_merge(self::emailRules(), self::createEmailRules()),
             'password' => self::confirmedPasswordRules(),
-            'terms' => ['accepted', 'required']
+            'terms' => ['accepted', 'required'],
         ];
     }
-    
+
     public static function nameRules(): array
     {
         return ['required', 'string', 'max:255'];
     }
-    
+
     public static function emailRules(): array
     {
         return ['required', 'string', 'email', 'max:255'];
     }
-    
+
     public static function confirmedPasswordRules(): array
     {
         return array_merge(self::passwordRules(), [
-            'confirmed'
+            'confirmed',
         ]);
     }
-    
+
     public static function passwordRules(): array
     {
         return [
-            'required', 
+            'required',
             'string',
             Password::default(12)->letters()->numbers()->symbols(),
         ];
     }
-    
+
     public static function createEmailRules(): array
     {
         return [
             Rule::unique('users')
-                ->where(fn ($query) => $query->whereNull('deleted_at'))
+                ->where(fn ($query) => $query->whereNull('deleted_at')),
         ];
     }
 
@@ -57,7 +57,7 @@ class UserRules
         return array_merge(self::emailRules(), [
             Rule::unique('users')
                 ->where(fn ($query) => $query->whereNull('deleted_at'))
-                ->ignore($user->id)
+                ->ignore($user->id),
         ]);
     }
 }
