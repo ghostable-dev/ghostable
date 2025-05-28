@@ -11,14 +11,16 @@
     "require": {
         "php": "^8.2",
         "joerucci/laravel-domain-tools": "^1.0",
+        "laravel/fortify": "^1.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
-        "laravel/fortify": "^1.0",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/flux-pro": "^2.1",
         "livewire/volt": "^1.7.0",
         "spatie/laravel-data": "^4.15",
+        "symfony/http-client": "^7.2",
+        "symfony/mailgun-mailer": "^7.2",
         "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
