@@ -4,26 +4,40 @@ namespace App\Account\Enums;
 
 enum Permission: string
 {
-    case EnvPush = 'env:push';
+    // Team & Billing
+    case BillingManage = 'billing:manage';
+    case MemberManage = 'member:manage';
+    
+    // Projects
+    case ProjectCreate = 'project:create';
+    case ProjectDelete = 'project:delete';
+    case ProjectManage = 'project:manage';
+    
+    // Environments
     case EnvPull = 'env:pull';
-    case EnvCreate = 'env:create';
+    case EnvPush = 'env:push';
     case EnvUpdate = 'env:update';
     case EnvDelete = 'env:delete';
-    case BillingManage = 'billing:manage';
-    case MemberInvite = 'member:invite';
-    case MemberRemove = 'member:remove';
-
+    case EnvCreate = 'env:create';
+    
     public function label(): string
     {
         return match ($this) {
-            self::EnvPush => 'Push environment files',
-            self::EnvPull => 'Pull environment files',
+            // Environments
+            self::EnvPull => 'View environment variables',
+            self::EnvPush => 'Push full environment files',
+            self::EnvUpdate => 'Edit environment variables',
+            self::EnvDelete => 'Delete environment variables',
             self::EnvCreate => 'Create new environments',
-            self::EnvUpdate => 'Update environment settings',
-            self::EnvDelete => 'Delete environments',
+            
+            // Projects
+            self::ProjectCreate => 'Create new projects',
+            self::ProjectDelete => 'Delete projects',
+            self::ProjectManage => 'Manage project settings',
+            
+            // Team & Billing
             self::BillingManage => 'Manage billing and subscriptions',
-            self::MemberInvite => 'Invite new team members',
-            self::MemberRemove => 'Remove team members',
+            self::MemberManage => 'Manage team members',
         };
     }
 }

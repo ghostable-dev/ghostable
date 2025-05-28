@@ -5,17 +5,6 @@
         :heading="__('Two-factor authentication')" 
         :subheading="__('Add additional security to your account using two factor authentication')">
         <div class="space-y-6">
-            
-            {{-- @if ($this->enabled)
-                @if ($showingConfirmation)
-                    {{ __('Finish enabling two factor authentication.') }}
-                @else
-                    {{ __('You have enabled two factor authentication.') }}
-                @endif
-            @else
-                {{ __('You have not enabled two factor authentication.') }}
-            @endif --}}
-            
             @if ($this->enabled)
                 @if ($showingQrCode)
                     <flux:text>

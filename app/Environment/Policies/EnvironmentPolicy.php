@@ -2,47 +2,41 @@
 
 namespace App\Environment\Policies;
 
+use App\Account\Enums\Permission;
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
 
 class EnvironmentPolicy
 {
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
     public function view(User $user, Environment $env): bool
     {
-        return $env->project->team->users()
-            ->where('user_id', $user->id)
-            ->exists();
-    }
-
-    public function create(User $user): bool
-    {
-        return false;
+        return $user->hasTeamPermission(
+            permission: Permission::EnvPull,
+            team: $env->project->team
+        );
     }
 
     public function update(User $user, Environment $env): bool
     {
-        return $env->project->team->users()
-            ->where('user_id', $user->id)
-            ->exists();
+        return $user->hasTeamPermission(
+            permission: Permission::EnvUpdate,
+            team: $env->project->team
+        );
     }
 
     public function delete(User $user, Environment $env): bool
     {
-        return false;
+        return $user->hasTeamPermission(
+            permission: Permission::EnvDelete,
+            team: $env->project->team
+        );
     }
 
-    public function restore(User $user, Environment $env): bool
+    public function push(User $user, Environment $env): bool
     {
-        return false;
-    }
-
-    public function forceDelete(User $user, Environment $env): bool
-    {
-        return false;
+        return $user->hasTeamPermission(
+            permission: Permission::EnvPush,
+            team: $env->project->team
+        );
     }
 }

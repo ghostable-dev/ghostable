@@ -8,6 +8,14 @@ use App\Team\Models\Team;
 
 class TeamPolicy
 {
+    public function createProjects(User $user, Team $team): bool
+    {
+        return $user->hasTeamPermission(
+            permission: Permission::ProjectCreate,
+            team: $team
+        );
+    }
+    
     public function manageBilling(User $user, Team $team): bool
     {
         return $user->hasTeamPermission(

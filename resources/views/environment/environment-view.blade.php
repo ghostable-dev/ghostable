@@ -21,6 +21,15 @@
         @endforeach
     </flux:avatar.group>
     
+    <div>
+        <flux:modal.trigger name="create-env-var">
+            <flux:button variant="primary" class="mb-4">
+                Create New Variable
+            </flux:button>
+        </flux:modal.trigger>
+        <livewire:environment.livewire.environment-var-create-modal :environment="$this->environment"/>
+    </div>
+    
     <flux:table>
         <flux:table.columns>
             <flux:table.column>Key</flux:table.column>
@@ -57,7 +66,22 @@
                             <flux:button size="sm" wire:click="save('{{ $var->id }}')">Save</flux:button>
                             <flux:button size="sm" variant="ghost" wire:click="cancelEdit">Cancel</flux:button>
                         @else
-                            <flux:button size="sm" wire:click="edit('{{ $var->id }}')">Edit</flux:button>
+                            <div class="flex gap-2">
+                                <flux:button 
+                                    size="sm" 
+                                    wire:click="edit('{{ $var->id }}')">
+                                    Edit
+                                </flux:button>
+                                <x-auth.confirms-password 
+                                    wire:then="delete('{{ $var->id }}')"
+                                    :loading="true"
+                                    wire:target="delete">
+                                    <flux:button size="sm" variant="danger">
+                                        Delete
+                                    </flux:button>
+                                </x-auth.confirms-password>
+                            </div>
+                            
                         @endif
                     </flux:table.cell>
                 </flux:table.row>
