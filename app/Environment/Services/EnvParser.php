@@ -80,7 +80,7 @@ class EnvParser
             return new EnvLine(
                 type: EnvLineType::ENV,
                 key: $entry->getName(),
-                value: $entry->getValue()->get()->getChars(),
+                value: $this->sanitizeParsedValue($entry->getValue()->get()->getChars()),
                 commented: $commented,
                 raw: $raw
             );
@@ -98,5 +98,21 @@ class EnvParser
     private function isCommentedOutVariable(string $line): bool
     {
         return str_starts_with($line, '#') && str_contains($line, '=');
+    }
+    
+    private function sanitizeParsedValue(string $value): string
+    {
+        // If quoted with " or ', strip quotes and unescape inner characters
+        if (
+            (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+            (str_starts_with($value, "'") && str_ends_with($value, "'"))
+        ) {
+            $value = substr($value, 1, -1);
+
+            // Unescape escaped quotes and backslashes
+            $value = str_replace(['\\"', "\\'", '\\\\'], ['"', "'", '\\'], $value);
+        }
+
+        return $value;
     }
 }
