@@ -1,7 +1,7 @@
 <?php
 
+use App\Account\Livewire\Profile;
 use App\Account\Models\User;
-use App\Livewire\Settings\Profile;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -46,12 +46,12 @@ test('email verification status is unchanged when email address is unchanged', f
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('user can delete their account', function () {
+test('user can soft delete their account', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = Livewire::test('settings.delete-user-form')
+    $response = Livewire::test('account.livewire.delete-user-form')
         ->set('password', 'password')
         ->call('deleteUser');
 
@@ -59,7 +59,11 @@ test('user can delete their account', function () {
         ->assertHasNoErrors()
         ->assertRedirect('/');
 
-    expect($user->fresh())->toBeNull();
+    // Check that the user is soft deleted
+    expect($user->fresh())->not->toBeNull();
+    expect($user->fresh()->deleted_at)->not->toBeNull();
+
+    // User should be logged out
     expect(auth()->check())->toBeFalse();
 });
 
@@ -68,7 +72,7 @@ test('correct password must be provided to delete account', function () {
 
     $this->actingAs($user);
 
-    $response = Livewire::test('settings.delete-user-form')
+    $response = Livewire::test('account.livewire.delete-user-form')
         ->set('password', 'wrong-password')
         ->call('deleteUser');
 

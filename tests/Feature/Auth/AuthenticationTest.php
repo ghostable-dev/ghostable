@@ -1,7 +1,7 @@
 <?php
 
 use App\Account\Models\User;
-use App\Livewire\Auth\Login;
+use App\Auth\Livewire\Login;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
