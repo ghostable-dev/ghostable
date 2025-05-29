@@ -55,4 +55,30 @@ enum CommonEnvKey: string
             self::cases()
         );
     }
+
+    public function suggestedValues(): array
+    {
+        return match ($this) {
+            self::APP_DEBUG => ['true', 'false'],
+            self::APP_ENV => ['local', 'production', 'staging'],
+            self::LOG_CHANNEL => ['stack', 'single', 'daily'],
+            self::LOG_LEVEL => ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
+            self::CACHE_DRIVER => ['file', 'redis', 'memcached'],
+            self::QUEUE_CONNECTION => ['sync', 'database', 'redis', 'sqs'],
+            self::SESSION_DRIVER => ['file', 'cookie', 'database', 'redis'],
+            self::MAIL_MAILER => ['smtp', 'sendmail', 'mailgun', 'ses'],
+            self::MAIL_ENCRYPTION => ['tls', 'ssl'],
+            self::DB_CONNECTION => ['mysql', 'pgsql', 'sqlite', 'sqlsrv'],
+            self::DB_PORT => ['3306', '5432', '1433'],
+            self::AWS_DEFAULT_REGION => ['us-east-1', 'us-west-2', 'eu-west-1'],
+            default => [],
+        };
+    }
+
+    public static function suggestedValuesFor(string $key): array
+    {
+        $enum = self::tryFrom($key);
+
+        return $enum?->suggestedValues() ?? [];
+    }
 }
