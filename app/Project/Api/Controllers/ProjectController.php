@@ -3,6 +3,7 @@
 namespace App\Project\Api\Controllers;
 
 use App\Core\Http\Controllers\Controller;
+use App\Environment\Enums\EnvironmentType;
 use App\Project\Api\Resources\ProjectResource;
 use App\Project\Models\Project;
 use App\Team\Models\Team;
@@ -40,9 +41,7 @@ class ProjectController extends Controller
         $project->save();
 
         $project->environments()->createMany([
-            ['name' => 'local'],
-            ['name' => 'staging'],
-            ['name' => 'production'],
+            ['name' => 'local', 'type' => EnvironmentType::LOCAL],
         ]);
 
         return new ProjectResource($project->load('environments'));
