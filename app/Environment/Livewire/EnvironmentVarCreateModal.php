@@ -68,6 +68,12 @@ class EnvironmentVarCreateModal extends Component
             ->all();
     }
 
+    #[Computed()]
+    public function valueSuggestions(): array
+    {
+        return CommonEnvKey::suggestedValuesFor($this->key);
+    }
+
     public function create()
     {
         $this->authorize('update', $this->environment);
@@ -108,11 +114,13 @@ class EnvironmentVarCreateModal extends Component
                             </flux:autocomplete.item>
                         @endforeach
                     </flux:autocomplete>
-                    <flux:input
-                        label="Value"
-                        wire:model="value"
-                        required
-                    />
+                    <flux:autocomplete wire:model="value" label="Value" required>
+                        @foreach($this->valueSuggestions as $suggestion)
+                            <flux:autocomplete.item>
+                                {{ $suggestion }}
+                            </flux:autocomplete.item>
+                        @endforeach
+                    </flux:autocomplete>
                     <div class="flex gap-2">
                         <flux:spacer />
                         <flux:modal.close>
