@@ -12,9 +12,22 @@ class RenderEnvFile
             ->orderBy('key') // simple default ordering for now
             ->get(['key', 'value', 'is_commented'])
             ->map(function ($var) {
-                $line = "{$var->key}={$var->value}";
+                $value = self::escapeValue($var->value);
+                $line = "{$var->key}={$value}";
 
                 return $var->is_commented ? "#{$line}" : $line;
             })->implode(PHP_EOL);
+    }
+    
+    protected static function escapeValue(string $value): string
+    {
+        // If the value contains special characters, wrap it in double quotes
+        if (preg_match('/\s|["\'$`\\\\]/', $value)) {
+            // Escape inner quotes and backslashes
+            $escaped = addcslashes($value, '"\\');
+            return "\"{$escaped}\"";
+        }
+
+        return $value;
     }
 }
