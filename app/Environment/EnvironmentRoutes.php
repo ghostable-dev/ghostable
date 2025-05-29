@@ -21,6 +21,10 @@ class EnvironmentRoutes
                     Route::get('/', [
                         EnvironmentController::class, 'show',
                     ]);
+                    
+                    Route::post('/', [
+                        EnvironmentController::class, 'store',
+                    ]);
 
                     Route::post('/push', [
                         EnvironmentController::class, 'push',
