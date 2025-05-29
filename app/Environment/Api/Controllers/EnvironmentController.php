@@ -76,7 +76,7 @@ class EnvironmentController extends Controller
         return response($content, 200, ['Content-Type' => 'text/plain']);
     }
     
-    public function store(Project $project): JsonResponse
+    public function store(Project $project): JsonResource
     {
         request()->user()->can('createEnvironments', $project);
         
@@ -85,12 +85,12 @@ class EnvironmentController extends Controller
             'type' => ['required', new ValidEnvType]
         ]);
         
-        app(CreateEnv::class)->handle(
+        $env = app(CreateEnv::class)->handle(
             name: $data['name'],
             type: EnvironmentType::from($data['type']),
             project: $project
         );
         
-        return response()->json();
+        return new EnvironmentResource($env);
     }
 }
