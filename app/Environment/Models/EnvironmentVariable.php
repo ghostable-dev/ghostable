@@ -2,6 +2,7 @@
 
 namespace App\Environment\Models;
 
+use App\Environment\Casts\EncryptedString;
 use Database\Factories\EnvironmentVariableFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,17 +23,8 @@ class EnvironmentVariable extends Model
     ];
 
     protected $casts = [
-        'value' => 'encrypted',
+        'value' => EncryptedString::class,
     ];
-
-    protected static function booted(): void
-    {
-        static::saving(function (EnvironmentVariable $variable) {
-            if (! is_null($variable->value)) {
-                $variable->value = (string) $variable->value;
-            }
-        });
-    }
 
     public static function newFactory(): EnvironmentVariableFactory
     {

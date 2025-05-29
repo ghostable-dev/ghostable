@@ -3,11 +3,15 @@
 namespace App\Environment\Api\Controllers;
 
 use App\Core\Http\Controllers\Controller;
+use App\Environment\Actions\CreateEnv;
 use App\Environment\Actions\PushEnvVars;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Api\Resources\PushResultResource;
+use App\Environment\Enums\EnvironmentType;
+use App\Environment\Rules\ValidEnvType;
 use App\Project\Models\Project;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 
@@ -44,7 +48,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('update', $env);
+        request()->user()->can('push', $env);
 
         $result = PushEnvVars::handle(
             env: $env,
@@ -70,5 +74,23 @@ class EnvironmentController extends Controller
         $content = RenderEnvFile::handle(env: $env);
 
         return response($content, 200, ['Content-Type' => 'text/plain']);
+    }
+    
+    public function store(Project $project): JsonResource
+    {
+        request()->user()->can('createEnvironments', $project);
+        
+        $data = request()->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', new ValidEnvType]
+        ]);
+        
+        $env = app(CreateEnv::class)->handle(
+            name: $data['name'],
+            type: EnvironmentType::from($data['type']),
+            project: $project
+        );
+        
+        return new EnvironmentResource($env);
     }
 }
