@@ -26,15 +26,6 @@ class EnvironmentVariable extends Model
         'value' => EncryptedString::class,
     ];
 
-    protected static function booted(): void
-    {
-        static::saving(function (EnvironmentVariable $variable) {
-            if (! is_null($variable->value)) {
-                $variable->value = (string) $variable->value;
-            }
-        });
-    }
-
     public static function newFactory(): EnvironmentVariableFactory
     {
         return EnvironmentVariableFactory::new();
