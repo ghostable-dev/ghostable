@@ -5,6 +5,7 @@ namespace App\Team;
 use App\Team\Api\Controllers\GetOwnedTeams;
 use App\Team\Api\Controllers\GetTeam;
 use App\Team\Api\Controllers\GetTeams;
+use App\Team\Api\Controllers\InviteTeamMember;
 use App\Team\Livewire\TeamGeneralSettings;
 use App\Team\Livewire\TeamMemberSettings;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,7 @@ class TeamRoutes
             Route::get('/teams', GetTeams::class);
             Route::get('/owned-teams', GetOwnedTeams::class);
             Route::get('/teams/{team}', GetTeam::class);
+            Route::post('/teams/{team}/invite', InviteTeamMember::class);
         });
     }
 
