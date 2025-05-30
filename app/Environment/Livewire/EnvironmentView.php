@@ -13,7 +13,7 @@ use Livewire\Component;
 class EnvironmentView extends Component
 {
     use ConfirmsPasswords;
-    
+
     #[Locked]
     public string $envId;
 
@@ -22,20 +22,20 @@ class EnvironmentView extends Component
     public $editing = null;
 
     public $editedValues = [];
-    
+
     public function mount(Environment $environment): void
     {
         $this->authorize('view', $environment);
-        
+
         $this->forcePasswordConfirmation();
-        
+
         $this->envId = $environment->id;
     }
 
     public function edit($id)
     {
         $this->authorize('update', $this->environment);
-        
+
         $variable = $this->environment->variables->firstWhere('id', $id);
         $this->editing = $id;
         $this->editedValues[$id] = $variable->value;
@@ -44,11 +44,11 @@ class EnvironmentView extends Component
     public function save($id)
     {
         $this->authorize('update', $this->environment);
-        
+
         $variable = $this->environment->variables->firstWhere('id', $id);
         $variable->update(['value' => $this->editedValues[$id]]);
         $this->editing = null;
-        
+
         $this->environment->refresh();
     }
 
@@ -56,7 +56,7 @@ class EnvironmentView extends Component
     {
         $this->editing = null;
     }
-    
+
     public function delete(string $id)
     {
         $this->authorize('update', $this->environment);
@@ -68,7 +68,7 @@ class EnvironmentView extends Component
         }
 
         $variable->delete();
-        
+
         $this->environment->refresh();
 
         Flux::toast("Variable '{$variable->key}' deleted.");
@@ -85,7 +85,7 @@ class EnvironmentView extends Component
         // Flip visibility for the given ID
         $this->showing[$id] = ! ($this->showing[$id] ?? false);
     }
-    
+
     #[On('env-variable-created')]
     public function refresh(): void
     {

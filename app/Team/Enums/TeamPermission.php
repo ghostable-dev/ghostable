@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Account\Enums;
+namespace App\Team\Enums;
 
-enum Permission: string
+enum TeamPermission: string
 {
-    // Team & Billing
+    // Teams
     case BillingManage = 'billing:manage';
     case MemberManage = 'member:manage';
-    
+
     // Projects
     case ProjectCreate = 'project:create';
     case ProjectDelete = 'project:delete';
     case ProjectManage = 'project:manage';
-    
-    // Environments
+
+    // Envs
     case EnvPull = 'env:pull';
     case EnvPush = 'env:push';
     case EnvUpdate = 'env:update';
     case EnvDelete = 'env:delete';
     case EnvCreate = 'env:create';
-    
+
     public function label(): string
     {
         return match ($this) {
@@ -29,12 +29,12 @@ enum Permission: string
             self::EnvUpdate => 'Edit environment variables',
             self::EnvDelete => 'Delete environment variables',
             self::EnvCreate => 'Create new environments',
-            
+
             // Projects
             self::ProjectCreate => 'Create new projects',
             self::ProjectDelete => 'Delete projects',
             self::ProjectManage => 'Manage project settings',
-            
+
             // Team & Billing
             self::BillingManage => 'Manage billing and subscriptions',
             self::MemberManage => 'Manage team members',

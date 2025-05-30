@@ -18,6 +18,7 @@ class EncryptedString implements CastsAttributes
             return Crypt::decryptString($value);
         } catch (\Throwable $e) {
             report($e); // Optional: log or throw depending on how strict you want to be
+
             return null;
         }
     }

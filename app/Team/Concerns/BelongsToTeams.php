@@ -2,11 +2,9 @@
 
 namespace App\Team\Concerns;
 
-use App\Account\Entities\Role;
-use App\Account\Enums\Permission;
-use App\Account\Managers\ACLManager;
-use App\Account\Providers\ACLServiceProvider;
 use App\Team\Actions\SwitchToTeam;
+use App\Team\Enums\TeamPermission;
+use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
 use App\Team\Models\TeamUser;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -50,7 +48,7 @@ trait BelongsToTeams
         return $this->hasMany(Team::class, 'owner_id');
     }
 
-    public function roleForTeam(Team $team): ?Role
+    public function roleForTeam(Team $team): ?TeamRole
     {
         $membership = $this->teams()
             ->where('team_id', $team->id)
@@ -75,7 +73,7 @@ trait BelongsToTeams
         }
     }
 
-    public function hasTeamPermission(Permission $permission, Team $team): bool
+    public function hasTeamPermission(TeamPermission $permission, Team $team): bool
     {
         $membership = $this->teams()
             ->where('team_id', $team->id)
@@ -86,82 +84,34 @@ trait BelongsToTeams
         }
 
         $role = $membership->pivot->role;
-        $permissions = $membership->pivot->permissions ?? [];
 
-        // 1. Admins always allowed
-        if ($role->key === ACLServiceProvider::ROLE_ADMIN) {
-            return true;
-        }
-
-        // 2. Custom role → check stored permissions
-        if ($role->key === ACLServiceProvider::ROLE_CUSTOM) {
-            return in_array($permission->value, $permissions);
-        }
-
-        // 3. Predefined role → check ACLManager-defined permissions
-        if (! $role) {
-            return false; // unknown role
-        }
-
-        return in_array($permission->value, $role->permissions);
+        return $role->hasPermission($permission);
     }
 
     public function isTeamAdmin(Team $team): bool
     {
         return $this->hasTeamRole(
-            role: ACLManager::getRole(ACLServiceProvider::ROLE_ADMIN),
+            role: TeamRole::ADMIN,
             team: $team
         );
     }
 
-    public function hasTeamRole(Role $role, Team $team): bool
+    public function hasTeamRole(TeamRole $role, Team $team): bool
     {
         return $this->teams()
             ->where('teams.id', $team->id)
-            ->wherePivot('role', $role->key)
+            ->wherePivot('role', $role->value)
             ->exists();
     }
 
-    public function assignAsAdmin(Team $team): void
-    {
-        $this->assignToTeam(
-            team: $team,
-            role: ACLManager::getRole(ACLServiceProvider::ROLE_ADMIN)
-        );
-    }
-
-    public function assignAsBillingManager(Team $team): void
-    {
-        $this->assignToTeam(
-            team: $team,
-            role: ACLManager::getRole(ACLServiceProvider::ROLE_BILLING_MANAGER)
-        );
-    }
-
-    public function assignAsReadDeveloper(Team $team): void
-    {
-        $this->assignToTeam(
-            team: $team,
-            role: ACLManager::getRole(ACLServiceProvider::ROLE_DEV_READ_ONLY)
-        );
-    }
-
-    public function assignAsReadWriteDeveloper(Team $team): void
-    {
-        $this->assignToTeam(
-            team: $team,
-            role: ACLManager::getRole(ACLServiceProvider::ROLE_DEV_READ_WRITE)
-        );
-    }
-
-    public function assignToTeam(Team $team, Role|string $role, array $permissions = []): void
+    public function assignToTeam(Team $team, TeamRole|string $role): void
     {
         if ($this->teams->contains($team)) {
             throw new LogicException('User is already a member of this team.');
         }
 
         if (is_string($role)) {
-            $resolved = ACLManager::getRole($role);
+            $resolved = TeamRole::from($role);
 
             if (! $resolved) {
                 throw new InvalidArgumentException("The role '{$role}' is not defined.");
@@ -171,10 +121,8 @@ trait BelongsToTeams
         }
 
         $this->teams()->attach($team, [
-            'role' => $role->key,
-            'permissions' => $role->isCustom()
-                ? array_map(fn ($p) => $p instanceof Permission ? $p->value : $p, $permissions)
-                : null,
+            'role' => $role->value,
+            'permissions' => null,
         ]);
     }
 }

@@ -11,7 +11,6 @@ use App\Environment\Api\Resources\PushResultResource;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\ValidEnvType;
 use App\Project\Models\Project;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 
@@ -75,22 +74,22 @@ class EnvironmentController extends Controller
 
         return response($content, 200, ['Content-Type' => 'text/plain']);
     }
-    
+
     public function store(Project $project): JsonResource
     {
         request()->user()->can('createEnvironments', $project);
-        
+
         $data = request()->validate([
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', new ValidEnvType]
+            'type' => ['required', new ValidEnvType],
         ]);
-        
+
         $env = app(CreateEnv::class)->handle(
             name: $data['name'],
             type: EnvironmentType::from($data['type']),
             project: $project
         );
-        
+
         return new EnvironmentResource($env);
     }
 }

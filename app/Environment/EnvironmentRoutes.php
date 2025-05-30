@@ -14,7 +14,7 @@ class EnvironmentRoutes
         Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('/environment-types', GetEnvironmentTypes::class);
-            
+
             Route::post('projects/{project}/environments', [
                 EnvironmentController::class, 'store',
             ]);
@@ -25,7 +25,7 @@ class EnvironmentRoutes
                     Route::get('/', [
                         EnvironmentController::class, 'show',
                     ]);
-                    
+
                     Route::post('/push', [
                         EnvironmentController::class, 'push',
                     ]);

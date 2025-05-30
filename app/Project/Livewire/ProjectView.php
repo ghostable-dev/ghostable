@@ -15,7 +15,7 @@ class ProjectView extends Component
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
-        
+
         $this->projectId = $project->id;
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Team\Models;
 
-use App\Account\Casts\RoleCast;
+use App\Team\Enums\TeamRole;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -19,7 +19,7 @@ class TeamUser extends Pivot
 
     protected $casts = [
         // 'permissions' => 'json',
-        'role' => RoleCast::class,
+        'role' => TeamRole::class,
     ];
 
     protected $attributes = [

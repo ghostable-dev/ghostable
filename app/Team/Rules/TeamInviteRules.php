@@ -7,7 +7,7 @@ use App\Team\Models\Team;
 
 class TeamInviteRules
 {
-    public static function rules(Team $team): array
+    public static function createRules(Team $team): array
     {
         return [
             'email' => array_merge(
@@ -15,6 +15,10 @@ class TeamInviteRules
                 [new UniqueTeamInvite($team)],
                 [new UniqueEmailForTeam($team)],
             ),
+            'role' => [
+                'required',
+                new ValidTeamRole,
+            ],
         ];
     }
 }

@@ -16,15 +16,16 @@ class EnvironmentVarCreateModal extends Component
     public string $envId;
 
     public string $key = '';
+
     public string $value = '';
 
     public function mount(Environment $environment): void
     {
         $this->authorize('update', $environment);
-        
+
         $this->envId = $environment->id;
     }
-    
+
     public function rules(): array
     {
         return EnvVariableRules::create($this->environment);
@@ -35,7 +36,7 @@ class EnvironmentVarCreateModal extends Component
     {
         return Environment::findOrFail($this->envId);
     }
-    
+
     #[Computed()]
     public function keySuggestions(): array
     {
@@ -77,7 +78,7 @@ class EnvironmentVarCreateModal extends Component
     public function create()
     {
         $this->authorize('update', $this->environment);
-        
+
         $this->validate();
 
         $this->environment->variables()->create([
@@ -89,10 +90,10 @@ class EnvironmentVarCreateModal extends Component
 
         Flux::modal('create-env-var')->close();
         Flux::toast('New environment variable created.');
-        
+
         $this->dispatch('env-variable-created');
     }
-    
+
     public function updatedKey($value)
     {
         $this->key = str($value)->slug('_')->upper();

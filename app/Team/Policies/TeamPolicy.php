@@ -2,8 +2,8 @@
 
 namespace App\Team\Policies;
 
-use App\Account\Enums\Permission;
 use App\Account\Models\User;
+use App\Team\Enums\TeamPermission;
 use App\Team\Models\Team;
 
 class TeamPolicy
@@ -11,23 +11,23 @@ class TeamPolicy
     public function createProjects(User $user, Team $team): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::ProjectCreate,
-            team: $team
-        );
-    }
-    
-    public function manageBilling(User $user, Team $team): bool
-    {
-        return $user->hasTeamPermission(
-            permission: Permission::BillingManage,
+            permission: TeamPermission::ProjectCreate,
             team: $team
         );
     }
 
-    public function removeMembers(User $user, Team $team): bool
+    public function manageBilling(User $user, Team $team): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::MemberRemove,
+            permission: TeamPermission::BillingManage,
+            team: $team
+        );
+    }
+
+    public function manageMembers(User $user, Team $team): bool
+    {
+        return $user->hasTeamPermission(
+            permission: TeamPermission::MemberManage,
             team: $team
         );
 

@@ -99,7 +99,7 @@ class EnvParser
     {
         return str_starts_with($line, '#') && str_contains($line, '=');
     }
-    
+
     private function sanitizeParsedValue(string $value): string
     {
         // If quoted with " or ', strip quotes and unescape inner characters

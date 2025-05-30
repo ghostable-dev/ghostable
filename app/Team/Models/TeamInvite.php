@@ -2,10 +2,10 @@
 
 namespace App\Team\Models;
 
-use App\Account\Casts\RoleCast;
 use App\Account\Concerns\BelongsToUser;
 use App\Team\Builders\TeamInviteBuilder;
 use App\Team\Enums\TeamInviteStatus;
+use App\Team\Enums\TeamRole;
 use App\Team\Events\InviteCreated;
 use App\Team\Events\InviteSent;
 use App\Team\Notifications\TeamInviteNotification;
@@ -34,7 +34,7 @@ class TeamInvite extends Model
     ];
 
     protected $casts = [
-        'role' => RoleCast::class,
+        'role' => TeamRole::class,
         'sent_at' => 'datetime',
         'status' => TeamInviteStatus::class,
     ];
