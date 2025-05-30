@@ -9,7 +9,7 @@
                     <x-app-logo-icon class="size-22 fill-current text-black dark:text-white" />
                 </span>
             </div>
-            <h1 class="text-5xl font-semibold tracking-tight text-balance text-black dark:text-white sm:text-7xl">
+            <h1 class="text-5xl font-semibold tracking-tight text-balance text-black dark:text-white sm:text-6xl">
                 Smart .env Syncing for Laravel Teams
             </h1>
             <p class="mt-8 text-lg font-medium text-pretty text-gray-400 sm:text-xl/8">Ghostable makes it easy to securely manage, share, and validate your Laravel environment files—across projects, teams, and pipelines.</p>
