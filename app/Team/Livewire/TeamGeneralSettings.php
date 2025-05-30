@@ -39,6 +39,6 @@ class TeamGeneralSettings extends Component
 
     public function render()
     {
-        return view('team.settings.general-settings');
+        return view('team.team-general-settings');
     }
 }

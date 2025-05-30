@@ -24,12 +24,12 @@ class AccountRoutes
                 Route::get('password', Password::class)->name('password');
                 Route::get('appearance', Appearance::class)->name('appearance');
                 Route::get('two-factor', TwoFactorAuthentication::class)->name('two-factor');
-        });
-            
+            });
+
         Route::middleware('guest')->group(function () {
             Route::get('register', Register::class)->name('register');
         });
-        
+
         Route::view('privacy', 'legal.privacy')->name('privacy');
         Route::view('terms', 'legal.terms')->name('terms');
 

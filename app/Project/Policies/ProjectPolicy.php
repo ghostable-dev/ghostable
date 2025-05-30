@@ -2,10 +2,9 @@
 
 namespace App\Project\Policies;
 
-use App\Account\Enums\Permission;
 use App\Account\Models\User;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
+use App\Team\Enums\TeamPermission;
 
 class ProjectPolicy
 {
@@ -17,7 +16,7 @@ class ProjectPolicy
     public function delete(User $user, Project $project): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::ProjectDelete,
+            permission: TeamPermission::ProjectDelete,
             team: $project->team
         );
     }
@@ -25,15 +24,15 @@ class ProjectPolicy
     public function manage(User $user, Project $project): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::ProjectManage,
+            permission: TeamPermission::ProjectManage,
             team: $project->team
         );
     }
-    
+
     public function createEnvironments(User $user, Project $project): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::EnvCreate,
+            permission: TeamPermission::EnvCreate,
             team: $project->team
         );
     }

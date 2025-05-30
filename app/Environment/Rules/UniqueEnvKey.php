@@ -8,9 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class UniqueEnvKey implements ValidationRule
 {
-    public function __construct(protected Environment $environment)
-    {
-    }
+    public function __construct(protected Environment $environment) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

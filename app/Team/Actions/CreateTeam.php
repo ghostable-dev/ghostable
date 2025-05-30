@@ -3,6 +3,7 @@
 namespace App\Team\Actions;
 
 use App\Account\Models\User;
+use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
 
 class CreateTeam
@@ -15,7 +16,7 @@ class CreateTeam
         $team->is_personal = $personal;
         $team->save();
 
-        $owner->assignAsAdmin($team);
+        $owner->assignToTeam(team: $team, role: TeamRole::ADMIN);
 
         return $team;
     }

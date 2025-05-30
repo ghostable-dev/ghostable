@@ -14,13 +14,13 @@ class TeamProjects extends Component
     {
         $this->authorize('view', $this->team);
     }
-    
+
     #[Computed()]
     public function projects(): LengthAwarePaginator
     {
         return $this->team->projects()->paginate();
     }
-    
+
     #[Computed(persist: true)]
     public function team(): Team
     {

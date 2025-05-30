@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Account\View\Components;
+namespace App\Team\View\Components;
 
-use App\Account\Managers\ACLManager;
+use App\Team\Enums\TeamRole;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class RoleSelect extends Component
+class TeamRoleSelect extends Component
 {
     public function __construct() {}
 
     public function roles(): array
     {
-        return collect(ACLManager::getRoles())
-            ->reject(fn ($role) => $role->key === 'custom')
-            ->toArray();
+        return TeamRole::cases();
     }
 
     public function render(): View|Closure|string
@@ -24,9 +22,9 @@ class RoleSelect extends Component
         <flux:radio.group {{ $attributes }} label="Role">
             @foreach($roles() as $role)
                 <flux:radio
-                    value="{{ $role->key }}"
-                    label="{{ $role->name }}"
-                    description="{{ $role->description }}"/>
+                    value="{{ $role->value }}"
+                    label="{{ $role->label() }}"
+                    description="{{ $role->description() }}"/>
             @endforeach
         </flux:radio.group>
         blade;

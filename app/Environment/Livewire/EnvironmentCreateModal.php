@@ -22,9 +22,9 @@ class EnvironmentCreateModal extends Component
     public function mount(Project $project): void
     {
         $this->authorize('createEnvironments', $project);
-        
+
         $this->projectId = $project->id;
-        
+
         $this->type = EnvironmentType::PRODUCTION;
     }
 
@@ -37,7 +37,7 @@ class EnvironmentCreateModal extends Component
     public function create()
     {
         $this->authorize('createEnvironments', $this->project);
-        
+
         app(CreateEnv::class)->handle(
             name: $this->name,
             type: $this->type,

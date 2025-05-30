@@ -2,16 +2,16 @@
 
 namespace App\Environment\Policies;
 
-use App\Account\Enums\Permission;
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
+use App\Team\Enums\TeamPermission;
 
 class EnvironmentPolicy
 {
     public function view(User $user, Environment $env): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::EnvPull,
+            permission: TeamPermission::EnvPull,
             team: $env->project->team
         );
     }
@@ -19,7 +19,7 @@ class EnvironmentPolicy
     public function update(User $user, Environment $env): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::EnvUpdate,
+            permission: TeamPermission::EnvUpdate,
             team: $env->project->team
         );
     }
@@ -27,7 +27,7 @@ class EnvironmentPolicy
     public function delete(User $user, Environment $env): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::EnvDelete,
+            permission: TeamPermission::EnvDelete,
             team: $env->project->team
         );
     }
@@ -35,7 +35,7 @@ class EnvironmentPolicy
     public function push(User $user, Environment $env): bool
     {
         return $user->hasTeamPermission(
-            permission: Permission::EnvPush,
+            permission: TeamPermission::EnvPush,
             team: $env->project->team
         );
     }

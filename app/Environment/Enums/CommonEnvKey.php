@@ -51,7 +51,7 @@ enum CommonEnvKey: string
     public static function values(): array
     {
         return array_map(
-            fn(self $key) => $key->value,
+            fn (self $key) => $key->value,
             self::cases()
         );
     }

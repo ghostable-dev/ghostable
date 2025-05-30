@@ -77,7 +77,7 @@ trait ConfirmsPasswords
 
         return $confirmedAt < $maximumSecondsSinceConfirmation;
     }
-    
+
     protected function forcePasswordConfirmation(): void
     {
         session()->forget('auth.password_confirmed_at');

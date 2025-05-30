@@ -3,10 +3,7 @@
 namespace App\Account\Console\Commands;
 
 use App\Account\Actions\RegisterUser;
-use App\Account\Entities\Role;
-use App\Account\Managers\ACLManager;
 use App\Account\Models\User;
-use App\Account\Providers\ACLServiceProvider;
 use App\Environment\Actions\CreateEnv;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
@@ -14,6 +11,7 @@ use App\Environment\Models\EnvironmentVariable;
 use App\Project\Models\Project;
 use App\Team\Actions\CreateTeam;
 use App\Team\Actions\CreateTeamInvite;
+use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -125,22 +123,19 @@ class AppSetup extends Command
         );
 
         foreach ($members as $member) {
-            $member->assignAsReadWriteDeveloper($team);
+            $member->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
         }
 
         return $team;
     }
 
-    protected function createInvite(Team $team, User $sender, string $email, ?Role $role = null): void
-    {
-        $role = $role ?? ACLManager::getRole(ACLServiceProvider::ROLE_DEV_READ_WRITE);
-
-        CreateTeamInvite::handle(
-            team: $team,
-            user: $sender,
-            email: $email,
-            role: $role
-        );
+    protected function createInvite(
+        Team $team,
+        User $sender,
+        string $email,
+        TeamRole $role = TeamRole::DEVELOPER
+    ): void {
+        CreateTeamInvite::handle(team: $team, user: $sender, email: $email, role: $role);
     }
 
     protected function createProject(string $name, Team $team): Project

@@ -2,37 +2,29 @@
 
 namespace App\Team\Api\Controllers;
 
+use App\Team\Actions\CreateTeamInvite;
+use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
-use App\Team\Notifications\TeamInvitationNotification;
+use App\Team\Rules\TeamInviteRules;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Auth;
 
 class InviteTeamMember
 {
     public function __invoke(Request $request, Team $team)
     {
-        Gate::authorize('admin', $team);
+        $request->user()->can('manageMembers', $team);
 
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        if ($team->users()->where('email', $validated['email'])->exists()) {
-            return response()->json([
-                'message' => 'This user is already a member of the team.',
-            ], 422);
-        }
-
-        $inviteUrl = URL::temporarySignedRoute(
-            'login',
-            now()->addDays(config('platform.invite.expiration_days')),
-            ['team' => $team->id, 'email' => $validated['email']]
+        $validated = $request->validate(
+            TeamInviteRules::createRules($team)
         );
 
-        Notification::route('mail', $validated['email'])
-            ->notify(new TeamInvitationNotification($team, $validated['email'], $inviteUrl));
+        CreateTeamInvite::handle(
+            team: $team,
+            user: Auth::user(),
+            email: $validated['email'],
+            role: TeamRole::from($validated['role'])
+        );
 
         return response()->json(['message' => 'Invitation sent.']);
     }

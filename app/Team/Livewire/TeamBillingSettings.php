@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-class TeamMemberSettings extends Component
+class TeamBillingSettings extends Component
 {
-    #[Computed(persist: true)]
+    #[Computed()]
     public function team(): Team
     {
         return Auth::user()->currentTeam();
@@ -17,6 +17,6 @@ class TeamMemberSettings extends Component
 
     public function render()
     {
-        return view('team.team-member-settings');
+        return view('team.team-billing-settings');
     }
 }
