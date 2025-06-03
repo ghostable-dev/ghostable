@@ -19,6 +19,24 @@ enum TeamPermission: string
     case EnvUpdate = 'env:update';
     case EnvDelete = 'env:delete';
     case EnvCreate = 'env:create';
+    
+    public function group(): string
+    {
+        return match ($this) {
+            self::BillingManage,
+            self::MemberManage => 'Team',
+
+            self::ProjectCreate,
+            self::ProjectDelete,
+            self::ProjectManage => 'Projects',
+
+            self::EnvPull,
+            self::EnvPush,
+            self::EnvUpdate,
+            self::EnvDelete,
+            self::EnvCreate => 'Environments',
+        };
+    }
 
     public function label(): string
     {
@@ -39,5 +57,18 @@ enum TeamPermission: string
             self::BillingManage => 'Manage billing and subscriptions',
             self::MemberManage => 'Manage team members',
         };
+    }
+    
+    public static function projectOverrides(): array
+    {
+        return [
+            self::ProjectManage,
+            self::ProjectDelete,
+            self::EnvPull,
+            self::EnvPush,
+            self::EnvUpdate,
+            self::EnvDelete,
+            self::EnvCreate,
+        ];
     }
 }

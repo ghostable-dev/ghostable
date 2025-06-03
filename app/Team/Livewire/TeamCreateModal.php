@@ -33,9 +33,14 @@ class TeamCreateModal extends Component
                         <flux:heading size="lg">Create Team</flux:heading>
                         <flux:text class="mt-2"></flux:text>
                     </div>
-                    <flux:input label="Name" wire:model="name" required />
-                    <div class="flex">
+                    <div>
+                        <flux:input label="Name" wire:model="name" required />
+                    </div>
+                    <div class="flex gap-2">
                         <flux:spacer />
+                        <flux:modal.close>
+                            <flux:button variant="ghost">Cancel</flux:button>
+                        </flux:modal.close>
                         <flux:button type="submit" variant="primary">Create team</flux:button>
                     </div>
                 </form>

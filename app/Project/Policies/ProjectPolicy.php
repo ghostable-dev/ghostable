@@ -12,7 +12,7 @@ class ProjectPolicy
     {
         return $user->belongsToTeam($project->team);
     }
-
+    
     public function delete(User $user, Project $project): bool
     {
         return $user->hasTeamPermission(

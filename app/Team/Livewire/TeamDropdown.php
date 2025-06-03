@@ -12,19 +12,19 @@ use Livewire\Component;
 
 class TeamDropdown extends Component
 {
-    #[Computed()]
+    #[Computed]
     public function currentTeam(): Team
     {
         return Auth::user()->currentTeam();
     }
 
-    #[Computed()]
+    #[Computed]
     public function teams(): Collection
     {
         return Auth::user()->teams;
     }
 
-    #[Computed()]
+    #[Computed]
     public function switchableTeams(): Collection
     {
         return Auth::user()
@@ -45,35 +45,38 @@ class TeamDropdown extends Component
     public function render()
     {
         return <<<'BLADE'
-            <flux:dropdown position="bottom" align="start">
+            <div>
                 <flux:dropdown position="bottom" align="start">
-                    <flux:button class="w-full flex justify-start items-center px-4 py-2" icon:trailing="chevron-down">
-                        <span class="truncate">{{ $this->currentTeam?->name }}</span>
-                        <flux:spacer/>
-                    </flux:button>
+                    <flux:dropdown position="bottom" align="start">
+                        <flux:button class="w-full flex justify-start items-center px-4 py-2" icon:trailing="chevron-down">
+                            <span class="truncate">{{ $this->currentTeam?->name }}</span>
+                            <flux:spacer/>
+                        </flux:button>
+                    </flux:dropdown>
+                    <flux:menu>
+                        <flux:menu.group heading="Manage Team">
+                            <flux:menu.item
+                                :href="route('team.settings.index', $this->currentTeam)"
+                                wire:navigate>Settings</flux:menu.item>
+                            <flux:modal.trigger name="create-team">
+                                <flux:menu.item>
+                                    Create New Team
+                                </flux:menu.item>
+                            </flux:modal.trigger>
+                        </flux:menu.group>
+                        <flux:menu.group heading="Switch Teams">
+                            @foreach($this->switchableTeams as $team)
+                                <flux:menu.item 
+                                    wire:click="switchToTeam('{{ $team->id }}')" 
+                                    wire:key="team-{{ $team->id }}">
+                                    {{ $team->name }}
+                                </flux:menu.item>
+                            @endforeach
+                        </flux:menu.group>
+                    </flux:menu>
                 </flux:dropdown>
-                <flux:menu>
-                    <flux:menu.group heading="Manage Team">
-                        <flux:menu.item
-                            :href="route('team.settings.index', $this->currentTeam)"
-                            wire:navigate>Settings</flux:menu.item>
-                        <flux:modal.trigger name="create-team">
-                            <flux:menu.item>
-                                Create New Team
-                            </flux:menu.item>
-                        </flux:modal.trigger>
-                    </flux:menu.group>
-                    <flux:menu.group heading="Switch Teams">
-                        @foreach($this->switchableTeams as $team)
-                            <flux:menu.item 
-                                wire:click="switchToTeam('{{ $team->id }}')" 
-                                wire:key="team-{{ $team->id }}">
-                                {{ $team->name }}
-                            </flux:menu.item>
-                        @endforeach
-                    </flux:menu.group>
-                </flux:menu>
-            </flux:dropdown>
+                <livewire:team.livewire.team-create-modal/>
+            </div>
         BLADE;
     }
 }

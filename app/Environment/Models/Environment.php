@@ -4,12 +4,14 @@ namespace App\Environment\Models;
 
 use App\Environment\Enums\EnvironmentType;
 use App\Project\Models\Project;
+use App\Team\Models\TeamPermissionOverride;
 use Database\Factories\EnvironmentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Environment extends Model
@@ -40,5 +42,10 @@ class Environment extends Model
     public function variables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
+    }
+    
+    public function permissionOverrides(): MorphMany
+    {
+        return $this->morphMany(TeamPermissionOverride::class, 'target');
     }
 }

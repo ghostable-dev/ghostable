@@ -2,10 +2,13 @@
 
 namespace App\Team\Concerns;
 
+use App\Environment\Models\Environment;
+use App\Project\Models\Project;
 use App\Team\Actions\SwitchToTeam;
 use App\Team\Enums\TeamPermission;
 use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
+use App\Team\Models\TeamPermissionOverride;
 use App\Team\Models\TeamUser;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -86,6 +89,38 @@ trait BelongsToTeams
         $role = $membership->pivot->role;
 
         return $role->hasPermission($permission);
+    }
+    
+    public function cans(
+        TeamPermission $permission, 
+        ?Project $project = null, 
+        ?Environment $env = null
+    ): bool
+    {
+        $team = $this->currentTeam();
+
+        // 1. If project is restricted, override must explicitly allow
+        if ($project?->is_restricted) {
+            return TeamPermissionOverride::query()
+                ->where('team_id', $team->id)
+                ->where('user_id', $this->id)
+                ->where('project_id', $project->id)
+                ->where('permission', $permission->value)
+                ->where('allowed', true)
+                ->exists();
+        }
+
+        // 2. Check for any scoped override
+        $override = TeamPermissionOverride::query()
+            ->where('team_id', $team->id)
+            ->where('user_id', $this->id)
+            ->where('project_id', $project?->id)
+            ->where('environment_id', $env?->id)
+            ->where('permission', $permission->value)
+            ->latest()
+            ->first();
+
+        return $override?->allowed ?? $this->teamRole()->has($permission);
     }
 
     public function isTeamAdmin(Team $team): bool

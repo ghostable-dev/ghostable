@@ -135,7 +135,5 @@
 
         @fluxScripts
         
-        <livewire:team.livewire.team-create-modal/>
-        
     </body>
 </html>
