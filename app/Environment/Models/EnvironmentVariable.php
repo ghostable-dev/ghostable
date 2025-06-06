@@ -35,4 +35,23 @@ class EnvironmentVariable extends Model
     {
         return $this->belongsTo(Environment::class, 'environment_id');
     }
+    
+    public function displayValue(): string
+    {
+        $masked = str_repeat('•', 10);
+        
+        return $this->isSecret() ? $masked : $this->value;
+    }
+    
+    public function isSecret(): bool
+    {
+        return collect([
+            'key',
+            'secret',
+            'password',
+            'token',
+            'private',
+            'credentials'
+        ])->contains(fn($pattern) => str_contains(strtolower($this->key), $pattern));
+    }
 }

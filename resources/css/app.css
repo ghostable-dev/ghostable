@@ -67,6 +67,10 @@ select:focus[data-flux-control] {
   }
 }
 
+[data-flux-tab-panel]:focus {
+  outline: none;
+}
+
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

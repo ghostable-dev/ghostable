@@ -9,8 +9,9 @@ use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Api\Resources\PushResultResource;
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Rules\ValidEnvType;
+use App\Environment\Rules\EnvironmentRules;
 use App\Project\Models\Project;
+use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 
@@ -27,7 +28,7 @@ class EnvironmentController extends Controller
     public function show(Project $project, string $name): JsonResource
     {
         $env = $project->environmentOrFail($name);
-
+        
         request()->user()->can('view', $env);
 
         return new EnvironmentResource($env);
@@ -47,7 +48,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('push', $env);
+        request()->user()->can('perform', [$env, TeamPermission::PushFile]);
 
         $result = PushEnvVars::handle(
             env: $env,
@@ -68,7 +69,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('view', $env);
+        request()->user()->can('perform', [$env, TeamPermission::ViewEnvVariables]);
 
         $content = RenderEnvFile::handle(env: $env);
 
@@ -77,12 +78,11 @@ class EnvironmentController extends Controller
 
     public function store(Project $project): JsonResource
     {
-        request()->user()->can('createEnvironments', $project);
-
-        $data = request()->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', new ValidEnvType],
-        ]);
+        
+        $data = request()->validate(
+            rules: EnvironmentRules::createRules($project), 
+            params: request()->input()
+        );
 
         $env = app(CreateEnv::class)->handle(
             name: $data['name'],

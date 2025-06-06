@@ -6,16 +6,12 @@ use App\Team\Models\Team;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class TeamProjects extends Component
 {
-    public function mount(): void
-    {
-        $this->authorize('view', $this->team);
-    }
-
-    #[Computed()]
+    #[Computed]
     public function projects(): LengthAwarePaginator
     {
         return $this->team->projects()->paginate();
@@ -25,6 +21,12 @@ class TeamProjects extends Component
     public function team(): Team
     {
         return Auth::user()->currentTeam();
+    }
+    
+    #[On('project-created')]
+    public function refreshProjects(): void
+    {
+        $this->projects();
     }
 
     public function render()

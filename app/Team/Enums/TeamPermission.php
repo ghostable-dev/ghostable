@@ -5,70 +5,109 @@ namespace App\Team\Enums;
 enum TeamPermission: string
 {
     // Teams
-    case BillingManage = 'billing:manage';
-    case MemberManage = 'member:manage';
+    case ManageTeamMembers = 'team:manage-members';
+    case ManageBilling = 'team:manage-billing';
+    case ManageTeamSettings = 'team:manage-settings';
+    case ManageAccessControls = 'team:manage-access-controls';
+    case ViewAuditLogs = 'team:view-audit-logs';
 
     // Projects
-    case ProjectCreate = 'project:create';
-    case ProjectDelete = 'project:delete';
-    case ProjectManage = 'project:manage';
+    case CreateProjects = 'project:create';
+    case ManageProjectSettings = 'project:manage-settings';
+    case DeleteProjects = 'project:delete';
 
-    // Envs
-    case EnvPull = 'env:pull';
-    case EnvPush = 'env:push';
-    case EnvUpdate = 'env:update';
-    case EnvDelete = 'env:delete';
-    case EnvCreate = 'env:create';
-    
+    // Environments
+    case CreateEnvironments = 'env:create';
+    case DeleteEnvironments = 'env:delete';
+    case ManageEnvironmentSettings = 'env:manage-settings';
+
+    // Variables
+    case ViewVariables = 'var:view';
+    case EditVariables = 'var:edit';
+    case PushFile = 'var:push';
+
+    /**
+     * Get the display group for organizing permissions in the UI.
+     */
     public function group(): string
     {
         return match ($this) {
-            self::BillingManage,
-            self::MemberManage => 'Team',
+            self::ManageTeamMembers,
+            self::ManageBilling,
+            self::ManageTeamSettings,
+            self::ManageAccessControls,
+            self::ViewAuditLogs => 'Team',
 
-            self::ProjectCreate,
-            self::ProjectDelete,
-            self::ProjectManage => 'Projects',
+            self::CreateProjects,
+            self::DeleteProjects,
+            self::ManageProjectSettings => 'Projects',
 
-            self::EnvPull,
-            self::EnvPush,
-            self::EnvUpdate,
-            self::EnvDelete,
-            self::EnvCreate => 'Environments',
+            self::CreateEnvironments,
+            self::DeleteEnvironments,
+            self::ManageEnvironmentSettings => 'Environments',
+
+            self::ViewVariables,
+            self::EditVariables,
+            self::PushFile => 'Variables',
         };
     }
 
+    /**
+     * Get the human-readable label for this permission.
+     */
     public function label(): string
     {
         return match ($this) {
-            // Environments
-            self::EnvPull => 'View environment variables',
-            self::EnvPush => 'Push full environment files',
-            self::EnvUpdate => 'Edit environment variables',
-            self::EnvDelete => 'Delete environment variables',
-            self::EnvCreate => 'Create new environments',
+            // Teams
+            self::ManageTeamMembers => 'Manage team members',
+            self::ManageBilling => 'Manage billing and subscriptions',
+            self::ManageTeamSettings => 'Manage team settings',
+            self::ManageAccessControls => 'Manage access controls',
+            self::ViewAuditLogs => 'View team audit logs',
 
             // Projects
-            self::ProjectCreate => 'Create new projects',
-            self::ProjectDelete => 'Delete projects',
-            self::ProjectManage => 'Manage project settings',
+            self::CreateProjects => 'Create new projects',
+            self::ManageProjectSettings => 'Manage project settings',
+            self::DeleteProjects => 'Delete projects',
 
-            // Team & Billing
-            self::BillingManage => 'Manage billing and subscriptions',
-            self::MemberManage => 'Manage team members',
+            // Environments
+            self::CreateEnvironments => 'Create environments',
+            self::DeleteEnvironments => 'Delete environments',
+            self::ManageEnvironmentSettings => 'Manage environment settings',
+
+            // Variables
+            self::ViewVariables => 'View environment variables',
+            self::EditVariables => 'Edit environment variables',
+            self::PushFile => 'Push full environment file',
         };
     }
-    
+
+    /**
+     * Permissions that can be overridden at the project level.
+     *
+     * @return TeamPermission[]
+     */
     public static function projectOverrides(): array
     {
         return [
-            self::ProjectManage,
-            self::ProjectDelete,
-            self::EnvPull,
-            self::EnvPush,
-            self::EnvUpdate,
-            self::EnvDelete,
-            self::EnvCreate,
+            self::ManageProjectSettings,
+            self::CreateEnvironments,
+            self::DeleteEnvironments,
+            ...self::environmentOverrides(),
+        ];
+    }
+
+    /**
+     * Permissions that can be overridden at the environment level.
+     *
+     * @return TeamPermission[]
+     */
+    public static function environmentOverrides(): array
+    {
+        return [
+            self::ViewVariables,
+            self::EditVariables,
+            self::PushFile,
         ];
     }
 }

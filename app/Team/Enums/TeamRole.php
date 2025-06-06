@@ -2,6 +2,8 @@
 
 namespace App\Team\Enums;
 
+use App\Team\Enums\TeamPermission;
+
 enum TeamRole: string
 {
     case ADMIN = 'admin';
@@ -30,28 +32,44 @@ enum TeamRole: string
     }
 
     /**
+     * Get the default permissions for the given role.
+     *
      * @return TeamPermission[]
      */
     public function permissions(): array
     {
         return match ($this) {
             self::ADMIN => TeamPermission::cases(),
-            self::BILLING_ONLY => [TeamPermission::BillingManage],
-            self::DEVELOPER => [
-                TeamPermission::ProjectCreate,
-                TeamPermission::ProjectManage,
-                TeamPermission::EnvCreate,
-                TeamPermission::EnvUpdate,
-                TeamPermission::EnvDelete,
-                TeamPermission::EnvPush,
-                TeamPermission::EnvPull,
+
+            self::BILLING_ONLY => [
+                TeamPermission::ManageBilling,
             ],
+
+            self::DEVELOPER => [
+                // Project permissions
+                TeamPermission::CreateProjects,
+                TeamPermission::ManageProjectSettings,
+
+                // Environment permissions
+                TeamPermission::CreateEnvironments,
+                TeamPermission::DeleteEnvironments,
+                TeamPermission::ManageEnvironmentSettings,
+
+                // Variable permissions
+                TeamPermission::ViewVariables,
+                TeamPermission::EditVariables,
+                TeamPermission::PushFile,
+            ],
+
             self::DEVELOPER_READ_ONLY => [
-                TeamPermission::EnvPull,
+                TeamPermission::ViewVariables,
             ],
         };
     }
 
+    /**
+     * Determine if this role includes the given permission.
+     */
     public function hasPermission(TeamPermission $permission): bool
     {
         return in_array($permission, $this->permissions(), true);

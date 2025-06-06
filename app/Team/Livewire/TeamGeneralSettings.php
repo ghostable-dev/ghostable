@@ -18,7 +18,7 @@ class TeamGeneralSettings extends Component
 
     public function updateTeamName(): void
     {
-        $this->authorize('admin', $this->team);
+        $this->authorize('manageSettings', $this->team);
 
         $this->team->update(['name' => $this->name]);
 

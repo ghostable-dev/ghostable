@@ -5,6 +5,7 @@ namespace App\Team\Api\Controllers;
 use App\Team\Actions\CreateTeamInvite;
 use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
+use App\Team\Models\TeamInvite;
 use App\Team\Rules\TeamInviteRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,7 @@ class InviteTeamMember
 {
     public function __invoke(Request $request, Team $team)
     {
-        $request->user()->can('manageMembers', $team);
+        $request->user()->can('create', [TeamInvite::class, $team]);
 
         $validated = $request->validate(
             TeamInviteRules::createRules($team)

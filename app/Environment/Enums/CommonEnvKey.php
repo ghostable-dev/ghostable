@@ -55,6 +55,56 @@ enum CommonEnvKey: string
             self::cases()
         );
     }
+    
+    public static function grouped(): array
+    {
+        return [
+            'App' => [
+                self::APP_NAME->value,
+                self::APP_ENV->value,
+                self::APP_KEY->value,
+                self::APP_DEBUG->value,
+                self::APP_URL->value,
+            ],
+            'Logging' => [
+                self::LOG_CHANNEL->value,
+                self::LOG_LEVEL->value,
+            ],
+            'Database' => [
+                self::DB_CONNECTION->value,
+                self::DB_HOST->value,
+                self::DB_PORT->value,
+                self::DB_DATABASE->value,
+                self::DB_USERNAME->value,
+                self::DB_PASSWORD->value,
+            ],
+            'Cache / Queues / Sessions' => [
+                self::CACHE_DRIVER->value,
+                self::QUEUE_CONNECTION->value,
+                self::SESSION_DRIVER->value,
+                self::SESSION_LIFETIME->value,
+            ],
+            'Mail' => [
+                self::MAIL_MAILER->value,
+                self::MAIL_HOST->value,
+                self::MAIL_PORT->value,
+                self::MAIL_USERNAME->value,
+                self::MAIL_PASSWORD->value,
+                self::MAIL_ENCRYPTION->value,
+            ],
+            'AWS' => [
+                self::AWS_ACCESS_KEY_ID->value,
+                self::AWS_SECRET_ACCESS_KEY->value,
+                self::AWS_DEFAULT_REGION->value,
+                self::AWS_BUCKET->value,
+            ],
+            'Pusher' => [
+                self::PUSHER_APP_ID->value,
+                self::PUSHER_APP_KEY->value,
+                self::PUSHER_APP_SECRET->value,
+            ],
+        ];
+    }
 
     public function suggestedValues(): array
     {

@@ -1,0 +1,142 @@
+<div class="space-y-6">
+    
+    {{-- Add environment var form --}}
+    @perform($this->environment, 'var:edit')
+    <div class="lg:max-w-4xl">
+        <form wire:submit="addEnvironmentVariable" class="flex flex-inline items-end gap-4">
+            <div class="basis-1/2 grow-0">
+                <x-environment-key-autocomplete
+                    wire:model.live="key" 
+                    label="Key" 
+                    placeholder="e.g. PARANORMAL_STATUS"
+                    required
+                    :groupedSuggestions="$this->keySuggestions"/>
+            </div>
+            <div class="basis-1/2 grow-0">
+                <flux:autocomplete 
+                    wire:model.live="value" 
+                    label="Value" 
+                    placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
+                    required>
+                    @foreach($this->valueSuggestions as $suggestion)
+                        <flux:autocomplete.item>
+                            {{ $suggestion }}
+                        </flux:autocomplete.item>
+                    @endforeach
+                </flux:autocomplete>
+            </div>
+            <div class="flex-none">
+                <flux:button type="submit" variant="primary">Add</flux:button>
+            </div>
+        </form>
+        <flux:text variant="subtle" class="mt-4">
+            Define a new key-value pair in this environment.
+        </flux:text>
+    </div>
+    @endperform
+    
+    {{-- Variable table display  --}}
+    <div>
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column 
+                    sortable 
+                    :sorted="$sortBy === 'key'" 
+                    :direction="$sortDirection" 
+                    wire:click="sort('key')">Key</flux:table.column>
+                <flux:table.column>Value</flux:table.column>
+                <flux:table.column
+                    sortable 
+                    :sorted="$sortBy === 'updated_at'" 
+                    :direction="$sortDirection" 
+                    wire:click="sort('updated_at')">Age</flux:table.column>
+                <flux:table.column></flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach ($this->variables as $var)
+                    <flux:table.row wire:key="var-{{ $var }}">
+                        <flux:table.cell>
+                            <flux:text size="sm">{{ $var->key }}</flux:text>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            @php
+                                $secret = $var->isSecret();
+                                $showingSecret = $this->showing[$var->id] ?? null;
+                            @endphp
+                            <flux:input 
+                                value="{{ $showingSecret ? $var->value : $var->displayValue() }}"
+                                :copyable="!$secret || $showingSecret"
+                                readonly>
+                                @if($secret)
+                                    <x-slot name="iconTrailing">
+                                        <flux:button 
+                                            wire:click="toggleSecret('{{ $var->id }}')" 
+                                            size="sm" 
+                                            variant="subtle" 
+                                            icon="{{ !$showingSecret ? 'eye' : 'eye-slash'}}" 
+                                            class="-mr-1" />
+                                    </x-slot>
+                                @endif
+                            </flux:input>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            {{ $var->updated_at->shortAbsoluteDiffForHumans() }}
+                        </flux:table.cell>
+                        <flux:table.cell align="end">
+                            @perform($this->environment, 'var:edit')
+                            <flux:dropdown>
+                                <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
+                                <flux:menu>
+                                    <flux:menu.item 
+                                        wire:click="editVariable('{{ $var->id }}')">
+                                        Edit
+                                    </flux:menu.item>
+                                    <flux:menu.item 
+                                        wire:click="confirmVariableRemoval('{{ $var->id }}')"
+                                        variant="danger">
+                                        Delete
+                                    </flux:menu.item>
+                                </flux:menu>
+                            </flux:dropdown>
+                            @endperform
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+        
+        {{-- Variable editor modal --}}
+        <livewire:environment.livewire.environment-variable-editor />
+        
+        {{-- Remove variable modal --}}
+        <flux:modal name="confirm-variable-removal" class="md:w-lg">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Remove Variable</flux:heading>
+                    <flux:text class="mt-2">
+                        Are you sure you want to remove the
+                        <flux:text class="inline" variant="strong">
+                            “{{ $this->variableToRemove?->key }}”
+                        </flux:text>
+                        key and corresponding value?
+                    </flux:text>
+                </div>
+                <div class="flex gap-2">
+                    <flux:spacer />
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                    <x-auth.confirms-password wire:then="removeVariable">
+                        <flux:button  
+                            variant="danger"
+                            :loading="true"
+                            wire:target="removeVariable">
+                            {{ __('Remove Variable') }}
+                        </flux:button>
+                    </x-auth.confirms-password>
+                </div>
+            </div>
+        </flux:modal>
+                
+    </div>
+</div>

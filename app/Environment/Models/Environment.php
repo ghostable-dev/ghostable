@@ -4,25 +4,28 @@ namespace App\Environment\Models;
 
 use App\Environment\Enums\EnvironmentType;
 use App\Project\Models\Project;
-use App\Team\Models\TeamPermissionOverride;
+use App\Team\Concerns\HasPermissionOverrides;
+use App\Team\Contracts\SupportsOverrides;
+use App\Team\Models\Team;
 use Database\Factories\EnvironmentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Environment extends Model
+class Environment extends Model implements SupportsOverrides
 {
     use HasFactory;
+    use HasPermissionOverrides;
     use HasUuids;
     use SoftDeletes;
 
     protected $fillable = [
         'name',
         'type',
+        'is_restricted'
     ];
 
     protected $casts = [
@@ -44,8 +47,8 @@ class Environment extends Model
         return $this->hasMany(EnvironmentVariable::class);
     }
     
-    public function permissionOverrides(): MorphMany
+    public function owningTeam(): Team
     {
-        return $this->morphMany(TeamPermissionOverride::class, 'target');
+        return $this->project->team;
     }
 }

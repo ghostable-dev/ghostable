@@ -2,6 +2,7 @@
 
 namespace App\Team;
 
+use App\Team\Enums\TeamPermission;
 use App\Team\Events\InviteCreated;
 use App\Team\Events\InviteSent;
 use App\Team\Listeners\SendTeamInvite;
@@ -13,6 +14,7 @@ use Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 
 class TeamServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,14 @@ class TeamServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Blade::if('perform', function (mixed $resource, string $permission) {
+            $enum = TeamPermission::tryFrom($permission);
+            if (! $enum) {
+                throw new InvalidArgumentException("Invalid TeamPermission: {$permission}");
+            }
+            return Gate::allows('perform', [$resource, $enum]);
+        });
+        
         Blade::component('team-role-select', TeamRoleSelect::class);
 
         Gate::policy(Team::class, TeamPolicy::class);

@@ -3,8 +3,7 @@
 namespace App\Team\Actions;
 
 use App\Account\Models\User;
-use App\Environment\Models\Environment;
-use App\Project\Models\Project;
+use App\Team\Contracts\SupportsOverrides;
 use App\Team\Enums\TeamPermission;
 use App\Team\Models\TeamPermissionOverride;
 
@@ -12,7 +11,7 @@ class CreatePermissionOverride
 {
     public function handle(
         User $user, 
-        Project|Environment $target, 
+        SupportsOverrides $target, 
         TeamPermission $permission
     ): void
     {

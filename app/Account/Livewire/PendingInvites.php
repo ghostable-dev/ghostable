@@ -12,7 +12,7 @@ use Livewire\Component;
 
 class PendingInvites extends Component
 {
-    #[Computed()]
+    #[Computed]
     public function pendingInvites(): Collection
     {
         return TeamInvite::where('email', Auth::user()->email)->pending()->get();
@@ -20,14 +20,14 @@ class PendingInvites extends Component
 
     public function accept(TeamInvite $invite): void
     {
-        Auth::user()->can('update', $invite);
+        Auth::user()->can('accept', $invite);
 
         app(AcceptInvite::class)->handle(Auth::user(), $invite);
     }
 
     public function decline(TeamInvite $invite): void
     {
-        Auth::user()->can('delete', $invite);
+        Auth::user()->can('decline', $invite);
 
         app(DeclineInvite::class)->handle($invite);
     }

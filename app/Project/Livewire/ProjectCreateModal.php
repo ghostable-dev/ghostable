@@ -3,6 +3,7 @@
 namespace App\Project\Livewire;
 
 use App\Project\Actions\CreateProject;
+use App\Project\Models\Project;
 use App\Team\Models\Team;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,14 @@ class ProjectCreateModal extends Component
 
     public function create()
     {
-        $this->authorize('createProjects', $this->team);
+        $this->authorize('create', [Project::class, $this->team]);
 
         app(CreateProject::class)->handle(name: $this->name, team: $this->team);
 
         $this->reset('name');
 
+        $this->dispatch('project-created');
+        
         Flux::modal('create-project')->close();
         Flux::toast('New project has been created.');
     }

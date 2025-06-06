@@ -19,6 +19,8 @@ class ProjectRoutes
 
     public static function web(): void
     {
-        Route::get('projects/{project}', ProjectView::class)->name('projects.view');
+        Route::middleware(['auth', 'verified'])->group(function() {
+            Route::get('projects/{project}', ProjectView::class)->name('projects.view');
+        });
     }
 }

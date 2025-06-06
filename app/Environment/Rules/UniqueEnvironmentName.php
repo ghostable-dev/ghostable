@@ -3,27 +3,27 @@
 namespace App\Environment\Rules;
 
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
+use App\Project\Models\Project;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class UniqueEnvKey implements ValidationRule
+class UniqueEnvironmentName implements ValidationRule
 {
     public function __construct(
-        protected Environment $environment,
-        protected ?EnvironmentVariable $except = null
+        protected Project $project,
+        protected ?Environment $except = null
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $query = $this->environment->variables()->where('key', $value);
+        $query = $this->project->environments()->where('name', $value);
 
         if ($this->except) {
             $query->where('id', '!=', $this->except->id);
         }
 
         if ($query->exists()) {
-            $fail('The :attribute already exists in this environment.');
+            $fail('The environment :attribute already exists in this project.');
         }
     }
 }

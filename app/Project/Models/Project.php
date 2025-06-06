@@ -3,20 +3,21 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
+use App\Team\Concerns\HasPermissionOverrides;
+use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;
-use App\Team\Models\TeamPermissionOverride;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Project extends Model
+class Project extends Model implements SupportsOverrides
 {
     use HasFactory;
+    use HasPermissionOverrides;
     use HasUuids;
     use SoftDeletes;
 
@@ -41,11 +42,6 @@ class Project extends Model
         return $this->hasMany(Environment::class);
     }
     
-    public function permissionOverrides(): MorphMany
-    {
-        return $this->morphMany(TeamPermissionOverride::class, 'target');
-    }
-    
     public function environmentOrFail(string $name): Environment
     {
         return $this->environments()
@@ -53,8 +49,8 @@ class Project extends Model
             ->firstOrFail();
     }
     
-    public function isRestricted(): bool
+    public function owningTeam(): Team
     {
-        return $this->is_restricted;
+        return $this->team;
     }
 }

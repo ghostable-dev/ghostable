@@ -63,7 +63,7 @@ class TeamInvitesManager extends Component
      */
     public function resendInvite(TeamInvite $invite): void
     {
-        $this->authorize('manageMembers', $invite->team);
+        $this->authorize('resend', $invite);
 
         if ($invite->sentRecently()) {
             Flux::toast('Please wait a few minutes before resending.');
@@ -88,7 +88,7 @@ class TeamInvitesManager extends Component
      */
     public function confirmDeleteInvite(TeamInvite $invite): void
     {
-        $this->authorize('manageMembers', $invite->team);
+        $this->authorize('delete', $invite);
 
         $this->inviteToDeleteId = $invite->id;
 
@@ -107,7 +107,7 @@ class TeamInvitesManager extends Component
     public function inviteToBeDeleted(): ?TeamInvite
     {
         if ($invite = TeamInvite::find($this->inviteToDeleteId ?? null)) {
-            $this->authorize('manageMembers', $invite->team);
+            $this->authorize('delete', $invite);
 
             return $invite;
         }
@@ -124,7 +124,7 @@ class TeamInvitesManager extends Component
      */
     public function deleteInvite(): void
     {
-        $this->authorize('manageMembers', $this->inviteToBeDeleted->team);
+        $this->authorize('delete', $this->inviteToBeDeleted);
 
         $this->inviteToBeDeleted->delete();
 
@@ -137,7 +137,7 @@ class TeamInvitesManager extends Component
 
     public function sendInvite()
     {
-        $this->authorize('manageMembers', $this->team);
+        $this->authorize('create', [TeamInvite::class, $this->team]);
 
         $validated = $this->validate(
             TeamInviteRules::createRules($this->team)

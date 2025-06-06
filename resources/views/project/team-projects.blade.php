@@ -5,11 +5,13 @@
         <flux:separator variant="subtle" />
     </div>
     
+    @can('create', [\App\Project\Models\Project::class, $this->team])
     <flux:modal.trigger name="create-project">
         <flux:button variant="primary" class="mb-4">
             Create New Project
         </flux:button>
     </flux:modal.trigger>
+    @endcan
     
     <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         @foreach($this->projects as $project)

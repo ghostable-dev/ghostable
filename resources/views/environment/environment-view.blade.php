@@ -1,4 +1,4 @@
-<section class="w-full space-y-4">
+<section class="space-y-6">
     
     @include('environment.partials.environment-breadcrumbs')
     
@@ -7,86 +7,55 @@
             {{ $this->environment->type->label() }}
         </flux:badge>
         <flux:heading size="xl" level="1">
-            {{ $this->environment->project->name }} • <span class="text-gray-400">{{ $this->environment->name }}</span>
+            {{ $this->environment->project->name }} • 
+            <span class="text-gray-400">{{ $this->environment->name }}</span>
         </flux:heading>
         <flux:subheading class="mb-6">
             {{ __('Manage your environment variables.') }}
         </flux:subheading>
-        <flux:separator variant="subtle" />
     </div>
     
-    <flux:avatar.group class="mt-6">
+    <flux:tab.group>
+        <flux:tabs wire:model="tab">
+            <flux:tab name="variables">Variables</flux:tab>
+            <flux:tab name="general">General</flux:tab>
+            <flux:tab name="access">Access</flux:tab>
+        </flux:tabs>
+
+        <flux:tab.panel name="variables">
+            @perform($this->environment, 'var:view')
+                <livewire:environment.livewire.environment-variable-manager 
+                :environment="$this->environment"/>
+            @else
+                <x-access-restricted/>
+            @endperform
+        </flux:tab.panel>
+        
+        <flux:tab.panel name="general">
+            @perform($this->environment, 'env:manage-settings')
+                <livewire:environment.livewire.environment-general-settings 
+                    :environment="$this->environment"/>
+            @else
+                <x-access-restricted/>
+            @endperform
+        </flux:tab.panel>
+        
+        <flux:tab.panel name="access">
+            @can('manageAccessControls', $this->environment->owningTeam())
+                <livewire:environment.livewire.environment-access-manager 
+                    :environment="$this->environment"/>
+            @else
+                <x-access-restricted/>
+            @endcan
+            
+        </flux:tab.panel>
+        
+    </flux:tab.group>
+    
+    {{-- <flux:avatar.group class="mt-6">
         @foreach($this->environment->project->team->users as $user)
             <flux:avatar circle size="xs" :initials="$user->initials()" />
         @endforeach
-    </flux:avatar.group>
-    
-    <div>
-        <flux:modal.trigger name="create-env-var">
-            <flux:button variant="primary" class="mb-4">
-                Create New Variable
-            </flux:button>
-        </flux:modal.trigger>
-        <livewire:environment.livewire.environment-var-create-modal :environment="$this->environment"/>
-    </div>
-    
-    <flux:table>
-        <flux:table.columns>
-            <flux:table.column>Key</flux:table.column>
-            <flux:table.column>Value</flux:table.column>
-            <flux:table.column>Last Updated</flux:table.column>
-            <flux:table.column></flux:table.column>
-        </flux:table.columns>
-
-        <flux:table.rows>
-            @foreach ($this->environment->variables as $var)
-                <flux:table.row>
-                    <flux:table.cell>
-                        <flux:text>{{ $var->key }}</flux:text>
-                    </flux:table.cell>
-
-                    <flux:table.cell>
-                        @if ($editing === $var->id)
-                            <flux:input variant="filled" wire:model.defer="editedValues.{{ $var->id }}" />
-                        @else
-                            <flux:input value="{{ $var->value }}" readonly copyable />
-                        @endif
-                    </flux:table.cell>
-
-                    <flux:table.cell>
-                        @if ($var->updated_at->greaterThan(now()->subDay()))
-                            {{ $var->updated_at->diffForHumans() }}
-                        @else
-                            {{ $var->updated_at->format('M j, Y \a\t g:i A') }}
-                        @endif
-                    </flux:table.cell>
-
-                    <flux:table.cell>
-                        @if ($editing === $var->id)
-                            <flux:button size="sm" wire:click="save('{{ $var->id }}')">Save</flux:button>
-                            <flux:button size="sm" variant="ghost" wire:click="cancelEdit">Cancel</flux:button>
-                        @else
-                            <div class="flex gap-2">
-                                <flux:button 
-                                    size="sm" 
-                                    wire:click="edit('{{ $var->id }}')">
-                                    Edit
-                                </flux:button>
-                                <x-auth.confirms-password 
-                                    wire:then="delete('{{ $var->id }}')"
-                                    :loading="true"
-                                    wire:target="delete">
-                                    <flux:button size="sm" variant="danger">
-                                        Delete
-                                    </flux:button>
-                                </x-auth.confirms-password>
-                            </div>
-                            
-                        @endif
-                    </flux:table.cell>
-                </flux:table.row>
-            @endforeach
-        </flux:table.rows>
-    </flux:table>
+    </flux:avatar.group> --}}
     
 </section>
