@@ -28,7 +28,7 @@ class EnvironmentController extends Controller
     public function show(Project $project, string $name): JsonResource
     {
         $env = $project->environmentOrFail($name);
-        
+
         request()->user()->can('view', $env);
 
         return new EnvironmentResource($env);
@@ -78,9 +78,9 @@ class EnvironmentController extends Controller
 
     public function store(Project $project): JsonResource
     {
-        
+
         $data = request()->validate(
-            rules: EnvironmentRules::createRules($project), 
+            rules: EnvironmentRules::createRules($project),
             params: request()->input()
         );
 

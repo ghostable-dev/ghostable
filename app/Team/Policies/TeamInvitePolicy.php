@@ -16,7 +16,7 @@ class TeamInvitePolicy
     {
         return $this->manage(user: $user, team: $team);
     }
-    
+
     /**
      * Determine if the user can delete this invite.
      */
@@ -24,7 +24,7 @@ class TeamInvitePolicy
     {
         return $this->manage(user: $user, team: $invite->team);
     }
-    
+
     /**
      * Determine if the user can "resend" this invite.
      */
@@ -32,7 +32,7 @@ class TeamInvitePolicy
     {
         return $this->manage(user: $user, team: $invite->team);
     }
-    
+
     /**
      * Determine if the user can accept the invite sent to them.
      */
@@ -40,7 +40,7 @@ class TeamInvitePolicy
     {
         return $user->isVerified() && $user->email === $invite->email;
     }
-    
+
     /**
      * Determine if the user can decline the invite sent to them.
      */
@@ -48,7 +48,7 @@ class TeamInvitePolicy
     {
         return $user->isVerified() && $user->email === $invite->email;
     }
-    
+
     /**
      * Shared authorization logic for managing team invites.
      *

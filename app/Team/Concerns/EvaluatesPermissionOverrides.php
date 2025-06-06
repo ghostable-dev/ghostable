@@ -17,11 +17,10 @@ trait EvaluatesPermissionOverrides
      * Falls back to Project permissions or team role-based defaults.
      */
     public function hasPermission(
-        User $user, 
-        ContractsSupportsOverrides $resource, 
+        User $user,
+        ContractsSupportsOverrides $resource,
         TeamPermission|string $permission
-    ): bool
-    {
+    ): bool {
         $permission = is_string($permission)
             ? TeamPermission::from($permission)
             : $permission;
@@ -32,13 +31,13 @@ trait EvaluatesPermissionOverrides
         if ($user->isTeamAdmin($team)) {
             return true;
         }
-        
+
         // 2: If resource is an Environment, check override first
         if (
             $resource instanceof Environment &&
             $resource->isRestricted() &&
             $resource->userHasOverride(
-                user: $user, 
+                user: $user,
                 permission: $permission
             )
         ) {
@@ -57,7 +56,7 @@ trait EvaluatesPermissionOverrides
         // 4: For other resources (like Project), check override if restricted
         if ($resource->isRestricted()) {
             return $resource->userHasOverride(
-                user: $user, 
+                user: $user,
                 permission: $permission
             );
         }

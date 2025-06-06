@@ -2,8 +2,6 @@
 
 namespace App\Team\Enums;
 
-use App\Team\Enums\TeamPermission;
-
 enum TeamRole: string
 {
     case ADMIN = 'admin';

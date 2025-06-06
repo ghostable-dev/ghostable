@@ -11,7 +11,7 @@ class ValidEnvType implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $validValues = array_column(EnvironmentType::cases(), 'value');
-        
+
         $value = is_a($value, EnvironmentType::class)
             ? $value->value
             : $value;

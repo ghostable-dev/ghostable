@@ -27,9 +27,10 @@ class TeamServiceProvider extends ServiceProvider
             if (! $enum) {
                 throw new InvalidArgumentException("Invalid TeamPermission: {$permission}");
             }
+
             return Gate::allows('perform', [$resource, $enum]);
         });
-        
+
         Blade::component('team-role-select', TeamRoleSelect::class);
 
         Gate::policy(Team::class, TeamPolicy::class);

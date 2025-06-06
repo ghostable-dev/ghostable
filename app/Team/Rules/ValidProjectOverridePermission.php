@@ -2,7 +2,6 @@
 
 namespace App\Team\Rules;
 
-use App\Team\Enums\TeamRole;
 use App\Team\Enums\TeamPermission;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;

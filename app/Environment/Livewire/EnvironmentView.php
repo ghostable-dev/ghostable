@@ -12,7 +12,7 @@ class EnvironmentView extends Component
 {
     #[Locked]
     public string $envId;
-    
+
     /**
      * The currently active tab in the environment viewer.
      *
@@ -37,7 +37,7 @@ class EnvironmentView extends Component
     {
         return Environment::findOrFail($this->envId);
     }
-    
+
     /**
      * Refresh the environment instance when the 'environment-updated' event is triggered.
      *
@@ -48,7 +48,7 @@ class EnvironmentView extends Component
     {
         $this->environment->refresh();
     }
-    
+
     public function render()
     {
         return view('environment.environment-view');

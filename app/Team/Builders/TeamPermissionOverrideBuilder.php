@@ -12,7 +12,7 @@ class TeamPermissionOverrideBuilder extends Builder
     {
         return $this->where('user_id', $user->id);
     }
-    
+
     public function withPermission(TeamPermission $permission): Builder
     {
         return $this->where('permission', $permission->value);

@@ -10,7 +10,7 @@ use App\Team\Enums\TeamPermission;
 class EnvironmentPolicy
 {
     use EvaluatesPermissionOverrides;
-     
+
     /**
      * Determine if the user can view the environment's metadata.
      *
@@ -21,7 +21,7 @@ class EnvironmentPolicy
     {
         return $user->belongsToTeam($environment->owningTeam());
     }
-    
+
     /**
      * Determine if the user can manage the environment's settings,
      * such as name and type.
@@ -36,7 +36,7 @@ class EnvironmentPolicy
             team: $environment->project->team
         );
     }
-    
+
     /**
      * General-purpose policy method for environment-level permissions
      * that may be overridden per user.
@@ -44,11 +44,10 @@ class EnvironmentPolicy
      * Used for actions like viewing, editing, or pushing variables.
      */
     public function perform(
-        User $user, 
-        Environment $environment, 
+        User $user,
+        Environment $environment,
         TeamPermission $permission
-    ): bool
-    {
+    ): bool {
         return $this->hasPermission($user, $environment, $permission);
     }
 }

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 class AuthRoutes
 {
-    public static function api(): void 
+    public static function api(): void
     {
         Route::post('/cli/login', LoginViaCli::class);
     }

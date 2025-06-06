@@ -11,7 +11,7 @@ use App\Team\Models\Team;
 class ProjectPolicy
 {
     use EvaluatesPermissionOverrides;
-    
+
     /**
      * Determine if the user can view the given project.
      *
@@ -22,7 +22,7 @@ class ProjectPolicy
     {
         return $user->belongsToTeam($project->owningTeam());
     }
-    
+
     /**
      * Determine if the user can create a new project within the given team.
      */
@@ -33,7 +33,7 @@ class ProjectPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can delete the given project.
      */
@@ -44,7 +44,7 @@ class ProjectPolicy
             team: $project->team
         );
     }
-    
+
     /**
      * General-purpose permission check for a specific action on the project.
      *
@@ -52,11 +52,10 @@ class ProjectPolicy
      * and delegates to the shared hasPermission logic.
      */
     public function perform(
-        User $user, 
-        Project $project, 
+        User $user,
+        Project $project,
         TeamPermission $permission
-    ): bool
-    {
+    ): bool {
         return $this->hasPermission($user, $project, $permission);
     }
 }

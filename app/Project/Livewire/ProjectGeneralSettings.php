@@ -14,12 +14,12 @@ class ProjectGeneralSettings extends Component
 {
     #[Locked]
     public string $projectId;
-    
+
     /**
      * The editable name of the project.
      */
     public string $name;
-    
+
     /**
      * An optional description for the project.
      */
@@ -33,7 +33,7 @@ class ProjectGeneralSettings extends Component
         $this->name = $project->name;
         $this->description = $project->description;
     }
-    
+
     /**
      * Retrieve the current project instance based on the bound project ID.
      */
@@ -42,7 +42,7 @@ class ProjectGeneralSettings extends Component
     {
         return Project::findOrFail($this->projectId);
     }
-    
+
     /**
      * Determine whether the authenticated user can edit project settings.
      *
@@ -54,7 +54,7 @@ class ProjectGeneralSettings extends Component
     {
         return Gate::allows('perform', [$this->project, TeamPermission::ManageProjectSettings]);
     }
-    
+
     /**
      * Update the current project's name and description.
      *
@@ -67,17 +67,17 @@ class ProjectGeneralSettings extends Component
     public function updateProject(): void
     {
         $this->authorize('perform', [$this->project, TeamPermission::ManageProjectSettings]);
-        
+
         $validated = $this->validate(ProjectRules::updateRules($this->project));
 
         $this->project->update([
             'name' => $validated['name'],
-            'description' => $validated['description']
+            'description' => $validated['description'],
         ]);
-        
+
         $this->dispatch('project-updated');
     }
-    
+
     /**
      * Permanently delete the current project.
      *
@@ -89,7 +89,7 @@ class ProjectGeneralSettings extends Component
     public function deleteProject(): void
     {
         $this->authorize('delete', $this->project);
-        
+
         $this->project->delete();
 
         $this->redirect(route('dashboard'));

@@ -12,7 +12,7 @@ class ProjectView extends Component
 {
     #[Locked]
     public string $projectId;
-    
+
     public string $tab = 'environments';
 
     public function mount(Project $project): void
@@ -21,7 +21,7 @@ class ProjectView extends Component
 
         $this->projectId = $project->id;
     }
-    
+
     /**
      * Refresh the project instance when a new environment is created
      * or when a project name/description is updated.

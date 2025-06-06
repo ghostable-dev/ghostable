@@ -17,32 +17,32 @@ use Livewire\Component;
 class EnvironmentVariableEditor extends Component
 {
     use ConfirmsPasswords;
-    
+
     /**
      * Event name used to trigger the variable editor modal.
      */
     public const LAUNCH = 'variable-editor:launch';
-    
+
     /**
      * Event name used to notify listeners the variable was updated.
      */
     public const UPDATED = 'variable-editor:updated';
-    
+
     /**
      * Indicates whether the variable editor modal is currently visible.
      */
     public bool $showing = false;
-    
+
     /**
      * The ID of the environment variable currently being edited.
      */
     public ?string $environmentVariableId = null;
-    
+
     /**
      * The key of the environment variable being edited.
      */
     public string $key = '';
-    
+
     /**
      * The value of the environment variable being edited.
      */
@@ -60,14 +60,14 @@ class EnvironmentVariableEditor extends Component
     public function launchEditorModal(EnvironmentVariable $variable): void
     {
         $this->authorize('perform', [$variable->environment, TeamPermission::EditVariables]);
-        
+
         $this->environmentVariableId = $variable->id;
         $this->key = $variable->key;
         $this->value = $variable->value;
-        
+
         $this->showing = true;
-    } 
-    
+    }
+
     /**
      * Retrieve the variable instance based on the provided variable ID.
      */
@@ -76,9 +76,9 @@ class EnvironmentVariableEditor extends Component
     {
         return EnvironmentVariable::find($this->environmentVariableId);
     }
-    
+
     /**
-     * Get a list of suggested environment variable keys 
+     * Get a list of suggested environment variable keys
      * for the current environment.
      *
      * @return array<int, string>
@@ -89,12 +89,12 @@ class EnvironmentVariableEditor extends Component
         if (is_null($this->variable)) {
             return [];
         }
-        
+
         return app(SuggestEnvKeys::class)->handle(
             $this->variable->environment
         );
     }
-    
+
     /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
@@ -108,7 +108,7 @@ class EnvironmentVariableEditor extends Component
     {
         return CommonEnvKey::suggestedValuesFor($this->key);
     }
-    
+
     /**
      * Livewire lifecycle hook: triggered when the `key` property is updated.
      *
@@ -133,37 +133,38 @@ class EnvironmentVariableEditor extends Component
     public function update(): void
     {
         $this->authorize('perform', [$this->variable->environment, TeamPermission::EditVariables]);
-        
+
         // No actual changes were made.
         if ($this->noChangesWereMade()) {
             $this->showing = false;
             $this->reset('key', 'value', 'environmentVariableId');
+
             return;
         }
-        
+
         $validated = $this->validate(
             EnvVariableRules::update(
-                environment: $this->variable->environment, 
+                environment: $this->variable->environment,
                 except: $this->variable
             )
         );
-        
+
         $this->variable->update([
-            'key' => $validated['key'], 
-            'value' => $validated['value']
+            'key' => $validated['key'],
+            'value' => $validated['value'],
         ]);
-        
+
         Flux::toast(
             variant: 'success',
             heading: 'Variable Updated',
             text: "“{$validated['key']}” was successfully updated."
         );
-        
+
         $this->dispatch(self::UPDATED, $this->environmentVariableId);
         $this->showing = false;
         $this->reset('key', 'value', 'environmentVariableId');
     }
-    
+
     /**
      * Determine if the current key and value inputs match the original variable.
      *
@@ -175,7 +176,7 @@ class EnvironmentVariableEditor extends Component
         return $this->key === $this->variable?->key
             && $this->value === $this->variable?->value;
     }
-    
+
     public function render()
     {
         return <<<'BLADE'

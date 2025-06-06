@@ -25,7 +25,7 @@ class Environment extends Model implements SupportsOverrides
     protected $fillable = [
         'name',
         'type',
-        'is_restricted'
+        'is_restricted',
     ];
 
     protected $casts = [
@@ -46,7 +46,7 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->hasMany(EnvironmentVariable::class);
     }
-    
+
     public function owningTeam(): Team
     {
         return $this->project->team;

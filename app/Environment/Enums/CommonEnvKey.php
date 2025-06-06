@@ -55,7 +55,7 @@ enum CommonEnvKey: string
             self::cases()
         );
     }
-    
+
     public static function grouped(): array
     {
         return [

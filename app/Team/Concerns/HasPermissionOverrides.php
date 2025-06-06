@@ -23,7 +23,7 @@ trait HasPermissionOverrides
     {
         return (bool) $this->is_restricted;
     }
-    
+
     /**
      * Get all permission overrides associated with this resource.
      *
@@ -33,9 +33,9 @@ trait HasPermissionOverrides
     {
         return $this->morphMany(TeamPermissionOverride::class, 'target');
     }
-    
+
     /**
-     * Check if the given user has a specific permission 
+     * Check if the given user has a specific permission
      * override on this resource.
      */
     public function userHasOverride(User $user, TeamPermission $permission): bool

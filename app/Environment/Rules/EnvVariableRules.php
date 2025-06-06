@@ -17,22 +17,21 @@ class EnvVariableRules
             'value' => self::valueRules(),
         ];
     }
-    
+
     /**
      * Validation rules for updating an existing environment variable.
      * Allows the current key to remain unchanged while still enforcing uniqueness.
      */
     public static function update(
-        Environment $environment, 
+        Environment $environment,
         EnvironmentVariable $except
-    ): array
-    {
+    ): array {
         return [
             'key' => self::updateKeyRules($environment, $except),
             'value' => self::valueRules(),
         ];
     }
-    
+
     /**
      * Rules for validating a key during creation.
      */
@@ -42,20 +41,19 @@ class EnvVariableRules
             new UniqueEnvKey($environment),
         ]);
     }
-    
+
     /**
      * Rules for validating a key during update.
      */
     public static function updateKeyRules(
-        Environment $environment, 
+        Environment $environment,
         EnvironmentVariable $except
-    ): array
-    {
+    ): array {
         return array_merge(self::keyRules(), [
             new UniqueEnvKey($environment, $except),
         ]);
     }
-    
+
     /**
      * Base rules for all keys.
      */
@@ -63,7 +61,7 @@ class EnvVariableRules
     {
         return ['required', new ValidEnvKey];
     }
-    
+
     /**
      * Rules for validating the value field.
      */

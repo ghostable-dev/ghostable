@@ -20,16 +20,16 @@ class TeamPermissionOverride extends Model
     protected $fillable = [
         'permission',
     ];
-    
+
     protected $casts = [
         'permission' => TeamPermission::class,
     ];
-    
+
     public function newEloquentBuilder($query): Builder
     {
         return new TeamPermissionOverrideBuilder($query);
     }
-    
+
     public function target(): MorphTo
     {
         return $this->morphTo();

@@ -15,14 +15,14 @@ class EnvironmentGeneralSettings extends Component
 {
     #[Locked]
     public string $environmentId;
-    
-    /** 
-     * The editable name of the environment. 
+
+    /**
+     * The editable name of the environment.
      */
     public string $name;
-    
-    /** 
-     * The selected environment type (e.g., production, staging). 
+
+    /**
+     * The selected environment type (e.g., production, staging).
      */
     public EnvironmentType $type;
 
@@ -34,7 +34,7 @@ class EnvironmentGeneralSettings extends Component
         $this->name = $environment->name;
         $this->type = $environment->type;
     }
-    
+
     /**
      * Retrieve the current environment instance based on the bound environment ID.
      */
@@ -43,7 +43,7 @@ class EnvironmentGeneralSettings extends Component
     {
         return Environment::findOrFail($this->environmentId);
     }
-    
+
     /**
      * Get the list of available environment types as select options.
      *
@@ -54,7 +54,7 @@ class EnvironmentGeneralSettings extends Component
     {
         return EnvironmentType::selectOptions();
     }
-    
+
     /**
      * Determine whether the authenticated user can manage the current environment's settings.
      *
@@ -65,7 +65,7 @@ class EnvironmentGeneralSettings extends Component
     {
         return Gate::allows('manageSettings', $this->environment);
     }
-    
+
     /**
      * Update the environment's metadata, including its name and type.
      *
@@ -75,17 +75,17 @@ class EnvironmentGeneralSettings extends Component
     public function updateEnvironment(): void
     {
         $this->authorize('manageSettings', $this->environment);
-        
+
         $validated = $this->validate(EnvironmentRules::updateRules($this->environment));
 
         $this->environment->update([
             'name' => $validated['name'],
-            'type' => $validated['type']
+            'type' => $validated['type'],
         ]);
 
         $this->dispatch('environment-updated');
     }
-    
+
     /**
      * Permanently delete the current environment.
      *
@@ -97,14 +97,14 @@ class EnvironmentGeneralSettings extends Component
     public function deleteEnvironment(): void
     {
         $project = $this->environment->project;
-        
+
         $this->authorize('perform', [$project, TeamPermission::DeleteEnvironments]);
-        
+
         $this->environment->delete();
 
         $this->redirect(route('projects.view', $project));
     }
-    
+
     public function render()
     {
         return view('environment.environment-general-settings');

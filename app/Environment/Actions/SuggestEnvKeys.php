@@ -10,7 +10,6 @@ class SuggestEnvKeys
     /**
      * Generate grouped suggestions for environment variable keys.
      *
-     * @param  Environment  $environment
      * @return array<string, array<int, string>>
      */
     public function handle(Environment $environment): array
@@ -36,7 +35,7 @@ class SuggestEnvKeys
                 ->reject(fn ($key) => $existingKeys->contains($key))
                 ->values()
                 ->all();
-        })->filter(fn ($group) => !empty($group));
+        })->filter(fn ($group) => ! empty($group));
 
         // Find project keys not in the standard set
         $customProjectKeys = $otherKeys
@@ -44,7 +43,7 @@ class SuggestEnvKeys
             ->values()
             ->all();
 
-        if (!empty($customProjectKeys)) {
+        if (! empty($customProjectKeys)) {
             $filteredGroups->put('Other Project Keys', $customProjectKeys);
         }
 

@@ -21,11 +21,11 @@ return new class extends Migration
             $table->index('deleted_at');
 
             $table->unique([
-                'user_id', 
-                'target_id', 
-                'target_type', 
+                'user_id',
+                'target_id',
+                'target_type',
                 'permission',
-                'deleted_at'
+                'deleted_at',
             ], 'unique_override');
         });
     }

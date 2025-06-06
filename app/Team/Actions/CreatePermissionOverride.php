@@ -10,12 +10,11 @@ use App\Team\Models\TeamPermissionOverride;
 class CreatePermissionOverride
 {
     public function handle(
-        User $user, 
-        SupportsOverrides $target, 
+        User $user,
+        SupportsOverrides $target,
         TeamPermission $permission
-    ): void
-    {
-        $override = new TeamPermissionOverride();
+    ): void {
+        $override = new TeamPermissionOverride;
         $override->permission = $permission;
         $override->target()->associate($target);
         $override->user()->associate($user);

@@ -90,13 +90,12 @@ trait BelongsToTeams
 
         return $role->hasPermission($permission);
     }
-    
+
     public function cans(
-        TeamPermission $permission, 
-        ?Project $project = null, 
+        TeamPermission $permission,
+        ?Project $project = null,
         ?Environment $env = null
-    ): bool
-    {
+    ): bool {
         $team = $this->currentTeam();
 
         // 1. If project is restricted, override must explicitly allow

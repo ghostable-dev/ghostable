@@ -14,7 +14,7 @@ class EnvironmentRules
             'type' => self::typeRules(),
         ];
     }
-    
+
     public static function updateRules(Environment $environment): array
     {
         return [
@@ -22,12 +22,12 @@ class EnvironmentRules
             'type' => self::typeRules(),
         ];
     }
-    
+
     public static function nameRules(Project $project, ?Environment $environment = null): array
     {
         return ['required', new UniqueEnvironmentName($project, $environment)];
     }
-    
+
     public static function typeRules(): array
     {
         return ['required', new ValidEnvType];

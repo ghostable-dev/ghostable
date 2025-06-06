@@ -22,7 +22,7 @@ class TeamProjects extends Component
     {
         return Auth::user()->currentTeam();
     }
-    
+
     #[On('project-created')]
     public function refreshProjects(): void
     {

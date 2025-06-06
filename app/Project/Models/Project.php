@@ -24,7 +24,7 @@ class Project extends Model implements SupportsOverrides
     protected $fillable = [
         'name',
         'description',
-        'is_restricted'
+        'is_restricted',
     ];
 
     public static function newFactory(): ProjectFactory
@@ -41,14 +41,14 @@ class Project extends Model implements SupportsOverrides
     {
         return $this->hasMany(Environment::class);
     }
-    
+
     public function environmentOrFail(string $name): Environment
     {
         return $this->environments()
             ->where('name', $name)
             ->firstOrFail();
     }
-    
+
     public function owningTeam(): Team
     {
         return $this->team;

@@ -15,7 +15,7 @@ class TeamPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can manage members of the given team.
      *
@@ -28,10 +28,10 @@ class TeamPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can manage settings of the given team.
-     * 
+     *
      * This includes updating the team name and icon.
      */
     public function manageSettings(User $user, Team $team): bool
@@ -41,7 +41,7 @@ class TeamPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can manage access controls for the given team.
      *
@@ -55,7 +55,7 @@ class TeamPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can manage billing of the given team.
      */
@@ -66,7 +66,7 @@ class TeamPolicy
             team: $team
         );
     }
-    
+
     /**
      * Determine if the user can view audit logs of the given team.
      */
@@ -77,11 +77,6 @@ class TeamPolicy
             team: $team
         );
     }
-
-    
-    
-
-
 
     public function admin(User $user, Team $team): bool
     {

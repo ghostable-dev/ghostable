@@ -23,7 +23,7 @@ class ProjectCreateModal extends Component
         $this->reset('name');
 
         $this->dispatch('project-created');
-        
+
         Flux::modal('create-project')->close();
         Flux::toast('New project has been created.');
     }

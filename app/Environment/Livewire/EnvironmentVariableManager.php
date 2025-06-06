@@ -26,35 +26,35 @@ class EnvironmentVariableManager extends Component
      */
     #[Locked]
     public string $envId;
-    
+
     /**
      * The key of the environment variable being created.
      */
     public string $key = '';
-    
+
     /**
      * The value of the environment variable being created.
      */
     public string $value = '';
-    
+
     /**
      * Default sort key
      */
     public string $sortBy = 'key';
-    
+
     /**
      * Table sort direction
      */
     public string $sortDirection = 'asc';
-    
+
     /**
      * The ID of the variable currently selected for removal.
      *
-     * Used to resolve the environment variable 
+     * Used to resolve the environment variable
      * instance prior to deletion.
      */
     public ?string $variableToRemoveId = null;
-    
+
     #[Locked]
     public array $showing = [];
 
@@ -66,7 +66,7 @@ class EnvironmentVariableManager extends Component
 
         $this->envId = $environment->id;
     }
-    
+
     /**
      * Retrieve the current environment instance based on the provided environment ID.
      *
@@ -77,10 +77,10 @@ class EnvironmentVariableManager extends Component
     {
         return Environment::findOrFail($this->envId);
     }
-    
+
     /**
      * Get a list of suggested environment variable keys for the current environment.
-     * 
+     *
      * @return array<int, string>
      */
     #[Computed]
@@ -88,7 +88,7 @@ class EnvironmentVariableManager extends Component
     {
         return app(SuggestEnvKeys::class)->handle($this->environment);
     }
-    
+
     /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
@@ -102,7 +102,7 @@ class EnvironmentVariableManager extends Component
     {
         return CommonEnvKey::suggestedValuesFor($this->key);
     }
-    
+
     /**
      * Livewire lifecycle hook: triggered when the `key` property is updated.
      *
@@ -113,7 +113,7 @@ class EnvironmentVariableManager extends Component
     {
         $this->key = app(NormalizeEnvKey::class)->handle($value);
     }
-    
+
     /**
      * Add a new environment variable to the current environment.
      *
@@ -141,7 +141,7 @@ class EnvironmentVariableManager extends Component
         $this->reset('key', 'value');
         Flux::toast("New variable '{$variable->key}' added.");
     }
-    
+
     /**
      * Retrieve the list of environment variables for the current environment,
      * sorted by the currently selected column and direction.
@@ -157,13 +157,13 @@ class EnvironmentVariableManager extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->get();
     }
-    
+
     /**
      * Update the sorting configuration for environment variables.
      *
-     * If the same column is clicked again, the sort 
+     * If the same column is clicked again, the sort
      * direction toggles between ascending and descending.
-     * Otherwise, it sets the new column as the sort target 
+     * Otherwise, it sets the new column as the sort target
      * and resets direction to ascending.
      */
     public function sort(string $column): void
@@ -171,7 +171,7 @@ class EnvironmentVariableManager extends Component
         if (! in_array($column, ['key', 'updated_at'], true)) {
             return;
         }
-    
+
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -179,7 +179,7 @@ class EnvironmentVariableManager extends Component
             $this->sortDirection = 'asc';
         }
     }
-    
+
     /**
      * Begin the variable removal process by storing the variable ID
      * and showing the confirmation modal.
@@ -190,12 +190,12 @@ class EnvironmentVariableManager extends Component
     public function confirmVariableRemoval(EnvironmentVariable $var): void
     {
         $this->variableToRemoveId = $var->id;
-        
+
         $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
-        
+
         Flux::modal('confirm-variable-removal')->show();
     }
-    
+
     /**
      * Resolve the variable that is pending removal.
      *
@@ -207,7 +207,7 @@ class EnvironmentVariableManager extends Component
         return $this->environment->variables()
             ->firstWhere('id', $this->variableToRemoveId);
     }
-    
+
     /**
      * Permanently delete the selected variable.
      *
@@ -217,15 +217,15 @@ class EnvironmentVariableManager extends Component
     public function removeVariable(): void
     {
         $this->authorize('perform', [$this->variableToRemove->environment, TeamPermission::EditVariables]);
-        
+
         $this->variableToRemove->delete();
-        
+
         Flux::modal('confirm-variable-removal')->close();
         Flux::toast("Variable '{$this->variableToRemove->key}' remove.");
-        
+
         $this->reset('variableToRemoveId');
     }
-    
+
     /**
      * Dispatch an event to open the environment variable editor for the given variable.
      *
@@ -235,7 +235,7 @@ class EnvironmentVariableManager extends Component
     {
         $this->dispatch(EnvironmentVariableEditor::LAUNCH, $variable->id);
     }
-    
+
     /**
      * Livewire listener to refresh the list of environment variables
      * after a variable has been updated via the editor.
@@ -247,11 +247,11 @@ class EnvironmentVariableManager extends Component
     {
         $this->variables();
     }
-    
+
     public function toggleSecret(EnvironmentVariable $var): void
     {
         $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
-        
+
         $this->showing[$var->id] = ! ($this->showing[$var->id] ?? false);
     }
 

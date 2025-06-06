@@ -8,7 +8,6 @@ use App\Environment\Rules\EnvironmentRules;
 use App\Project\Models\Project;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -18,20 +17,20 @@ use Livewire\Features\SupportPagination\HandlesPagination;
 class ProjectEnvironmentsManager extends Component
 {
     use HandlesPagination;
-    
+
     #[Locked]
     public string $projectId;
-    
+
     /**
      * The name of the new environment.
      */
     public string $name = '';
-    
+
     /**
      * The default environment display tab.
      */
     public string $tab = 'board';
-    
+
     /**
      * The selected environment type (e.g., Production, Staging).
      */
@@ -43,19 +42,19 @@ class ProjectEnvironmentsManager extends Component
 
         $this->projectId = $project->id;
     }
-    
+
     #[Computed]
     public function project(): Project
     {
         return Project::findOrFail($this->projectId);
     }
-    
+
     #[Computed]
     public function environments(): Collection
     {
         return $this->project->environments;
     }
-    
+
     /**
      * Get the list of available environment types as select options.
      *
@@ -66,14 +65,14 @@ class ProjectEnvironmentsManager extends Component
     {
         return EnvironmentType::selectOptions();
     }
-    
+
     /**
      * Create a new environment under the current project.
      */
     public function createEnvironment(): void
     {
         $this->authorize('perform', [$this->project, TeamPermission::CreateEnvironments]);
-        
+
         $this->validate(EnvironmentRules::createRules($this->project));
 
         app(CreateEnv::class)->handle(
@@ -83,7 +82,7 @@ class ProjectEnvironmentsManager extends Component
         );
 
         $this->reset('type', 'name');
-        
+
         Flux::modal('create-env')->close();
         Flux::toast('The new environment has been created.');
     }
