@@ -3,6 +3,7 @@
 namespace App\Auth;
 
 use App\Auth\Actions\Logout;
+use App\Auth\Api\Controllers\LoginViaCli;
 use App\Auth\Http\Controllers\VerifyEmailController;
 use App\Auth\Livewire\ConfirmPassword;
 use App\Auth\Livewire\ForgotPassword;
@@ -13,7 +14,10 @@ use Illuminate\Support\Facades\Route;
 
 class AuthRoutes
 {
-    public static function api(): void {}
+    public static function api(): void 
+    {
+        Route::post('/cli/login', LoginViaCli::class);
+    }
 
     public static function web(): void
     {

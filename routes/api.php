@@ -1,15 +1,14 @@
 <?php
 
 use App\Account\AccountRoutes;
-use App\Api\Http\Controllers\LoginViaCli;
+use App\Auth\AuthRoutes;
 use App\Environment\EnvironmentRoutes;
 use App\Project\ProjectRoutes;
 use App\Team\TeamRoutes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/cli/login', LoginViaCli::class);
-
+AuthRoutes::api();
 AccountRoutes::api();
 TeamRoutes::api();
 ProjectRoutes::api();

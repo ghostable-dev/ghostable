@@ -41,13 +41,16 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="access">
-            @can('manageAccessControls', $this->environment->owningTeam())
-                <livewire:environment.livewire.environment-access-manager 
-                    :environment="$this->environment"/>
+            @if(!$this->environment->owningTeam()->isPersonal())
+                @can('manageAccessControls', $this->environment->owningTeam())
+                    <livewire:environment.livewire.environment-access-manager 
+                        :environment="$this->environment"/>
+                @else
+                    <x-access-restricted/>
+                @endcan
             @else
-                <x-access-restricted/>
-            @endcan
-            
+                <x-non-personal-team-restricted/>
+            @endif
         </flux:tab.panel>
         
     </flux:tab.group>

@@ -28,11 +28,15 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="access">
-            @can('manageAccessControls', $this->project->team)
-                <livewire:project.livewire.project-access-manager :project="$this->project"/>
+            @if(!$this->project->team->isPersonal())
+                @can('manageAccessControls', $this->project->team)
+                    <livewire:project.livewire.project-access-manager :project="$this->project"/>
+                @else
+                    <x-access-restricted/>
+                @endcan
             @else
-                <x-access-restricted/>
-            @endcan
+                <x-non-personal-team-restricted/>
+            @endif
         </flux:tab.panel>
         
     </flux:tab.group>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Providers;
+namespace App\Environment;
 
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
