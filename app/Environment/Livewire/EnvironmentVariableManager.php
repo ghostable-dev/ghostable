@@ -3,8 +3,13 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Actions\CreateEnvVariable;
+use App\Environment\Actions\DeleteEnvVariable;
+use App\Environment\Actions\LogEnvironmentViewed;
+use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
+use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Enums\CommonEnvKey;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
@@ -12,6 +17,7 @@ use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -65,6 +71,12 @@ class EnvironmentVariableManager extends Component
         $this->forcePasswordConfirmation();
 
         $this->envId = $environment->id;
+        
+        app(LogEnvironmentViewed::class)->handle(
+            environment: $environment,
+            user: Auth::user(),
+            source: 'ui',
+        );
     }
 
     /**
@@ -133,13 +145,30 @@ class EnvironmentVariableManager extends Component
             attributes: ['key' => $this->key, 'value' => $this->value]
         );
 
-        $variable = $this->environment->variables()->create([
-            'key' => $validated['key'],
-            'value' => $validated['value'],
-        ]);
+        $variable = app(CreateEnvVariable::class)
+            ->handle($this->toCreateVariableData($validated));
+            
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         $this->reset('key', 'value');
         Flux::toast("New variable '{$variable->key}' added.");
+    }
+
+    /**
+     * Transform a raw input array into a CreateEnvVariableData DTO.
+     *
+     * This helper is used to convert incoming data (e.g., from a request or import)
+     * into a structured format suitable for creating an environment variable.
+     * It automatically associates the current environment and authenticated user.
+     */
+    private function toCreateVariableData(array $input): CreateEnvVariableData
+    {
+        return new CreateEnvVariableData(
+            environment: $this->environment,
+            key: $input['key'],
+            value: $input['value'],
+            createdBy: Auth::user()
+        );
     }
 
     /**
@@ -216,9 +245,16 @@ class EnvironmentVariableManager extends Component
      */
     public function removeVariable(): void
     {
-        $this->authorize('perform', [$this->variableToRemove->environment, TeamPermission::EditVariables]);
+        $environment = $this->variableToRemove->environment;
 
-        $this->variableToRemove->delete();
+        $this->authorize('perform', [$environment, TeamPermission::EditVariables]);
+
+        app(DeleteEnvVariable::class)->handle(
+            var: $this->variableToRemove,
+            deletedBy: Auth::user()
+        );
+        
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         Flux::modal('confirm-variable-removal')->close();
         Flux::toast("Variable '{$this->variableToRemove->key}' remove.");
@@ -227,13 +263,27 @@ class EnvironmentVariableManager extends Component
     }
 
     /**
-     * Dispatch an event to open the environment variable editor for the given variable.
+     * Dispatch an event to open the environment 
+     * variable editor for the given variable.
      *
-     * This triggers the `EnvironmentVariableEditor` component to load and show the modal.
+     * This triggers the `EnvironmentVariableEditor` 
+     * component to load and show the modal.
      */
     public function editVariable(EnvironmentVariable $variable): void
     {
         $this->dispatch(EnvironmentVariableEditor::LAUNCH, $variable->id);
+    }
+    
+    /**
+     * Dispatch an event to open the environment 
+     * variable activity feed for the given variable.
+     *
+     * This triggers the `EnvironmentVariableActivityFeed` 
+     * component to load and show the modal.
+     */
+    public function viewVariableActivity(EnvironmentVariable $variable): void
+    {
+        $this->dispatch(EnvironmentVariableActivityFeed::LAUNCH, $variable->id);
     }
 
     /**
@@ -251,8 +301,15 @@ class EnvironmentVariableManager extends Component
     public function toggleSecret(EnvironmentVariable $var): void
     {
         $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
+        
+        $isNowVisible = ! ($this->showing[$var->id] ?? false);
 
-        $this->showing[$var->id] = ! ($this->showing[$var->id] ?? false);
+        $this->showing[$var->id] = $isNowVisible;
+        
+        if ($isNowVisible) {
+            app(LogVariableRevealed::class)->handle($var);
+            $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        }
     }
 
     public function render()

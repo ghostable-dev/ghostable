@@ -3,13 +3,17 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
+use App\Environment\Actions\UpdateEnvVariable;
+use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Enums\CommonEnvKey;
 use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -64,6 +68,12 @@ class EnvironmentVariableEditor extends Component
         $this->environmentVariableId = $variable->id;
         $this->key = $variable->key;
         $this->value = $variable->value;
+        
+        if ($this->variable()->isSecret()) {
+            app(LogVariableRevealed::class)->handle($this->variable);
+        }
+        
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         $this->showing = true;
     }
@@ -142,27 +152,39 @@ class EnvironmentVariableEditor extends Component
             return;
         }
 
-        $validated = $this->validate(
-            EnvVariableRules::update(
-                environment: $this->variable->environment,
-                except: $this->variable
-            )
-        );
+        $validated = $this->validate(EnvVariableRules::update());
 
-        $this->variable->update([
-            'key' => $validated['key'],
-            'value' => $validated['value'],
-        ]);
+        app(UpdateEnvVariable::class)->handle(
+            $this->toUpdateVariableData($validated)
+        );
+        
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         Flux::toast(
             variant: 'success',
             heading: 'Variable Updated',
-            text: "“{$validated['key']}” was successfully updated."
+            text: "“{$this->key}” was successfully updated."
         );
 
         $this->dispatch(self::UPDATED, $this->environmentVariableId);
         $this->showing = false;
         $this->reset('key', 'value', 'environmentVariableId');
+    }
+
+    /**
+     * Transform a raw input array into a UpdateEnvVariableData DTO.
+     *
+     * This helper is used to convert incoming data.
+     * into a structured format suitable for updating an environment variable.
+     * It automatically associates the current variable and authenticated user.
+     */
+    private function toUpdateVariableData(array $input): UpdateEnvVariableData
+    {
+        return new UpdateEnvVariableData(
+            variable: $this->variable,
+            value: $input['value'] ?? '',
+            updatedBy: Auth::user()
+        );
     }
 
     /**
@@ -186,11 +208,11 @@ class EnvironmentVariableEditor extends Component
                         <flux:heading size="lg">Update Variable</flux:heading>
                     </div>
                     <div class="space-y-4">
-                        <x-environment-key-autocomplete
-                            wire:model.live="key" 
-                            label="Key" 
-                            required
-                            :groupedSuggestions="$this->keySuggestions"/>
+                        <flux:input 
+                            wire:model="key" 
+                            readonly 
+                            icon:trailing="lock-closed"
+                            label="Key"/>
                         <flux:autocomplete 
                             wire:model.live="value" 
                             label="Value" 

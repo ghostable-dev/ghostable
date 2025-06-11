@@ -50,7 +50,7 @@ class EnvironmentController extends Controller
 
         request()->user()->can('perform', [$env, TeamPermission::PushFile]);
 
-        $result = PushEnvVars::handle(
+        $result = app(PushEnvVars::class)->handle(
             env: $env,
             incomingRaw: request()->input('vars') ?? []
         );

@@ -22,12 +22,9 @@ class EnvVariableRules
      * Validation rules for updating an existing environment variable.
      * Allows the current key to remain unchanged while still enforcing uniqueness.
      */
-    public static function update(
-        Environment $environment,
-        EnvironmentVariable $except
-    ): array {
+    public static function update(): array
+    {
         return [
-            'key' => self::updateKeyRules($environment, $except),
             'value' => self::valueRules(),
         ];
     }

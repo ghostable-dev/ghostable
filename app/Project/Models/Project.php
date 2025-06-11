@@ -13,12 +13,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Project extends Model implements SupportsOverrides
 {
     use HasFactory;
     use HasPermissionOverrides;
     use HasUuids;
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = [
@@ -40,6 +43,26 @@ class Project extends Model implements SupportsOverrides
     public function environments(): HasMany
     {
         return $this->hasMany(Environment::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('project')
+            ->logFillable()
+            ->logOnlyDirty(true);
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return match ($eventName) {
+            'created' => 'Created project "'.$this->name.'"',
+            'updated' => $this->wasChanged('name')
+                ? 'Renamed project from "'.$this->getOriginal('name').'" to "'.$this->name.'"'
+                : 'Updated project "'.$this->name.'"',
+            'deleted' => 'Deleted project "'.$this->name.'"',
+            default => ucfirst($eventName).' project "'.$this->name.'"',
+        };
     }
 
     public function environmentOrFail(string $name): Environment

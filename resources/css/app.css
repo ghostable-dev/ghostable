@@ -26,10 +26,14 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
+    
+    --color-crypto: #69CF9E;
+    --color-brand: var(--color-crypto);
 }
 
 @layer theme {
     .dark {
+        --color-brand: var(--color-crypto);
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);

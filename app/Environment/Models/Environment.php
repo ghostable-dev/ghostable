@@ -14,12 +14,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Environment extends Model implements SupportsOverrides
 {
     use HasFactory;
     use HasPermissionOverrides;
     use HasUuids;
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = [
@@ -47,8 +50,33 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariable::class);
     }
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('environment')
+            ->logFillable()
+            ->logOnlyDirty(true);
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return match ($eventName) {
+            'created' => 'Created environment "'.$this->name.'"',
+            'updated' => $this->wasChanged('name')
+                ? 'Renamed environment from "'.$this->getOriginal('name').'" to "'.$this->name.'"'
+                : 'Updated environment "'.$this->name.'"',
+            'deleted' => 'Deleted environment "'.$this->name.'"',
+            default => ucfirst($eventName).' environment "'.$this->name.'"',
+        };
+    }
+
     public function owningTeam(): Team
     {
         return $this->project->team;
+    }
+
+    public function findVariableForKey(string $key): ?EnvironmentVariable
+    {
+        return $this->variables()->where('key', $key)->first();
     }
 }

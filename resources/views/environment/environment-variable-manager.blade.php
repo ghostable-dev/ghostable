@@ -47,9 +47,9 @@
                 <flux:table.column>Value</flux:table.column>
                 <flux:table.column
                     sortable 
-                    :sorted="$sortBy === 'updated_at'" 
+                    :sorted="$sortBy === 'last_updated_at'" 
                     :direction="$sortDirection" 
-                    wire:click="sort('updated_at')">Age</flux:table.column>
+                    wire:click="sort('last_updated_at')">Age</flux:table.column>
                 <flux:table.column></flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
@@ -80,7 +80,7 @@
                             </flux:input>
                         </flux:table.cell>
                         <flux:table.cell>
-                            {{ $var->updated_at->shortAbsoluteDiffForHumans() }}
+                            {{ $var->last_updated_at->shortAbsoluteDiffForHumans() }}
                         </flux:table.cell>
                         <flux:table.cell align="end">
                             @perform($this->environment, 'var:edit')
@@ -90,6 +90,10 @@
                                     <flux:menu.item 
                                         wire:click="editVariable('{{ $var->id }}')">
                                         Edit
+                                    </flux:menu.item>
+                                    <flux:menu.item 
+                                        wire:click="viewVariableActivity('{{ $var->id }}')">
+                                        Activity
                                     </flux:menu.item>
                                     <flux:menu.item 
                                         wire:click="confirmVariableRemoval('{{ $var->id }}')"
@@ -107,6 +111,9 @@
         
         {{-- Variable editor modal --}}
         <livewire:environment.livewire.environment-variable-editor />
+        
+        {{-- Variable activity feed modal --}}
+        <livewire:environment.livewire.environment-variable-activity-feed />
         
         {{-- Remove variable modal --}}
         <flux:modal name="confirm-variable-removal" class="md:w-lg">

@@ -1,9 +1,14 @@
-<x-layouts.app.sidebar :title="$title ?? null">
-    <flux:main>
+@props([
+    'title' => null,
+    'breadcrumbs' => null    
+])
+<x-layouts.app.header :$title :$breadcrumbs>
+    
+    <flux:main container>
         {{ $slot }}
     </flux:main>
     
     @persist('toast')
         <flux:toast />
     @endpersist
-</x-layouts.app.sidebar>
+</x-layouts.app.header>
