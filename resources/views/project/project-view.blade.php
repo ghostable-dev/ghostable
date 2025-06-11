@@ -1,3 +1,10 @@
+{{-- Breadcrumbs: Project --}}
+<x-slot name="breadcrumbs">
+    <flux:breadcrumbs.item>
+        <x-projects-drop-button :project="$this->project"/>
+    </flux:breadcrumbs.item>
+</x-slot>
+
 <section class="w-full space-y-6">
     
     <div class="relative mb-6 w-full">
@@ -13,6 +20,7 @@
             <flux:tab name="environments">Environments</flux:tab>
             <flux:tab name="general">General</flux:tab>
             <flux:tab name="access">Access</flux:tab>
+            <flux:tab name="activity">Activity</flux:tab>
         </flux:tabs>
 
         <flux:tab.panel name="environments">
@@ -31,6 +39,18 @@
             @if(!$this->project->team->isPersonal())
                 @can('manageAccessControls', $this->project->team)
                     <livewire:project.livewire.project-access-manager :project="$this->project"/>
+                @else
+                    <x-access-restricted/>
+                @endcan
+            @else
+                <x-non-personal-team-restricted/>
+            @endif
+        </flux:tab.panel>
+        
+        <flux:tab.panel name="activity">
+            @if(!$this->project->team->isPersonal())
+                @can('viewAuditLogs', $this->project->team)
+                    <livewire:project.livewire.project-activity :project="$this->project"/>
                 @else
                     <x-access-restricted/>
                 @endcan

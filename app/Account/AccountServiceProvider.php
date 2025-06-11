@@ -3,6 +3,7 @@
 namespace App\Account;
 
 use App\Account\Console\Commands\AppSetup;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 class AccountServiceProvider extends ServiceProvider
@@ -11,6 +12,10 @@ class AccountServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Relation::enforceMorphMap([
+            'user' => 'App\Account\Models\User',
+        ]);
+        
         if ($this->app->runningInConsole()) {
             $this->commands([
                 AppSetup::class,

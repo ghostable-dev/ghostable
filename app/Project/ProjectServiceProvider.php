@@ -4,6 +4,7 @@ namespace App\Project;
 
 use App\Project\Models\Project;
 use App\Project\Policies\ProjectPolicy;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,5 +15,9 @@ class ProjectServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Project::class, ProjectPolicy::class);
+        
+        Relation::enforceMorphMap([
+            'project' => 'App\Project\Models\Project',
+        ]);
     }
 }

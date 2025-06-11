@@ -2,11 +2,15 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Entities\CreateEnvVariableData;
+use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Entities\EnvLine;
 use App\Environment\Entities\PushResultData;
 use App\Environment\Models\Environment;
+use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Services\EnvParser;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class PushEnvVars
 {
@@ -15,19 +19,30 @@ class PushEnvVars
      *
      * @param  array<int, string>  $incomingRaw  Raw .env lines
      */
-    public static function handle(
+    public function handle(
         Environment $env,
         array $incomingRaw
     ): PushResultData {
         $parser = new EnvParser;
-        $incoming = self::normalizeIncoming($parser->parse($incomingRaw));
-        $existing = self::loadExisting($env);
+        $incoming = $this->normalizeIncoming($parser->parse($incomingRaw));
+        $existing = $this->loadExisting($env);
 
         $added = $incoming->keys()->diff($existing->keys());
         $removed = $existing->keys()->diff($incoming->keys());
-        $updated = self::findUpdates($incoming, $existing);
+        $updated = $this->findUpdates($incoming, $existing);
 
-        self::applyChanges($env, $incoming, $added, $updated, $removed);
+        $this->applyChanges($env, $incoming, $added, $updated, $removed);
+        
+        // Log results
+        activity('variable')
+            ->performedOn($env)
+            ->causedBy(Auth::user())
+            ->event('push')
+            ->withProperties([
+                'added' => $added->count(),
+                'updated' => $updated->count(),
+                'removed' => $removed->count(),
+            ])->log("Pushed environment file to \"{$env->name}\"");
 
         return new PushResultData(
             added: $added->count(),
@@ -42,7 +57,7 @@ class PushEnvVars
      * @param  array<int, EnvLine>  $raw
      * @return Collection<string, EnvLine>
      */
-    private static function normalizeIncoming(array $raw): Collection
+    private function normalizeIncoming(array $raw): Collection
     {
         return collect($raw)
             ->filter(fn (EnvLine $line) => $line->isValid())
@@ -54,7 +69,7 @@ class PushEnvVars
      *
      * @return Collection<string, array{id: int, value: string, is_commented: bool}>
      */
-    private static function loadExisting(Environment $env): Collection
+    private function loadExisting(Environment $env): Collection
     {
         return $env->variables()
             ->get(['id', 'key', 'value', 'is_commented'])
@@ -74,7 +89,7 @@ class PushEnvVars
      * @param  Collection<string, array{id: int, value: string, is_commented: bool}>  $existing
      * @return Collection<string, EnvLine>
      */
-    private static function findUpdates(Collection $incoming, Collection $existing): Collection
+    private function findUpdates(Collection $incoming, Collection $existing): Collection
     {
         return $incoming->filter(function (EnvLine $line, string $key) use ($existing) {
             if (! $existing->has($key)) {
@@ -96,7 +111,7 @@ class PushEnvVars
      * @param  Collection<string, EnvLine>  $updated
      * @param  Collection<int, string>  $removed
      */
-    private static function applyChanges(
+    private function applyChanges(
         Environment $env,
         Collection $incoming,
         Collection $added,
@@ -105,28 +120,64 @@ class PushEnvVars
     ): void {
 
         foreach ($added as $key) {
-            CreateEnvVariable::handle(
-                env: $env,
-                key: $incoming[$key]->key,
-                value: $incoming[$key]->value ?? '',
-                is_commented: $incoming[$key]->commented ?? false
+            app(CreateEnvVariable::class)->handle(
+                $this->toCreateVariableData($env, $incoming[$key])
             );
         }
 
         foreach ($updated as $key => $line) {
-            UpdateEnvVariable::handle(
-                env: $env,
-                key: $line->key,
-                value: $line->value ?? '',
-                is_commented: $line->commented ?? false
+            $varToUpdate = $env->findVariableForKey($key);
+            app(UpdateEnvVariable::class)->handle(
+                $this->toUpdateVariableData($varToUpdate, $line)
             );
         }
 
         foreach ($removed as $key) {
-            DeleteEnvVariable::handle(
-                env: $env,
-                key: $key
-            );
+            $varToDelete = $env->findVariableForKey($key);
+            if ($varToDelete) {
+                app(DeleteEnvVariable::class)->handle(
+                    var: $varToDelete,
+                    deletedBy: Auth::user()
+                );
+            }
         }
+    }
+
+    /**
+     * Transform an incoming item into a structured CreateEnvVariableData DTO.
+     *
+     * This is used to convert raw incoming data (e.g., from a push or batch operation)
+     * into a standardized format for creating a new environment variable.
+     */
+    private function toCreateVariableData(
+        Environment $env,
+        object $item
+    ): CreateEnvVariableData {
+        return new CreateEnvVariableData(
+            environment: $env,
+            key: $item->key,
+            value: $item->value ?? '',
+            is_commented: $item->commented ?? false,
+            createdBy: Auth::user(),
+        );
+    }
+
+    /**
+     * Transform an incoming data line and existing variable into an UpdateEnvVariableData DTO.
+     *
+     * This helper is used to prepare structured data for updating an environment variable,
+     * typically as part of a batch or sync operation. It extracts the value and comment status
+     * from the input line and associates the update with the authenticated user.
+     */
+    private function toUpdateVariableData(
+        EnvironmentVariable $variable,
+        object $line
+    ): UpdateEnvVariableData {
+        return new UpdateEnvVariableData(
+            variable: $variable,
+            value: $line->value ?? '',
+            is_commented: $line->commented ?? false,
+            updatedBy: Auth::user(),
+        );
     }
 }

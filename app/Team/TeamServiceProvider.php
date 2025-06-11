@@ -11,6 +11,7 @@ use App\Team\Models\Team;
 use App\Team\Policies\TeamPolicy;
 use App\Team\View\Components\TeamRoleSelect;
 use Blade;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +23,10 @@ class TeamServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Relation::enforceMorphMap([
+            'team' => 'App\Team\Models\Team',
+        ]);
+        
         Blade::if('perform', function (mixed $resource, string $permission) {
             $enum = TeamPermission::tryFrom($permission);
             if (! $enum) {

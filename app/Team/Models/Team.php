@@ -16,12 +16,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Team extends Model
 {
     use HandlesModelEventsWithAttributes;
     use HasFactory;
     use HasUuids;
+    use LogsActivity;
 
     protected $fillable = [
         'name',
@@ -81,6 +84,26 @@ class Team extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('team')
+            ->logOnly(['name'])
+            ->logOnlyDirty(true);
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return match ($eventName) {
+            'created' => 'Created team "'.$this->name.'"',
+            'updated' => $this->wasChanged('name')
+                ? 'Renamed team from "'.$this->getOriginal('name').'" to "'.$this->name.'"'
+                : 'Updated team "'.$this->name.'"',
+            'deleted' => 'Deleted team "'.$this->name.'"',
+            default => ucfirst($eventName).' team "'.$this->name.'"',
+        };
     }
 
     public function isPersonal(): bool

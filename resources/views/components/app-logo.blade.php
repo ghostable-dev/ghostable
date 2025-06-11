@@ -1,6 +1,6 @@
-<div class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-    <x-app-logo-icon class="bordered size-5 fill-current text-white dark:text-black" />
+<div class="flex aspect-square size-6 items-center justify-center">
+    <x-app-logo-icon class="bordered size-6 fill-current text-accent-content dark:accent-content-foreground" />
 </div>
-<div class="ms-1 grid flex-1 text-start text-sm">
-    <span class="mb-0.5 truncate leading-none font-semibold">Ghostable</span>
+<div class="grid ms-2 flex-1 text-start max-sm:hidden">
+    <span class="tracking-tight font-semibold">Ghostable</span>
 </div>
