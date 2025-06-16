@@ -13,7 +13,7 @@ abstract class StripeEvent
     use Dispatchable;
     use InteractsWithSockets;
     use SerializesModels;
-    
+
     public function __construct(
         public Team $team,
         public ?StripePayload $data = null

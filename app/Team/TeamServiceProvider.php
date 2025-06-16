@@ -26,7 +26,7 @@ class TeamServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'team' => 'App\Team\Models\Team',
         ]);
-        
+
         Blade::if('perform', function (mixed $resource, string $permission) {
             $enum = TeamPermission::tryFrom($permission);
             if (! $enum) {

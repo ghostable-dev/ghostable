@@ -2,19 +2,19 @@
 
 namespace App\Billing\Enums;
 
-enum Plan: string 
+enum Plan: string
 {
     case PERSONAL = 'personal';
     case BUSINESS = 'business';
     case ENTERPRISE = 'enterprise';
-    
+
     public static function selectOptions(): array
     {
         return collect(self::cases())
             ->mapWithKeys(fn ($plan) => [$plan->value => $plan->label()])
             ->toArray();
     }
-    
+
     public function label(): string
     {
         return match ($this) {
@@ -23,22 +23,22 @@ enum Plan: string
             self::ENTERPRISE => 'Enterprise'
         };
     }
-    
+
     public function isPersonal(): bool
     {
-        return $this->is(static::PERSONAL);
+        return $this->is(self::PERSONAL);
     }
-    
+
     public function isBusiness(): bool
     {
-        return $this->is(static::BUSINESS);
+        return $this->is(self::BUSINESS);
     }
-    
+
     public function isEnterprise(): bool
     {
-        return $this->is(static::ENTERPRISE);
+        return $this->is(self::ENTERPRISE);
     }
-    
+
     public function is(self $plan): bool
     {
         return $this === $plan;

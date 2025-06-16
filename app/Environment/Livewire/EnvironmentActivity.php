@@ -14,16 +14,16 @@ use Livewire\WithPagination;
 class EnvironmentActivity extends Component
 {
     use WithPagination;
-    
+
     /**
      * Livewire event name for refreshing the environment activity feed.
      *
-     * This should be dispatched whenever a relevant action 
+     * This should be dispatched whenever a relevant action
      * (e.g. variable created, updated, deleted, revealed)
      * occurs and you want to re-fetch the latest activity logs in the UI.
      */
     public const ACTIVITY_UPDATED = 'env:activity-updated';
-    
+
     #[Locked]
     public string $environmentId;
 
@@ -35,7 +35,7 @@ class EnvironmentActivity extends Component
     }
 
     /**
-     * Retrieve the current environment instance 
+     * Retrieve the current environment instance
      * based on the bound environment ID.
      */
     #[Computed]
@@ -43,7 +43,7 @@ class EnvironmentActivity extends Component
     {
         return Environment::findOrFail($this->environmentId);
     }
-    
+
     /**
      * Get a paginated list of activity log entries related to the current environment.
      *
@@ -57,7 +57,7 @@ class EnvironmentActivity extends Component
             ->latest()
             ->paginate(20);
     }
-    
+
     /**
      * Livewire event listener that triggers a refresh of the activity log.
      *

@@ -17,6 +17,45 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Notification;
 
+/**
+ * @property string $id
+ * @property TeamInviteStatus $status
+ * @property string|null $team_id
+ * @property string|null $user_id
+ * @property string $email
+ * @property TeamRole|null $role
+ * @property string|null $permissions
+ * @property \Illuminate\Support\Carbon|null $sent_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Team\Models\Team|null $team
+ * @property-read \App\Account\Models\User|null $user
+ *
+ * @method static TeamInviteBuilder<static>|TeamInvite accepted()
+ * @method static TeamInviteBuilder<static>|TeamInvite expired()
+ * @method static TeamInviteBuilder<static>|TeamInvite newModelQuery()
+ * @method static TeamInviteBuilder<static>|TeamInvite newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamInvite onlyTrashed()
+ * @method static TeamInviteBuilder<static>|TeamInvite pending()
+ * @method static TeamInviteBuilder<static>|TeamInvite query()
+ * @method static TeamInviteBuilder<static>|TeamInvite whereCreatedAt($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereDeletedAt($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereEmail($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereId($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite wherePermissions($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereRole($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereSentAt($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereStatus($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereTeamId($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereUpdatedAt($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite whereUserId($value)
+ * @method static TeamInviteBuilder<static>|TeamInvite withStatus(\App\Team\Enums\TeamInviteStatus $status)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamInvite withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamInvite withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
 class TeamInvite extends Model
 {
     use BelongsToUser;

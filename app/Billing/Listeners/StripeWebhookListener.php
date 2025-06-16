@@ -8,11 +8,11 @@ use Laravel\Cashier\Events\WebhookReceived;
 
 class StripeWebhookListener
 {
-    public function handle(WebhookHandled | WebhookReceived $event)
+    public function handle(WebhookHandled|WebhookReceived $event)
     {
-        Log::info('Event: ' . $event->payload['type']);
+        Log::info('Event: '.$event->payload['type']);
         $id = $event->payload['data']['object']['customer'] ?? null;
-        Log::info('ID: ' . $id ?? 'N/A');
+        Log::info('ID: '.$id ?? 'N/A');
         Log::info('--');
     }
 }

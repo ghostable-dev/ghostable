@@ -13,6 +13,42 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string $id
+ * @property string $environment_id
+ * @property string $key
+ * @property string $value
+ * @property int $is_commented
+ * @property \Illuminate\Support\Carbon|null $last_updated_at
+ * @property string|null $last_updated_by
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Environment\Models\Environment $environment
+ * @property-read User|null $lastUpdatedBy
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariableVersion> $versions
+ * @property-read int|null $versions_count
+ *
+ * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereEnvironmentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereIsCommented($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereLastUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereLastUpdatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereValue($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
 class EnvironmentVariable extends Model
 {
     use HasFactory;

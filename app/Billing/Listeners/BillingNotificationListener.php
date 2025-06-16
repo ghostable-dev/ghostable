@@ -3,7 +3,6 @@
 namespace App\Billing\Listeners;
 
 use App\Account\Managers\ACLManager;
-use App\Account\Models\Account;
 use App\Account\Providers\ACLServiceProvider;
 use App\Team\Models\Team;
 use Illuminate\Contracts\Queue\ShouldQueue;

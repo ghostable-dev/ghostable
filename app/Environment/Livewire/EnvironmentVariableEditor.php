@@ -68,11 +68,11 @@ class EnvironmentVariableEditor extends Component
         $this->environmentVariableId = $variable->id;
         $this->key = $variable->key;
         $this->value = $variable->value;
-        
+
         if ($this->variable()->isSecret()) {
             app(LogVariableRevealed::class)->handle($this->variable);
         }
-        
+
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         $this->showing = true;
@@ -157,7 +157,7 @@ class EnvironmentVariableEditor extends Component
         app(UpdateEnvVariable::class)->handle(
             $this->toUpdateVariableData($validated)
         );
-        
+
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         Flux::toast(

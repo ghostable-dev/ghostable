@@ -11,64 +11,64 @@ use Stripe\StripeClient;
 class StripePayload extends Data
 {
     public ?string $type = null;
-    
+
     public array $object = [];
-    
+
     public function __construct(
         public array $data
     ) {
         $this->type = $data['type'] ?? null;
         $this->object = $data['data']['object'] ?? [];
     }
-    
+
     public function teamFromStripeId(): ?Team
     {
         if (isset($this->object['customer'])) {
             return Team::where('stripe_id', $this->object['customer'])->first();
         }
-        
+
         return null;
     }
-    
+
     public function causedByUser(): ?User
     {
         if (isset($this->object['metadata']['platform_user_id'])) {
             return User::find($this->object['metadata']['platform_user_id']);
         }
-        
+
         return null;
     }
-    
+
     public function lineItems(): array
     {
         $stripe = new StripeClient(config('cashier.secret'));
-        
+
         $details = $stripe->checkout->sessions->retrieve($this->object['id'], [
             'expand' => ['line_items'],
         ]);
-        
+
         return $details->line_items->data;
     }
-    
+
     public function debugData(): array
     {
         if (is_null($this->type) || empty($this->object)) {
             return [];
         }
-        
+
         $details = match ($this->type) {
             'checkout.session.completed' => $this->checkoutSessionCompletedDebugFields(),
             'customer.subscription.created' => $this->customerSubscriptionCreatedDebugFields(),
             'customer.subscription.deleted' => $this->customerSubscriptionDeletedDebugFields(),
             default => is_array($this->data) ? $this->data : [],
         };
-        
+
         return array_merge(
-            ['type' => $this->type], 
+            ['type' => $this->type],
             ArrayExtractor::extract($this->object, $details)
         );
     }
-    
+
     protected function checkoutSessionCompletedDebugFields(): array
     {
         return [
@@ -87,7 +87,7 @@ class StripePayload extends Data
             'payment_method_configuration_id' => ['payment_method_configuration_details', 'id'],
         ];
     }
-    
+
     protected function customerSubscriptionCreatedDebugFields(): array
     {
         return [
@@ -139,7 +139,7 @@ class StripePayload extends Data
             'trial_start' => 'trial_start',
         ];
     }
-    
+
     protected function customerSubscriptionDeletedDebugFields(): array
     {
         return [

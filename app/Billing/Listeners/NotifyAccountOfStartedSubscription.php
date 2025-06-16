@@ -3,7 +3,6 @@
 namespace App\Billing\Listeners;
 
 use App\Billing\Events\SubscriptionStarted;
-use App\Billing\Listeners\BillingNotificationListener;
 use App\Billing\Notifications\SubscriptionStartedNotification;
 use Illuminate\Support\Facades\Notification;
 

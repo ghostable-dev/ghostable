@@ -10,13 +10,13 @@ use Stripe\StripeClient;
 class InvoiceStatus extends Component
 {
     public string $status;
-    
+
     public function mount(string $invoiceId): void
     {
         $stripe = new StripeClient(config('cashier.secret'));
-        
+
         $invoice = $stripe->invoices->retrieve($invoiceId);
-        
+
         $this->status = $invoice->status;
 
         $paymentIntentId = $invoice->payment_intent;
@@ -25,15 +25,15 @@ class InvoiceStatus extends Component
             $latestChargeId = $paymentIntent->latest_charge;
             if ($latestChargeId) {
                 $charge = $stripe->charges->retrieve($latestChargeId, [
-                    'expand' => ['refunds']
+                    'expand' => ['refunds'],
                 ]);
-                if (!empty($charge->refunds->data)) {
+                if (! empty($charge->refunds->data)) {
                     $this->status = 'refunded';
                 }
             }
         }
     }
-    
+
     public function placeholder()
     {
         return <<<'HTML'
@@ -43,22 +43,22 @@ class InvoiceStatus extends Component
         </span>
         HTML;
     }
-    
+
     public function getIsPaidProperty(): bool
     {
         return $this->status === 'paid';
     }
-    
+
     public function getIsVoidProperty(): bool
     {
         return $this->status === 'paid';
     }
-    
+
     public function getIsRefundedProperty(): bool
     {
         return $this->status === 'refunded';
     }
-    
+
     public function render()
     {
         return view('billing.livewire.invoice-status');

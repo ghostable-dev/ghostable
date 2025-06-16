@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     /**
      * Billing configuration details.
      */
@@ -12,8 +12,8 @@ return [
         ],
         'enterprise' => [
             'type' => 'enterprise',
-            'api_id' => env('ENT_SUBSCRIPTION_API_ID')
-        ]
+            'api_id' => env('ENT_SUBSCRIPTION_API_ID'),
+        ],
     ],
 
     /**

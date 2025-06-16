@@ -14,15 +14,15 @@ use Livewire\WithPagination;
 class ProjectActivity extends Component
 {
     use WithPagination;
-    
+
     /**
      * Livewire event name for refreshing the project activity feed.
      *
-     * This should be dispatched whenever a relevant action 
+     * This should be dispatched whenever a relevant action
      * occurs and you want to re-fetch the latest activity logs in the UI.
      */
     public const ACTIVITY_UPDATED = 'project:activity-updated';
-    
+
     #[Locked]
     public string $projectId;
 
@@ -34,7 +34,7 @@ class ProjectActivity extends Component
     }
 
     /**
-     * Retrieve the current project instance 
+     * Retrieve the current project instance
      * based on the bound project ID.
      */
     #[Computed]
@@ -42,14 +42,14 @@ class ProjectActivity extends Component
     {
         return Project::findOrFail($this->projectId);
     }
-    
+
     /**
-     * Get a paginated list of activity log entries related 
+     * Get a paginated list of activity log entries related
      * to the current project.
      *
-     * This includes logs for the project itself and 
+     * This includes logs for the project itself and
      * any associated environment/variables.
-     * 
+     *
      * Results are ordered by the most recent first and limited to 20 per page.
      */
     #[Computed]
@@ -59,7 +59,7 @@ class ProjectActivity extends Component
             ->latest()
             ->paginate(20);
     }
-    
+
     /**
      * Livewire event listener that triggers a refresh of the activity log.
      */

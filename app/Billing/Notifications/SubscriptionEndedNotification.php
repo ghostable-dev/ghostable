@@ -2,7 +2,6 @@
 
 namespace App\Billing\Notifications;
 
-use App\Billing\Notifications\BillingNotification;
 use App\Core\Actions\GetDefaultMailMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 
@@ -11,10 +10,10 @@ class SubscriptionEndedNotification extends BillingNotification
     public function toMail(object $notifiable): MailMessage
     {
         // $mailMessage = GetDefaultMailMessage::handle(
-        //     unsubscribable: false, 
+        //     unsubscribable: false,
         //     user: $notifiable
         // );
-        
+
         // return $mailMessage
         //     ->subject('Membership Cancellation Confirmed')
         //     ->greeting($notifiable->greeting())

@@ -3,7 +3,6 @@
 namespace App\Billing\Listeners;
 
 use App\Billing\Events\SubscriptionEnded;
-use App\Billing\Listeners\BillingNotificationListener;
 use App\Billing\Notifications\SubscriptionEndedNotification;
 use Illuminate\Support\Facades\Notification;
 

@@ -14,8 +14,8 @@ class SubscriptionPortal extends Controller
         Stripe::setApiKey(config('cashier.secret'));
 
         $session = StripeBillingPortalSession::create([
-             'customer' => $team->stripe_id,
-             'return_url' => route('team.settings.billing', $team),
+            'customer' => $team->stripe_id,
+            'return_url' => route('team.settings.billing', $team),
         ]);
 
         return redirect($session->url);

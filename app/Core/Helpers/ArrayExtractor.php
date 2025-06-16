@@ -29,6 +29,7 @@ class ArrayExtractor
                 return null;
             }
         }
+
         return $array;
     }
 }

@@ -17,6 +17,41 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property string $id
+ * @property int $is_restricted
+ * @property string $project_id
+ * @property string $name
+ * @property EnvironmentType $type
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
+ * @property-read int|null $permission_overrides_count
+ * @property-read Project $project
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariable> $variables
+ * @property-read int|null $variables_count
+ *
+ * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereIsRestricted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
 class Environment extends Model implements SupportsOverrides
 {
     use HasFactory;

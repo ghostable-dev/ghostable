@@ -3,9 +3,9 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Entities\CreateEnvVariableData;
-use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Entities\EnvLine;
 use App\Environment\Entities\PushResultData;
+use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Services\EnvParser;
@@ -32,7 +32,7 @@ class PushEnvVars
         $updated = $this->findUpdates($incoming, $existing);
 
         $this->applyChanges($env, $incoming, $added, $updated, $removed);
-        
+
         // Log results
         activity('variable')
             ->performedOn($env)

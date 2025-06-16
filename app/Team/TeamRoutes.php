@@ -36,7 +36,7 @@ class TeamRoutes
                 Route::get('members', TeamMemberSettings::class)->name('members');
                 Route::get('billing', TeamBillingSettings::class)->name('billing');
             });
-            
+
         // Route::prefix('/account/{account}/settings')
         //     ->name('account.settings.')
         //     ->group(function() {

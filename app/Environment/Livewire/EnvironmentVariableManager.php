@@ -71,7 +71,7 @@ class EnvironmentVariableManager extends Component
         $this->forcePasswordConfirmation();
 
         $this->envId = $environment->id;
-        
+
         app(LogEnvironmentViewed::class)->handle(
             environment: $environment,
             user: Auth::user(),
@@ -147,7 +147,7 @@ class EnvironmentVariableManager extends Component
 
         $variable = app(CreateEnvVariable::class)
             ->handle($this->toCreateVariableData($validated));
-            
+
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         $this->reset('key', 'value');
@@ -253,7 +253,7 @@ class EnvironmentVariableManager extends Component
             var: $this->variableToRemove,
             deletedBy: Auth::user()
         );
-        
+
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         Flux::modal('confirm-variable-removal')->close();
@@ -263,22 +263,22 @@ class EnvironmentVariableManager extends Component
     }
 
     /**
-     * Dispatch an event to open the environment 
+     * Dispatch an event to open the environment
      * variable editor for the given variable.
      *
-     * This triggers the `EnvironmentVariableEditor` 
+     * This triggers the `EnvironmentVariableEditor`
      * component to load and show the modal.
      */
     public function editVariable(EnvironmentVariable $variable): void
     {
         $this->dispatch(EnvironmentVariableEditor::LAUNCH, $variable->id);
     }
-    
+
     /**
-     * Dispatch an event to open the environment 
+     * Dispatch an event to open the environment
      * variable activity feed for the given variable.
      *
-     * This triggers the `EnvironmentVariableActivityFeed` 
+     * This triggers the `EnvironmentVariableActivityFeed`
      * component to load and show the modal.
      */
     public function viewVariableActivity(EnvironmentVariable $variable): void
@@ -301,11 +301,11 @@ class EnvironmentVariableManager extends Component
     public function toggleSecret(EnvironmentVariable $var): void
     {
         $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
-        
+
         $isNowVisible = ! ($this->showing[$var->id] ?? false);
 
         $this->showing[$var->id] = $isNowVisible;
-        
+
         if ($isNowVisible) {
             app(LogVariableRevealed::class)->handle($var);
             $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);

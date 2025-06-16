@@ -15,24 +15,24 @@ class TeamBillingSettings extends Component
     {
         return Auth::user()->currentTeam();
     }
-    
+
     #[Computed]
     public function invoices(): Collection
     {
         $this->authorize('manageBilling', $this->team);
-        
+
         return $this->team->invoices();
     }
-    
+
     public function download(string $invoiceId)
     {
         $this->authorize('manageBilling', $this->team);
-        
+
         $invoice = $this->team->findInvoice($invoiceId);
-        
-        return response()->streamDownload(function() use ($invoice) {
+
+        return response()->streamDownload(function () use ($invoice) {
             echo $invoice->download();
-        }, "ghostable-invoice-". str($invoice->date(timezone())) .".pdf");
+        }, 'ghostable-invoice-'.str($invoice->date(timezone())).'.pdf');
     }
 
     public function render()

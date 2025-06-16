@@ -11,35 +11,35 @@ abstract class SubscriptionCheckout extends Controller
 {
     public function checkout(Team $team): Checkout
     {
-        if (empty($subscriptionId = $this->getSubscriptionApiId()) 
+        if (empty($subscriptionId = $this->getSubscriptionApiId())
             || empty($type = $this->getSubscriptionType())) {
             abort(404);
         }
-        
+
         $subscription = $team->newSubscription(
-            type: $type, 
+            type: $type,
             prices: [$subscriptionId]
         );
-        
+
         return $subscription
             ->checkout(sessionOptions: [
                 'success_url' => route('team.settings.billing', $team),
                 'cancel_url' => route('team.settings.billing', $team),
                 'metadata' => [
-                    'platform_user_id' => Auth::user()->id
+                    'platform_user_id' => Auth::user()->id,
                 ],
             ],
-            customerOptions: [
-                'email' => Auth::user()->email,
-                'metadata' => [
-                    'platform_team_id' => $team->id,
-                    'platform_team_name' => $team->name
-                ],
-            ]
-        );
+                customerOptions: [
+                    'email' => Auth::user()->email,
+                    'metadata' => [
+                        'platform_team_id' => $team->id,
+                        'platform_team_name' => $team->name,
+                    ],
+                ]
+            );
     }
-    
-    protected abstract function getSubscriptionType(): ?string;
-    
-    protected abstract function getSubscriptionApiId(): ?string;
+
+    abstract protected function getSubscriptionType(): ?string;
+
+    abstract protected function getSubscriptionApiId(): ?string;
 }

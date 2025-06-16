@@ -21,7 +21,7 @@ class EnvironmentServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Environment::class, EnvironmentPolicy::class);
-        
+
         Relation::enforceMorphMap([
             'environment' => 'App\Environment\Models\Environment',
             'variable' => 'App\Environment\Models\EnvironmentVariable',

@@ -15,7 +15,7 @@ class ProjectServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Project::class, ProjectPolicy::class);
-        
+
         Relation::enforceMorphMap([
             'project' => 'App\Project\Models\Project',
         ]);

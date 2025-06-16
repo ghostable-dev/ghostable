@@ -15,7 +15,7 @@ class AccountServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'user' => 'App\Account\Models\User',
         ]);
-        
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 AppSetup::class,

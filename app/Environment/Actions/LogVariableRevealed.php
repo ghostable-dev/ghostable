@@ -2,8 +2,8 @@
 
 namespace App\Environment\Actions;
 
-use App\Environment\Models\EnvironmentVariable;
 use App\Account\Models\User;
+use App\Environment\Models\EnvironmentVariable;
 
 class LogVariableRevealed
 {
@@ -14,12 +14,11 @@ class LogVariableRevealed
      * or accessed through another reveal mechanism (e.g., API or CLI).
      */
     public function handle(
-        EnvironmentVariable $variable, 
+        EnvironmentVariable $variable,
         ?User $user = null
-    ): void
-    {
+    ): void {
         $environment = $variable->environment->name;
-        
+
         activity('variable')
             ->performedOn($variable)
             ->causedBy($user)

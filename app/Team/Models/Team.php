@@ -20,6 +20,44 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property string $id
+ * @property string|null $slug
+ * @property string $name
+ * @property int $is_personal
+ * @property string|null $owner_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamInvite> $invites
+ * @property-read int|null $invites_count
+ * @property-read User|null $owner
+ * @property-read mixed $plan
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Project> $projects
+ * @property-read int|null $projects_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
+ * @property-read int|null $subscriptions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\TeamFactory factory($count = null, $state = [])
+ * @method static TeamBuilder<static>|Team hasExpiredGenericTrial()
+ * @method static TeamBuilder<static>|Team newModelQuery()
+ * @method static TeamBuilder<static>|Team newQuery()
+ * @method static TeamBuilder<static>|Team onGenericTrial()
+ * @method static TeamBuilder<static>|Team personal()
+ * @method static TeamBuilder<static>|Team query()
+ * @method static TeamBuilder<static>|Team whereCreatedAt($value)
+ * @method static TeamBuilder<static>|Team whereId($value)
+ * @method static TeamBuilder<static>|Team whereIsPersonal($value)
+ * @method static TeamBuilder<static>|Team whereName($value)
+ * @method static TeamBuilder<static>|Team whereOwnerId($value)
+ * @method static TeamBuilder<static>|Team whereSlug($value)
+ * @method static TeamBuilder<static>|Team whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
+ */
 class Team extends Model
 {
     use Billable;

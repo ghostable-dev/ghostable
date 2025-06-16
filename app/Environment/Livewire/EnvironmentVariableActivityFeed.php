@@ -3,7 +3,6 @@
 namespace App\Environment\Livewire;
 
 use App\Environment\Models\EnvironmentVariable;
-use App\Team\Enums\TeamPermission;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,7 +19,7 @@ class EnvironmentVariableActivityFeed extends Component
     #[On(self::LAUNCH)]
     public function launch(EnvironmentVariable $variable): void
     {
-        //$this->authorize('viewAuditLogs', $variable->environment->owningTeam());
+        // $this->authorize('viewAuditLogs', $variable->environment->owningTeam());
 
         $this->environmentVariableId = $variable->id;
         $this->showing = true;
