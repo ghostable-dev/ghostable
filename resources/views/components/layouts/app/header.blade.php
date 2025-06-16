@@ -33,7 +33,7 @@
             
             <flux:spacer />
             
-            <x-notifications-drop-button/>
+            {{-- <x-notifications-drop-button/> --}}
             
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0! max-lg:hidden">
                 <flux:navbar.item href="https://docs.ghostable.dev" target="_blank">

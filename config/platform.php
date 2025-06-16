@@ -1,6 +1,20 @@
 <?php
 
 return [
+    
+    /**
+     * Billing configuration details.
+     */
+    'billing' => [
+        'business' => [
+            'type' => 'business',
+            'api_id' => env('BUSINESS_SUBSCRIPTION_API_ID'),
+        ],
+        'enterprise' => [
+            'type' => 'enterprise',
+            'api_id' => env('ENT_SUBSCRIPTION_API_ID')
+        ]
+    ],
 
     /**
      * Team invites.

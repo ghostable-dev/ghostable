@@ -2,6 +2,7 @@
 
 use App\Account\AccountRoutes;
 use App\Auth\AuthRoutes;
+use App\Billing\BillingRoutes;
 use App\Environment\EnvironmentRoutes;
 use App\Project\ProjectRoutes;
 use App\Team\TeamRoutes;
@@ -20,3 +21,4 @@ TeamRoutes::web();
 EnvironmentRoutes::web();
 ProjectRoutes::web();
 AuthRoutes::web();
+BillingRoutes::web();

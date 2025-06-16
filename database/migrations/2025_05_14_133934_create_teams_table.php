@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('stripe_id', 255)->nullable()->index();
             $table->string('slug', 100)->nullable();
             $table->string('name', 100);
             $table->boolean('is_personal')->index()->default(true);

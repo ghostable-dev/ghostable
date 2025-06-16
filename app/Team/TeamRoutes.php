@@ -36,5 +36,16 @@ class TeamRoutes
                 Route::get('members', TeamMemberSettings::class)->name('members');
                 Route::get('billing', TeamBillingSettings::class)->name('billing');
             });
+            
+        // Route::prefix('/account/{account}/settings')
+        //     ->name('account.settings.')
+        //     ->group(function() {
+        //         Route::view('/credits', 'account.settings.credits')
+        //             ->name('credits')->can('manageBilling', 'account');
+        //         Route::view('/billing', 'account.settings.billing')
+        //             ->name('billing')->can('manageBilling', 'account');
+        //         Route::view('/integrations', 'account.settings.integrations')
+        //             ->name('integrations')->can('admin', 'account');
+        //     });
     }
 }

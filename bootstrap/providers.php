@@ -7,4 +7,5 @@ return [
     App\Environment\EnvironmentServiceProvider::class,
     App\Project\ProjectServiceProvider::class,
     App\Team\TeamServiceProvider::class,
+    App\Billing\BillingServiceProvider::class
 ];

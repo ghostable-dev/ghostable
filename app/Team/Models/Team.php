@@ -3,6 +3,7 @@
 namespace App\Team\Models;
 
 use App\Account\Models\User;
+use App\Billing\Concerns\Billable;
 use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
 use App\Project\Models\Project;
@@ -21,6 +22,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Team extends Model
 {
+    use Billable;
     use HandlesModelEventsWithAttributes;
     use HasFactory;
     use HasUuids;
