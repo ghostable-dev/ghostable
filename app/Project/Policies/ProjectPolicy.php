@@ -20,7 +20,7 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        return $user->belongsToTeam($project->owningTeam());
+        return $user->teamMembership()->belongsToTeam($project->owningTeam());
     }
 
     /**
@@ -28,7 +28,7 @@ class ProjectPolicy
      */
     public function create(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::CreateProjects,
             team: $team
         );
@@ -39,9 +39,9 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::DeleteProjects,
-            team: $project->team
+            team: $project->owningTeam()
         );
     }
 

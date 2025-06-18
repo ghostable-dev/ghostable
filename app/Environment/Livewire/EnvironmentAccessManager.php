@@ -5,6 +5,7 @@ namespace App\Environment\Livewire;
 use App\Account\Models\User;
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Team\Actions\CreatePermissionOverride;
 use App\Team\Enums\TeamPermission;
 use App\Team\Models\TeamPermissionOverride;
@@ -55,6 +56,7 @@ class EnvironmentAccessManager extends Component
         $this->authorize('manageAccessControls', $environment->project->team);
 
         $this->environmentId = $environment->id;
+        
         $this->is_restricted = $environment->is_restricted;
     }
 
@@ -64,7 +66,7 @@ class EnvironmentAccessManager extends Component
     #[Computed]
     public function environment(): Environment
     {
-        return Environment::findOrFail($this->environmentId);
+        return ResolveEnvironment::onceWithContext($this->environmentId);
     }
 
     /**

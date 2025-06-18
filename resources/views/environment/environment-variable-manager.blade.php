@@ -19,7 +19,7 @@
                     placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
                     required>
                     @foreach($this->valueSuggestions as $suggestion)
-                        <flux:autocomplete.item>
+                        <flux:autocomplete.item wire:key="value-{{ $suggestion }}">
                             {{ $suggestion }}
                         </flux:autocomplete.item>
                     @endforeach
@@ -29,8 +29,12 @@
                 <flux:button type="submit" variant="primary">Add</flux:button>
             </div>
         </form>
-        <flux:text variant="subtle" class="mt-4">
-            Define a new key-value pair in this environment.
+        <flux:text variant="subtle" class="mt-4 flex flex-inline gap-1">
+            @if($this->key)
+                <flux:icon.information-circle variant="mini"/><span>{{ $this->keyDescription }}</span>
+            @else
+                Define a new key-value pair in this environment.
+            @endif
         </flux:text>
     </div>
     @endperform
@@ -45,6 +49,7 @@
                     :direction="$sortDirection" 
                     wire:click="sort('key')">Key</flux:table.column>
                 <flux:table.column>Value</flux:table.column>
+                <flux:table.column>Version</flux:table.column>
                 <flux:table.column
                     sortable 
                     :sorted="$sortBy === 'last_updated_at'" 
@@ -80,10 +85,13 @@
                             </flux:input>
                         </flux:table.cell>
                         <flux:table.cell>
+                            {{ $var->latestVersion->version }}
+                        </flux:table.cell>
+                        <flux:table.cell>
                             {{ $var->last_updated_at->shortAbsoluteDiffForHumans() }}
                         </flux:table.cell>
                         <flux:table.cell align="end">
-                            @perform($this->environment, 'var:edit')
+                            @if($this->canEditVariables)
                             <flux:dropdown>
                                 <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
                                 <flux:menu>
@@ -102,7 +110,7 @@
                                     </flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
-                            @endperform
+                            @endif
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach

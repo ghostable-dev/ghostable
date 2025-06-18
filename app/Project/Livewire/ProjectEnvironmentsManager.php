@@ -6,6 +6,7 @@ use App\Environment\Actions\CreateEnv;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
 use App\Project\Models\Project;
+use App\Project\Resolvers\ResolveProject;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
@@ -46,7 +47,7 @@ class ProjectEnvironmentsManager extends Component
     #[Computed]
     public function project(): Project
     {
-        return Project::findOrFail($this->projectId);
+        return ResolveProject::onceWithContext($this->projectId);
     }
 
     #[Computed]

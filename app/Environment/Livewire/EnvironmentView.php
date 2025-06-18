@@ -3,6 +3,7 @@
 namespace App\Environment\Livewire;
 
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -35,7 +36,7 @@ class EnvironmentView extends Component
     #[Computed]
     public function environment(): Environment
     {
-        return Environment::findOrFail($this->envId);
+        return ResolveEnvironment::onceWithContext($this->envId);
     }
 
     /**

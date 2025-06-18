@@ -27,7 +27,7 @@
                     </flux:table.cell>
                     <flux:table.cell>
                         <flux:badge size="sm">
-                            {{ $member->roleForTeam($this->team)?->label() }}
+                            {{ $member->teamMembership()->getMembershipForTeam($this->team)?->pivot->role->label() }}
                         </flux:badge>
                     </flux:table.cell>
                     <flux:table.cell>

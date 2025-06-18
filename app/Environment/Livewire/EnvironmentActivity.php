@@ -4,6 +4,7 @@ namespace App\Environment\Livewire;
 
 use App\Core\Models\Activity;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -29,9 +30,9 @@ class EnvironmentActivity extends Component
 
     public function mount(Environment $environment): void
     {
-        $this->authorize('view', $environment);
-
         $this->environmentId = $environment->id;
+        
+        $this->authorize('view', $environment);
     }
 
     /**
@@ -41,7 +42,7 @@ class EnvironmentActivity extends Component
     #[Computed]
     public function environment(): Environment
     {
-        return Environment::findOrFail($this->environmentId);
+        return ResolveEnvironment::onceWithContext($this->environmentId);
     }
 
     /**
@@ -54,6 +55,7 @@ class EnvironmentActivity extends Component
     public function activities(): LengthAwarePaginator
     {
         return Activity::forEnvironment($this->environment)
+            ->with('causer')
             ->latest()
             ->paginate(20);
     }

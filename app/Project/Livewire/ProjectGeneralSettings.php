@@ -3,6 +3,7 @@
 namespace App\Project\Livewire;
 
 use App\Project\Models\Project;
+use App\Project\Resolvers\ResolveProject;
 use App\Project\Rules\ProjectRules;
 use App\Team\Enums\TeamPermission;
 use Illuminate\Support\Facades\Gate;
@@ -40,7 +41,7 @@ class ProjectGeneralSettings extends Component
     #[Computed]
     public function project(): Project
     {
-        return Project::findOrFail($this->projectId);
+        return ResolveProject::onceWithContext($this->projectId);
     }
 
     /**

@@ -134,10 +134,23 @@ class TeamInvitesManager extends Component
 
         Flux::toast('The invite has been deleted.');
     }
-
-    public function sendInvite()
+    
+    /**
+     * Handles sending a team invite to a specified email address.
+     *
+     * This method:
+     * - Authorizes the current user to create an invite for the given team.
+     * - Normalizes the email to lowercase.
+     * - Validates the invite input using defined team invite rules.
+     * - Dispatches the invite creation via the CreateTeamInvite action.
+     * - Closes the invite modal and resets relevant form fields.
+     * - Triggers a success toast notification.
+     */
+    public function sendInvite(): void
     {
         $this->authorize('create', [TeamInvite::class, $this->team]);
+        
+        $this->email = strtolower($this->email);
 
         $validated = $this->validate(
             TeamInviteRules::createRules($this->team)

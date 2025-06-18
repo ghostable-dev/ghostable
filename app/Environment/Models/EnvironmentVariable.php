@@ -11,9 +11,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * 
+ *
  * @property string $id
  * @property string $environment_id
  * @property string $key
@@ -28,7 +32,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read User|null $lastUpdatedBy
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariableVersion> $versions
  * @property-read int|null $versions_count
- *
  * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newQuery()
@@ -46,7 +49,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
- *
+ * @property-read \App\Environment\Models\EnvironmentVariableVersion|null $latestVersion
  * @mixin \Eloquent
  */
 class EnvironmentVariable extends Model
@@ -78,15 +81,16 @@ class EnvironmentVariable extends Model
         return $this->belongsTo(Environment::class, 'environment_id');
     }
 
-    public function versions()
+    public function versions(): HasMany
     {
         return $this->hasMany(EnvironmentVariableVersion::class)
             ->orderBy('version');
     }
-
-    public function latestVersion(): ?EnvironmentVariableVersion
+    
+    public function latestVersion(): HasOne
     {
-        return $this->versions()->latest('version')->first();
+        return $this->hasOne(EnvironmentVariableVersion::class)
+            ->latestOfMany();
     }
 
     public function lastUpdatedBy(): BelongsTo

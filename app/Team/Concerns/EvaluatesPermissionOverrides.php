@@ -62,7 +62,7 @@ trait EvaluatesPermissionOverrides
         }
 
         // 5: Fallback to team role
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: $permission,
             team: $team
         );

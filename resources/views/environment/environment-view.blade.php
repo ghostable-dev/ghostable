@@ -23,6 +23,12 @@
         </flux:subheading>
     </div>
     
+    {{-- <flux:avatar.group class="mt-6">
+        @foreach($this->environment->project->team->users as $user)
+            <flux:avatar circle size="xs" :initials="$user->initials()" />
+        @endforeach
+    </flux:avatar.group> --}}
+    
     <flux:tab.group>
         <flux:tabs wire:model="tab">
             <flux:tab name="variables">Variables</flux:tab>
@@ -76,11 +82,5 @@
         </flux:tab.panel>
         
     </flux:tab.group>
-    
-    {{-- <flux:avatar.group class="mt-6">
-        @foreach($this->environment->project->team->users as $user)
-            <flux:avatar circle size="xs" :initials="$user->initials()" />
-        @endforeach
-    </flux:avatar.group> --}}
     
 </section>

@@ -32,7 +32,7 @@ test('inviting existing team member fails', function () {
     $team = CreateTeam::handle('Acme', $owner);
 
     $member = User::factory()->create(['email' => 'member@example.com']);
-    $member->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
+    $member->teamMembership()->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
 
     Sanctum::actingAs($owner);
 

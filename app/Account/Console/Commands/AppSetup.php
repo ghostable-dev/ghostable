@@ -123,7 +123,7 @@ class AppSetup extends Command
         );
 
         foreach ($members as $member) {
-            $member->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
+            $member->teamMembership()->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
         }
 
         return $team;
@@ -161,9 +161,16 @@ class AppSetup extends Command
 
     protected function createVariables(Environment $env, int $amount = 5): Collection
     {
-        return EnvironmentVariable::factory()
+        $vars = EnvironmentVariable::factory()
             ->forEnvironment($env)
             ->count($amount)
             ->create();
+            
+        foreach ($vars as $var) {
+            $var->createVersionBy($var->lastUpdatedBy);
+            $var->logActivity('created', user: $var->lastUpdatedBy);
+        }
+        
+        return $vars;
     }
 }

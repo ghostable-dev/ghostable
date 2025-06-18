@@ -4,6 +4,7 @@ namespace App\Project\Livewire;
 
 use App\Core\Models\Activity;
 use App\Project\Models\Project;
+use App\Project\Resolvers\ResolveProject;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -40,7 +41,7 @@ class ProjectActivity extends Component
     #[Computed]
     public function project(): Project
     {
-        return Project::findOrFail($this->projectId);
+        return ResolveProject::onceWithContext($this->projectId);
     }
 
     /**
@@ -56,6 +57,7 @@ class ProjectActivity extends Component
     public function activities(): LengthAwarePaginator
     {
         return Activity::forProject($this->project)
+            ->with('causer')
             ->latest()
             ->paginate(20);
     }

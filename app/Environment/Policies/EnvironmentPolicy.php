@@ -19,7 +19,7 @@ class EnvironmentPolicy
      */
     public function view(User $user, Environment $environment): bool
     {
-        return $user->belongsToTeam($environment->owningTeam());
+        return $user->teamMembership()->belongsToTeam($environment->owningTeam());
     }
 
     /**
@@ -31,7 +31,7 @@ class EnvironmentPolicy
      */
     public function manageSettings(User $user, Environment $environment): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ManageEnvironmentSettings,
             team: $environment->project->team
         );

@@ -9,7 +9,7 @@ use Livewire\Component;
 
 class TeamMemberSettings extends Component
 {
-    #[Computed(persist: true)]
+    #[Computed]
     public function team(): Team
     {
         return Auth::user()->currentTeam();

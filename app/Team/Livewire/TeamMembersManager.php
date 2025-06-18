@@ -35,14 +35,16 @@ class TeamMembersManager extends Component
     #[Computed]
     public function managingRoleUser(): ?User
     {
-        $user = User::find($this->managingRoleForUserId ?? null);
-
-        if (! $user) {
+        if (is_null($this->managingRoleForUserId ?? null)) {
+            return null;
+        }
+        
+        if (! $user = User::find($this->managingRoleForUserId)) {
             return null;
         }
 
         // Enforce that the user is actually on the team
-        if (! $user->belongsToTeam($this->team)) {
+        if (! $user->teamMembership()->belongsToTeam($this->team)) {
             return null;
         }
 
@@ -54,7 +56,8 @@ class TeamMembersManager extends Component
         $this->authorize('manageMembers', $this->team);
 
         $this->managingRoleForUserId = $user->id;
-        $this->managingRole = $user->roleForTeam($this->team);
+        
+        $this->managingRole = $user->teamMembership()->getMembershipForTeam($this->team)->pivot->role;
 
         Flux::modal('manage-member-role')->show();
     }
@@ -78,13 +81,16 @@ class TeamMembersManager extends Component
     #[Computed()]
     public function memberToBeDeleted(): ?User
     {
-        $user = User::find($this->memberToBeDeletedId ?? null);
-        if (! $user) {
+        if (is_null($this->memberToBeDeletedId ?? null)) {
+            return null;
+        }
+        
+        if (! $user = User::find($this->memberToBeDeletedId)) {
             return null;
         }
 
         // Enforce that the user is actually on the team
-        if (! $user->belongsToTeam($this->team)) {
+        if (! $user->teamMembership()->belongsToTeam($this->team)) {
             return null;
         }
 
@@ -104,7 +110,7 @@ class TeamMembersManager extends Component
     {
         $this->authorize('manageMembers', $this->team);
 
-        $this->memberToBeDeleted->removeFromTeam($this->team);
+        $this->memberToBeDeleted()->teamMembership()->removeFromTeam($this->team);
 
         $this->reset(['memberToBeDeletedId']);
 

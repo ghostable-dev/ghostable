@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * 
+ *
  * @property string $id
  * @property string $user_id
  * @property string $target_type
@@ -22,7 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Model|\Eloquent $target
  * @property-read \App\Account\Models\User $user
- *
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride forUser(\App\Account\Models\User $user)
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride newModelQuery()
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride newQuery()
@@ -39,7 +40,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride withPermission(\App\Team\Enums\TeamPermission $permission)
  * @method static Builder<static>|TeamPermissionOverride withTrashed()
  * @method static Builder<static>|TeamPermissionOverride withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class TeamPermissionOverride extends Model

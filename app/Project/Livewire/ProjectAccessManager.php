@@ -5,6 +5,7 @@ namespace App\Project\Livewire;
 use App\Account\Models\User;
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Project\Models\Project;
+use App\Project\Resolvers\ResolveProject;
 use App\Team\Actions\CreatePermissionOverride;
 use App\Team\Enums\TeamPermission;
 use App\Team\Models\TeamPermissionOverride;
@@ -52,7 +53,7 @@ class ProjectAccessManager extends Component
 
     public function mount(Project $project): void
     {
-        $this->authorize('manageAccessControls', $project->team);
+        $this->authorize('manageAccessControls', $project->owningTeam());
 
         $this->projectId = $project->id;
         $this->is_restricted = $project->is_restricted;
@@ -61,7 +62,7 @@ class ProjectAccessManager extends Component
     #[Computed]
     public function project(): Project
     {
-        return Project::findOrFail($this->projectId);
+        return ResolveProject::onceWithContext($this->projectId);
     }
 
     /**
@@ -115,9 +116,9 @@ class ProjectAccessManager extends Component
     #[Computed(persist: true)]
     public function members(): Collection
     {
-        return $this->project->team->users
+        return $this->project->owningTeam()->users
             ->reject(function (User $user) {
-                return $user->isTeamAdmin($this->project->team);
+                return $user->isTeamAdmin($this->project->owningTeam());
             });
     }
 
@@ -159,7 +160,7 @@ class ProjectAccessManager extends Component
     #[Computed]
     public function overridingMember(): User
     {
-        return $this->project->team->users()
+        return $this->project->owningTeam()->users()
             ->where('user_id', $this->userId)
             ->first();
     }

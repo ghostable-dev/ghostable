@@ -4,6 +4,7 @@ namespace App\Environment\Livewire;
 
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;
 use App\Team\Enums\TeamPermission;
 use Illuminate\Support\Facades\Gate;
@@ -28,10 +29,12 @@ class EnvironmentGeneralSettings extends Component
 
     public function mount(Environment $environment): void
     {
+        $this->environmentId = $environment->id;
+        
         $this->authorize('view', $environment);
 
-        $this->environmentId = $environment->id;
         $this->name = $environment->name;
+        
         $this->type = $environment->type;
     }
 
@@ -41,7 +44,7 @@ class EnvironmentGeneralSettings extends Component
     #[Computed]
     public function environment(): Environment
     {
-        return Environment::findOrFail($this->environmentId);
+        return ResolveEnvironment::onceWithContext($this->environmentId);
     }
 
     /**

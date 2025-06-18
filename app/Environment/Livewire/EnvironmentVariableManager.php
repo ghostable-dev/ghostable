@@ -5,17 +5,20 @@ namespace App\Environment\Livewire;
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\CreateEnvVariable;
 use App\Environment\Actions\DeleteEnvVariable;
+use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Entities\CreateEnvVariableData;
-use App\Environment\Enums\CommonEnvKey;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
+use Gate;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -87,7 +90,17 @@ class EnvironmentVariableManager extends Component
     #[Computed]
     public function environment(): Environment
     {
-        return Environment::findOrFail($this->envId);
+        return ResolveEnvironment::onceWithContext($this->envId);
+    }
+    
+    /**
+     * Determine if the authenticated user can edit variables
+     * inside of the given environment.
+     */
+    #[Computed(persist: true)]
+    public function canEditVariables(): bool
+    {
+        return Gate::allows('perform', [$this->environment, TeamPermission::EditVariables]);
     }
 
     /**
@@ -100,19 +113,37 @@ class EnvironmentVariableManager extends Component
     {
         return app(SuggestEnvKeys::class)->handle($this->environment);
     }
+    
+    /**
+     * Get the description for the currently selected environment variable key.
+     *
+     * Returns null if no key is selected or if the key is not registered
+     * in the EnvironmentVariableRegistry.
+     */
+    #[Computed]
+    public function keyDescription(): ?string
+    {
+        if (!$this->key) {
+            return null;
+        }
+        
+        return app(EnvironmentVariableRegistry::class)
+            ->get($this->key)
+            ->description();
+    }
 
     /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
-     * Suggestions are provided based on the key, using the CommonEnvKey enum logic.
-     * Returns an empty array if the key has no predefined suggestions.
+     * Suggestions are provided by the EnvironmentVariableRegistry based on the key's
+     * corresponding definition class. Returns an empty array if the key has no suggestions defined.
      *
      * @return array<int, string>
      */
     #[Computed]
     public function valueSuggestions(): array
     {
-        return CommonEnvKey::suggestedValuesFor($this->key);
+        return app(GetSuggestedEnvValues::class)->handle($this->key);
     }
 
     /**
@@ -124,6 +155,8 @@ class EnvironmentVariableManager extends Component
     public function updatedKey($value)
     {
         $this->key = app(NormalizeEnvKey::class)->handle($value);
+        
+        $this->value = '';
     }
 
     /**
@@ -183,6 +216,7 @@ class EnvironmentVariableManager extends Component
     public function variables(): Collection
     {
         return $this->environment->variables()
+            ->with('latestVersion')
             ->orderBy($this->sortBy, $this->sortDirection)
             ->get();
     }

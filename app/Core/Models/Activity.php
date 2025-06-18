@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
 /**
+ * 
+ *
  * @property int $id
  * @property string|null $log_name
  * @property string $description
@@ -24,7 +26,6 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $causer
  * @property-read \Illuminate\Support\Collection $changes
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $subject
- *
  * @method static Builder<static>|Activity causedBy(\Illuminate\Database\Eloquent\Model $causer)
  * @method static Builder<static>|Activity forBatch(string $batchUuid)
  * @method static Builder<static>|Activity forEnvironment(\App\Environment\Models\Environment $environment)
@@ -48,7 +49,6 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * @method static Builder<static>|Activity whereSubjectId($value)
  * @method static Builder<static>|Activity whereSubjectType($value)
  * @method static Builder<static>|Activity whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class Activity extends SpatieActivity
@@ -69,7 +69,7 @@ class Activity extends SpatieActivity
                 // Environment-level activity
                 ->orWhere(function ($query) use ($project) {
                     $envType = (new Environment)->getMorphClass();
-                    $envIds = $project->environments()->pluck('id');
+                    $envIds = $project->environments->pluck('id');
                     $query->where('subject_type', $envType)
                         ->whereIn('subject_id', $envIds);
                 })
@@ -79,7 +79,7 @@ class Activity extends SpatieActivity
                     $varType = (new EnvironmentVariable)->getMorphClass();
                     $varIds = EnvironmentVariable::whereIn(
                         'environment_id',
-                        $project->environments()->pluck('id')
+                        $project->environments->pluck('id')
                     )->pluck('id');
                     $query->where('subject_type', $varType)
                         ->whereIn('subject_id', $varIds);

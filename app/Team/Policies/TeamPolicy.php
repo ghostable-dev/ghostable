@@ -10,7 +10,7 @@ class TeamPolicy
 {
     public function createProjects(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::CreateProjects,
             team: $team
         );
@@ -23,7 +23,7 @@ class TeamPolicy
      */
     public function manageMembers(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ManageTeamMembers,
             team: $team
         );
@@ -36,7 +36,7 @@ class TeamPolicy
      */
     public function manageSettings(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ManageTeamSettings,
             team: $team
         );
@@ -50,8 +50,8 @@ class TeamPolicy
      */
     public function manageAccessControls(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
-            TeamPermission::ManageAccessControls,
+        return $user->teamMembership()->hasTeamPermission(
+            permission: TeamPermission::ManageAccessControls,
             team: $team
         );
     }
@@ -61,7 +61,7 @@ class TeamPolicy
      */
     public function manageBilling(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ManageBilling,
             team: $team
         );
@@ -72,7 +72,7 @@ class TeamPolicy
      */
     public function viewAuditLogs(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ViewAuditLogs,
             team: $team
         );
@@ -85,7 +85,7 @@ class TeamPolicy
 
     public function view(User $user, Team $team): bool
     {
-        return $user->belongsToTeam($team);
+        return $user->teamMembership()->belongsToTeam($team);
     }
 
     public function delete(User $user, Team $team): bool

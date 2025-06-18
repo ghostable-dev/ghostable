@@ -41,6 +41,7 @@ class EnvironmentVariableActivityFeed extends Component
         return Activity::query()
             ->where('subject_type', $this->variable->getMorphClass())
             ->where('subject_id', $this->variable->id)
+            ->with('causer')
             ->latest()
             ->limit(50)
             ->get();

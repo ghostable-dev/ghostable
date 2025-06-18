@@ -3,12 +3,12 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Actions\UpdateEnvVariable;
 use App\Environment\Entities\UpdateEnvVariableData;
-use App\Environment\Enums\CommonEnvKey;
 use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
@@ -88,35 +88,17 @@ class EnvironmentVariableEditor extends Component
     }
 
     /**
-     * Get a list of suggested environment variable keys
-     * for the current environment.
-     *
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function keySuggestions(): array
-    {
-        if (is_null($this->variable)) {
-            return [];
-        }
-
-        return app(SuggestEnvKeys::class)->handle(
-            $this->variable->environment
-        );
-    }
-
-    /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
-     * Suggestions are provided based on the key, using the CommonEnvKey enum logic.
-     * Returns an empty array if the key has no predefined suggestions.
+     * Suggestions are provided by the EnvironmentVariableRegistry based on the key's
+     * corresponding definition class. Returns an empty array if the key has no suggestions defined.
      *
      * @return array<int, string>
      */
     #[Computed]
     public function valueSuggestions(): array
     {
-        return CommonEnvKey::suggestedValuesFor($this->key);
+        return app(GetSuggestedEnvValues::class)->handle($this->key);
     }
 
     /**
@@ -215,10 +197,12 @@ class EnvironmentVariableEditor extends Component
                             label="Key"/>
                         <flux:autocomplete 
                             wire:model.live="value" 
-                            label="Value" 
+                            label="Value"
+                            wire:keydown.enter="$dispatch('confirm-password', { then: 'update' })"
+                            autofocus
                             required>
                             @foreach($this->valueSuggestions as $suggestion)
-                                <flux:autocomplete.item>
+                                <flux:autocomplete.item wire:key="value-{{ $suggestion }}">
                                     {{ $suggestion }}
                                 </flux:autocomplete.item>
                             @endforeach

@@ -3,6 +3,7 @@
 namespace App\Project\Livewire;
 
 use App\Project\Models\Project;
+use App\Project\Resolvers\ResolveProject;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -35,7 +36,7 @@ class ProjectView extends Component
     #[Computed]
     public function project(): Project
     {
-        return Project::findOrFail($this->projectId);
+        return ResolveProject::onceWithContext($this->projectId);
     }
 
     public function render()

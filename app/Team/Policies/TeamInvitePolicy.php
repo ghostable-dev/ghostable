@@ -56,7 +56,7 @@ class TeamInvitePolicy
      */
     private function manage(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission(
+        return $user->teamMembership()->hasTeamPermission(
             permission: TeamPermission::ManageTeamMembers,
             team: $team
         );
