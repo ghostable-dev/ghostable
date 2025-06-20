@@ -14,7 +14,7 @@ class CacheDriver extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|in:file,redis,array,memcached,database,dynamodb,null';
+        return 'in:file,redis,array,memcached,database,dynamodb,null';
     }
 
     public function description(): ?string

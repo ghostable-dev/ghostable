@@ -14,7 +14,7 @@ class MailEncryption extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'nullable|in:tls,ssl,null';
+        return 'in:tls,ssl,null';
     }
 
     public function description(): ?string

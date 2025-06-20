@@ -14,7 +14,7 @@ class MailPort extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|integer|min:1|max:65535';
+        return 'integer|min:1|max:65535';
     }
 
     public function description(): ?string

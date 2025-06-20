@@ -14,7 +14,7 @@ class AwsBucket extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|string|max:255';
+        return 'string|max:255';
     }
 
     public function description(): ?string

@@ -14,7 +14,7 @@ class PusherAppId extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|string|max:64';
+        return 'string|max:64';
     }
 
     public function description(): ?string

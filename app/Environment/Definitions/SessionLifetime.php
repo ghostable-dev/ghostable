@@ -14,7 +14,7 @@ class SessionLifetime extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|integer|min:1|max:10080'; // 1 minute to 1 week
+        return 'integer|min:1|max:10080'; // 1 minute to 1 week
     }
 
     public function description(): ?string

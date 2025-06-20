@@ -3,6 +3,7 @@
 namespace App\Environment\Models;
 
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\EnvironmentVariableRule;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
@@ -83,6 +84,11 @@ class Environment extends Model implements SupportsOverrides
     public function variables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
+    }
+    
+    public function rules(): HasMany
+    {
+        return $this->hasMany(EnvironmentVariableRule::class);
     }
 
     public function getActivitylogOptions(): LogOptions

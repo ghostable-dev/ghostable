@@ -2,6 +2,7 @@
 
 namespace App\Environment\Models;
 
+use App\Environment\Enums\EnvironmentVariableRuleType;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,9 +21,18 @@ class EnvironmentVariableRule extends Model
     use HasUuids;
 
     protected $fillable = [
+        'allowed_values',
+        'description',
+        'is_required',
         'key',
-        'value',
-        'description'
+        'max_length',
+        'min_length',
+        'type', 
+    ];
+    
+    public $casts = [
+        'allowed_values' => 'array',
+        'type' => EnvironmentVariableRuleType::class
     ];
 
     public function environment(): BelongsTo

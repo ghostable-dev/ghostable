@@ -14,7 +14,7 @@ class QueueConnection extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|in:sync,database,redis,sqs,beanstalkd,null';
+        return 'in:sync,database,redis,sqs,beanstalkd,null';
     }
 
     public function description(): ?string

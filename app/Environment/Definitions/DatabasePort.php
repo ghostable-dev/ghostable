@@ -14,7 +14,7 @@ class DatabasePort extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|integer|min:1024|max:65535';
+        return 'integer|min:1024|max:65535';
     }
 
     public function description(): ?string

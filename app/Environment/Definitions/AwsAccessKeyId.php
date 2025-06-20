@@ -14,7 +14,7 @@ class AwsAccessKeyId extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|string|max:128';
+        return 'string|max:128';
     }
 
     public function description(): ?string

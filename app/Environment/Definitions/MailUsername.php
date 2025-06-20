@@ -14,7 +14,7 @@ class MailUsername extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'nullable|string|max:255';
+        return 'string|max:255';
     }
 
     public function description(): ?string

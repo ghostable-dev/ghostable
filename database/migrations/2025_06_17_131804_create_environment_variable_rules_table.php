@@ -15,8 +15,12 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('environment_id')->constrained()->cascadeOnDelete();
             $table->string('key');
-            $table->string('rule');
             $table->string('description')->nullable();
+            $table->boolean('is_required')->default(false);
+            $table->string('type')->default('string');
+            $table->integer('min_length')->nullable();
+            $table->integer('max_length')->nullable();
+            $table->json('allowed_values')->nullable();
             $table->timestamps();
             $table->unique(['environment_id', 'key']);
         });

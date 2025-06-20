@@ -10,6 +10,7 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
+use App\Environment\Actions\ValidateEnvironment;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
@@ -21,6 +22,7 @@ use Flux\Flux;
 use Gate;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\MessageBag;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -81,6 +83,18 @@ class EnvironmentVariableManager extends Component
             source: 'ui',
         );
     }
+    
+    #[Computed]
+    public function validationErrors(): MessageBag
+    {
+        try {
+            // Run validator but catch failures instead of throwing
+            app(ValidateEnvironment::class)->handle($this->environment);
+            return new MessageBag(); // No errors
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return new MessageBag($e->errors());
+        }
+    }
 
     /**
      * Retrieve the current environment instance based on the provided environment ID.
@@ -127,9 +141,7 @@ class EnvironmentVariableManager extends Component
             return null;
         }
         
-        return app(EnvironmentVariableRegistry::class)
-            ->get($this->key)
-            ->description();
+        return app(EnvironmentVariableRegistry::class)->get($this->key)?->description();
     }
 
     /**
@@ -182,6 +194,7 @@ class EnvironmentVariableManager extends Component
             ->handle($this->toCreateVariableData($validated));
 
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $this->refreshVars();
 
         $this->reset('key', 'value');
         Flux::toast("New variable '{$variable->key}' added.");
@@ -289,6 +302,7 @@ class EnvironmentVariableManager extends Component
         );
 
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $this->refreshVars();
 
         Flux::modal('confirm-variable-removal')->close();
         Flux::toast("Variable '{$this->variableToRemove->key}' remove.");
@@ -329,6 +343,8 @@ class EnvironmentVariableManager extends Component
     #[On(EnvironmentVariableEditor::UPDATED)]
     public function refreshVars(): void
     {
+        $this->dispatch('$refresh');
+        $this->keySuggestions();
         $this->variables();
     }
 

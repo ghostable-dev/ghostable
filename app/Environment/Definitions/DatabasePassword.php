@@ -14,7 +14,7 @@ class DatabasePassword extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'nullable|string';
+        return 'string';
     }
 
     public function description(): ?string

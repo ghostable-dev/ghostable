@@ -14,7 +14,7 @@ class SessionDriver extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|in:file,cookie,database,redis,memcached,dynamodb,array';
+        return 'in:file,cookie,database,redis,memcached,dynamodb,array';
     }
 
     public function description(): ?string

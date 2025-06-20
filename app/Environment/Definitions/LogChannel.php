@@ -14,7 +14,7 @@ class LogChannel extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|string';
+        return 'string';
     }
 
     public function description(): ?string

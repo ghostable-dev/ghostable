@@ -5,7 +5,7 @@ namespace App\Environment\Definitions;
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
 
-class APP_DEBUG extends EnvironmentVariableDefinition
+class AppDebug extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
@@ -14,7 +14,7 @@ class APP_DEBUG extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|boolean';
+        return 'required|in:true,false,TRUE,FALSE';
     }
 
     public function description(): ?string

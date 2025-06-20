@@ -1,5 +1,20 @@
 <div class="space-y-6">
     
+    @if ($this->validationErrors->isNotEmpty())
+        <flux:callout icon="exclamation-triangle" variant="warning">
+            <flux:callout.heading>
+                This environment has {{ $this->validationErrors->count() }} validation issue{{ $this->validationErrors->count() > 1 ? 's' : '' }}.
+            </flux:callout.heading>
+            <flux:callout.text>
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach ($this->validationErrors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </flux:callout.text>
+        </flux:callout>
+    @endif
+    
     {{-- Add environment var form --}}
     @perform($this->environment, 'var:edit')
     <div class="lg:max-w-4xl">
@@ -30,8 +45,9 @@
             </div>
         </form>
         <flux:text variant="subtle" class="mt-4 flex flex-inline gap-1">
-            @if($this->key)
-                <flux:icon.information-circle variant="mini"/><span>{{ $this->keyDescription }}</span>
+            @if($this->keyDescription)
+                <flux:icon.information-circle variant="mini"/>
+                <span>{{ $this->keyDescription }}</span>
             @else
                 Define a new key-value pair in this environment.
             @endif

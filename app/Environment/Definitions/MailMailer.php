@@ -14,7 +14,7 @@ class MailMailer extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|in:smtp,sendmail,mailgun,ses,postmark,log,array';
+        return 'in:smtp,sendmail,mailgun,ses,postmark,log,array';
     }
 
     public function description(): ?string

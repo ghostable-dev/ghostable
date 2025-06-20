@@ -32,6 +32,7 @@
     <flux:tab.group>
         <flux:tabs wire:model="tab">
             <flux:tab name="variables">Variables</flux:tab>
+            <flux:tab name="validation">Validation</flux:tab>
             <flux:tab name="general">General</flux:tab>
             <flux:tab name="access">Access</flux:tab>
             <flux:tab name="activity">Activity</flux:tab>
@@ -44,6 +45,11 @@
             @else
                 <x-access-restricted/>
             @endperform
+        </flux:tab.panel>
+        
+        <flux:tab.panel name="validation">
+            <livewire:environment.livewire.environment-validation-editor 
+                :environment="$this->environment"/>
         </flux:tab.panel>
         
         <flux:tab.panel name="general">

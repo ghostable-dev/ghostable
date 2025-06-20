@@ -14,7 +14,7 @@ class LogLevel extends EnvironmentVariableDefinition
 
     public function rule(): string
     {
-        return 'required|in:debug,info,notice,warning,error,critical,alert,emergency';
+        return 'in:debug,info,notice,warning,error,critical,alert,emergency';
     }
 
     public function description(): ?string
