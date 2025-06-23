@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 @import '../../vendor/livewire/flux/dist/flux.css';
 
 @source '../views';
@@ -78,3 +79,8 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+::selection {
+  background-color: blue;
+  color: #ffffff;
+}
