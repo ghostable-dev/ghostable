@@ -1,59 +1,58 @@
-<div class="bg-white py-24 sm:py-32">
+<div class="py-24 sm:py-32">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="mx-auto max-w-2xl lg:text-center">
-      <h2 class="text-base/7 font-semibold text-indigo-600">Get started in minutes</h2>
-      <p class="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl lg:text-balance">
-        Sync your environment in 3 simple steps
-      </p>
-      <p class="mt-6 text-lg/8 text-gray-600">
-        Ghostable fits right into your existing Laravel projects with minimal setup. Just install, connect, and sync.
-      </p>
+    <div class="max-w-2xl mx-auto text-left lg:text-center">
+      <flux:heading level="2" size="xl">
+        How Ghostable fits into your workflow
+      </flux:heading>
+      <flux:subheading size="xl" class="mt-4">
+        Push your .env, define rules, invite your team—and let Ghostable handle the rest.
+      </flux:subheading>
     </div>
-    <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-      <dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-        <div class="flex flex-col">
-          <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900">
-            <svg class="size-5 flex-none text-indigo-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M3 6a1 1 0 011-1h3.5a1 1 0 01.8.4l1.9 2.6H21a1 1 0 011 1v1H3V6z" />
-              <path d="M3 9h18v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" />
-            </svg>
-            Install the CLI
-          </dt>
-          <dd class="mt-4 flex flex-col text-base/7 text-gray-600">
-            <p>Install Ghostable in your Laravel project using Composer and our CLI tool. It takes just one command to get started.</p>
-            <p class="mt-6">
-              <code class="rounded bg-gray-100 px-2 py-1 text-sm text-gray-800">composer require ghostable/cli</code>
-            </p>
-          </dd>
-        </div>
 
-        <div class="flex flex-col">
-          <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900">
-            <svg class="size-5 flex-none text-indigo-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 3h12a2 2 0 012 2v1H4V5a2 2 0 012-2zM4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" />
-            </svg>
-            Connect your project
-          </dt>
-          <dd class="mt-4 flex flex-col text-base/7 text-gray-600">
-            <p>Link your local project to Ghostable. Push your current environment and invite your team with role-based access.</p>
-          </dd>
+    <div class="mt-16 max-w-2xl mx-auto border-l border-white/10 space-y-12 pl-6">
+      <!-- Step 1 -->
+      <div class="relative">
+        <div class="absolute -left-3 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400"></div>
+        <div>
+          <flux:heading level="3" class="text-white">1. Push your .env</flux:heading>
+          <p class="mt-2 text-sm text-gray-400">
+            Use our CLI to securely push your local environment file to Ghostable.
+          </p>
         </div>
+      </div>
 
-        <div class="flex flex-col">
-          <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900">
-            <svg class="size-5 flex-none text-indigo-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M5 13l4 4L19 7" />
-            </svg>
-            Sync and validate
-          </dt>
-          <dd class="mt-4 flex flex-col text-base/7 text-gray-600">
-            <p>Use the CLI or web dashboard to sync `.env` values across environments, run validation rules, and enforce consistency.</p>
-            <p class="mt-6">
-              <code class="rounded bg-gray-100 px-2 py-1 text-sm text-gray-800">ghostable sync</code>
-            </p>
-          </dd>
+      <!-- Step 2 -->
+      <div class="relative">
+        <div class="absolute -left-3 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400"></div>
+        <div>
+          <flux:heading level="3" class="text-white">2. Define validation rules</flux:heading>
+          <p class="mt-2 text-sm text-gray-400">
+            Specify which keys are required, what types are valid, and any allowed values.
+          </p>
         </div>
-      </dl>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="relative">
+        <div class="absolute -left-3 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400"></div>
+        <div>
+          <flux:heading level="3" class="text-white">3. Invite your team or CI</flux:heading>
+          <p class="mt-2 text-sm text-gray-400">
+            Share access by project, environment, or team—fine-tuned with role-based permissions.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="relative">
+        <div class="absolute -left-3 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400"></div>
+        <div>
+          <flux:heading level="3" class="text-white">4. Stay in sync</flux:heading>
+          <p class="mt-2 text-sm text-gray-400">
+            Get notified when changes break your rules or go out of sync. Roll back with full history.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </div>

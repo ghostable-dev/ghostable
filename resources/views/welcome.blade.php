@@ -29,6 +29,10 @@
               </div>
             </div>
             
+            <div class="max-w-4xl mx-auto py-12">
+                @include('homepage.partials.the-problem')
+            </div>
+            
             {{-- @include('homepage.partials.built-for-teams')
             
             @include('homepage.partials.how-it-works')
@@ -37,5 +41,4 @@
         
         </div>
     </flux:main>
-    
 </x-layouts.guest>

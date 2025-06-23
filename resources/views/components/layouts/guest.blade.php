@@ -3,8 +3,9 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
+    <body class="bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
         {{ $slot }}
+        @include('partials.footer')
         @fluxScripts
     </body>
 </html>
