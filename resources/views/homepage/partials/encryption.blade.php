@@ -41,9 +41,9 @@
   <!-- Foreground Content with Text Effects -->
   <div class="w-full text-center relative z-10">
     <flux:heading
-      class="my-6 py-6 !font-bold leading-tighter tracking-tight text-3xl sm:text-3xl md:text-[5rem] bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent"
+      class="my-6 py-6 !font-bold leading-tighter tracking-tight !text-6xl lg:text-8xl bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent"
       style="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 1000px;">
-      AES-256-GCM Encryption, Always On.
+      AES-256-GCM Encryption
     </flux:heading>
     <flux:subheading size="xl" class="dark max-w-3xl mx-auto">
       AES-256-GCM encryption is enforced across storage, transport, and runtime,
