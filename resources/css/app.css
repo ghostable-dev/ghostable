@@ -28,11 +28,11 @@
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
     
-    --color-crypto: var(--color-emerald-500);
+    --color-crypto: var(--color-teal-500);
     --color-brand: var(--color-crypto);
-    --color-brand-light: color-mix(in srgb, var(--color-crypto) 85%, white);
-    --color-brand-dark: color-mix(in srgb, var(--color-crypto) 80%, black);
-    --color-brand-extra-dark: color-mix(in srgb, var(--color-crypto) 60%, black);
+    --color-brand-light: color-mix(in srgb, var(--color-crypto) 50%, white);
+    --color-brand-dark: color-mix(in srgb, var(--color-crypto) 40%, black);
+    --color-brand-extra-dark: color-mix(in srgb, var(--color-crypto) 20%, black);
 }
 
 @layer theme {
