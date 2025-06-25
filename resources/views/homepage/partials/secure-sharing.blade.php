@@ -12,28 +12,29 @@
     </div>
 
     {{-- Terminal Block --}}
-    <x-terminal>
-        <p><span class="text-zinc-500">></span> <span class="text-brand">ghostable</span> env:push</p>
-        <div class="relative border border-zinc-700 rounded px-4 pt-6 pb-4 mt-4">
-            <div class="absolute -top-3 left-4 px-1 bg-zinc-900 text-zinc-400 text-sm">
-                Which environment would you like to push?
-            </div>
-            <div class="space-y-1 pt-1">
-                <div class="text-zinc-400">○ Local</div>
-                <div class="flex items-center gap-2 text-white">
-                    <span class="text-brand">›</span>
-                    <span class="text-brand">●</span>
-                    <span>Staging</span>
-                </div>
-                <div class="text-zinc-400">○ Production</div>
-            </div>
-        </div>
-        <p class="flex items-center gap-2">
-            <flux:icon.check-circle class="h-4 w-4 text-brand" /> Environment 
-            <span class="text-brand">Staging</span> pushed to Ghostable.
-        </p>
-        <p><span class="text-zinc-500">></span> (3) added, (5) updated, & (1) removed</p>
-    </x-terminal>
+    
+      <x-terminal>
+          <p><span class="text-zinc-500">></span> <span class="text-brand">ghostable</span> env:push</p>
+          <div class="relative border border-zinc-700 rounded px-4 pt-6 pb-4 mt-4">
+              <div class="absolute -top-3 left-4 px-1 bg-zinc-900 text-zinc-400 text-sm">
+                  Which environment would you like to push?
+              </div>
+              <div class="space-y-1 pt-1">
+                  <div class="text-zinc-400">○ Local</div>
+                  <div class="flex items-center gap-2 text-white">
+                      <span class="text-brand">›</span>
+                      <span class="text-brand">●</span>
+                      <span>Staging</span>
+                  </div>
+                  <div class="text-zinc-400">○ Production</div>
+              </div>
+          </div>
+          <p class="flex items-center gap-2">
+              <flux:icon.check-circle class="h-4 w-4 text-brand" /> Environment 
+              <span class="text-brand">Staging</span> pushed to Ghostable.
+          </p>
+          <p><span class="text-zinc-500">></span> (3) added, (5) updated, & (1) removed</p>
+      </x-terminal>
 
     {{-- Feature Columns --}}
     <div class="grid grid-cols-1 gap-10 sm:grid-cols-3 mt-16 px-10">

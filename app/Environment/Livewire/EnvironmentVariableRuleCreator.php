@@ -8,6 +8,7 @@ use App\Environment\Actions\Validation\CreateRule;
 use App\Environment\Enums\EnvironmentVariableRuleType;
 use App\Environment\Rules\EnvVariableRules;
 use Flux\Flux;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
@@ -39,6 +40,10 @@ class EnvironmentVariableRuleCreator extends EnvironmentComponent
     public ?int $min_length = null;
     
     public ?int $max_length = null;
+    
+    public ?int $min_value = null;
+    
+    public ?int $max_value = null;
     
     public array $allowed_values = [];
     
@@ -89,32 +94,44 @@ class EnvironmentVariableRuleCreator extends EnvironmentComponent
     
     public function add(): void
     {
-        //$this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
-        
-        $validated = $this->validate(
-            rules: [
-                'key' => EnvVariableRules::keyRules(),
-                'rule' => 'required',
-                'description' => 'nullable|string'
-            ],
-            attributes: [
-                'key' => $this->key, 
-                'rule' => $this->rule,
-                'description' => $this->description
-            ]
-        );
-        
-        //$this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $validated = $this->validate([
+            'key'             => EnvVariableRules::keyRules(),
+            'is_required'     => 'boolean',
+            //'type'            => ['required', Rule::in(EnvironmentVariableRuleType::cases())],
+            'min_length'      => 'nullable|integer|min:0',
+            'max_length'      => 'nullable|integer|min:0|gte:min_length',
+            'min_value'        => 'nullable|integer',
+            'max_value'        => 'nullable|integer|gte:min_value',
+            'allowed_values'  => 'nullable|array',
+            'allowed_values.*'=> 'string',
+            'description'     => 'nullable|string',
+        ]);
 
         $rule = app(CreateRule::class)->handle(
-            environment: $this->environment,
-            key: $validated['key'],
-            rule: $validated['rule'],
-            description: $validated['description']
+            environment:    $this->environment,
+            key:            $validated['key'],
+            isRequired:     $validated['is_required'],
+            type:           $this->type,
+            settings: [
+                'min_length'     => $validated['min_length'] ?? null,
+                'max_length'     => $validated['max_length'] ?? null,
+                'min_value'      => $validated['min_value'] ?? null,
+                'max_value'      => $validated['max_value'] ?? null,
+                'allowed_values' => $validated['allowed_values'] ?? [],
+            ],
+            description:    $validated['description'] ?? null,
         );
-        
-        $this->reset('key', 'rule', 'description');
+
+        $this->reset([
+            'key', 'is_required', 'type',
+            'min_length', 'max_length',
+            'min_value', 'max_value',
+            'allowed_values', 'description',
+        ]);
+
         Flux::toast("New rule for key '{$rule->key}' added.");
+        $this->dispatch(self::ADDED, $rule->id);
+        $this->showing = false;
     }
     
     public function render()

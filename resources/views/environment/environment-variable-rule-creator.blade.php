@@ -3,7 +3,7 @@
         <div>
             <flux:heading size="lg">Add Validation Rule</flux:heading>
         </div>
-        <form wire:submit="addRule" class="space-y-6">
+        <form wire:submit="add" class="space-y-6">
             <div>
                 <flux:switch 
                     label="Is Required?" 

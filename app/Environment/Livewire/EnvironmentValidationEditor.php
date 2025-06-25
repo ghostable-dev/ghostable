@@ -16,16 +16,6 @@ use Livewire\Attributes\Computed;
 
 class EnvironmentValidationEditor extends EnvironmentComponent
 {
-    public string $key = '';
-    
-    public bool $is_required = false;
-    
-    public EnvironmentVariableRuleType $type = EnvironmentVariableRuleType::STRING;
-    
-    public ?string $description = null;
-    
-    public array $allowed_values = [];
-    
     /**
      * Default sort key
      */
