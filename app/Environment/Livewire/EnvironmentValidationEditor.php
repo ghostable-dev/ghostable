@@ -60,6 +60,11 @@ class EnvironmentValidationEditor extends EnvironmentComponent
         return Gate::allows('perform', [$this->environment, TeamPermission::EditVariables]);
     }
     
+    public function launchCreateRuleModal(): void
+    {
+        $this->dispatch(EnvironmentVariableRuleCreator::LAUNCH);
+    }
+    
     /**
      * Get a list of suggested environment variable keys for the current environment.
      *

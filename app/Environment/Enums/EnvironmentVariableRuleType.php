@@ -10,7 +10,6 @@ enum EnvironmentVariableRuleType: string
     case EMAIL = 'email';
     case URL = 'url';
     case ENUM = 'enum'; // maps to "in" rule
-    case REGEX = 'regex';
 
     public static function selectOptions(): array
     {
@@ -22,13 +21,12 @@ enum EnvironmentVariableRuleType: string
     public function label(): string
     {
         return match ($this) {
-            self::STRING => 'Text',
+            self::STRING => 'String',
             self::BOOLEAN => 'True / False',
             self::INTEGER => 'Number',
             self::EMAIL => 'Email',
             self::URL => 'URL',
             self::ENUM => 'Select from list',
-            self::REGEX => 'Pattern (Regex)',
         };
     }
 }

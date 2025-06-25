@@ -24,7 +24,7 @@
     @class([
         'py-48',
         'relative w-full flex items-center justify-center overflow-hidden',
-        'bg-gradient-to-r from-zinc-900 to-black'
+        'bg-gradient-to-r from-brand-extra-dark to-black'
     ])>
     
     {{-- Ring cluster --}}
@@ -57,11 +57,11 @@
       @class([
         'inline my-6 py-6 !font-bold leading-tighter tracking-tighter',
         '!text-7xl lg:text-8xl',
-        'bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent'
+        'bg-gradient-to-r from-brand to-teal-200 shadow-xl bg-clip-text text-transparent'
       ])>
       AES-256-GCM Encryption
     </flux:heading>
-    <flux:subheading size="xl" class="dark max-w-3xl mx-auto py-6">
+    <flux:subheading size="xl" class="dark max-w-3xl mx-auto py-6 px-6">
       AES-256-GCM encryption is enforced across storage, transport, and runtime,
       ensuring no unencrypted secrets exist at any stage.
     </flux:subheading>

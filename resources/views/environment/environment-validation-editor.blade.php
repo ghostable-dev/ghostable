@@ -1,106 +1,22 @@
 <div>
-    <div class="lg:max-w-4xl">
-        <form wire:submit="addRule" class="space-y-6">
-            <div>
-                <flux:switch 
-                    label="Is Required?" 
-                    wire:model.live="is_required"
-                />
-            </div>
-            <div class="flex flex-inline items-end gap-4">
-                <div class="basis-1/2 grow-0">
-                    <x-environment-key-autocomplete
-                        wire:model.live="key" 
-                        label="Key" 
-                        placeholder="e.g. APP_DEBUG"
-                        required
-                        :groupedSuggestions="$this->keySuggestions"
-                    />
-                </div>
-                <div class="basis-1/2 grow-0">
-                    <flux:select 
-                        label="Type" 
-                        wire:model.live="type">
-                        @foreach($this->ruleTypeOptions as $type)
-                            <flux:select.option value="{{ $type->value }}">
-                                {{ $type->label() }}
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-            </div>
 
-            {{-- 👇 Type-Specific Fields --}}
-            @if ($this->type->value === 'string')
-                <div class="grid grid-cols-2 gap-4">
-                    <flux:input 
-                        type="number"
-                        label="Min Length" 
-                        wire:model.defer="minLength" 
-                        placeholder="Optional"
-                    />
-                    <flux:input 
-                        type="number"
-                        label="Max Length" 
-                        wire:model.defer="maxLength" 
-                        placeholder="Optional"
-                    />
-                </div>
-            @endif
-            
-            @if ($this->type->value === 'integer')
-                <div class="grid grid-cols-2 gap-4">
-                    <flux:input 
-                        type="number"
-                        wire:model.defer="minValue"
-                        label="Min Value"
-                        placeholder="Optional"
-                    />
-                    <flux:input 
-                        type="number"
-                        wire:model.defer="maxValue"
-                        label="Max Value"
-                        placeholder="Optional"
-                    />
-                </div>
-            @endif
-
-            @if ($this->type->value === 'enum')
-                <div>
-                    <x-tag-input wire:model.defer="allowed_values" label="Allowed Values" />
-                </div>
-            @endif
-
-            @if ($this->type->value === 'regex')
-                <div>
-                    <flux:input 
-                        wire:model.defer="regex"
-                        label="Regex Pattern" 
-                        placeholder="/^[A-Z]+$/"
-                    />
-                </div>
-            @endif
-
-            <div>
-                <flux:input 
-                    wire:model.defer="description"
-                    label="Description (optional)"
-                    placeholder="Describe why this rule is needed" 
-                />
-            </div>
-
-            <div>
-                <flux:button 
-                    variant="primary"
-                    type="submit"
-                >
-                    Add
-                </flux:button>
-            </div>
-        </form>
-    </div>
+    <flux:callout icon="shield-check" variant="secondary">
+        <flux:callout.heading>Add environment validation</flux:callout.heading>
+        <flux:callout.text class="lg:max-w-4xl">
+            Validation rules help enforce that critical environment variables 
+            are present and correctly configured. If validation fails, Ghostable 
+            can block CI deployments to protect your pipelines.
+        </flux:callout.text>
+        <x-slot name="actions">
+            <flux:button 
+                wire:click="launchCreateRuleModal"
+                icon:trailing="plus">Add rule</flux:button>
+        </x-slot>
+    </flux:callout>
     
-    
+    <livewire:environment.livewire.environment-variable-rule-creator 
+        :environment="$this->environment"/>
+
     <flux:table>
         <flux:table.columns>
             <flux:table.column 

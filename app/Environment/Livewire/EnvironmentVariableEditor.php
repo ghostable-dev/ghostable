@@ -6,7 +6,6 @@ use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
-use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Actions\UpdateEnvVariable;
 use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Models\EnvironmentVariable;
