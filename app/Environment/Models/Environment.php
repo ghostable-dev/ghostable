@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -55,6 +56,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Environment extends Model implements SupportsOverrides
 {
+    use HasApiTokens;
     use HasFactory;
     use HasPermissionOverrides;
     use HasUuids;

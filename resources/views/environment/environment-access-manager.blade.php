@@ -1,7 +1,66 @@
 <section class="w-xl space-y-12">
     
+    <section class="mt-8">
+    <flux:heading size="md">CLI Tokens</flux:heading>
+    <p class="text-sm text-gray-500 mb-4">
+      Create, rotate, or revoke environment-scoped tokens for read-only pipeline access.
+    </p>
+
+    {{-- List existing tokens --}}
+    <flux:table>
+      <flux:table.columns>
+        <flux:table.column>Name</flux:table.column>
+        <flux:table.column>Created</flux:table.column>
+        <flux:table.column>Expires</flux:table.column>
+        <flux:table.column align="end">Actions</flux:table.column>
+      </flux:table.columns>
+      <flux:table.rows>
+        @foreach($this->environment->tokens()->latest()->get() as $token)
+          <flux:table.row wire:key="token-{{ $token->id }}">
+            <flux:table.cell>{{ $token->name }}</flux:table.cell>
+            <flux:table.cell>{{ $token->created_at->diffForHumans() }}</flux:table.cell>
+            <flux:table.cell>
+              {{ $token->expires_at 
+                   ? $token->expires_at->format('M j, Y') 
+                   : 'Never' }}
+            </flux:table.cell>
+            <flux:table.cell align="end">
+              <flux:button 
+                  size="sm" 
+                  variant="ghost" 
+                  wire:click="revokeToken({{ $token->id }})">
+                Revoke
+              </flux:button>
+            </flux:table.cell>
+          </flux:table.row>
+        @endforeach
+      </flux:table.rows>
+    </flux:table>
+
+    {{-- Create new token --}}
+    <div class="mt-6 flex items-center gap-4">
+      <flux:button 
+        variant="primary" 
+        wire:click="$emit('createTokenModal:open')">
+        New CLI Token
+      </flux:button>
+      <span class="text-sm text-gray-500">
+        Expires in {{ $defaultTtlDays ?? 90 }} days (you can change on creation)
+      </span>
+    </div>
+  </section>
+    
     {{-- Toggle environment restricted access --}}
     <div>
+        <div class="mb-4">
+            <p>
+                {{ 
+                    $this->environment->tokens()
+                        ->orderByDesc('created_at')
+                        ->first()->token 
+                }}
+            </p>
+        </div>
         <div class="mb-4">
             <flux:heading size="lg">{{ __('Access Restrictions') }}</flux:heading>
             <flux:subheading>

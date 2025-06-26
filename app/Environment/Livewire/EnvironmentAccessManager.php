@@ -12,6 +12,8 @@ use App\Team\Models\TeamPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Laravel\Sanctum\Contracts\HasAbilities;
+use Laravel\Sanctum\Contracts\HasApiTokens;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -58,6 +60,8 @@ class EnvironmentAccessManager extends Component
         $this->environmentId = $environment->id;
         
         $this->is_restricted = $environment->is_restricted;
+        
+        //$this->environment->createToken('ghostable-cli');
     }
 
     /**
@@ -67,6 +71,12 @@ class EnvironmentAccessManager extends Component
     public function environment(): Environment
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
+    }
+    
+    #[Computed]
+    public function token(): ?HasAbilities
+    {
+        return $this->environment->currentAccessToken();
     }
 
     /**
