@@ -36,6 +36,15 @@ class EnvironmentPolicy
             team: $environment->project->team
         );
     }
+    
+    /**
+     * Determine whether the given user may manage (create, rotate, revoke)
+     * CLI tokens for the specified environment.
+     */
+    public function manageTokens(User $user, Environment $environment): bool
+    {
+        return $user->isTeamAdmin($environment->owningTeam());
+    }
 
     /**
      * General-purpose policy method for environment-level permissions

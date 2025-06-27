@@ -11,4 +11,5 @@
     @persist('toast')
         <flux:toast />
     @endpersist
+    
 </x-layouts.app.header>

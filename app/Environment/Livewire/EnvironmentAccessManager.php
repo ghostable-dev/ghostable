@@ -13,7 +13,6 @@ use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\Contracts\HasAbilities;
-use Laravel\Sanctum\Contracts\HasApiTokens;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -71,12 +70,6 @@ class EnvironmentAccessManager extends Component
     public function environment(): Environment
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
-    }
-    
-    #[Computed]
-    public function token(): ?HasAbilities
-    {
-        return $this->environment->currentAccessToken();
     }
 
     /**

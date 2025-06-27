@@ -64,8 +64,12 @@
         <flux:tab.panel name="access">
             @if(!$this->environment->owningTeam()->isPersonal())
                 @can('manageAccessControls', $this->environment->owningTeam())
-                    <livewire:environment.livewire.environment-access-manager 
-                        :environment="$this->environment"/>
+                    <div class="space-y-12">
+                        <livewire:environment.livewire.environment-access-token-manager 
+                            :environment="$this->environment"/>
+                        <livewire:environment.livewire.environment-access-manager 
+                            :environment="$this->environment"/>
+                    </div>
                 @else
                     <x-access-restricted/>
                 @endcan

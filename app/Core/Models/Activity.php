@@ -2,6 +2,7 @@
 
 namespace App\Core\Models;
 
+use App\Auth\Models\PersonalAccessToken;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Project\Models\Project;
@@ -99,6 +100,10 @@ class Activity extends SpatieActivity
             })->orWhere(function ($query) use ($environment) {
                 $type = (new EnvironmentVariable)->getMorphClass();
                 $ids = $environment->variables()->pluck('id');
+                $query->where('subject_type', $type)->whereIn('subject_id', $ids);
+            })->orWhere(function ($query) use ($environment) {
+                $type = (new PersonalAccessToken)->getMorphClass();
+                $ids = $environment->tokens()->pluck('id');
                 $query->where('subject_type', $type)->whereIn('subject_id', $ids);
             });
         });

@@ -18,33 +18,35 @@
 </span>
 
 @once
-<flux:modal wire:model.self="confirmingPassword" class="md:w-96">
-    <div class="space-y-6">
-        <div>
-            <flux:heading size="lg">{{ $title }}</flux:heading>
-            <flux:text class="mt-2">{{ $content }}</flux:text>
-        </div>
-        <div>
-            <flux:input 
-                type="password" 
-                placeholder="{{ __('Password') }}" 
-                autocomplete="current-password"
-                x-ref="confirmable_password"
-                wire:model="confirmablePassword"
-                wire:keydown.enter="confirmPassword" />
-        </div>
-        <div class="flex gap-2">
-            <flux:spacer />
-            <flux:modal.close>
-                <flux:button variant="ghost">Cancel</flux:button>
-            </flux:modal.close>
-            <flux:button 
-                dusk="confirm-password-button" 
-                wire:click="confirmPassword" 
-                variant="primary">
-                {{ $button }}
-            </flux:button>
-        </div>
-    </div>
-</flux:modal>
+    @teleport('body')
+        <flux:modal wire:model.self="confirmingPassword" class="md:w-lg">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ $title }}</flux:heading>
+                    <flux:text class="mt-2">{{ $content }}</flux:text>
+                </div>
+                <div>
+                    <flux:input 
+                        type="password" 
+                        placeholder="{{ __('Password') }}" 
+                        autocomplete="current-password"
+                        x-ref="confirmable_password"
+                        wire:model="confirmablePassword"
+                        wire:keydown.enter="confirmPassword" />
+                </div>
+                <div class="flex gap-2">
+                    <flux:spacer />
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:button 
+                        dusk="confirm-password-button" 
+                        wire:click="confirmPassword" 
+                        variant="primary">
+                        {{ $button }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endteleport
 @endonce

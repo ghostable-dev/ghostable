@@ -5,6 +5,7 @@ const DT_FORMAT = 'M j, Y g:i A T';
 if (! function_exists('timezone')) {
     function timezone()
     {
+        return 'EST';
         return optional(Auth::user())->timezone ?? config('app.timezone');
     }
 }

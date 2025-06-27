@@ -5,7 +5,9 @@ namespace App\Environment;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
 use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\View\Components\EnvTokenExpiryReminder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -52,6 +54,8 @@ class EnvironmentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Blade::component('env-token-expiry-reminder', EnvTokenExpiryReminder::class);
+        
         Gate::policy(Environment::class, EnvironmentPolicy::class);
 
         Relation::enforceMorphMap([
