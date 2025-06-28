@@ -1,42 +1,39 @@
 <div class="space-y-6">
     
-    {{-- Current tokens --}}
-    <div class="space-y-10">
-        <div class="space-y-6">
-            <div class="flex items-start justify-between gap-8">
-                <div>
-                    <flux:heading size="lg">CLI Tokens</flux:heading>
-                    <flux:subheading>Environment-scoped tokens allow for CI/CD pipeline access.</flux:subheading>
-                </div>
-                <div>
-                    <flux:modal.trigger name="create-token">
-                        <flux:button variant="primary">New CLI Token</flux:button>
-                    </flux:modal.trigger>
-                </div>
-            </div>
-            <flux:card class="bg-zinc-50 p-3">
-                @if(count($this->tokens))
-                    <ul role="list" class="space-y-3 w-full">
-                        @foreach($this->tokens as $token)
-                            <x-environment.token-list-item :token="$token" wire:key="token-li-{{ $token->id }}">
-                                <x-slot:actions>
-                                    <x-env-token-expiry-reminder :token="$token"/>
-                                    <x-auth.confirms-password wire:then="remove('{{ $token->id }}')">
-                                        <flux:link>
-                                            Remove<span class="sr-only"> token, {{ $token->name }}</span>
-                                        </flux:link>
-                                    </x-auth.confirms-password>
-                                </x-slot:actions>
-                            </x-environment.token-list-item>
-                        @endforeach
-                    </ul>
-                @else
-                    <flux:callout.heading>No tokens</flux:callout.heading>
-                    <flux:callout.text>You haven't created any tokens yet.</flux:callout.text>
-                @endif
-            </flux:card>
-        </div>
-    </div>
+    <x-section>
+        <x-slot:title>CLI Tokens</x-slot:title>
+        <x-slot:subheading>Environment-scoped tokens allow for CI/CD pipeline access.</x-slot:subheading>
+        <x-slot:actions>
+            <flux:modal.trigger name="create-token">
+                <flux:button 
+                    variant="primary"
+                    icon:trailing="plus">
+                    New CLI Token
+                </flux:button>
+            </flux:modal.trigger>
+        </x-slot:actions>
+        @if(count($this->tokens))
+            <ul role="list" class="space-y-3 w-full divide-y">
+                @foreach($this->tokens as $token)
+                    <x-environment.token-list-item :token="$token" wire:key="token-li-{{ $token->id }}">
+                        <x-slot:menu>
+                            <flux:menu.item>
+                                <x-env-token-expiry-reminder :token="$token"/>
+                            </flux:menu.item>
+                            <x-auth.confirms-password wire:then="remove('{{ $token->id }}')">
+                                <flux:menu.item>
+                                    Remove<span class="sr-only"> token, {{ $token->name }}</span>
+                                </flux:menu.item>
+                            </x-auth.confirms-password>
+                        </x-slot:menu>
+                    </x-environment.token-list-item>
+                @endforeach
+            </ul>
+        @else
+            <flux:callout.heading>No tokens</flux:callout.heading>
+            <flux:callout.text>You haven't created any tokens yet.</flux:callout.text>
+        @endif
+    </x-section>
 
     {{-- New token modal form --}}
     <flux:modal name="create-token" class="md:w-lg">

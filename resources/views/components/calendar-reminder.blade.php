@@ -53,7 +53,7 @@
             URL.revokeObjectURL(url);
         }
     }">
-    <flux:link {{ $attributes }} x-on:click="download()">
+    <span {{ $attributes }} x-on:click="download()">
         {{ $label }}
-    </flux:link>
+    </span>
 </div>

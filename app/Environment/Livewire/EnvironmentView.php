@@ -19,7 +19,7 @@ class EnvironmentView extends Component
      *
      * Defaults to 'variables'. Other valid values may include 'general' and 'access'.
      */
-    public string $tab = 'access';
+    public string $tab = 'variables';
 
     public function mount(Environment $environment): void
     {
