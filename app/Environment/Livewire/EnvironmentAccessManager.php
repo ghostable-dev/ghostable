@@ -59,8 +59,6 @@ class EnvironmentAccessManager extends Component
         $this->environmentId = $environment->id;
         
         $this->is_restricted = $environment->is_restricted;
-        
-        //$this->environment->createToken('ghostable-cli');
     }
 
     /**

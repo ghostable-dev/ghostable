@@ -2,7 +2,7 @@
 
 <div
     x-data="{
-        tags: @entangle($attributes->wire('model')).defer || [],
+        tags: @entangle($attributes->wire('model')),
         newTag: '',
         addTag() {
             if (this.newTag.trim() !== '' && !this.tags.includes(this.newTag.trim())) {
@@ -33,7 +33,7 @@
                 <span x-text="tag"></span> <flux:badge.close @click="removeTag(index)"/>
             </flux:badge>
 
-            {{-- <flux:badge><span x-text="tag"></span></flux:badge>
+            <flux:badge><span x-text="tag"></span></flux:badge>
             <div class="flex items-center bg-gray-200 px-2 py-1 rounded-full text-sm">
                 <span x-text="tag"></span>
                 <button
@@ -41,7 +41,7 @@
                     class="ml-1 text-red-500 hover:text-red-700"
                     @click="removeTag(index)"
                 >×</button>
-            </div> --}}
+            </div>
         </template>
     </flux:card>
 </div>

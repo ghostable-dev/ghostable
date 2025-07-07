@@ -13,8 +13,9 @@ use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 
-class EnvironmentValidationEditor extends EnvironmentComponent
+class EnvironmentValidationManager extends EnvironmentComponent
 {
     /**
      * Default sort key
@@ -52,52 +53,8 @@ class EnvironmentValidationEditor extends EnvironmentComponent
     
     public function launchCreateRuleModal(): void
     {
-        $this->dispatch(EnvironmentVariableRuleCreator::LAUNCH);
+        $this->dispatch(EnvironmentValidationRuleCreator::LAUNCH);
     }
-    
-    /**
-     * Get a list of suggested environment variable keys for the current environment.
-     *
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function keySuggestions(): array
-    {
-        return app(SuggestEnvKeys::class)->handle($this->environment);
-    }
-    
-    public function addRule(): void
-    {
-        //$this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
-        
-        $validated = $this->validate(
-            rules: [
-                'key' => EnvVariableRules::keyRules(),
-                'rule' => 'required',
-                'description' => 'nullable|string'
-            ],
-            attributes: [
-                'key' => $this->key, 
-                'rule' => $this->rule,
-                'description' => $this->description
-            ]
-        );
-        
-        //$this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-
-        $rule = app(CreateRule::class)->handle(
-            environment: $this->environment,
-            key: $validated['key'],
-            rule: $validated['rule'],
-            description: $validated['description']
-        );
-        
-        $this->reset('key', 'rule', 'description');
-        Flux::toast("New rule for key '{$rule->key}' added.");
-    }
-    
-    
-    
     
     public function confirmRuleRemoval(EnvironmentVariableRule $rule): void
     {
@@ -115,12 +72,6 @@ class EnvironmentValidationEditor extends EnvironmentComponent
             ->firstWhere('id', $this->ruleToRemoveId);
     }
     
-    #[Computed]
-    public function ruleTypeOptions(): array
-    {
-        return EnvironmentVariableRuleType::cases();
-    }
-
     public function removeRule(): void
     {
         $rule = $this->ruleToRemove;
@@ -142,8 +93,14 @@ class EnvironmentValidationEditor extends EnvironmentComponent
         $this->reset('ruleToRemoveId');
     }
     
+    #[On(EnvironmentValidationRuleCreator::ADDED)]
+    public function refreshRules(): void
+    {
+        $this->rules();
+    }
+    
     public function render()
     {
-        return view('environment.environment-validation-editor');
+        return view('environment.environment-validation-manager');
     }
 }

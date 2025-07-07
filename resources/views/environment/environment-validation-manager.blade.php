@@ -62,7 +62,9 @@
                             {{-- Description --}}
                             <flux:table.cell>
                                 @if($rule->description)
-                                    <flux:text size="sm">{{ \Illuminate\Support\Str::limit($rule->description, 50) }}</flux:text>
+                                    <flux:text size="sm">
+                                        {{ \Illuminate\Support\Str::limit($rule->description, 50) }}
+                                    </flux:text>
                                 @else
                                     <flux:text size="xs" class="text-gray-400 italic">—</flux:text>
                                 @endif
@@ -97,7 +99,7 @@
     </x-section>
     
     {{-- Rule creator modal --}}
-    <livewire:environment.livewire.environment-variable-rule-creator 
+    <livewire:environment.livewire.environment-validation-rule-creator 
         :environment="$this->environment"/>
     
     {{-- Remove rule modal --}}

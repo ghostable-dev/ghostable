@@ -48,7 +48,7 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="validation">
-            <livewire:environment.livewire.environment-validation-editor 
+            <livewire:environment.livewire.environment-validation-manager 
                 :environment="$this->environment"/>
         </flux:tab.panel>
         
