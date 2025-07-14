@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class QueueConnection extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'QUEUE_CONNECTION';
-    }
-
-    public function rule(): string
-    {
-        return 'in:sync,database,redis,sqs,beanstalkd,null';
     }
 
     public function description(): ?string
@@ -26,14 +23,16 @@ class QueueConnection extends EnvironmentVariableDefinition
     {
         return ['sync', 'database', 'redis', 'sqs', 'beanstalkd', 'null'];
     }
-
-    public function inputType(): ?string
-    {
-        return 'select';
-    }
-
+    
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Queue;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+        ];
     }
 }

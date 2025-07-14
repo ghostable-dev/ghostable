@@ -10,13 +10,14 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
-use App\Environment\Actions\ValidateEnvironment;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Registry\EnvironmentVariableRegistry;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvVariableRules;
+use App\Environment\Validation\Actions\ValidateEnvironment;
+use App\Environment\Versioning\Livewire\VersionManager;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Gate;
@@ -325,13 +326,19 @@ class EnvironmentVariableManager extends Component
     /**
      * Dispatch an event to open the environment
      * variable activity feed for the given variable.
-     *
-     * This triggers the `EnvironmentVariableActivityFeed`
-     * component to load and show the modal.
      */
     public function viewVariableActivity(EnvironmentVariable $variable): void
     {
         $this->dispatch(EnvironmentVariableActivityFeed::LAUNCH, $variable->id);
+    }
+    
+    /**
+     * Dispatch an event to open the versions 
+     * manager for the given variable.
+     */
+    public function viewVersions(EnvironmentVariable $variable): void
+    {
+        $this->dispatch(VersionManager::LAUNCH, $variable->id);
     }
 
     /**
@@ -340,12 +347,18 @@ class EnvironmentVariableManager extends Component
      *
      * This is triggered by the `EnvironmentVariableEditor::UPDATED` event.
      */
-    #[On(EnvironmentVariableEditor::UPDATED)]
+    #[On([
+        EnvironmentVariableEditor::UPDATED,
+        VersionManager::VERSION_RESTORED
+    ])]
     public function refreshVars(): void
     {
-        $this->dispatch('$refresh');
+        //$this->dispatch('$refresh');
         $this->keySuggestions();
         $this->variables();
+        $this->validationErrors();
+        
+        $this->environment->refresh();
     }
 
     public function toggleSecret(EnvironmentVariable $var): void

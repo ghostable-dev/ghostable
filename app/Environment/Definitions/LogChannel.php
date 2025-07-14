@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class LogChannel extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'LOG_CHANNEL';
-    }
-
-    public function rule(): string
-    {
-        return 'string';
     }
 
     public function description(): ?string
@@ -27,13 +24,15 @@ class LogChannel extends EnvironmentVariableDefinition
         return ['stack', 'single', 'daily', 'slack'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'text';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Logging;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+        ];
     }
 }

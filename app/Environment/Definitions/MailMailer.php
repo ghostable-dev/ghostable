@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class MailMailer extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'MAIL_MAILER';
-    }
-
-    public function rule(): string
-    {
-        return 'in:smtp,sendmail,mailgun,ses,postmark,log,array';
     }
 
     public function description(): ?string
@@ -27,13 +24,15 @@ class MailMailer extends EnvironmentVariableDefinition
         return ['smtp', 'sendmail', 'mailgun', 'ses', 'postmark', 'log', 'array'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'select';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Mail;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+        ];
     }
 }

@@ -12,21 +12,11 @@ class MailPassword extends EnvironmentVariableDefinition
         return 'MAIL_PASSWORD';
     }
 
-    public function rule(): string
-    {
-        return 'string';
-    }
-
     public function description(): ?string
     {
         return 'The password used to authenticate with your mail server.';
     }
-
-    public function inputType(): ?string
-    {
-        return 'password';
-    }
-
+    
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Mail;

@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class MailEncryption extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'MAIL_ENCRYPTION';
-    }
-
-    public function rule(): string
-    {
-        return 'in:tls,ssl,null';
     }
 
     public function description(): ?string
@@ -27,13 +24,15 @@ class MailEncryption extends EnvironmentVariableDefinition
         return ['tls', 'ssl', 'null'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'select';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Mail;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+        ];
     }
 }

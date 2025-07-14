@@ -12,19 +12,9 @@ class DatabaseHost extends EnvironmentVariableDefinition
         return 'DB_HOST';
     }
 
-    public function rule(): string
-    {
-        return 'string';
-    }
-
     public function description(): ?string
     {
         return 'The hostname or IP address of your database server.';
-    }
-
-    public function inputType(): ?string
-    {
-        return 'text';
     }
 
     public function group(): EnvironmentVariableGroup

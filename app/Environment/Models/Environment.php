@@ -3,7 +3,7 @@
 namespace App\Environment\Models;
 
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Models\EnvironmentVariableRule;
+use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;

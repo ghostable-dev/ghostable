@@ -6,7 +6,7 @@
         @if (!empty($keys))
             <flux:text size="sm" class="pl-2 py-3">{{ $group }}</flux:text>
             @foreach ($keys as $key)
-                <flux:autocomplete.item>{{ $key }}</flux:autocomplete.item>
+                <flux:autocomplete.item wire:key="env-key-{{ $key }}">{{ $key }}</flux:autocomplete.item>
             @endforeach
             @if (! $loop->last)
                 <flux:menu.separator variant="subtle" />

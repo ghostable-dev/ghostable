@@ -43,6 +43,7 @@ class LogVariableActivity
             'updated' => "Updated variable \"{$key}\" in \"{$environment}\"",
             'deleted' => "Removed variable \"{$key}\" from \"{$environment}\"",
             'revealed' => "Revealed value for \"{$key}\" in \"{$environment}\"",
+            'restored' => "Restored variable \"{$key}\" in \"{$environment}\"",
             default => ucfirst($event)." variable \"{$key}\" in \"{$environment}\"",
         };
     }

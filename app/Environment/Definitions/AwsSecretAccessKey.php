@@ -4,6 +4,8 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\StringKeyRule;
 
 class AwsSecretAccessKey extends EnvironmentVariableDefinition
 {
@@ -12,23 +14,20 @@ class AwsSecretAccessKey extends EnvironmentVariableDefinition
         return 'AWS_SECRET_ACCESS_KEY';
     }
 
-    public function rule(): string
-    {
-        return 'string|max:255';
-    }
-
     public function description(): ?string
     {
         return 'Your AWS secret access key, used in combination with the access key ID.';
     }
 
-    public function inputType(): ?string
-    {
-        return 'password';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Aws;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new StringKeyRule(new RuleParameters(max: 255))
+        ];
     }
 }

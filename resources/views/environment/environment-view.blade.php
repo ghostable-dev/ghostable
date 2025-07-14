@@ -48,8 +48,12 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="validation">
-            <livewire:environment.livewire.environment-validation-manager 
-                :environment="$this->environment"/>
+            @perform($this->environment, 'var:manage-rules')
+                <livewire:environment.validation.livewire.variable-rule-manager 
+                    :environment="$this->environment"/>
+            @else
+                <x-access-restricted/>
+            @endperform
         </flux:tab.panel>
         
         <flux:tab.panel name="general">
@@ -64,7 +68,7 @@
         <flux:tab.panel name="access">
             @if(!$this->environment->owningTeam()->isPersonal())
                 @can('manageAccessControls', $this->environment->owningTeam())
-                    <div class="space-y-12">
+                    <div class="space-y-6">
                         <livewire:environment.livewire.environment-access-token-manager 
                             :environment="$this->environment"/>
                         <livewire:environment.livewire.environment-access-manager 

@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\IntegerKeyRule;
 
 class SessionLifetime extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'SESSION_LIFETIME';
-    }
-
-    public function rule(): string
-    {
-        return 'integer|min:1|max:10080'; // 1 minute to 1 week
     }
 
     public function description(): ?string
@@ -27,13 +24,19 @@ class SessionLifetime extends EnvironmentVariableDefinition
         return ['15', '60', '120', '1440'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'number';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::App;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            
+            new IntegerKeyRule(new RuleParameters(
+                min: 1, // 1 min
+                max: 10080 // 1 week
+            ))
+        ];
     }
 }

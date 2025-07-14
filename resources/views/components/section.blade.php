@@ -17,6 +17,11 @@
                 @endisset
             </div>
         @endif
+        @if(isset($form))
+            <div class="pb-4 pt-2 px-3">
+                {{ $form }}
+            </div>
+        @endif
         <flux:card>
             {{ $slot }}
         </flux:card>

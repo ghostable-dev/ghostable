@@ -3,9 +3,11 @@
 namespace App\Environment\Models;
 
 use App\Account\Models\User;
-use App\Environment\Actions\CreateVariableVersion;
 use App\Environment\Actions\LogVariableActivity;
 use App\Environment\Casts\EncryptedString;
+use App\Environment\Concerns\HasSecretValues;
+use App\Environment\Versioning\Actions\CreateVariableVersion;
+use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use Database\Factories\EnvironmentVariableFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Environment\Models\Environment $environment
  * @property-read User|null $lastUpdatedBy
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariableVersion> $versions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Versioning\Models\EnvironmentVariableVersion> $versions
  * @property-read int|null $versions_count
  * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newModelQuery()
@@ -49,13 +51,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
- * @property-read \App\Environment\Models\EnvironmentVariableVersion|null $latestVersion
+ * @property-read \App\Environment\Versioning\Models\EnvironmentVariableVersion|null $latestVersion
  * @mixin \Eloquent
  */
 class EnvironmentVariable extends Model
 {
     use HasFactory;
     use HasUuids;
+    use HasSecretValues;
     use SoftDeletes;
 
     protected $fillable = [
@@ -128,24 +131,5 @@ class EnvironmentVariable extends Model
             event: $event,
             user: $user
         );
-    }
-
-    public function displayValue(): string
-    {
-        $masked = str_repeat('•', 10);
-
-        return $this->isSecret() ? $masked : $this->value;
-    }
-
-    public function isSecret(): bool
-    {
-        return collect([
-            'key',
-            'secret',
-            'password',
-            'token',
-            'private',
-            'credentials',
-        ])->contains(fn ($pattern) => str_contains(strtolower($this->key), $pattern));
     }
 }

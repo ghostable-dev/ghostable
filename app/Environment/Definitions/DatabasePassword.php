@@ -12,19 +12,9 @@ class DatabasePassword extends EnvironmentVariableDefinition
         return 'DB_PASSWORD';
     }
 
-    public function rule(): string
-    {
-        return 'string';
-    }
-
     public function description(): ?string
     {
         return 'The password used to authenticate with your database.';
-    }
-
-    public function inputType(): ?string
-    {
-        return 'password';
     }
 
     public function group(): EnvironmentVariableGroup

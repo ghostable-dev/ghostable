@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class AwsDefaultRegion extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'AWS_DEFAULT_REGION';
-    }
-
-    public function rule(): string
-    {
-        return 'in:us-east-1,us-west-1,us-west-2,eu-west-1,eu-central-1,ap-southeast-1,ap-northeast-1';
     }
 
     public function description(): ?string
@@ -27,13 +24,23 @@ class AwsDefaultRegion extends EnvironmentVariableDefinition
         return ['us-east-1', 'us-west-2', 'eu-central-1'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'select';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Aws;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: [
+                'us-east-1',
+                'us-west-1',
+                'us-west-2',
+                'eu-west-1',
+                'eu-central-1',
+                'ap-southeast-1',
+                'ap-northeast-1'
+            ]))
+        ];
     }
 }

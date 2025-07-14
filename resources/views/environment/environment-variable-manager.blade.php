@@ -15,48 +15,62 @@
         </flux:callout>
     @endif
     
-    {{-- Add environment var form --}}
-    @perform($this->environment, 'var:edit')
-    <div class="lg:max-w-4xl">
-        <form wire:submit="addEnvironmentVariable" class="flex flex-inline items-end gap-4">
-            <div class="basis-1/2 grow-0">
-                <x-environment-key-autocomplete
-                    wire:model.live="key" 
-                    label="Key" 
-                    placeholder="e.g. PARANORMAL_STATUS"
-                    required
-                    :groupedSuggestions="$this->keySuggestions"/>
+    <x-section>
+        <x-slot:title>Variables</x-slot:title>
+        <x-slot:subheading>
+            <div class="max-w-2xl">
+                Validation rules help enforce that critical environment variables 
+                are present and correctly configured. If validation fails, Ghostable 
+                can block CI deployments to protect your pipelines.
             </div>
-            <div class="basis-1/2 grow-0">
-                <flux:autocomplete 
-                    wire:model.live="value" 
-                    label="Value" 
-                    placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
-                    required>
-                    @foreach($this->valueSuggestions as $suggestion)
-                        <flux:autocomplete.item wire:key="value-{{ $suggestion }}">
-                            {{ $suggestion }}
-                        </flux:autocomplete.item>
-                    @endforeach
-                </flux:autocomplete>
-            </div>
-            <div class="flex-none">
-                <flux:button type="submit" variant="primary">Add</flux:button>
-            </div>
-        </form>
-        <flux:text variant="subtle" class="mt-4 flex flex-inline gap-1">
-            @if($this->keyDescription)
-                <flux:icon.information-circle variant="mini"/>
-                <span>{{ $this->keyDescription }}</span>
-            @else
-                Define a new key-value pair in this environment.
-            @endif
-        </flux:text>
-    </div>
-    @endperform
-    
-    {{-- Variable table display  --}}
-    <div>
+        </x-slot:subheading>
+        
+        {{-- Add environment var form --}}
+        @perform($this->environment, 'var:edit')
+            <x-slot:form>
+                <form wire:submit="addEnvironmentVariable" class="flex flex-inline items-end gap-4">
+                    <div class="basis-1/2 grow-0">
+                        <x-environment-key-autocomplete
+                            wire:model.live="key" 
+                            label="Key" 
+                            placeholder="e.g. PARANORMAL_STATUS"
+                            required
+                            :groupedSuggestions="$this->keySuggestions"/>
+                    </div>
+                    <div class="basis-1/2 grow-0">
+                        <flux:autocomplete 
+                            wire:model.live="value" 
+                            label="Value" 
+                            placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
+                            required>
+                            @foreach($this->valueSuggestions as $suggestion)
+                                <flux:autocomplete.item wire:key="value-{{ $suggestion }}">
+                                    {{ $suggestion }}
+                                </flux:autocomplete.item>
+                            @endforeach
+                        </flux:autocomplete>
+                    </div>
+                    <div class="flex-none">
+                        <flux:button 
+                            type="submit" 
+                            variant="primary" 
+                            icon:trailing="plus">
+                            Add Variable
+                        </flux:button>
+                    </div>
+                </form>
+                <flux:text variant="subtle" class="mt-4 flex flex-inline gap-1">
+                    @if($this->keyDescription)
+                        <flux:icon.information-circle variant="mini"/>
+                        <span>{{ $this->keyDescription }}</span>
+                    @else
+                        Define a new key-value pair in this environment.
+                    @endif
+                </flux:text>
+            </x-slot:form>
+        @endperform
+        
+        {{-- Variable table display  --}}
         <flux:table>
             <flux:table.columns>
                 <flux:table.column 
@@ -108,7 +122,7 @@
                         </flux:table.cell>
                         <flux:table.cell align="end">
                             @if($this->canEditVariables)
-                            <flux:dropdown>
+                            <flux:dropdown position="left">
                                 <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
                                 <flux:menu>
                                     <flux:menu.item 
@@ -116,14 +130,21 @@
                                         Edit
                                     </flux:menu.item>
                                     <flux:menu.item 
-                                        wire:click="viewVariableActivity('{{ $var->id }}')">
-                                        Activity
-                                    </flux:menu.item>
-                                    <flux:menu.item 
                                         wire:click="confirmVariableRemoval('{{ $var->id }}')"
                                         variant="danger">
                                         Delete
                                     </flux:menu.item>
+                                    <flux:separator/>
+                                    <flux:menu.item 
+                                        wire:click="viewVariableActivity('{{ $var->id }}')">
+                                        Activity
+                                    </flux:menu.item>
+                                    @if($var->latestVersion->version > 1)
+                                    <flux:menu.item 
+                                        wire:click="viewVersions('{{ $var->id }}')">
+                                        Versions
+                                    </flux:menu.item>
+                                    @endif
                                 </flux:menu>
                             </flux:dropdown>
                             @endif
@@ -133,41 +154,44 @@
             </flux:table.rows>
         </flux:table>
         
-        {{-- Variable editor modal --}}
-        <livewire:environment.livewire.environment-variable-editor />
+    </x-section>
+    
+    {{-- Variable editor modal --}}
+    <livewire:environment.livewire.environment-variable-editor />
         
-        {{-- Variable activity feed modal --}}
-        <livewire:environment.livewire.environment-variable-activity-feed />
+    {{-- Variable activity feed modal --}}
+    <livewire:environment.livewire.environment-variable-activity-feed />
+    
+    {{-- Variable activity feed modal --}}
+    <livewire:environment.versioning.livewire.version-manager />
         
-        {{-- Remove variable modal --}}
-        <flux:modal name="confirm-variable-removal" class="md:w-lg">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">Remove Variable</flux:heading>
-                    <flux:text class="mt-2">
-                        Are you sure you want to remove the
-                        <flux:text class="inline" variant="strong">
-                            “{{ $this->variableToRemove?->key }}”
-                        </flux:text>
-                        key and corresponding value?
+    {{-- Remove variable modal --}}
+    <flux:modal name="confirm-variable-removal" class="md:w-lg">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Remove Variable</flux:heading>
+                <flux:text class="mt-2">
+                    Are you sure you want to remove the
+                    <flux:text class="inline" variant="strong">
+                        “{{ $this->variableToRemove?->key }}”
                     </flux:text>
-                </div>
-                <div class="flex gap-2">
-                    <flux:spacer />
-                    <flux:modal.close>
-                        <flux:button variant="ghost">Cancel</flux:button>
-                    </flux:modal.close>
-                    <x-auth.confirms-password wire:then="removeVariable">
-                        <flux:button  
-                            variant="danger"
-                            :loading="true"
-                            wire:target="removeVariable">
-                            {{ __('Remove Variable') }}
-                        </flux:button>
-                    </x-auth.confirms-password>
-                </div>
+                    key and corresponding value?
+                </flux:text>
             </div>
-        </flux:modal>
-                
-    </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <x-auth.confirms-password wire:then="removeVariable">
+                    <flux:button  
+                        variant="danger"
+                        :loading="true"
+                        wire:target="removeVariable">
+                        {{ __('Remove Variable') }}
+                    </flux:button>
+                </x-auth.confirms-password>
+            </div>
+        </div>
+    </flux:modal>
 </div>

@@ -5,6 +5,7 @@ namespace App\Environment;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
 use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\Validation\ValidationServiceProvider;
 use App\Environment\View\Components\EnvTokenExpiryReminder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
@@ -20,6 +21,8 @@ class EnvironmentServiceProvider extends ServiceProvider
     public function register(): void 
     {
         $this->registerVariables();
+        
+        $this->app->register(ValidationServiceProvider::class);
     }
     
     /**

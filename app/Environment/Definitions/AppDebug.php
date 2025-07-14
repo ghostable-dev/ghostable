@@ -4,17 +4,13 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Rules\BooleanKeyRule;
 
 class AppDebug extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'APP_DEBUG';
-    }
-
-    public function rule(): string
-    {
-        return 'required|in:true,false,TRUE,FALSE';
     }
 
     public function description(): ?string
@@ -26,14 +22,17 @@ class AppDebug extends EnvironmentVariableDefinition
     {
         return ['true', 'false'];
     }
-
-    public function inputType(): ?string
-    {
-        return 'boolean';
-    }
     
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::App;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            $this->requiredProvider(),
+            new BooleanKeyRule()
+        ];
     }
 }

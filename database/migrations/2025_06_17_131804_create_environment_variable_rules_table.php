@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->boolean('is_required')->default(false);
             $table->string('type')->default('string');
-            $table->integer('min_length')->nullable();
-            $table->integer('max_length')->nullable();
+            $table->integer('min')->nullable();
+            $table->integer('max')->nullable();
             $table->json('allowed_values')->nullable();
             $table->timestamps();
             $table->unique(['environment_id', 'key']);

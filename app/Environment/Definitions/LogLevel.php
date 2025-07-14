@@ -4,17 +4,14 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Validation\Entities\RuleParameters;
+use App\Environment\Validation\Rules\EnumKeyRule;
 
 class LogLevel extends EnvironmentVariableDefinition
 {
     public function key(): string
     {
         return 'LOG_LEVEL';
-    }
-
-    public function rule(): string
-    {
-        return 'in:debug,info,notice,warning,error,critical,alert,emergency';
     }
 
     public function description(): ?string
@@ -27,13 +24,15 @@ class LogLevel extends EnvironmentVariableDefinition
         return ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
     }
 
-    public function inputType(): ?string
-    {
-        return 'select';
-    }
-
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Logging;
+    }
+    
+    public function ruleProviders(): array
+    {
+        return [
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+        ];
     }
 }
