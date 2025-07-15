@@ -77,7 +77,8 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
-        "pint": "./vendor/bin/pint"
+        "pint": "./vendor/bin/pint",
+        "ide": "php artisan ide-helper:generate"
     },
     "extra": {
         "laravel": {
