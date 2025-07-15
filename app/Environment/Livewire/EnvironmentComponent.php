@@ -16,8 +16,8 @@ abstract class EnvironmentComponent extends Component
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
-        
-        //$this->authorize('view', $environment);
+
+        // $this->authorize('view', $environment);
     }
 
     /**

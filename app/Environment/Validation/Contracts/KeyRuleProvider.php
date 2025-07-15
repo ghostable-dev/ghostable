@@ -11,7 +11,7 @@ interface KeyRuleProvider
      * Get the validation rule.
      */
     public function rule(): ValidatorAwareRule|string|array|Closure;
-    
+
     /**
      * Get the validation error message.
      */

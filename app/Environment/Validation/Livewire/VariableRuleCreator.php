@@ -22,56 +22,56 @@ class VariableRuleCreator extends EnvironmentComponent
      * Indicates whether the variable editor modal is currently visible.
      */
     public bool $showing = false;
-    
+
     /**
-     * Event name used to trigger the variable 
+     * Event name used to trigger the variable
      * rule creator modal.
      */
     public const LAUNCH = 'variable-rule-creator:launch';
-    
+
     /**
-     * Event name used to trigger the variable rule 
+     * Event name used to trigger the variable rule
      * creator modal added a variable.
      */
     public const ADDED = 'variable-rule-creator:added';
-    
+
     /**
      * The unique identifier for the environment variable.
      */
-    public string $key = '';                 
-    
+    public string $key = '';
+
     /**
      * Whether this environment variable is required.
      */
     public bool $is_required = true;
-    
+
     /**
      * The type of the environment variable, represented as an enum.
      */
     public EnvironmentVariableRuleType $type = EnvironmentVariableRuleType::STRING;
-    
+
     /**
      * The minimum allowed.
      */
     public ?int $min = null;
-    
+
     /**
      * The maximum allowed.
      */
     public ?int $max = null;
-    
+
     /**
      * A list of explicitly permitted values (strings).
      *
      * @var string[]
      */
     public array $allowed_values = [];
-    
+
     /**
      * An optional human-readable description of the rule.
      */
     public ?string $description = null;
-    
+
     /**
      * Livewire event listener to launch the environment rule creator modal.
      */
@@ -80,9 +80,9 @@ class VariableRuleCreator extends EnvironmentComponent
     {
         $this->showing = true;
     }
-    
+
     /**
-     * Get a list of suggested environment variable 
+     * Get a list of suggested environment variable
      * validation keys for the current environment.
      *
      * @return array<int, string>
@@ -92,7 +92,7 @@ class VariableRuleCreator extends EnvironmentComponent
     {
         return app(GetSuggestedRuleKeys::class)->handle($this->environment);
     }
-    
+
     /**
      * Get the available rule types for environment variable validation.
      *
@@ -103,7 +103,7 @@ class VariableRuleCreator extends EnvironmentComponent
     {
         return EnvironmentVariableRuleType::cases();
     }
-    
+
     /**
      * Livewire lifecycle hook: triggered when the `key` property is updated.
      *
@@ -114,7 +114,7 @@ class VariableRuleCreator extends EnvironmentComponent
     {
         $this->key = app(NormalizeEnvKey::class)->handle($value);
     }
-    
+
     /**
      * Validate input and create a new environment variable rule.
      *
@@ -129,13 +129,13 @@ class VariableRuleCreator extends EnvironmentComponent
     public function add(): void
     {
         $this->authorize('perform', [$this->environment, TeamPermission::ManageValidationRules]);
-        
+
         $rules = VariableRuleFormRules::createRules($this->environment);
-        
+
         $validated = $this->validate($rules);
-        
+
         $rule = app(CreateVariableRule::class)->handle($this->toCreateRuleData($validated));
-        
+
         Flux::toast(
             variant: 'success',
             heading: 'Rule Created',
@@ -144,11 +144,11 @@ class VariableRuleCreator extends EnvironmentComponent
 
         $this->dispatch(self::ADDED, $rule->id);
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-        
+
         $this->showing = false;
         $this->resetForm();
     }
-    
+
     private function toCreateRuleData(array $input): CreateVariableRuleData
     {
         return new CreateVariableRuleData(
@@ -163,7 +163,7 @@ class VariableRuleCreator extends EnvironmentComponent
             createdBy: Auth::user(),
         );
     }
-    
+
     /**
      * Reset the form properties to their default state.
      *
@@ -173,16 +173,16 @@ class VariableRuleCreator extends EnvironmentComponent
     protected function resetForm(): void
     {
         $this->reset([
-            'key', 
-            'is_required', 
+            'key',
+            'is_required',
             'type',
-            'min', 
+            'min',
             'max',
-            'allowed_values', 
+            'allowed_values',
             'description',
         ]);
     }
-    
+
     public function render()
     {
         return view('environment.validation.variable-rule-creator');

@@ -36,7 +36,7 @@ class EnvironmentPolicy
             team: $environment->project->team
         );
     }
-    
+
     /**
      * Determine whether the given user may manage (create, rotate, revoke)
      * CLI tokens for the specified environment.

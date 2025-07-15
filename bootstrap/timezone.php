@@ -6,6 +6,7 @@ if (! function_exists('timezone')) {
     function timezone()
     {
         return 'EST';
+
         return optional(Auth::user())->timezone ?? config('app.timezone');
     }
 }

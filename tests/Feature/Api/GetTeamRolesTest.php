@@ -16,8 +16,8 @@ test('returns all team roles in the correct format', function () {
 
     $expected = collect(TeamRole::cases())
         ->map(fn (TeamRole $role) => [
-            'key'         => $role->value,
-            'label'       => $role->label(),
+            'key' => $role->value,
+            'label' => $role->label(),
             'description' => $role->description(),
         ]);
 

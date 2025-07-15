@@ -14,7 +14,7 @@ trait HasSecretValues
     {
         return $this->isSecret() ? str_repeat('•', 10) : $this->value;
     }
-    
+
     /**
      * Determine whether this variable key should be treated as a secret.
      *

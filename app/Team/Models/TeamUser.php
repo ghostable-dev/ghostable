@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * 
- *
  * @property int $id
  * @property string $team_id
  * @property string $user_id
@@ -16,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string|null $permissions
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser query()
@@ -26,12 +25,13 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser whereTeamId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TeamUser whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class TeamUser extends Pivot
 {
     public $incrementing = true;
-    
+
     use HasTimestamps;
 
     protected $fillable = [

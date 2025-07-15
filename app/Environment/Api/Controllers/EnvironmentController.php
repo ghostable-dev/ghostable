@@ -79,7 +79,7 @@ class EnvironmentController extends Controller
     public function store(Project $project): JsonResource
     {
         $this->authorize('perform', [$project, TeamPermission::CreateEnvironments]);
-        
+
         $validated = request()->validate(
             EnvironmentRules::createRules($project),
         );

@@ -28,15 +28,15 @@ class SessionLifetime extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            
+
             new IntegerKeyRule(new RuleParameters(
                 min: 1, // 1 min
                 max: 10080 // 1 week
-            ))
+            )),
         ];
     }
 }

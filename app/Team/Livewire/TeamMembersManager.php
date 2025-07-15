@@ -38,7 +38,7 @@ class TeamMembersManager extends Component
         if (is_null($this->managingRoleForUserId ?? null)) {
             return null;
         }
-        
+
         if (! $user = User::find($this->managingRoleForUserId)) {
             return null;
         }
@@ -56,7 +56,7 @@ class TeamMembersManager extends Component
         $this->authorize('manageMembers', $this->team);
 
         $this->managingRoleForUserId = $user->id;
-        
+
         $this->managingRole = $user->teamMembership()->getMembershipForTeam($this->team)->pivot->role;
 
         Flux::modal('manage-member-role')->show();
@@ -84,7 +84,7 @@ class TeamMembersManager extends Component
         if (is_null($this->memberToBeDeletedId ?? null)) {
             return null;
         }
-        
+
         if (! $user = User::find($this->memberToBeDeletedId)) {
             return null;
         }

@@ -10,10 +10,9 @@ class DeleteEnvToken
     public function handle(
         PersonalAccessToken $token,
         ?User $user = null
-    ): void
-    {
+    ): void {
         $token->delete();
-        
+
         app(LogEnvTokenActivity::class)->handle(token: $token, event: 'deleted', user: $user);
     }
 }

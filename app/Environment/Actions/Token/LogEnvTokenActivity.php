@@ -27,7 +27,7 @@ class LogEnvTokenActivity
                 'environment' => [
                     'id' => $token->tokenable->name,
                     'name' => $token->tokenable->name,
-                ]
+                ],
             ])->log($this->message($event, $token));
     }
 

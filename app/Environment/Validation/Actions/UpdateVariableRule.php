@@ -2,7 +2,6 @@
 
 namespace App\Environment\Validation\Actions;
 
-use App\Environment\Validation\Actions\VariableRuleAction;
 use App\Environment\Validation\Entities\UpdateVariableRuleData;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 

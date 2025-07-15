@@ -11,7 +11,7 @@ abstract class TeamMembershipAction
     {
         return "team:{$team->id}:user:{$user->id}:belongs";
     }
-    
+
     protected function cacheKeyForMembershipRecord(Team $team, User $user): string
     {
         return "teamMembership:{$team->id}:user:{$user->id}";

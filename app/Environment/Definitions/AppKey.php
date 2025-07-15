@@ -23,12 +23,12 @@ class AppKey extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
             $this->requiredProvider(),
-            new StringKeyRule(new RuleParameters(min: 32))
+            new StringKeyRule(new RuleParameters(min: 32)),
         ];
     }
 }

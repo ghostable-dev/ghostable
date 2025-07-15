@@ -30,11 +30,11 @@ class EnvironmentGeneralSettings extends Component
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
-        
+
         $this->authorize('view', $environment);
 
         $this->name = $environment->name;
-        
+
         $this->type = $environment->type;
     }
 

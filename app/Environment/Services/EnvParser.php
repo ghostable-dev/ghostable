@@ -32,10 +32,10 @@ class EnvParser
     {
         return collect($lines)
             // turn each raw line into an EnvLine (or null)
-            ->map(fn(string $line) => $this->parseLine($line ?? ''))
+            ->map(fn (string $line) => $this->parseLine($line ?? ''))
             ->filter()                    // drop nulls
             // sort by key (null keys → empty string, so they float to the top)
-            ->sortBy(fn(EnvLine $line) => $line->key ?? '')
+            ->sortBy(fn (EnvLine $line) => $line->key ?? '')
             ->values()                    // reindex 0,1,2…
             ->all();                      // back to plain array
     }

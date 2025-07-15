@@ -45,7 +45,7 @@ abstract class EnvironmentVariableDefinition
      */
     public function requiredProvider(): RequiredKeyRule
     {
-        return new RequiredKeyRule();
+        return new RequiredKeyRule;
     }
 
     /**
@@ -67,7 +67,7 @@ abstract class EnvironmentVariableDefinition
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(),
+            new StringKeyRule,
         ];
     }
 }

@@ -84,14 +84,15 @@ class EnvironmentVariableManager extends Component
             source: 'ui',
         );
     }
-    
+
     #[Computed]
     public function validationErrors(): MessageBag
     {
         try {
             // Run validator but catch failures instead of throwing
             app(ValidateEnvironment::class)->handle($this->environment);
-            return new MessageBag(); // No errors
+
+            return new MessageBag; // No errors
         } catch (\Illuminate\Validation\ValidationException $e) {
             return new MessageBag($e->errors());
         }
@@ -107,7 +108,7 @@ class EnvironmentVariableManager extends Component
     {
         return ResolveEnvironment::onceWithContext($this->envId);
     }
-    
+
     /**
      * Determine if the authenticated user can edit variables
      * inside of the given environment.
@@ -128,7 +129,7 @@ class EnvironmentVariableManager extends Component
     {
         return app(SuggestEnvKeys::class)->handle($this->environment);
     }
-    
+
     /**
      * Get the description for the currently selected environment variable key.
      *
@@ -138,10 +139,10 @@ class EnvironmentVariableManager extends Component
     #[Computed]
     public function keyDescription(): ?string
     {
-        if (!$this->key) {
+        if (! $this->key) {
             return null;
         }
-        
+
         return app(EnvironmentVariableRegistry::class)->get($this->key)?->description();
     }
 
@@ -168,7 +169,7 @@ class EnvironmentVariableManager extends Component
     public function updatedKey($value)
     {
         $this->key = app(NormalizeEnvKey::class)->handle($value);
-        
+
         $this->value = '';
     }
 
@@ -331,9 +332,9 @@ class EnvironmentVariableManager extends Component
     {
         $this->dispatch(EnvironmentVariableActivityFeed::LAUNCH, $variable->id);
     }
-    
+
     /**
-     * Dispatch an event to open the versions 
+     * Dispatch an event to open the versions
      * manager for the given variable.
      */
     public function viewVersions(EnvironmentVariable $variable): void
@@ -349,15 +350,15 @@ class EnvironmentVariableManager extends Component
      */
     #[On([
         EnvironmentVariableEditor::UPDATED,
-        VersionManager::VERSION_RESTORED
+        VersionManager::VERSION_RESTORED,
     ])]
     public function refreshVars(): void
     {
-        //$this->dispatch('$refresh');
+        // $this->dispatch('$refresh');
         $this->keySuggestions();
         $this->variables();
         $this->validationErrors();
-        
+
         $this->environment->refresh();
     }
 

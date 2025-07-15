@@ -15,8 +15,8 @@ class GetTeam extends Controller
     public function __invoke(Request $request, Team $team)
     {
         $this->authorize('view', $team);
-        
-        //$request->user()->can('view', $team);
+
+        // $request->user()->can('view', $team);
 
         return new TeamResource($team);
     }

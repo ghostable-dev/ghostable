@@ -12,14 +12,13 @@ final class RuleParameters extends Data
         public ?int $max = null,
         public array $allowedValues = [],
     ) {}
-    
+
     /**
      * Create a RuleParameters entity from an EnvironmentVariableRule model.
      */
     public static function fromEnvironmentVariableRule(
         EnvironmentVariableRule $rule
-    ): self
-    {
+    ): self {
         return new self(
             min: $rule->min,
             max: $rule->max,

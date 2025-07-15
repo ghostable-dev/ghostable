@@ -24,7 +24,7 @@ class VariableRuleFormRules
             'description' => self::descriptionRules(),
         ];
     }
-    
+
     public static function updateRules(EnvironmentVariableRule $rule): array
     {
         return [
@@ -38,7 +38,7 @@ class VariableRuleFormRules
             'description' => self::descriptionRules(),
         ];
     }
-    
+
     public static function keyRules(Environment $environment): array
     {
         return array_merge(
@@ -49,7 +49,7 @@ class VariableRuleFormRules
             ]
         );
     }
-    
+
     public static function keyUpdateRules(EnvironmentVariableRule $rule): array
     {
         return array_merge(
@@ -91,7 +91,7 @@ class VariableRuleFormRules
     {
         return ['nullable', 'string'];
     }
-    
+
     public static function typeRules(): array
     {
         return ['required', new Enum(EnvironmentVariableRuleType::class)];

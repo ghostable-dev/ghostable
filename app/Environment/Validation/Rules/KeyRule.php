@@ -9,6 +9,5 @@ abstract class KeyRule implements KeyRuleProvider
 {
     public function __construct(
         protected ?RuleParameters $parameters = null
-    )
-    {}
+    ) {}
 }

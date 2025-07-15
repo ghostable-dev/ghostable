@@ -39,7 +39,7 @@ test('returns environment in the correct format', function () {
                 'name',
                 'type',
                 'created_at',
-                'updated_at'
+                'updated_at',
             ],
         ]);
 });

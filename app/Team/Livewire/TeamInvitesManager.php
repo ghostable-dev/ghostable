@@ -134,7 +134,7 @@ class TeamInvitesManager extends Component
 
         Flux::toast('The invite has been deleted.');
     }
-    
+
     /**
      * Handles sending a team invite to a specified email address.
      *
@@ -149,7 +149,7 @@ class TeamInvitesManager extends Component
     public function sendInvite(): void
     {
         $this->authorize('create', [TeamInvite::class, $this->team]);
-        
+
         $this->email = strtolower($this->email);
 
         $validated = $this->validate(

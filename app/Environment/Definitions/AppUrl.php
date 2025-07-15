@@ -22,12 +22,12 @@ class AppUrl extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
             $this->requiredProvider(),
-            new UrlKeyRule()
+            new UrlKeyRule,
         ];
     }
 }

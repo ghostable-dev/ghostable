@@ -29,6 +29,4 @@ enum EnvironmentVariableRuleType: string
             self::ENUM => 'Select from list',
         };
     }
-    
-    
 }

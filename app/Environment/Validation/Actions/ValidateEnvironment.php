@@ -25,7 +25,7 @@ class ValidateEnvironment
             ->toArray();
 
         $rules = $this->buildRules($environment, $data);
-        
+
         Validator::make(
             data: $data,
             rules: $rules,
@@ -37,7 +37,6 @@ class ValidateEnvironment
     /**
      * Convert FieldRules into a Laravel-compatible validation rule array.
      *
-     * @param  Environment  $environment
      * @param  array<string, mixed>  $data
      * @return array<string, array<int, string|\Closure|\Illuminate\Contracts\Validation\ValidationRule>>
      */
@@ -56,11 +55,10 @@ class ValidateEnvironment
 
         return $ruleMap;
     }
-    
+
     /**
      * Build a map of custom validation messages from the FieldRules.
      *
-     * @param  Environment  $environment
      * @return array<string, string>
      */
     protected function buildMessages(Environment $environment): array

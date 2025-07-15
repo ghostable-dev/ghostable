@@ -12,9 +12,9 @@ class BooleanKeyRule extends KeyRule
     {
         return Rule::in(['true', 'false', 'TRUE', 'FALSE', '1', '0']);
     }
-    
+
     public function message(): string
     {
-        return "The :attribute must be either TRUE or FALSE.";
+        return 'The :attribute must be either TRUE or FALSE.';
     }
 }

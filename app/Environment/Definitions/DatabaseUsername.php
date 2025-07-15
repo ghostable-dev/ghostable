@@ -18,16 +18,16 @@ class DatabaseUsername extends EnvironmentVariableDefinition
     {
         return 'The username used to authenticate with your database.';
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Database;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 255))
+            new StringKeyRule(new RuleParameters(max: 255)),
         ];
     }
 }

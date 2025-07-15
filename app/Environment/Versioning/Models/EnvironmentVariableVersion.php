@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * 
- *
  * @property string $id
  * @property string $environment_variable_id
  * @property string $key
@@ -24,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read User|null $changedBy
  * @property-read \App\Environment\Models\EnvironmentVariable $environmentVariable
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion query()
@@ -36,12 +35,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereVersion($value)
+ *
  * @mixin \Eloquent
  */
 class EnvironmentVariableVersion extends Model
 {
-    use HasUuids;
     use HasSecretValues;
+    use HasUuids;
 
     protected $fillable = [
         'key',

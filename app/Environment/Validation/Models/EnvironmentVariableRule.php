@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * 
- *
  * @property-read \App\Environment\Models\Environment|null $environment
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule query()
+ *
  * @mixin \Eloquent
  */
 class EnvironmentVariableRule extends Model
@@ -28,12 +28,12 @@ class EnvironmentVariableRule extends Model
         'key',
         'max',
         'min',
-        'type', 
+        'type',
     ];
-    
+
     public $casts = [
         'allowed_values' => 'array',
-        'type' => EnvironmentVariableRuleType::class
+        'type' => EnvironmentVariableRuleType::class,
     ];
 
     public function environment(): BelongsTo

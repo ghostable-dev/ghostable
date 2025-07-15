@@ -7,7 +7,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot create environments', function () {
-    $this->postJson("/api/projects/123/environments")->assertUnauthorized();
+    $this->postJson('/api/projects/123/environments')->assertUnauthorized();
 });
 
 test('persists a new environment record and returns JSON shape', function () {
@@ -17,16 +17,16 @@ test('persists a new environment record and returns JSON shape', function () {
     Sanctum::actingAs($ray);
     $payload = ['name' => 'Staging', 'type' => EnvironmentType::STAGING->value];
     $this->postJson("/api/projects/{$project->id}/environments", $payload)
-         ->assertStatus(201)
-         ->assertJsonStructure([
-             'data' => [
-                 'id',
-                 'name',
-                 'type',
-                 'created_at',
-                 'updated_at',
-             ],
-         ]);
+        ->assertStatus(201)
+        ->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'type',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
     $env = $project->fresh()->environments()->where($payload)->first();
     $this->assertNotNull($env);
 });
@@ -39,23 +39,23 @@ describe('validation', function () {
         Sanctum::actingAs($ray);
         $this->endpoint = "/api/projects/{$this->project->id}/environments";
     });
-    
+
     test('fails when name is not a unique', function () {
         $existingEnv = $this->createEnvironment(
-            name: 'Website', 
-            type: EnvironmentType::DEVELOPMENT, 
+            name: 'Website',
+            type: EnvironmentType::DEVELOPMENT,
             project: $this->project
         );
         $this->postJson($this->endpoint, [
-            'name' => $existingEnv->name, 
-            'type' => EnvironmentType::STAGING->value
+            'name' => $existingEnv->name,
+            'type' => EnvironmentType::STAGING->value,
         ])->assertStatus(422);
     });
 
     test('fails when type is not a recognized team role', function () {
         $this->postJson($this->endpoint, [
-            'name' => 'Staging', 
-            'type' => 'invalid-type'
+            'name' => 'Staging',
+            'type' => 'invalid-type',
         ])->assertStatus(422);
     });
 });
@@ -69,12 +69,12 @@ describe('authorization', function () {
         Sanctum::actingAs($ray);
         $this->endpoint = "/api/projects/{$this->project->id}/environments";
     });
-    
+
     test('forbids non-members from creating', function () {
         Sanctum::actingAs($this->zuul);
         $this->postJson($this->endpoint, [
-            'name' => 'Staging', 
-            'type' => EnvironmentType::STAGING->value
+            'name' => 'Staging',
+            'type' => EnvironmentType::STAGING->value,
         ])->assertForbidden();
     });
 
@@ -83,8 +83,8 @@ describe('authorization', function () {
         $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::DEVELOPER_READ_ONLY);
         Sanctum::actingAs($peter);
         $this->postJson($this->endpoint, [
-            'name' => 'Staging', 
-            'type' => EnvironmentType::STAGING->value
+            'name' => 'Staging',
+            'type' => EnvironmentType::STAGING->value,
         ])->assertForbidden();
-    }); 
+    });
 });

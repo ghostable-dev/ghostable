@@ -5,7 +5,6 @@ namespace App\Team\Actions;
 use App\Account\Models\User;
 use App\Team\Models\Team;
 use Illuminate\Support\Facades\Cache;
-use App\Team\Actions\TeamMembershipAction;
 
 class GetTeamMembershipRecord extends TeamMembershipAction
 {

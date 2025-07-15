@@ -12,9 +12,9 @@ test('unauthenticated users cannot fetch teams', function () {
 test('returns only teams the user is a member of', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
-    
+
     Sanctum::actingAs($ray);
-    
+
     $response = $this->getJson('/api/teams');
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -26,14 +26,14 @@ test('returns teams the user is a member of (regardless of role)', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $egon = $this->createUser(name: 'Egon', email: 'egon@ghostbusters.com');
     $bookstore = $this->createTeam(
-        name: 'Rays Occult', 
-        owner: $ray, 
+        name: 'Rays Occult',
+        owner: $ray,
         members: [$egon]
     );
     $egon = $egon->fresh();
-    
+
     Sanctum::actingAs($egon);
-    
+
     $response = $this->getJson('/api/teams');
     $response->assertOk()
         ->assertJsonCount(2, 'data')
@@ -42,11 +42,11 @@ test('returns teams the user is a member of (regardless of role)', function () {
 });
 
 test('response uses TeamResource structure', function () {
-    
+
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    
+
     Sanctum::actingAs($ray);
-    
+
     $this->getJson('/api/teams')
         ->assertOk()
         ->assertJsonStructure([
@@ -57,7 +57,7 @@ test('response uses TeamResource structure', function () {
                     'slug',
                     'is_personal',
                     'created_at',
-                    'updated_at'
+                    'updated_at',
                 ],
             ],
         ]);

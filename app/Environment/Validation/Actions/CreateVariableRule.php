@@ -7,7 +7,7 @@ use App\Environment\Validation\Models\EnvironmentVariableRule;
 
 class CreateVariableRule extends VariableRuleAction
 {
-    public function handle(CreateVariableRuleData $data): EnvironmentVariableRule 
+    public function handle(CreateVariableRuleData $data): EnvironmentVariableRule
     {
         $rule = new EnvironmentVariableRule([
             'key' => $data->key,
@@ -20,7 +20,7 @@ class CreateVariableRule extends VariableRuleAction
         ]);
 
         $rule->environment()->associate($data->environment);
-        
+
         $rule->save();
 
         $this->logger->handle(rule: $rule, event: 'created', user: $data->createdBy);

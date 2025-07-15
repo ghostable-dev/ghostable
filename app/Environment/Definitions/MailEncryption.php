@@ -28,11 +28,11 @@ class MailEncryption extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Mail;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

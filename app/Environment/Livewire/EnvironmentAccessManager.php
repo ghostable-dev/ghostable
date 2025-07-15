@@ -12,7 +12,6 @@ use App\Team\Models\TeamPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Laravel\Sanctum\Contracts\HasAbilities;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -57,7 +56,7 @@ class EnvironmentAccessManager extends Component
         $this->authorize('manageAccessControls', $environment->project->team);
 
         $this->environmentId = $environment->id;
-        
+
         $this->is_restricted = $environment->is_restricted;
     }
 

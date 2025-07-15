@@ -3,9 +3,9 @@
 namespace App\Team\Services;
 
 use App\Account\Models\User;
-use App\Team\Models\Team;
-use App\Team\Enums\TeamRole;
 use App\Team\Enums\TeamPermission;
+use App\Team\Enums\TeamRole;
+use App\Team\Models\Team;
 use Illuminate\Support\Facades\Cache;
 use LogicException;
 
@@ -15,7 +15,7 @@ class TeamMembership
      * Create a new instance scoped to a specific user.
      */
     public function __construct(protected User $user) {}
-    
+
     /**
      * Determine if the user belongs to the given team.
      */
@@ -26,7 +26,7 @@ class TeamMembership
             fn () => $team->users()->where('user_id', $this->user->id)->exists()
         );
     }
-    
+
     /**
      * Determine if the user has the given role on the given team.
      */
@@ -34,7 +34,7 @@ class TeamMembership
     {
         return $this->getMembershipForTeam($team)?->pivot->role === $role;
     }
-    
+
     /**
      * Determine if the user has the given permission on the given team.
      */
@@ -45,7 +45,7 @@ class TeamMembership
             fn () => $this->getMembershipForTeam($team)?->pivot->role?->hasPermission($permission) ?? false
         );
     }
-    
+
     /**
      * Retrieve the user's membership pivot model for the given team.
      */
@@ -56,7 +56,7 @@ class TeamMembership
             fn () => $this->user->teams()->where('team_id', $team->id)->first()
         );
     }
-    
+
     /**
      * Assign the user to the given team with the specified role.
      *
@@ -77,7 +77,7 @@ class TeamMembership
 
         $this->clearMembershipCache($team);
     }
-    
+
     /**
      * Remove the user from the given team and clear related cache.
      */
@@ -88,17 +88,17 @@ class TeamMembership
             $this->clearMembershipCache($team);
         }
     }
-    
+
     /**
      * Clear all cached membership data for the given team.
      */
     public function clearMembershipCache(Team $team): void
     {
         Cache::forget($this->cacheKeyForMembership($team));
-        
+
         Cache::forget($this->cacheKeyForMembershipRecord($team));
     }
-    
+
     /**
      * Generate the cache key for checking membership existence.
      */
@@ -106,7 +106,7 @@ class TeamMembership
     {
         return "team:{$team->id}:user:{$this->user->id}:belongs";
     }
-    
+
     /**
      * Generate the cache key for storing the full membership record.
      */
@@ -114,7 +114,7 @@ class TeamMembership
     {
         return "teamMembership:{$team->id}:user:{$this->user->id}";
     }
-    
+
     protected function cacheKeyForTeamPermission(Team $team, TeamPermission $permission): string
     {
         return "teamPermission:{$team->id}:user:{$this->user->id}:{$permission->value}";

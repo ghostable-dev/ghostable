@@ -31,7 +31,7 @@ class EnvironmentActivity extends Component
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
-        
+
         $this->authorize('view', $environment);
     }
 

@@ -20,7 +20,7 @@ class Profile extends Component
     public function mount(): void
     {
         $this->name = Auth::user()->name;
-        
+
         $this->email = Auth::user()->email;
     }
 
@@ -30,7 +30,7 @@ class Profile extends Component
     public function updateProfileInformation(): void
     {
         $user = Auth::user();
-        
+
         $this->email = strtolower($this->email);
 
         $validated = $this->validate([

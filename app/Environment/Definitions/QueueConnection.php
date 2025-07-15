@@ -23,16 +23,16 @@ class QueueConnection extends EnvironmentVariableDefinition
     {
         return ['sync', 'database', 'redis', 'sqs', 'beanstalkd', 'null'];
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Queue;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

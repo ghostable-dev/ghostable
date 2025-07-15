@@ -12,17 +12,17 @@ test('unauthenticated users cannot fetch owned teams', function () {
 });
 
 test('returns only teams owned by the user', function () {
-    
+
     $alice = User::factory()->create();
     $alicesTeam = CreateTeam::handle('Alice Co.', $alice);
-    
+
     $bob = User::factory()->create();
     $bobsTeam = CreateTeam::handle('Bob Co.', $bob);
-    
+
     Sanctum::actingAs($alice, ['*']);
-    
+
     $response = $this->getJson('/api/owned-teams');
-    
+
     $response->assertOk()
         ->assertJsonCount(2, 'data')
         ->assertJsonFragment(['id' => $alicesTeam->id])
@@ -30,11 +30,11 @@ test('returns only teams owned by the user', function () {
 });
 
 test('response uses TeamResource structure', function () {
-    
+
     $alice = User::factory()->create();
-    
+
     Sanctum::actingAs($alice, ['*']);
-    
+
     $this->getJson('/api/owned-teams')
         ->assertOk()
         ->assertJsonStructure([
@@ -45,7 +45,7 @@ test('response uses TeamResource structure', function () {
                     'slug',
                     'is_personal',
                     'created_at',
-                    'updated_at'
+                    'updated_at',
                 ],
             ],
         ]);

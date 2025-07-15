@@ -11,13 +11,12 @@ use Spatie\LaravelData\Data;
 final class FieldRules extends Data
 {
     /**
-     * @param  string $key
-     * @param  KeyRuleProvider[] $providers
+     * @param  KeyRuleProvider[]  $providers
      */
     public function __construct(
         public readonly string $key,
 
-        //#[DataCollectionOf(KeyRuleProvider::class)]
+        // #[DataCollectionOf(KeyRuleProvider::class)]
         public readonly array $providers,
     ) {}
 }

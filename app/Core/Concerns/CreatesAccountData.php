@@ -48,7 +48,7 @@ trait CreatesAccountData
 
         return $team->fresh();
     }
-    
+
     protected function createInvite(
         Team $team,
         User $sender,
@@ -56,9 +56,9 @@ trait CreatesAccountData
         TeamRole $role = TeamRole::DEVELOPER
     ): void {
         CreateTeamInvite::handle(
-            team: $team, 
-            user: $sender, 
-            email: $email, 
+            team: $team,
+            user: $sender,
+            email: $email,
             role: $role
         );
     }
@@ -90,12 +90,12 @@ trait CreatesAccountData
             ->forEnvironment($env)
             ->count($amount)
             ->create();
-            
+
         foreach ($vars as $var) {
             $var->createVersionBy($var->lastUpdatedBy);
             $var->logActivity('created', user: $var->lastUpdatedBy);
         }
-        
+
         return $vars;
     }
 }

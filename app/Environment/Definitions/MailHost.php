@@ -23,11 +23,11 @@ class MailHost extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Mail;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 255))
+            new StringKeyRule(new RuleParameters(max: 255)),
         ];
     }
 }

@@ -9,14 +9,13 @@ use Laravel\Sanctum\NewAccessToken;
 class CreateEnvToken
 {
     public function handle(
-        string $name, 
-        Environment $environment, 
+        string $name,
+        Environment $environment,
         int $expiresAfter = 90,
         ?User $user = null
-    ): NewAccessToken
-    {
+    ): NewAccessToken {
         $expires = now()->addDays($expiresAfter);
-        
+
         $plainTextToken = $environment->generateTokenString();
 
         $token = $environment->tokens()->create([
@@ -28,9 +27,9 @@ class CreateEnvToken
         ]);
 
         $new = new NewAccessToken($token, $token->id.'|'.$plainTextToken);
-        
+
         app(LogEnvTokenActivity::class)->handle(token: $token, event: 'created', user: $user);
-        
+
         return $new;
     }
 }

@@ -16,8 +16,8 @@ test('returns all environment types in the correct format', function () {
 
     $expected = collect(EnvironmentType::cases())
         ->map(fn (EnvironmentType $type) => [
-            'value'         => $type->value,
-            'label'       => $type->label(),
+            'value' => $type->value,
+            'label' => $type->label(),
         ]);
 
     $response = $this->getJson('/api/environment-types');

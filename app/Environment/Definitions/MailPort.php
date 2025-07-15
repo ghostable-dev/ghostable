@@ -23,16 +23,16 @@ class MailPort extends EnvironmentVariableDefinition
     {
         return ['25', '465', '587'];
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Mail;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new IntegerKeyRule(new RuleParameters(min: 1, max: 65535))
+            new IntegerKeyRule(new RuleParameters(min: 1, max: 65535)),
         ];
     }
 }

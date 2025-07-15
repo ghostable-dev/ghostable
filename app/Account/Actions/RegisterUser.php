@@ -12,7 +12,7 @@ class RegisterUser
     public function handle(array $data): User
     {
         $data['email'] = strtolower($data['email']);
-        
+
         $data['password'] = Hash::make($data['password']);
 
         $user = User::create($data);

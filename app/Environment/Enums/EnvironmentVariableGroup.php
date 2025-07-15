@@ -9,7 +9,7 @@ enum EnvironmentVariableGroup: string
     case Cache = 'cache';
     case Queue = 'queue';
     case Mail = 'mail';
-    //case Services = 'services';
+    // case Services = 'services';
     case Aws = 'AWS';
     case Pusher = 'pusher';
     case Logging = 'logging';

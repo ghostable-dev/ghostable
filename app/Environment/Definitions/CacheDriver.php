@@ -28,11 +28,11 @@ class CacheDriver extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Cache;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

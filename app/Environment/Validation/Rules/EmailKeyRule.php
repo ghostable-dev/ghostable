@@ -10,11 +10,11 @@ class EmailKeyRule extends KeyRule
 {
     public function rule(): ValidatorAwareRule|string|array|Closure
     {
-        return new Email();
+        return new Email;
     }
-    
+
     public function message(): string
     {
-        return "The :attribute must be an email address.";
+        return 'The :attribute must be an email address.';
     }
 }

@@ -15,7 +15,7 @@ class CreateTeam
         $team->owner()->associate($owner);
         $team->is_personal = $personal;
         $team->save();
-        
+
         $owner->teamMembership()->assignToTeam(team: $team, role: TeamRole::ADMIN);
 
         return $team;

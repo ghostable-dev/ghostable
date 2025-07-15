@@ -41,7 +41,7 @@ test('returns project in the correct format', function () {
                 'team_id',
                 'environments',
                 'created_at',
-                'updated_at' 
+                'updated_at',
             ],
         ]);
 });

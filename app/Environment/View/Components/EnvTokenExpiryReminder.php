@@ -9,14 +9,14 @@ use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 class EnvTokenExpiryReminder extends Component
-{ 
+{
     public Environment $environment;
-    
+
     public function __construct(public PersonalAccessToken $token)
     {
         $this->environment = $token->tokenable;
     }
-    
+
     public function render(): View|Closure|string
     {
         return <<<'blade'
@@ -41,7 +41,7 @@ class EnvTokenExpiryReminder extends Component
             • Remove this token after the new one is live
         TEXT;
     }
-    
+
     public function label(): string
     {
         return "{$this->token->name} (ending in {$this->token->token_suffix})";

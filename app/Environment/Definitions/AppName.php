@@ -18,16 +18,16 @@ class AppName extends EnvironmentVariableDefinition
     {
         return 'The name of your application.';
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 255))
+            new StringKeyRule(new RuleParameters(max: 255)),
         ];
     }
 }

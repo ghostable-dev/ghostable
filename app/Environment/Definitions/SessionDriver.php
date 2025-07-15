@@ -28,11 +28,11 @@ class SessionDriver extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

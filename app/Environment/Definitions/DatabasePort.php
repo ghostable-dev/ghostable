@@ -28,11 +28,11 @@ class DatabasePort extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Database;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new IntegerKeyRule(new RuleParameters(min: 1024, max: 65535))
+            new IntegerKeyRule(new RuleParameters(min: 1024, max: 65535)),
         ];
     }
 }

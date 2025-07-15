@@ -22,17 +22,17 @@ class AppDebug extends EnvironmentVariableDefinition
     {
         return ['true', 'false'];
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
             $this->requiredProvider(),
-            new BooleanKeyRule()
+            new BooleanKeyRule,
         ];
     }
 }

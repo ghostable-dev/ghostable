@@ -3,7 +3,6 @@
 namespace App\Environment\Versioning\Actions;
 
 use App\Account\Models\User;
-use App\Environment\Versioning\Actions\CreateVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 
 class RestoreVariableVersion
@@ -13,12 +12,11 @@ class RestoreVariableVersion
     ) {}
 
     public function handle(
-        EnvironmentVariableVersion $version, 
+        EnvironmentVariableVersion $version,
         ?User $restoredBy = null
-    ): void
-    {
+    ): void {
         $variable = $version->variable;
-        
+
         $variable->update([
             'value' => $version->value,
             'last_updated_at' => now(),

@@ -20,17 +20,17 @@ use Livewire\Component;
 class VersionManager extends Component
 {
     use ConfirmsPasswords;
-    
+
     /**
      * Whether the version manager UI is currently visible.
      */
     public bool $showing = false;
-    
+
     /**
      * The ID of the EnvironmentVariable being managed.
      */
     public ?string $environmentVariableId = null;
-    
+
     /**
      * Tracks which version IDs have their secret values revealed.
      *
@@ -38,17 +38,17 @@ class VersionManager extends Component
      */
     #[Locked]
     public array $showingValues = [];
-    
+
     /**
      * Event name to trigger launching the version manager.
      */
     public const LAUNCH = 'version-manager:launch';
-    
+
     /**
      * Event name emitted after a version has been restored.
      */
     public const VERSION_RESTORED = 'version-manager:version-restored';
-    
+
     /**
      * Launch the version manager for the given environment variable.
      *
@@ -58,10 +58,10 @@ class VersionManager extends Component
     public function launch(EnvironmentVariable $variable): void
     {
         $this->environmentVariableId = $variable->id;
-        
+
         $this->showing = true;
     }
-    
+
     /**
      * Get the currently selected EnvironmentVariable model.
      */
@@ -70,7 +70,7 @@ class VersionManager extends Component
     {
         return EnvironmentVariable::find($this->environmentVariableId);
     }
-    
+
     /**
      * Retrieve all version records for the selected variable, ordered descending.
      *
@@ -87,7 +87,7 @@ class VersionManager extends Component
             ->reorder('version', 'desc')
             ->get();
     }
-    
+
     /**
      * Restore the environment variable to the specified version.
      *
@@ -97,24 +97,24 @@ class VersionManager extends Component
     public function restoreToVersion(EnvironmentVariableVersion $version): void
     {
         $this->authorize('perform', [$version->variable->environment, TeamPermission::EditVariables]);
-        
+
         app(RestoreVariableVersion::class)->handle(
-            version: $version, 
+            version: $version,
             restoredBy: Auth::user()
         );
-        
+
         Flux::toast(
             variant: 'success',
             heading: 'Version Restored',
             text: "“{$this->variable->key}” was successfully restored."
         );
-        
+
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
         $this->dispatch(self::VERSION_RESTORED);
-        
+
         $this->showing = false;
     }
-    
+
     /**
      * Toggle visibility of a secret value for a specific version.
      *

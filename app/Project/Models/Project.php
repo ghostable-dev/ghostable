@@ -3,10 +3,10 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
-use App\Team\Resolvers\ResolveTeam;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;
+use App\Team\Resolvers\ResolveTeam;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,8 +18,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * 
- *
  * @property string $id
  * @property int $is_restricted
  * @property string $name
@@ -35,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Team $team
+ *
  * @method static \Database\Factories\ProjectFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project newQuery()
@@ -50,6 +49,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Project extends Model implements SupportsOverrides

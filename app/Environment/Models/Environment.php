@@ -20,8 +20,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * 
- *
  * @property string $id
  * @property int $is_restricted
  * @property string $project_id
@@ -37,6 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Project $project
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariable> $variables
  * @property-read int|null $variables_count
+ *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
@@ -52,6 +51,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Environment extends Model implements SupportsOverrides
@@ -87,7 +87,7 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->hasMany(EnvironmentVariable::class);
     }
-    
+
     public function rules(): HasMany
     {
         return $this->hasMany(EnvironmentVariableRule::class);

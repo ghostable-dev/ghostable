@@ -13,7 +13,7 @@ class DatabaseName extends EnvironmentVariableDefinition
     {
         return 'DB_DATABASE';
     }
-    
+
     public function description(): ?string
     {
         return 'The name of your application\'s database.';
@@ -23,11 +23,11 @@ class DatabaseName extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Database;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 255))
+            new StringKeyRule(new RuleParameters(max: 255)),
         ];
     }
 }

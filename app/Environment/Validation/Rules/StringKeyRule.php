@@ -10,18 +10,18 @@ class StringKeyRule extends KeyRule
     public function rule(): ValidatorAwareRule|string|array|Closure
     {
         $rules = ['string'];
-        
+
         if ($this->parameters?->min !== null) {
-            $rules[] = 'min:' . $this->parameters->min;
+            $rules[] = 'min:'.$this->parameters->min;
         }
-        
+
         if ($this->parameters?->max !== null) {
-            $rules[] = 'max:' . $this->parameters->max;
+            $rules[] = 'max:'.$this->parameters->max;
         }
 
         return $rules;
     }
-    
+
     public function message(): string
     {
         $parts = ['The :attribute field is required and must be a string'];

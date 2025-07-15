@@ -4,9 +4,6 @@ namespace App\Environment\Validation\Factories;
 
 use App\Environment\Models\Environment;
 use App\Environment\Validation\Entities\FieldRules;
-use App\Environment\Validation\Factories\CustomFieldRulesFactory;
-use App\Environment\Validation\Factories\DefaultFieldRulesFactory;
-use App\Environment\Validation\Factories\EnvironmentTypeFieldRulesFactory;
 
 final class EnvironmentValidationPlanFactory
 {
@@ -19,15 +16,14 @@ final class EnvironmentValidationPlanFactory
     /**
      * Build the full set of FieldRules for a given environment.
      *
-     * @param  Environment $environment
      * @return FieldRules[]
      */
     public function make(Environment $environment): array
     {
         $custom = $this->customFactory->makeFromEnvironment($environment);
-        
-        $type   = $this->typeFactory->makeFromType($environment->type);
-        
+
+        $type = $this->typeFactory->makeFromType($environment->type);
+
         $defaults = $this->defaultFactory->make();
 
         // Prefer custom rules if key conflicts exist

@@ -18,11 +18,11 @@ class AuthServiceProdivder extends ServiceProvider
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
-        
+
         Relation::enforceMorphMap([
-            'token' => 'App\Auth\Models\PersonalAccessToken'
+            'token' => 'App\Auth\Models\PersonalAccessToken',
         ]);
-        
+
         Fortify::twoFactorChallengeView('auth.two-factor-challenge');
 
         RateLimiter::for('login', function (Request $request) {

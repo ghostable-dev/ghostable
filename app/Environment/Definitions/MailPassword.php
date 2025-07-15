@@ -16,7 +16,7 @@ class MailPassword extends EnvironmentVariableDefinition
     {
         return 'The password used to authenticate with your mail server.';
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Mail;

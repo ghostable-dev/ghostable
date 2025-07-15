@@ -12,7 +12,7 @@ use InvalidArgumentException;
 final class KeyRuleProviderCollectionFactory
 {
     /**
-     * @param array<EnvironmentVariableRuleType, class-string<KeyRuleProvider>> $typeMap
+     * @param  array<EnvironmentVariableRuleType, class-string<KeyRuleProvider>>  $typeMap
      */
     public function __construct(
         protected array $typeMap = []

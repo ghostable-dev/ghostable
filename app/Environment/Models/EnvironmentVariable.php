@@ -18,8 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * 
- *
  * @property string $id
  * @property string $environment_id
  * @property string $key
@@ -34,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read User|null $lastUpdatedBy
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Versioning\Models\EnvironmentVariableVersion> $versions
  * @property-read int|null $versions_count
+ *
  * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable newQuery()
@@ -51,14 +50,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
+ *
  * @property-read \App\Environment\Versioning\Models\EnvironmentVariableVersion|null $latestVersion
+ *
  * @mixin \Eloquent
  */
 class EnvironmentVariable extends Model
 {
     use HasFactory;
-    use HasUuids;
     use HasSecretValues;
+    use HasUuids;
     use SoftDeletes;
 
     protected $fillable = [
@@ -89,7 +90,7 @@ class EnvironmentVariable extends Model
         return $this->hasMany(EnvironmentVariableVersion::class)
             ->orderBy('version');
     }
-    
+
     public function latestVersion(): HasOne
     {
         return $this->hasOne(EnvironmentVariableVersion::class)

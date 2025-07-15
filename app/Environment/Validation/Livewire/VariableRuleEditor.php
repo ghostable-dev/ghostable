@@ -16,62 +16,62 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 class VariableRuleEditor extends Component
-{   
+{
     /**
      * Event name used to trigger the variable rule editor modal.
      */
     public const LAUNCH = 'variable-rule-editor:launch';
-    
+
     /**
      * Livewire event name dispatched when a rule has been successfully updated.
      */
     public const UPDATED = 'variable-rule-editor:updated';
-    
+
     /**
      * Indicates whether the rule editor modal is currently visible.
      */
     public bool $showing = false;
-    
+
     /**
      * The ID of the environment variable rule currently being edited.
      */
     public ?string $ruleId = null;
-    
+
     /**
      * The key of the environment variable the rule applies to.
      */
     public string $key = '';
-    
+
     /**
      * Whether this variable is required in the environment.
      */
     public bool $is_required = false;
-    
+
     /**
      * The expected type of the variable (string, integer, enum, etc).
      */
     public ?EnvironmentVariableRuleType $type = null;
-    
+
     /**
      * The minimum.
      */
     public ?int $min = null;
-    
+
     /**
      * The maximum.
      */
     public ?int $max = null;
-    
+
     /**
      * The list of allowed values (applicable when type is enum).
      */
     public array $allowed_values = [];
-    
+
     /**
      * Optional description of the rule’s purpose or enforcement intent.
      */
     public ?string $description = null;
-    
+
     /**
      * Launch the environment variable rule editor modal with the selected rule.
      *
@@ -86,7 +86,7 @@ class VariableRuleEditor extends Component
         $this->authorize('perform', [$rule->environment, TeamPermission::ManageValidationRules]);
 
         $this->ruleId = $rule->id;
-        
+
         $this->key = $rule->key;
         $this->is_required = $rule->is_required;
         $this->type = $rule->type;
@@ -97,7 +97,7 @@ class VariableRuleEditor extends Component
 
         $this->showing = true;
     }
-    
+
     /**
      * Retrieve the environment variable rule currently being edited.
      *
@@ -109,7 +109,7 @@ class VariableRuleEditor extends Component
     {
         return EnvironmentVariableRule::find($this->ruleId);
     }
-    
+
     /**
      * Get the available rule types for environment variable validation.
      *
@@ -128,9 +128,10 @@ class VariableRuleEditor extends Component
         if ($this->noChangesWereMade()) {
             $this->showing = false;
             $this->resetAll();
+
             return;
         }
-        
+
         $rules = VariableRuleFormRules::updateRules($this->rule);
 
         $validated = $this->validate($rules);
@@ -142,14 +143,14 @@ class VariableRuleEditor extends Component
             heading: 'Rule Updated',
             text: "Rule for \"{$this->key}\" was successfully updated."
         );
-        
+
         $this->dispatch(self::UPDATED, $this->ruleId);
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-        
+
         $this->showing = false;
         $this->resetAll();
     }
-    
+
     /**
      * Determine whether any changes have been made to the currently loaded rule.
      *
@@ -192,7 +193,7 @@ class VariableRuleEditor extends Component
             updatedBy: Auth::user(),
         );
     }
-    
+
     /**
      * Reset all component state related to the rule editor form.
      *
@@ -209,7 +210,7 @@ class VariableRuleEditor extends Component
             'min',
             'max',
             'allowed_values',
-            'description'
+            'description',
         ]);
     }
 

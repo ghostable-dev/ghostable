@@ -11,9 +11,9 @@ class RequiredKeyRule extends KeyRule
     {
         return 'required';
     }
-    
+
     public function message(): string
     {
-        return "The :attribute key is required but missing from the environment.";
+        return 'The :attribute key is required but missing from the environment.';
     }
 }

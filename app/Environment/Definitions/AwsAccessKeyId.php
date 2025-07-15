@@ -23,11 +23,11 @@ class AwsAccessKeyId extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Aws;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 128))
+            new StringKeyRule(new RuleParameters(max: 128)),
         ];
     }
 }

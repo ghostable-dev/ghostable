@@ -13,21 +13,21 @@ class PusherAppId extends EnvironmentVariableDefinition
     {
         return 'PUSHER_APP_ID';
     }
-    
+
     public function description(): ?string
     {
         return 'Your Pusher application ID.';
     }
-    
+
     public function group(): EnvironmentVariableGroup
     {
         return EnvironmentVariableGroup::Pusher;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new StringKeyRule(new RuleParameters(max: 64))
+            new StringKeyRule(new RuleParameters(max: 64)),
         ];
     }
 }

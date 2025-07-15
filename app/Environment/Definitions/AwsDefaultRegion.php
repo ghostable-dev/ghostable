@@ -28,7 +28,7 @@ class AwsDefaultRegion extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Aws;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
@@ -39,8 +39,8 @@ class AwsDefaultRegion extends EnvironmentVariableDefinition
                 'eu-west-1',
                 'eu-central-1',
                 'ap-southeast-1',
-                'ap-northeast-1'
-            ]))
+                'ap-northeast-1',
+            ])),
         ];
     }
 }

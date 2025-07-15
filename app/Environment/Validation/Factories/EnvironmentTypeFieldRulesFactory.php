@@ -36,7 +36,7 @@ final class EnvironmentTypeFieldRulesFactory
                 new FieldRules(
                     key: 'APP_KEY',
                     providers: [
-                        //$this->required(),
+                        // $this->required(),
                         new StringKeyRule(new RuleParameters(min: 32)),
                     ],
                 ),
@@ -57,9 +57,9 @@ final class EnvironmentTypeFieldRulesFactory
             ],
         ];
     }
-    
+
     protected function required(): KeyRule
     {
-        return new RequiredKeyRule();
+        return new RequiredKeyRule;
     }
 }

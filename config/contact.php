@@ -3,9 +3,9 @@
 return [
     'support' => [
         'url' => 'https://support.ghostable.dev',
-        'email' => 'support@ghostable.dev'
+        'email' => 'support@ghostable.dev',
     ],
-    
+
     'legalName' => 'GHOSTABLE LLC',
     'phone' => '(551) 278-5869',
     'address' => [
@@ -14,14 +14,14 @@ return [
         'addressLocality' => 'Branchburg',
         'addressRegion' => 'NJ',
         'postalCode' => '08876',
-        'addressCountry' => 'US'
+        'addressCountry' => 'US',
     ],
-    
+
     'social' => [
         'facebook' => '',
         'instagram' => '',
         'linkedin' => '',
         'x' => '',
         'youtube' => '',
-    ]
+    ],
 ];

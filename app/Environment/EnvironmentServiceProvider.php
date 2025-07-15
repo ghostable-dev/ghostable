@@ -18,13 +18,13 @@ class EnvironmentServiceProvider extends ServiceProvider
     /**
      * Register services.
      */
-    public function register(): void 
+    public function register(): void
     {
         $this->registerVariables();
-        
+
         $this->app->register(ValidationServiceProvider::class);
     }
-    
+
     /**
      * Registers all known environment variable definitions into the singleton
      * EnvironmentVariableRegistry.
@@ -37,17 +37,20 @@ class EnvironmentServiceProvider extends ServiceProvider
     private function registerVariables(): void
     {
         $this->app->singleton(EnvironmentVariableRegistry::class, function () {
-            $registry = new EnvironmentVariableRegistry();
+            $registry = new EnvironmentVariableRegistry;
             $definitionNamespace = 'App\\Environment\\Definitions';
             $definitionPath = app_path('Environment/Definitions');
             foreach (scandir($definitionPath) as $file) {
-                if (!Str::endsWith($file, '.php')) continue;
-                $class = $definitionNamespace . '\\' . Str::before($file, '.php');
+                if (! Str::endsWith($file, '.php')) {
+                    continue;
+                }
+                $class = $definitionNamespace.'\\'.Str::before($file, '.php');
                 if (class_exists($class)) {
-                    $definition = new $class();
+                    $definition = new $class;
                     $registry->register($definition);
                 }
             }
+
             return $registry;
         });
     }
@@ -58,7 +61,7 @@ class EnvironmentServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('env-token-expiry-reminder', EnvTokenExpiryReminder::class);
-        
+
         Gate::policy(Environment::class, EnvironmentPolicy::class);
 
         Relation::enforceMorphMap([

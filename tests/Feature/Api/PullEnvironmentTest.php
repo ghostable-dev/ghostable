@@ -13,19 +13,19 @@ beforeEach(function () {
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $project = $this->createProject(name: 'Website', team: $this->team);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
-    
+
     app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
         environment: $this->env, key: 'APP_NAME', value: 'Ray’s Occult', createdBy: $this->ray
     ));
-    
+
     app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
         environment: $this->env, key: 'APP_DEBUG', value: 'TRUE', createdBy: $this->ray
     ));
-    
+
     app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
         environment: $this->env, key: 'APP_ENV', value: 'development', createdBy: $this->ray
     ));
-    
+
     $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/pull";
 });
 
@@ -40,7 +40,7 @@ test('pulls vars for member user', function () {
     $expected = implode("\n", [
         'APP_DEBUG=TRUE',
         'APP_ENV=development',
-        'APP_NAME="Ray’s Occult"'
+        'APP_NAME="Ray’s Occult"',
     ]);
     $this->assertEquals($expected, $response->getContent());
 });

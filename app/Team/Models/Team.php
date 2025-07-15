@@ -21,8 +21,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * 
- *
  * @property string $id
  * @property string|null $slug
  * @property string $name
@@ -42,6 +40,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $subscriptions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read int|null $users_count
+ *
  * @method static \Database\Factories\TeamFactory factory($count = null, $state = [])
  * @method static TeamBuilder<static>|Team hasExpiredGenericTrial()
  * @method static TeamBuilder<static>|Team newModelQuery()
@@ -56,8 +55,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static TeamBuilder<static>|Team whereOwnerId($value)
  * @method static TeamBuilder<static>|Team whereSlug($value)
  * @method static TeamBuilder<static>|Team whereUpdatedAt($value)
+ *
  * @property string|null $stripe_id
+ *
  * @method static TeamBuilder<static>|Team whereStripeId($value)
+ *
  * @mixin \Eloquent
  */
 class Team extends Model
@@ -154,6 +156,6 @@ class Team extends Model
 
         return once(function () {
             return $this->is_personal;
-        }, $cacheKey);   
+        }, $cacheKey);
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 class AppSetup extends Command
 {
     use CreatesAccountData;
-    
+
     protected $signature = 'app:setup {--force}';
 
     protected $description = 'Run migrations, seeders, and setup default users for local development.';

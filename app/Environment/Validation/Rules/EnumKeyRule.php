@@ -12,11 +12,11 @@ class EnumKeyRule extends KeyRule
     {
         return Rule::in($this->parameters->allowedValues);
     }
-    
+
     public function message(): string
     {
         return sprintf(
-            "The :attribute must be one of: %s.", 
+            'The :attribute must be one of: %s.',
             implode(', ', $this->parameters->allowedValues)
         );
     }

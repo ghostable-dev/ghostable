@@ -18,11 +18,11 @@ class ValidationServiceProvider extends ServiceProvider
     /**
      * Register services.
      */
-    public function register(): void 
+    public function register(): void
     {
         $this->registerKeyRuleProviders();
     }
-    
+
     /**
      * Register the default set of KeyRuleProvider classes
      * for each EnvironmentVariableRuleType.
@@ -33,13 +33,14 @@ class ValidationServiceProvider extends ServiceProvider
     private function registerKeyRuleProviders(): void
     {
         $this->app->singleton(KeyRuleProviderCollectionFactory::class, function () {
-            $factory = new KeyRuleProviderCollectionFactory();
+            $factory = new KeyRuleProviderCollectionFactory;
             $factory->register(EnvironmentVariableRuleType::BOOLEAN, BooleanKeyRule::class);
             $factory->register(EnvironmentVariableRuleType::EMAIL, EmailKeyRule::class);
             $factory->register(EnvironmentVariableRuleType::ENUM, EnumKeyRule::class);
             $factory->register(EnvironmentVariableRuleType::INTEGER, IntegerKeyRule::class);
             $factory->register(EnvironmentVariableRuleType::STRING, StringKeyRule::class);
             $factory->register(EnvironmentVariableRuleType::URL, UrlKeyRule::class);
+
             return $factory;
         });
     }
@@ -50,7 +51,7 @@ class ValidationServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::enforceMorphMap([
-            'rule' => 'App\Environment\Validation\Models\EnvironmentVariableRule'
+            'rule' => 'App\Environment\Validation\Models\EnvironmentVariableRule',
         ]);
     }
 }

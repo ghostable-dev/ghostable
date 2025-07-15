@@ -28,11 +28,11 @@ class LogChannel extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::Logging;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

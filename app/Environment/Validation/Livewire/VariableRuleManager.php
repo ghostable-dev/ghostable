@@ -25,7 +25,7 @@ class VariableRuleManager extends EnvironmentComponent
      * Table sort direction
      */
     public string $sortDirection = 'asc';
-    
+
     /**
      * The ID of the rule currently selected for removal.
      *
@@ -33,7 +33,7 @@ class VariableRuleManager extends EnvironmentComponent
      * instance prior to deletion.
      */
     public ?string $ruleToRemoveId = null;
-    
+
     /**
      * Update the sorting configuration for validation rules.
      *
@@ -55,7 +55,7 @@ class VariableRuleManager extends EnvironmentComponent
             $this->sortDirection = 'asc';
         }
     }
-    
+
     /**
      * Get the list of environment variable rules for the current environment,
      * sorted by the given column and direction.
@@ -67,7 +67,7 @@ class VariableRuleManager extends EnvironmentComponent
             ->orderBy($this->sortBy, $this->sortDirection)
             ->get();
     }
-    
+
     /**
      * Determine if the authenticated user can edit variables
      * inside of the given environment.
@@ -77,7 +77,7 @@ class VariableRuleManager extends EnvironmentComponent
     {
         return Gate::allows('perform', [$this->environment, TeamPermission::EditVariables]);
     }
-    
+
     /**
      * Dispatch an event to launch the Create Rule modal component.
      */
@@ -85,7 +85,7 @@ class VariableRuleManager extends EnvironmentComponent
     {
         $this->dispatch(VariableRuleCreator::LAUNCH);
     }
-    
+
     /**
      * Dispatch an event to open the editor for the given rule.
      */
@@ -93,7 +93,7 @@ class VariableRuleManager extends EnvironmentComponent
     {
         $this->dispatch(VariableRuleEditor::LAUNCH, $rule->id);
     }
-    
+
     /**
      * Prepare to remove an environment variable rule by setting the rule ID,
      * performing an authorization check, and showing the confirmation modal.
@@ -117,7 +117,7 @@ class VariableRuleManager extends EnvironmentComponent
     {
         return $this->environment->rules()->firstWhere('id', $this->ruleToRemoveId);
     }
-    
+
     /**
      * Permanently delete the selected environment variable rule.
      */
@@ -137,19 +137,19 @@ class VariableRuleManager extends EnvironmentComponent
 
         $this->reset('ruleToRemoveId');
     }
-    
+
     /**
      * Refresh the list of environment variable rules after a new rule is added.
      */
     #[On([
-        VariableRuleCreator::ADDED, 
-        VariableRuleEditor::UPDATED
+        VariableRuleCreator::ADDED,
+        VariableRuleEditor::UPDATED,
     ])]
     public function refreshRules(): void
     {
         $this->rules();
     }
-    
+
     public function render()
     {
         return view('environment.validation.variable-rule-manager');

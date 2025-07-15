@@ -4,10 +4,8 @@ namespace App\Environment\Definitions;
 
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
-use App\Environment\Validation\Entities\FieldRules;
 use App\Environment\Validation\Entities\RuleParameters;
 use App\Environment\Validation\Rules\EnumKeyRule;
-use App\Environment\Validation\Rules\RequiredKeyRule;
 
 class AppEnv extends EnvironmentVariableDefinition
 {
@@ -15,7 +13,7 @@ class AppEnv extends EnvironmentVariableDefinition
     {
         return 'APP_ENV';
     }
-    
+
     public function description(): ?string
     {
         return 'The environment your application is running in.';
@@ -30,12 +28,12 @@ class AppEnv extends EnvironmentVariableDefinition
     {
         return EnvironmentVariableGroup::App;
     }
-    
+
     public function ruleProviders(): array
     {
         return [
             $this->requiredProvider(),
-            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues()))
+            new EnumKeyRule(new RuleParameters(allowedValues: $this->suggestedValues())),
         ];
     }
 }

@@ -6,16 +6,16 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('email and password are required', function () {
     $this->postJson('/api/cli/login', [])
-         ->assertStatus(422)
-         ->assertJsonValidationErrors(['email', 'password']);
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['email', 'password']);
 });
 
 test('fails with invalid credentials', function () {
     $user = User::factory()->create();
     $this->postJson('/api/cli/login', [
-            'email'    => $user->email,
-            'password' => 'wrong-password',
-        ])->assertStatus(401)
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ])->assertStatus(401)
         ->assertJson([
             'message' => 'Invalid credentials.',
         ]);
@@ -24,7 +24,7 @@ test('fails with invalid credentials', function () {
 test('returns token, user and teams on successful login', function () {
     $user = User::factory()->create();
     $response = $this->postJson('/api/cli/login', [
-        'email'    => $user->email,
+        'email' => $user->email,
         'password' => 'password',
     ]);
 
@@ -33,7 +33,7 @@ test('returns token, user and teams on successful login', function () {
             'token',
             'user' => ['id', 'name', 'email'],
             'teams' => [
-                ['id', 'name']
+                ['id', 'name'],
             ],
         ]);
 

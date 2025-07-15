@@ -11,9 +11,9 @@ class UrlKeyRule extends KeyRule
     {
         return 'url';
     }
-    
+
     public function message(): string
     {
-        return "The :attribute must be a URL.";
+        return 'The :attribute must be a URL.';
     }
 }

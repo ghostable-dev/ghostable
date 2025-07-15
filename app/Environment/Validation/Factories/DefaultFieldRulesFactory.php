@@ -2,8 +2,8 @@
 
 namespace App\Environment\Validation\Factories;
 
-use App\Environment\Registry\EnvironmentVariableRegistry;
 use App\Environment\Registry\EnvironmentVariableDefinition;
+use App\Environment\Registry\EnvironmentVariableRegistry;
 use App\Environment\Validation\Entities\FieldRules;
 
 final class DefaultFieldRulesFactory

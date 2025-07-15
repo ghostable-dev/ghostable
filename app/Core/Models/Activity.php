@@ -63,7 +63,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $project) {
             $query->where('subject_type', $type)
-                  ->where('subject_id', $project->id);
+                ->where('subject_id', $project->id);
         });
     }
 
@@ -88,7 +88,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $environment) {
             $query->where('subject_type', $type)
-                  ->where('subject_id', $environment->id);
+                ->where('subject_id', $environment->id);
         });
     }
 
@@ -131,7 +131,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $ids) {
             $query->where('subject_type', $type)
-                  ->whereIn('subject_id', $ids);
+                ->whereIn('subject_id', $ids);
         });
     }
 
@@ -144,7 +144,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $ids) {
             $query->where('subject_type', $type)
-                  ->whereIn('subject_id', $ids);
+                ->whereIn('subject_id', $ids);
         });
     }
 
@@ -157,7 +157,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $ids) {
             $query->where('subject_type', $type)
-                  ->whereIn('subject_id', $ids);
+                ->whereIn('subject_id', $ids);
         });
     }
 
@@ -170,7 +170,7 @@ class Activity extends SpatieActivity
 
         return $query->orWhere(function ($query) use ($type, $ids) {
             $query->where('subject_type', $type)
-                  ->whereIn('subject_id', $ids);
+                ->whereIn('subject_id', $ids);
         });
     }
 }
