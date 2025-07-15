@@ -25,7 +25,7 @@ class EnvironmentRules
 
     public static function nameRules(Project $project, ?Environment $environment = null): array
     {
-        return ['required', new UniqueEnvironmentName($project, $environment)];
+        return ['required', 'max:100', new UniqueEnvironmentName($project, $environment)];
     }
 
     public static function typeRules(): array

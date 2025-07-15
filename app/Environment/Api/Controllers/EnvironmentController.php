@@ -29,7 +29,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('view', $env);
+        $this->authorize('view', $env);
 
         return new EnvironmentResource($env);
     }
@@ -48,7 +48,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('perform', [$env, TeamPermission::PushFile]);
+        $this->authorize('perform', [$env, TeamPermission::PushFile]);
 
         $result = app(PushEnvVars::class)->handle(
             env: $env,
@@ -69,7 +69,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('perform', [$env, TeamPermission::ViewVariables]);
+        $this->authorize('perform', [$env, TeamPermission::ViewVariables]);
 
         $content = RenderEnvFile::handle(env: $env);
 

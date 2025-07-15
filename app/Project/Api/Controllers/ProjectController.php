@@ -15,7 +15,7 @@ class ProjectController extends Controller
 {
     public function index(Team $team)
     {
-        request()->user()->can('view', $team);
+        $this->authorize('view', $team);
 
         $projects = Project::query()
             ->where('team_id', $team->id)
@@ -27,19 +27,16 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
-        request()->user()->can('view', $project);
+        $this->authorize('view', $project);
 
         return new ProjectResource($project->load('environments'));
     }
 
     public function store(Request $request, Team $team)
     {
-        request()->user()->can('create', [Project::class, $team]);
+        $this->authorize('create', [Project::class, $team]);
 
-        $validated = request()->validate(
-            rules: ProjectRules::createRules($team),
-            params: $request->input()
-        );
+        $validated = request()->validate(ProjectRules::createRules($team));
 
         $project = app(CreateProject::class)->handle(
             name: $validated['name'],
