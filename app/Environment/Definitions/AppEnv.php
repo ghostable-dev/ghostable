@@ -2,6 +2,7 @@
 
 namespace App\Environment\Definitions;
 
+use App\Environment\Enums\EnvironmentType;
 use App\Environment\Enums\EnvironmentVariableGroup;
 use App\Environment\Registry\EnvironmentVariableDefinition;
 use App\Environment\Validation\Entities\RuleParameters;
@@ -21,7 +22,7 @@ class AppEnv extends EnvironmentVariableDefinition
 
     public function suggestedValues(): array
     {
-        return ['local', 'production', 'staging', 'testing'];
+        return collect(EnvironmentType::cases())->map(fn ($type) => $type->value)->toArray();
     }
 
     public function group(): EnvironmentVariableGroup

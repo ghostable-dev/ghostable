@@ -4,7 +4,7 @@ namespace App\Environment\Api\Controllers;
 
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\CreateEnv;
-use App\Environment\Actions\PushEnvVars;
+use App\Environment\Actions\PushAndValidateEnvironment;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Api\Resources\EnvironmentResource;
 use App\Environment\Api\Resources\PushResultResource;
@@ -12,8 +12,10 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
 use App\Project\Models\Project;
 use App\Team\Enums\TeamPermission;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 
 class EnvironmentController extends Controller
 {
@@ -44,18 +46,25 @@ class EnvironmentController extends Controller
      *
      * Authorization: Requires 'update' permission on the environment.
      */
-    public function push(Project $project, string $name): JsonResource
+    public function push(Project $project, string $name): JsonResource|JsonResponse
     {
         $env = $project->environmentOrFail($name);
 
         $this->authorize('perform', [$env, TeamPermission::PushFile]);
 
-        $result = app(PushEnvVars::class)->handle(
-            env: $env,
-            incomingRaw: request()->input('vars') ?? []
-        );
+        try {
+            $vars = request()->input('vars', []);
 
-        return new PushResultResource($result);
+            $result = app(PushAndValidateEnvironment::class)->handle(env: $env, incomingRaw: $vars);
+
+            return new PushResultResource($result);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
 
     /**

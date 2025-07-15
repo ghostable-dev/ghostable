@@ -51,7 +51,7 @@ final class EnvironmentTypeFieldRulesFactory
                     key: (new AppDebug)->key(),
                     providers: [
                         $this->required(),
-                        new EnumKeyRule(new RuleParameters(allowedValues: ['TRUE'])),
+                        new EnumKeyRule(new RuleParameters(allowedValues: ['FALSE', 'false'])),
                     ],
                 ),
             ],
