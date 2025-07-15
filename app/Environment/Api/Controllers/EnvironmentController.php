@@ -69,7 +69,7 @@ class EnvironmentController extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        request()->user()->can('perform', [$env, TeamPermission::ViewEnvVariables]);
+        request()->user()->can('perform', [$env, TeamPermission::ViewVariables]);
 
         $content = RenderEnvFile::handle(env: $env);
 
@@ -78,15 +78,15 @@ class EnvironmentController extends Controller
 
     public function store(Project $project): JsonResource
     {
-
-        $data = request()->validate(
-            rules: EnvironmentRules::createRules($project),
-            params: request()->input()
+        $this->authorize('perform', [$project, TeamPermission::CreateEnvironments]);
+        
+        $validated = request()->validate(
+            EnvironmentRules::createRules($project),
         );
 
         $env = app(CreateEnv::class)->handle(
-            name: $data['name'],
-            type: EnvironmentType::from($data['type']),
+            name: $validated['name'],
+            type: EnvironmentType::from($validated['type']),
             project: $project
         );
 

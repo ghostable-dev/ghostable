@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class TeamUser extends Pivot
 {
+    public $incrementing = true;
+    
     use HasTimestamps;
 
     protected $fillable = [

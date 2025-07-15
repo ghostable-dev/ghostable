@@ -195,7 +195,7 @@ class EnvironmentVariableEditor extends Component
                             icon:trailing="lock-closed"
                             label="Key"/>
                         <flux:autocomplete 
-                            wire:model.live="value" 
+                            wire:model.live="value"
                             label="Value"
                             wire:keydown.enter="$dispatch('confirm-password', { then: 'update' })"
                             autofocus

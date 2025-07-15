@@ -36,7 +36,7 @@ trait BelongsToTeams
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot(['role', 'permissions'])
+            ->withPivot(['role'])
             ->withTimestamps();
     }
 

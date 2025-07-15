@@ -13,7 +13,7 @@ class GetTeams
     public function __invoke(Request $request)
     {
         $teams = $request->user()->teams;
-
+        
         return TeamResource::collection($teams);
     }
 }

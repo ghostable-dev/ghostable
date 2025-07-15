@@ -14,6 +14,10 @@ class TeamInvitePolicy
      */
     public function create(User $user, Team $team): bool
     {
+        if ($team->is_personal) {
+            return false;
+        }
+
         return $this->manage(user: $user, team: $team);
     }
 

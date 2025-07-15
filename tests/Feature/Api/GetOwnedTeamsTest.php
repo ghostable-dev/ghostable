@@ -7,7 +7,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot fetch owned teams', function () {
-    $this->getJson('/api/teams')
+    $this->getJson('/api/owned-teams')
         ->assertUnauthorized();
 });
 
