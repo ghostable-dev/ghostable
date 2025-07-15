@@ -7,14 +7,6 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
-
-    $this->validEnvLines = [
-        'APP_DEBUG=TRUE',
-        'APP_ENV=development',
-        'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
-        'APP_URL=https://www.raysoccultbooks.com',
-    ];
-
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $project = $this->createProject(name: 'Website', team: $this->team);
