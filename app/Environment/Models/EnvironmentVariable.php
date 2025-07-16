@@ -94,7 +94,7 @@ class EnvironmentVariable extends Model
     public function latestVersion(): HasOne
     {
         return $this->hasOne(EnvironmentVariableVersion::class)
-            ->latestOfMany();
+            ->latestOfMany('version');
     }
 
     public function lastUpdatedBy(): BelongsTo
