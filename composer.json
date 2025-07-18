@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "dompdf/dompdf": "^3.1",
+        "ghostable-dev/cli": "^1.0@beta",
         "joerucci/laravel-domain-tools": "^1.0",
         "laravel/cashier": "^15.7",
         "laravel/fortify": "^1.0",
@@ -95,7 +96,7 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "prefer-stable": true,
     "repositories": {
         "flux-pro": {
