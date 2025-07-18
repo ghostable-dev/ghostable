@@ -2,8 +2,8 @@
 
 namespace App\Environment\Livewire;
 
-use App\Environment\Enums\EnvironmentType;
 use App\Environment\Enums\EnvFileFormat;
+use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;

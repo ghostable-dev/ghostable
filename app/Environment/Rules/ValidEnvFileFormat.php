@@ -14,7 +14,7 @@ class ValidEnvFileFormat implements ValidationRule
 
         $value = $value instanceof EnvFileFormat ? $value->value : $value;
 
-        if (!is_string($value) || !in_array($value, $validValues, true)) {
+        if (! is_string($value) || ! in_array($value, $validValues, true)) {
             $fail("The selected :attribute [{$value}] is not a valid environment file format.");
         }
     }

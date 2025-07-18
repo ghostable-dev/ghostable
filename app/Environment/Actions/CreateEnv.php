@@ -2,8 +2,8 @@
 
 namespace App\Environment\Actions;
 
-use App\Environment\Enums\EnvironmentType;
 use App\Environment\Enums\EnvFileFormat;
+use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
 
