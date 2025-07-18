@@ -1742,16 +1742,16 @@
         },
         {
             "name": "ghostable-dev/cli",
-            "version": "v1.0.4-beta",
+            "version": "v1.0.5-beta",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ghostable-dev/cli.git",
-                "reference": "7d7d33a53569a29b0bff4bcabe4b25be3a15c5ce"
+                "reference": "afd439442a98db86c22e6fe55b6c9d8b1e75f6b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ghostable-dev/cli/zipball/7d7d33a53569a29b0bff4bcabe4b25be3a15c5ce",
-                "reference": "7d7d33a53569a29b0bff4bcabe4b25be3a15c5ce",
+                "url": "https://api.github.com/repos/ghostable-dev/cli/zipball/afd439442a98db86c22e6fe55b6c9d8b1e75f6b7",
+                "reference": "afd439442a98db86c22e6fe55b6c9d8b1e75f6b7",
                 "shasum": ""
             },
             "require": {
@@ -1803,9 +1803,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ghostable-dev/cli/issues",
-                "source": "https://github.com/ghostable-dev/cli/tree/v1.0.4-beta"
+                "source": "https://github.com/ghostable-dev/cli/tree/v1.0.5-beta"
             },
-            "time": "2025-07-18T19:22:42+00:00"
+            "time": "2025-07-18T20:37:25+00:00"
         },
         {
             "name": "graham-campbell/result-type",
