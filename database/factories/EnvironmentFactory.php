@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
@@ -21,6 +22,7 @@ class EnvironmentFactory extends Factory
         return [
             'name' => $type->value,
             'type' => $type->value,
+            'file_format' => EnvFileFormat::ALPHABETICAL->value,
         ];
     }
 

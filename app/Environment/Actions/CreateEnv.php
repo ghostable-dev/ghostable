@@ -2,6 +2,7 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
@@ -13,6 +14,7 @@ class CreateEnv
         $env = new Environment;
         $env->name = $name;
         $env->type = $type;
+        $env->file_format = EnvFileFormat::ALPHABETICAL;
         $env->project()->associate($project);
         $env->save();
 

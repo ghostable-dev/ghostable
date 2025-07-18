@@ -26,6 +26,13 @@
                     </flux:select.option>
                 @endforeach
             </flux:select>
+            <flux:select label="File Format" wire:model="fileFormat" :readonly="!$this->canEdit" required>
+                @foreach($this->formatOptions as $key => $option)
+                    <flux:select.option wire:key="format-{{ $key }}" value="{{ $key }}">
+                        {{ $option }}
+                    </flux:select.option>
+                @endforeach
+            </flux:select>
             <div class="flex items-center gap-4">
                 @if($this->canEdit)
                     <div class="flex items-center justify-end">

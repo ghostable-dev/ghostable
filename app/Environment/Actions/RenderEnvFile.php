@@ -2,21 +2,50 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Models\Environment;
 
 class RenderEnvFile
 {
     public static function handle(Environment $env): string
     {
-        return $env->variables()
-            ->orderBy('key') // simple default ordering for now
-            ->get(['key', 'value', 'is_commented'])
-            ->map(function ($var) {
-                $value = self::escapeValue($var->value);
-                $line = "{$var->key}={$value}";
+        $variables = $env->variables()->get(['key', 'value', 'is_commented']);
 
-                return $var->is_commented ? "#{$line}" : $line;
-            })->implode(PHP_EOL);
+        $format = $env->file_format ?? EnvFileFormat::ALPHABETICAL;
+
+        if ($format === EnvFileFormat::ALPHABETICAL) {
+            return $variables->sortBy('key')
+                ->map(fn ($var) => self::formatLine($var->key, $var->value, $var->is_commented))
+                ->implode(PHP_EOL);
+        }
+
+        $groups = $variables->groupBy(function ($var) {
+            return strtoupper(strtok($var->key, '_'));
+        })->sortKeys();
+
+        $lines = collect();
+
+        foreach ($groups as $prefix => $vars) {
+            if ($format === EnvFileFormat::GROUPED_COMMENTS) {
+                $lines->push("# {$prefix}");
+            }
+
+            $vars->sortBy('key')->each(function ($var) use ($lines) {
+                $lines->push(self::formatLine($var->key, $var->value, $var->is_commented));
+            });
+
+            $lines->push('');
+        }
+
+        return rtrim($lines->implode(PHP_EOL));
+    }
+
+    protected static function formatLine(string $key, string $value, bool $commented): string
+    {
+        $value = self::escapeValue($value);
+        $line = "{$key}={$value}";
+
+        return $commented ? "#{$line}" : $line;
     }
 
     protected static function escapeValue(string $value): string
