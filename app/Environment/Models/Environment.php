@@ -3,6 +3,7 @@
 namespace App\Environment\Models;
 
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;
@@ -67,10 +68,12 @@ class Environment extends Model implements SupportsOverrides
         'name',
         'type',
         'is_restricted',
+        'file_format',
     ];
 
     protected $casts = [
         'type' => EnvironmentType::class,
+        'file_format' => EnvFileFormat::class,
     ];
 
     public static function newFactory(): EnvironmentFactory

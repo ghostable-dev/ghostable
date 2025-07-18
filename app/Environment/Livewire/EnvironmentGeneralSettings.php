@@ -3,6 +3,7 @@
 namespace App\Environment\Livewire;
 
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;
@@ -27,6 +28,11 @@ class EnvironmentGeneralSettings extends Component
      */
     public EnvironmentType $type;
 
+    /**
+     * Preferred .env file formatting style.
+     */
+    public EnvFileFormat $fileFormat;
+
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
@@ -36,6 +42,7 @@ class EnvironmentGeneralSettings extends Component
         $this->name = $environment->name;
 
         $this->type = $environment->type;
+        $this->fileFormat = $environment->file_format;
     }
 
     /**
@@ -56,6 +63,12 @@ class EnvironmentGeneralSettings extends Component
     public function typeOptions(): array
     {
         return EnvironmentType::selectOptions();
+    }
+
+    #[Computed(persist: true)]
+    public function formatOptions(): array
+    {
+        return EnvFileFormat::selectOptions();
     }
 
     /**
@@ -84,6 +97,7 @@ class EnvironmentGeneralSettings extends Component
         $this->environment->update([
             'name' => $validated['name'],
             'type' => $validated['type'],
+            'file_format' => $validated['fileFormat'],
         ]);
 
         $this->dispatch('environment-updated');

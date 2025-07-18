@@ -3,6 +3,7 @@
 namespace App\Environment\Rules;
 
 use App\Environment\Models\Environment;
+use App\Environment\Rules\ValidEnvFileFormat;
 use App\Project\Models\Project;
 
 class EnvironmentRules
@@ -12,6 +13,7 @@ class EnvironmentRules
         return [
             'name' => self::nameRules($project),
             'type' => self::typeRules(),
+            'fileFormat' => self::formatRules(required: false),
         ];
     }
 
@@ -20,6 +22,7 @@ class EnvironmentRules
         return [
             'name' => self::nameRules($environment->project, $environment),
             'type' => self::typeRules(),
+            'fileFormat' => self::formatRules(),
         ];
     }
 
@@ -31,5 +34,14 @@ class EnvironmentRules
     public static function typeRules(): array
     {
         return ['required', new ValidEnvType];
+    }
+
+    public static function formatRules(bool $required = true): array
+    {
+        $rules = [$required ? 'required' : 'sometimes'];
+
+        $rules[] = new ValidEnvFileFormat;
+
+        return $rules;
     }
 }
