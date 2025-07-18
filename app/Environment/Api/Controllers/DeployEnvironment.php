@@ -25,7 +25,7 @@ class DeployEnvironment extends Controller
         /** @var Environment|null $environment */
         $environment = request()->user();
 
-        if (!$environment) {
+        if (! $environment) {
             throw new AuthorizationException('The provided token is invalid or does not correspond to any environment.');
         }
 
