@@ -122,7 +122,7 @@
             <div>
                 <flux:subheading>You haven’t invited anyone yet. Once you do, they’ll show up here until they accepted or expire.</flux:subheading>
             </div>
-            <flux:modal.trigger name="create-invite">
+            <flux:modal.trigger name="send-invite">
                 <flux:button variant="primary">
                     Invite member
                 </flux:button>
