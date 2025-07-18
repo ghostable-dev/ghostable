@@ -3,6 +3,7 @@
 namespace App\Environment;
 
 use App\Environment\Api\Controllers\CreateEnvironment;
+use App\Environment\Api\Controllers\DeployEnvironment;
 use App\Environment\Api\Controllers\GetEnvironment;
 use App\Environment\Api\Controllers\GetEnvironmentTypes;
 use App\Environment\Api\Controllers\PullEnvironment;
@@ -16,7 +17,9 @@ class EnvironmentRoutes
     public static function api(): void
     {
         Route::middleware('auth:sanctum')->group(function () {
-
+            
+            Route::get('/ci/deploy', DeployEnvironment::class);
+            
             Route::get('/environment-types', GetEnvironmentTypes::class);
 
             Route::post('projects/{project}/environments', CreateEnvironment::class);
