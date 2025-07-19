@@ -6,11 +6,11 @@ use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\CreateEnvVariable;
 use App\Environment\Actions\DeleteEnvVariable;
 use App\Environment\Actions\GetSuggestedEnvValues;
+use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
-use App\Environment\Actions\LogEnvironmentDownloaded;
-use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\NormalizeEnvKey;
+use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
@@ -359,7 +359,7 @@ class EnvironmentVariableManager extends Component
             source: 'ui',
         );
 
-        $filename = 'environment-' . str($this->environment->name)->slug() . '.env';
+        $filename = 'environment-'.str($this->environment->name)->slug().'.env';
 
         return response()->streamDownload(function () use ($content) {
             echo $content;
