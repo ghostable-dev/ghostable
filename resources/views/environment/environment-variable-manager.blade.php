@@ -19,9 +19,9 @@
         <x-slot:title>Variables</x-slot:title>
         <x-slot:subheading>
             <div class="max-w-2xl">
-                Validation rules help enforce that critical environment variables
-                are present and correctly configured. If validation fails, Ghostable
-                can block CI deployments to protect your pipelines.
+                Environment variables store the configuration used by your apps.
+                Add, edit, and rotate keys here to keep your environment consistent
+                across deployments.
             </div>
         </x-slot:subheading>
         <x-slot:actions>
