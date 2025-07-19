@@ -130,6 +130,11 @@ class Team extends Model
         return $this->hasMany(Project::class);
     }
 
+    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

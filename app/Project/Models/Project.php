@@ -81,6 +81,11 @@ class Project extends Model implements SupportsOverrides
         return $this->hasMany(Environment::class);
     }
 
+    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
