@@ -9,4 +9,5 @@ return [
     App\Team\TeamServiceProvider::class,
     App\Billing\BillingServiceProvider::class,
     App\Integrations\Drata\DrataServiceProvider::class,
+    App\Integrations\Vanta\VantaServiceProvider::class,
 ];
