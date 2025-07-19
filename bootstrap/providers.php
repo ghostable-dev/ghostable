@@ -8,4 +8,5 @@ return [
     App\Project\ProjectServiceProvider::class,
     App\Team\TeamServiceProvider::class,
     App\Billing\BillingServiceProvider::class,
+    App\Integrations\Drata\DrataServiceProvider::class,
 ];
