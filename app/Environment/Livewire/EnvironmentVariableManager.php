@@ -8,6 +8,8 @@ use App\Environment\Actions\DeleteEnvVariable;
 use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
+use App\Environment\Actions\LogEnvironmentDownloaded;
+use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Entities\CreateEnvVariableData;
@@ -340,6 +342,28 @@ class EnvironmentVariableManager extends Component
     public function viewVersions(EnvironmentVariable $variable): void
     {
         $this->dispatch(VersionManager::LAUNCH, $variable->id);
+    }
+
+    /**
+     * Download the full environment file.
+     */
+    public function downloadEnvFile()
+    {
+        $this->authorize('perform', [$this->environment, TeamPermission::ViewVariables]);
+
+        $content = RenderEnvFile::handle(env: $this->environment);
+
+        app(LogEnvironmentDownloaded::class)->handle(
+            environment: $this->environment,
+            user: Auth::user(),
+            source: 'ui',
+        );
+
+        $filename = 'environment-' . str($this->environment->name)->slug() . '.env';
+
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, $filename);
     }
 
     /**
