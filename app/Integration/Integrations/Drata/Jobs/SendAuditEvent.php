@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Integrations\Drata\Jobs;
+namespace App\Integration\Integrations\Drata\Jobs;
 
 use App\Core\Models\Activity;
-use App\Integrations\Drata\DrataClient;
+use App\Integration\Integrations\Drata\DrataClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
