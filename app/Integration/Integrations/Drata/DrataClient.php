@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Integrations\Vanta;
+namespace App\Integration\Integrations\Drata;
 
 use App\Core\Models\Activity;
 use Illuminate\Support\Facades\Http;
 
-class VantaClient
+class DrataClient
 {
     public function sendActivity(Activity $activity): void
     {
-        $token = config('vanta.access_token');
-        $url = rtrim(config('vanta.base_url'), '/').'/v1/connectors/events';
+        $token = config('drata.api_key');
+        $url = rtrim(config('drata.base_url'), '/').'/v1/audit-events';
 
         if (! $token) {
             return;

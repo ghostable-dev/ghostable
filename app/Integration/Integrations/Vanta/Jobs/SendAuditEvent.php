@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Integrations\Vanta\Jobs;
+namespace App\Integration\Integrations\Vanta\Jobs;
 
 use App\Core\Models\Activity;
-use App\Integrations\Vanta\VantaClient;
+use App\Integration\Integrations\Vanta\VantaClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

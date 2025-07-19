@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Integrations\Vanta;
+namespace App\Integration\Integrations\Drata;
 
-use App\Integrations\Vanta\Jobs\SendAuditEvent;
+use App\Integration\Integrations\Drata\Jobs\SendAuditEvent;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 
-class VantaServiceProvider extends ServiceProvider
+class DrataServiceProvider extends ServiceProvider
 {
     public function register(): void {}
 

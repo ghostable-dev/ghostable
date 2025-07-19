@@ -4,7 +4,7 @@ use App\Core\Models\Activity;
 use App\Environment\Actions\CreateEnvVariable;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Enums\EnvironmentType;
-use App\Integrations\Vanta\Jobs\SendAuditEvent;
+use App\Integration\Integrations\Vanta\Jobs\SendAuditEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
