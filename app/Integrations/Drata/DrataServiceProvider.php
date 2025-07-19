@@ -2,9 +2,9 @@
 
 namespace App\Integrations\Drata;
 
-use Spatie\Activitylog\Models\Activity;
 use App\Integrations\Drata\Jobs\SendAuditEvent;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Activitylog\Models\Activity;
 
 class DrataServiceProvider extends ServiceProvider
 {

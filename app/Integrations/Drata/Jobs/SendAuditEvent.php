@@ -14,9 +14,7 @@ class SendAuditEvent implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public int $activityId)
-    {
-    }
+    public function __construct(public int $activityId) {}
 
     public function handle(DrataClient $client): void
     {
