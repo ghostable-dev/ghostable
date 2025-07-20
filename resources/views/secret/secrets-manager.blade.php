@@ -29,9 +29,22 @@
                             {{ $secret->latestVersion->version }}
                         </flux:table.cell>
                         <flux:table.cell align="end">
-                            <flux:button size="sm" variant="ghost" icon="eye" wire:click="confirmShowSecret('{{ $secret->id }}')">
-                                View
-                            </flux:button>
+                            <flux:dropdown position="left">
+                                <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
+                                <flux:menu>
+                                    <flux:menu.item wire:click="confirmShowSecret('{{ $secret->id }}')">
+                                        View
+                                    </flux:menu.item>
+                                    @if($this->canEditSecrets)
+                                        <flux:menu.item wire:click="editSecret('{{ $secret->id }}')">
+                                            Edit
+                                        </flux:menu.item>
+                                        <flux:menu.item wire:click="confirmSecretRemoval('{{ $secret->id }}')" variant="danger">
+                                            Delete
+                                        </flux:menu.item>
+                                    @endif
+                                </flux:menu>
+                            </flux:dropdown>
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach
@@ -75,5 +88,33 @@
                 </div>
             </div>
         @endif
+    </flux:modal>
+
+    <livewire:secret.livewire.secret-editor />
+
+    <flux:modal name="confirm-secret-removal" class="md:w-lg">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Remove Secret</flux:heading>
+                <flux:text class="mt-2">
+                    Are you sure you want to remove the
+                    <flux:text class="inline" variant="strong">
+                        “{{ $this->secretToRemove?->name }}”
+                    </flux:text>
+                    secret?
+                </flux:text>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <x-auth.confirms-password wire:then="removeSecret">
+                    <flux:button variant="danger" :loading="true" wire:target="removeSecret">
+                        {{ __('Remove Secret') }}
+                    </flux:button>
+                </x-auth.confirms-password>
+            </div>
+        </div>
     </flux:modal>
 </div>
