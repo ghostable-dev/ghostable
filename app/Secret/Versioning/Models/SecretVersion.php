@@ -5,6 +5,7 @@ namespace App\Secret\Versioning\Models;
 use App\Account\Models\User;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
+use App\Secret\Concerns\HasMaskedValue;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +45,7 @@ use Illuminate\Support\Facades\Crypt;
 class SecretVersion extends Model
 {
     use HasUuids;
+    use HasMaskedValue;
 
     protected $fillable = [
         'name',
@@ -69,6 +71,11 @@ class SecretVersion extends Model
                 'value_encrypted' => $value === null ? null : Crypt::encryptString($value),
             ],
         );
+    }
+
+    public function displayValue(): string
+    {
+        return str_repeat('•', 10);
     }
 
     public function secret(): BelongsTo
