@@ -150,4 +150,3 @@ class SecretsManager extends Component
         return view('secret.secrets-manager');
     }
 }
-

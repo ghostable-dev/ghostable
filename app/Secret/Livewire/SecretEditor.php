@@ -18,12 +18,17 @@ class SecretEditor extends Component
     use ConfirmsPasswords;
 
     public const LAUNCH = 'secret-editor:launch';
+
     public const UPDATED = 'secret-editor:updated';
 
     public bool $showing = false;
+
     public ?string $secretId = null;
+
     public string $name = '';
+
     public SecretType $type = SecretType::GENERIC;
+
     public string $value = '';
 
     #[On(self::LAUNCH)]
