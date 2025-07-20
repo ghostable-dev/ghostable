@@ -14,6 +14,12 @@ class ProjectView extends Component
     #[Locked]
     public string $projectId;
 
+    /**
+     * The active tab within the project view.
+     *
+     * Defaults to 'environments'. Other valid values may include
+     * 'secrets', 'general', 'access', and 'activity'.
+     */
     public string $tab = 'environments';
 
     public function mount(Project $project): void
