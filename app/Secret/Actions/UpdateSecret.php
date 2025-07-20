@@ -20,10 +20,14 @@ class UpdateSecret
             'name' => $name,
             'type' => $type,
             'metadata' => $metadata,
+            'last_updated_at' => now(),
+            'last_updated_by' => $updatedBy?->id,
         ]);
 
         $secret->value = $value;
         $secret->save();
+
+        $secret->createVersionBy($updatedBy);
 
         $secret->logActivity('updated', user: $updatedBy);
 
