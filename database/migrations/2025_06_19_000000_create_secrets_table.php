@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('secrets', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->morphs('owner');
+            $table->uuidMorphs('owner');
             $table->string('name');
             $table->string('type')->default(SecretType::GENERIC->value);
             $table->text('value_encrypted');
