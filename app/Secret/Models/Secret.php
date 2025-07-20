@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Secret\Concerns\HasMaskedValue;
 use Illuminate\Support\Facades\Crypt;
 
 class Secret extends Model
@@ -23,6 +24,7 @@ class Secret extends Model
     use HasFactory;
     use HasUuids;
     use SoftDeletes;
+    use HasMaskedValue;
 
     protected $fillable = [
         'name',
@@ -76,6 +78,11 @@ class Secret extends Model
                 'value_encrypted' => $value === null ? null : Crypt::encryptString($value),
             ],
         );
+    }
+
+    public function displayValue(): string
+    {
+        return str_repeat('•', 10);
     }
 
     public function createVersionBy(?User $user = null): SecretVersion
