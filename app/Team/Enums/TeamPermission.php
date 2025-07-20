@@ -27,6 +27,10 @@ enum TeamPermission: string
     case PushFile = 'var:push';
     case ManageValidationRules = 'var:manage-rules';
 
+    // Secrets
+    case ViewSecrets = 'secret:view';
+    case EditSecrets = 'secret:edit';
+
     /**
      * Get the display group for organizing permissions in the UI.
      */
@@ -51,6 +55,9 @@ enum TeamPermission: string
             self::EditVariables,
             self::PushFile,
             self::ManageValidationRules => 'Variables',
+
+            self::ViewSecrets,
+            self::EditSecrets => 'Secrets',
         };
     }
 
@@ -82,6 +89,10 @@ enum TeamPermission: string
             self::EditVariables => 'Edit environment variables',
             self::PushFile => 'Push full environment file',
             self::ManageValidationRules => 'Manage validation rules',
+
+            // Secrets
+            self::ViewSecrets => 'View secrets',
+            self::EditSecrets => 'Manage secrets',
         };
     }
 
@@ -112,6 +123,8 @@ enum TeamPermission: string
             self::EditVariables,
             self::PushFile,
             self::ManageValidationRules,
+            self::ViewSecrets,
+            self::EditSecrets,
         ];
     }
 }

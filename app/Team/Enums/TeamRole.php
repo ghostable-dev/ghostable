@@ -57,10 +57,15 @@ enum TeamRole: string
                 TeamPermission::ViewVariables,
                 TeamPermission::EditVariables,
                 TeamPermission::PushFile,
+
+                // Secret permissions
+                TeamPermission::ViewSecrets,
+                TeamPermission::EditSecrets,
             ],
 
             self::DEVELOPER_READ_ONLY => [
                 TeamPermission::ViewVariables,
+                TeamPermission::ViewSecrets,
             ],
         };
     }
