@@ -3,9 +3,9 @@
 namespace App\Secret\Versioning\Models;
 
 use App\Account\Models\User;
+use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Secret\Concerns\HasMaskedValue;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -44,8 +44,8 @@ use Illuminate\Support\Facades\Crypt;
  */
 class SecretVersion extends Model
 {
-    use HasUuids;
     use HasMaskedValue;
+    use HasUuids;
 
     protected $fillable = [
         'name',

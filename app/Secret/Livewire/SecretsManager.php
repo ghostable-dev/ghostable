@@ -5,13 +5,13 @@ namespace App\Secret\Livewire;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Flux\Flux;
+use Livewire\Component;
 
 class SecretsManager extends Component
 {
@@ -22,10 +22,13 @@ class SecretsManager extends Component
     public string $ownerId;
 
     public string $name = '';
+
     public SecretType $type = SecretType::GENERIC;
+
     public string $value = '';
 
     public bool $showCreateModal = false;
+
     public ?string $viewingSecretId = null;
 
     public function mount(Model $owner): void

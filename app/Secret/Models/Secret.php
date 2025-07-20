@@ -4,6 +4,7 @@ namespace App\Secret\Models;
 
 use App\Account\Models\User;
 use App\Secret\Actions\LogSecretActivity;
+use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Enums\SecretType;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
@@ -16,15 +17,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Secret\Concerns\HasMaskedValue;
 use Illuminate\Support\Facades\Crypt;
 
 class Secret extends Model
 {
     use HasFactory;
+    use HasMaskedValue;
     use HasUuids;
     use SoftDeletes;
-    use HasMaskedValue;
 
     protected $fillable = [
         'name',
