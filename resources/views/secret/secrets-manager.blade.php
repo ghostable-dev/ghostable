@@ -1,6 +1,12 @@
 <div class="space-y-6">
     <x-section>
         <x-slot:title>Secrets</x-slot:title>
+        <x-slot:subheading>
+            <div class="max-w-2xl">
+                Secrets securely store credentials like API tokens.
+                Manage and rotate them from this section.
+            </div>
+        </x-slot:subheading>
         <x-slot:actions>
             <flux:button variant="primary" wire:click="$set('showCreateModal', true)" icon:trailing="plus">
                 New Secret
