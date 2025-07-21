@@ -64,7 +64,7 @@ class Project extends Model implements SupportsOverrides
         'name',
         'description',
         'is_restricted',
-        'notifications'
+        'notifications',
     ];
 
     protected $casts = [
