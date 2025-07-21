@@ -3,8 +3,8 @@
 namespace App\Project\Livewire;
 
 use App\Project\Actions\UpdateProjectNotifications;
-use App\Project\Models\Project;
 use App\Project\Entities\ProjectNotificationsData;
+use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;

@@ -2,8 +2,8 @@
 
 namespace App\Team\Actions;
 
-use App\Team\Models\Team;
 use App\Team\Entities\TeamNotificationsData;
+use App\Team\Models\Team;
 
 class UpdateTeamNotifications
 {
