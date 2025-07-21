@@ -17,7 +17,8 @@ class EnvironmentView extends Component
     /**
      * The currently active tab in the environment viewer.
      *
-     * Defaults to 'variables'. Other valid values may include 'general' and 'access'.
+     * Defaults to 'variables'. Other valid values may include
+     * 'secrets', 'general', and 'access'.
      */
     public string $tab = 'variables';
 

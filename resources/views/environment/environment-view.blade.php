@@ -32,6 +32,7 @@
     <flux:tab.group>
         <flux:tabs wire:model="tab">
             <flux:tab name="variables">Variables</flux:tab>
+            <flux:tab name="secrets">Secrets</flux:tab>
             <flux:tab name="validation">Validation</flux:tab>
             <flux:tab name="general">General</flux:tab>
             <flux:tab name="access">Access</flux:tab>
@@ -40,8 +41,16 @@
 
         <flux:tab.panel name="variables">
             @perform($this->environment, 'var:view')
-                <livewire:environment.livewire.environment-variable-manager 
+                <livewire:environment.livewire.environment-variable-manager
                 :environment="$this->environment"/>
+            @else
+                <x-access-restricted/>
+            @endperform
+        </flux:tab.panel>
+
+        <flux:tab.panel name="secrets">
+            @perform($this->environment, 'secret:view')
+                <livewire:secret.livewire.secrets-manager :owner="$this->environment"/>
             @else
                 <x-access-restricted/>
             @endperform
