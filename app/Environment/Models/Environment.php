@@ -69,6 +69,7 @@ class Environment extends Model implements SupportsOverrides
         'type',
         'is_restricted',
         'file_format',
+        'notifications',
     ];
 
     protected $casts = [

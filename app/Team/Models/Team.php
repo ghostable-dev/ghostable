@@ -74,6 +74,7 @@ class Team extends Model
         'name',
         'slug',
         'is_personal',
+        'notifications',
     ];
 
     protected $attributes = [

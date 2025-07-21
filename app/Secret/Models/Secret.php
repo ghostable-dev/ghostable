@@ -31,6 +31,7 @@ class Secret extends Model
         'type',
         'value_encrypted',
         'metadata',
+        'notifications',
         'last_updated_at',
         'last_updated_by',
     ];
