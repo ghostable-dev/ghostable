@@ -8,21 +8,21 @@ enum SecretNotification: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SECRET_UPDATED => 'Secret Updated',
         };
     }
 
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SECRET_UPDATED => 'A secret was updated.',
         };
     }
 
     public function notification(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SECRET_UPDATED => SecretUpdatedNotification::class,
         };
     }

@@ -9,7 +9,7 @@ enum TeamNotification: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PROJECT_CREATED => 'Project Created',
             self::PROJECT_DELETED => 'Project Deleted',
         };
@@ -17,7 +17,7 @@ enum TeamNotification: string
 
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PROJECT_CREATED => 'A new project was created in this team.',
             self::PROJECT_DELETED => 'A project was deleted from this team.',
         };
@@ -25,7 +25,7 @@ enum TeamNotification: string
 
     public function notification(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PROJECT_CREATED => ProjectCreatedNotification::class,
             self::PROJECT_DELETED => ProjectDeletedNotification::class,
         };

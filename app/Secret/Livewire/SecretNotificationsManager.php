@@ -4,7 +4,6 @@ namespace App\Secret\Livewire;
 
 use App\Secret\Actions\UpdateSecretNotifications;
 use App\Secret\Models\Secret;
-use App\Secret\Notifications\SecretNotification;
 use App\Secret\Notifications\SecretNotificationsData;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -29,7 +28,7 @@ class SecretNotificationsManager extends Component
     public function toggle(string $key): void
     {
         $data = $this->secret->notifications->toArray();
-        $data[$key] = !($data[$key] ?? false);
+        $data[$key] = ! ($data[$key] ?? false);
 
         app(UpdateSecretNotifications::class)->handle(
             secret: $this->secret,

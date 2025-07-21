@@ -4,7 +4,6 @@ namespace App\Team\Livewire;
 
 use App\Team\Actions\UpdateTeamNotifications;
 use App\Team\Models\Team;
-use App\Team\Notifications\TeamNotification;
 use App\Team\Notifications\TeamNotificationsData;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -23,7 +22,7 @@ class TeamNotificationsManager extends Component
     public function toggle(string $key): void
     {
         $data = $this->team->notifications->toArray();
-        $data[$key] = !($data[$key] ?? false);
+        $data[$key] = ! ($data[$key] ?? false);
 
         app(UpdateTeamNotifications::class)->handle(
             team: $this->team,

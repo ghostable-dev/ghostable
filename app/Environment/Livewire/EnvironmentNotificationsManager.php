@@ -4,7 +4,6 @@ namespace App\Environment\Livewire;
 
 use App\Environment\Actions\UpdateEnvironmentNotifications;
 use App\Environment\Models\Environment;
-use App\Environment\Notifications\EnvironmentNotification;
 use App\Environment\Notifications\EnvironmentNotificationsData;
 use App\Environment\Resolvers\ResolveEnvironment;
 use Livewire\Attributes\Computed;
@@ -30,7 +29,7 @@ class EnvironmentNotificationsManager extends Component
     public function toggle(string $key): void
     {
         $data = $this->environment->notifications->toArray();
-        $data[$key] = !($data[$key] ?? false);
+        $data[$key] = ! ($data[$key] ?? false);
 
         app(UpdateEnvironmentNotifications::class)->handle(
             environment: $this->environment,

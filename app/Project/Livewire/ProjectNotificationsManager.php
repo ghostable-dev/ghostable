@@ -4,7 +4,6 @@ namespace App\Project\Livewire;
 
 use App\Project\Actions\UpdateProjectNotifications;
 use App\Project\Models\Project;
-use App\Project\Notifications\ProjectNotification;
 use App\Project\Notifications\ProjectNotificationsData;
 use App\Project\Resolvers\ResolveProject;
 use Livewire\Attributes\Computed;
@@ -30,7 +29,7 @@ class ProjectNotificationsManager extends Component
     public function toggle(string $key): void
     {
         $data = $this->project->notifications->toArray();
-        $data[$key] = !($data[$key] ?? false);
+        $data[$key] = ! ($data[$key] ?? false);
 
         app(UpdateProjectNotifications::class)->handle(
             project: $this->project,
