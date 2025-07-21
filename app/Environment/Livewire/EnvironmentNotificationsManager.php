@@ -4,7 +4,7 @@ namespace App\Environment\Livewire;
 
 use App\Environment\Actions\UpdateEnvironmentNotifications;
 use App\Environment\Models\Environment;
-use App\Environment\Notifications\EnvironmentNotificationsData;
+use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Resolvers\ResolveEnvironment;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;

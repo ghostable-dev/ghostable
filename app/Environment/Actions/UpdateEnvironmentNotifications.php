@@ -3,7 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
-use App\Environment\Notifications\EnvironmentNotificationsData;
+use App\Environment\Entities\EnvironmentNotificationsData;
 
 class UpdateEnvironmentNotifications
 {

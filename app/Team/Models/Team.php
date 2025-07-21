@@ -9,7 +9,7 @@ use App\Core\Concerns\HandlesModelEventsWithAttributes;
 use App\Project\Models\Project;
 use App\Team\Actions\CreateNonConflictingSlug;
 use App\Team\Builders\TeamBuilder;
-use App\Team\Notifications\TeamNotificationsData;
+use App\Team\Entities\TeamNotificationsData;
 use Database\Factories\TeamFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

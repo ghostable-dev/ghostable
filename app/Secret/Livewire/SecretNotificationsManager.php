@@ -4,7 +4,7 @@ namespace App\Secret\Livewire;
 
 use App\Secret\Actions\UpdateSecretNotifications;
 use App\Secret\Models\Secret;
-use App\Secret\Notifications\SecretNotificationsData;
+use App\Secret\Entities\SecretNotificationsData;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

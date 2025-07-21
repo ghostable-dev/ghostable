@@ -3,7 +3,7 @@
 namespace App\Project\Actions;
 
 use App\Project\Models\Project;
-use App\Project\Notifications\ProjectNotificationsData;
+use App\Project\Entities\ProjectNotificationsData;
 
 class UpdateProjectNotifications
 {

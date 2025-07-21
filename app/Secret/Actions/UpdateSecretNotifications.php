@@ -3,7 +3,7 @@
 namespace App\Secret\Actions;
 
 use App\Secret\Models\Secret;
-use App\Secret\Notifications\SecretNotificationsData;
+use App\Secret\Entities\SecretNotificationsData;
 
 class UpdateSecretNotifications
 {

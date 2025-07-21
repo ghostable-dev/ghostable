@@ -3,7 +3,7 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
-use App\Project\Notifications\ProjectNotificationsData;
+use App\Project\Entities\ProjectNotificationsData;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;

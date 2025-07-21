@@ -3,7 +3,7 @@
 namespace App\Team\Actions;
 
 use App\Team\Models\Team;
-use App\Team\Notifications\TeamNotificationsData;
+use App\Team\Entities\TeamNotificationsData;
 
 class UpdateTeamNotifications
 {

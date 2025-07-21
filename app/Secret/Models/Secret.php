@@ -6,7 +6,7 @@ use App\Account\Models\User;
 use App\Secret\Actions\LogSecretActivity;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Enums\SecretType;
-use App\Secret\Notifications\SecretNotificationsData;
+use App\Secret\Entities\SecretNotificationsData;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
 use Illuminate\Database\Eloquent\Casts\Attribute;
