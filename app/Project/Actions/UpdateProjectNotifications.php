@@ -2,8 +2,8 @@
 
 namespace App\Project\Actions;
 
+use App\Project\Entities\ProjectNotificationsData;
 use App\Project\Models\Project;
-use App\Project\Notifications\ProjectNotificationsData;
 
 class UpdateProjectNotifications
 {

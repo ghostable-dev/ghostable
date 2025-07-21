@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Secret\Notifications;
+namespace App\Secret\Entities;
 
 use Spatie\LaravelData\Data;
 

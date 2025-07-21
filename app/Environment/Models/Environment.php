@@ -2,9 +2,9 @@
 
 namespace App\Environment\Models;
 
+use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Notifications\EnvironmentNotificationsData;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;

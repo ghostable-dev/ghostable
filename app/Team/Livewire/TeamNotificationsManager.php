@@ -3,8 +3,8 @@
 namespace App\Team\Livewire;
 
 use App\Team\Actions\UpdateTeamNotifications;
+use App\Team\Entities\TeamNotificationsData;
 use App\Team\Models\Team;
-use App\Team\Notifications\TeamNotificationsData;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;

@@ -3,8 +3,8 @@
 namespace App\Secret\Livewire;
 
 use App\Secret\Actions\UpdateSecretNotifications;
+use App\Secret\Entities\SecretNotificationsData;
 use App\Secret\Models\Secret;
-use App\Secret\Notifications\SecretNotificationsData;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

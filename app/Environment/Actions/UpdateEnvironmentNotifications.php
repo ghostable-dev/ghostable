@@ -2,8 +2,8 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Models\Environment;
-use App\Environment\Notifications\EnvironmentNotificationsData;
 
 class UpdateEnvironmentNotifications
 {
