@@ -3,6 +3,7 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
+use App\Project\Notifications\ProjectNotificationsData;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;
@@ -64,6 +65,11 @@ class Project extends Model implements SupportsOverrides
         'name',
         'description',
         'is_restricted',
+        'notifications',
+    ];
+
+    protected $casts = [
+        'notifications' => ProjectNotificationsData::class,
     ];
 
     public static function newFactory(): ProjectFactory
