@@ -13,43 +13,52 @@
             </flux:button>
         </x-slot:actions>
 
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>Name</flux:table.column>
-                <flux:table.column>Version</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @foreach($this->secrets as $secret)
-                    <flux:table.row wire:key="secret-{{ $secret->id }}">
-                        <flux:table.cell>
-                            <flux:text size="sm">{{ $secret->name }}</flux:text>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            {{ $secret->latestVersion->version }}
-                        </flux:table.cell>
-                        <flux:table.cell align="end">
-                            <flux:dropdown position="left">
-                                <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
-                                <flux:menu>
-                                    <flux:menu.item wire:click="confirmShowSecret('{{ $secret->id }}')">
-                                        View
-                                    </flux:menu.item>
-                                    @if($this->canEditSecrets)
-                                        <flux:menu.item wire:click="editSecret('{{ $secret->id }}')">
-                                            Edit
+        @if(count($this->secrets))
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Name</flux:table.column>
+                    <flux:table.column>Version</flux:table.column>
+                    <flux:table.column>Age</flux:table.column>
+                    <flux:table.column></flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @foreach($this->secrets as $secret)
+                        <flux:table.row wire:key="secret-{{ $secret->id }}">
+                            <flux:table.cell>
+                                <flux:text size="sm">{{ $secret->name }}</flux:text>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ $secret->latestVersion->version }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ $secret->last_updated_at->shortAbsoluteDiffForHumans() }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end">
+                                <flux:dropdown position="left">
+                                    <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
+                                    <flux:menu>
+                                        <flux:menu.item wire:click="confirmShowSecret('{{ $secret->id }}')">
+                                            View
                                         </flux:menu.item>
-                                        <flux:menu.item wire:click="confirmSecretRemoval('{{ $secret->id }}')" variant="danger">
-                                            Delete
-                                        </flux:menu.item>
-                                    @endif
-                                </flux:menu>
-                            </flux:dropdown>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforeach
-            </flux:table.rows>
-        </flux:table>
+                                        @if($this->canEditSecrets)
+                                            <flux:menu.item wire:click="editSecret('{{ $secret->id }}')">
+                                                Edit
+                                            </flux:menu.item>
+                                            <flux:menu.item wire:click="confirmSecretRemoval('{{ $secret->id }}')" variant="danger">
+                                                Delete
+                                            </flux:menu.item>
+                                        @endif
+                                    </flux:menu>
+                                </flux:dropdown>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+        @else
+            <flux:callout.heading>No secrets</flux:callout.heading>
+            <flux:callout.text>You haven't created any secrets yet.</flux:callout.text>
+        @endif
     </x-section>
 
     <flux:modal wire:model="showCreateModal" class="md:w-lg">
@@ -80,11 +89,15 @@
         @if($this->viewingSecret)
             <div class="space-y-6">
                 <div>
-                    <flux:heading size="lg">{{ $this->viewingSecret->name }}</flux:heading>
+                    <flux:heading size="lg">
+                        {{ $this->viewingSecret->name }}
+                    </flux:heading>
                 </div>
                 <flux:input value="{{ $this->viewingSecret->value }}" copyable readonly />
                 <div class="flex gap-2 justify-end">
-                    <flux:button variant="filled" wire:click="closeViewModal">Close</flux:button>
+                    <flux:button variant="filled" wire:click="closeViewModal">
+                        Close
+                    </flux:button>
                 </div>
             </div>
         @endif
