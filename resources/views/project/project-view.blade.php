@@ -20,8 +20,9 @@
             <flux:tab name="environments">Environments</flux:tab>
             <flux:tab name="secrets">Secrets</flux:tab>
             <flux:tab name="general">General</flux:tab>
-            <flux:tab name="access">Access</flux:tab>
-            <flux:tab name="activity">Activity</flux:tab>
+           <flux:tab name="access">Access</flux:tab>
+            <flux:tab name="notifications">Notifications</flux:tab>
+           <flux:tab name="activity">Activity</flux:tab>
         </flux:tabs>
 
         <flux:tab.panel name="environments">
@@ -55,7 +56,11 @@
                 <x-non-personal-team-restricted/>
             @endif
         </flux:tab.panel>
-        
+
+        <flux:tab.panel name="notifications">
+            <livewire:project.livewire.project-notifications-manager :project="$this->project"/>
+        </flux:tab.panel>
+
         <flux:tab.panel name="activity">
             @if(!$this->project->owningTeam()->isPersonal())
                 @can('viewAuditLogs', $this->project->owningTeam())

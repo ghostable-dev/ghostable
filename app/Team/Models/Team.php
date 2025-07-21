@@ -80,6 +80,10 @@ class Team extends Model
         'is_personal' => true,
     ];
 
+    protected $casts = [
+        'notifications' => \App\Team\Notifications\TeamNotificationsData::class.':default',
+    ];
+
     public static function newFactory(): TeamFactory
     {
         return TeamFactory::new();

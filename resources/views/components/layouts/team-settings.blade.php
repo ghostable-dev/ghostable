@@ -7,6 +7,9 @@
             <flux:navlist.item :href="route('team.settings.members')" wire:navigate>
                 {{ __('Members') }}
             </flux:navlist.item>
+            <flux:navlist.item :href="route('team.settings.notifications')" wire:navigate>
+                Notifications
+            </flux:navlist.item>
             <!-- <flux:navlist.item :href="route('team.settings.billing')" wire:navigate>
                 {{ __('Billing') }}
             </flux:navlist.item> -->

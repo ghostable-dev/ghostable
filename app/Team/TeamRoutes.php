@@ -34,6 +34,8 @@ class TeamRoutes
                 Route::redirect('/', 'settings/general')->name('index');
                 Route::get('general', TeamGeneralSettings::class)->name('general');
                 Route::get('members', TeamMemberSettings::class)->name('members');
+                Route::get('notifications', \App\Team\Livewire\TeamNotificationsManager::class)
+                    ->name('notifications');
                 Route::get('billing', TeamBillingSettings::class)->name('billing');
             });
 

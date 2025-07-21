@@ -39,6 +39,7 @@ class Secret extends Model
         'type' => SecretType::class,
         'metadata' => 'array',
         'last_updated_at' => 'datetime',
+        'notifications' => \App\Secret\Notifications\SecretNotificationsData::class.':default',
     ];
 
     public function owner(): MorphTo

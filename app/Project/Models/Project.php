@@ -66,6 +66,10 @@ class Project extends Model implements SupportsOverrides
         'is_restricted',
     ];
 
+    protected $casts = [
+        'notifications' => \App\Project\Notifications\ProjectNotificationsData::class.':default',
+    ];
+
     public static function newFactory(): ProjectFactory
     {
         return ProjectFactory::new();
