@@ -21,7 +21,7 @@ use Livewire\Component;
 class SecretsManager extends Component
 {
     use ConfirmsPasswords;
-    
+
     #[Locked]
     public string $ownerType;
 
