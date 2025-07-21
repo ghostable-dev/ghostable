@@ -3,6 +3,7 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
+use App\Project\Notifications\ProjectNotificationsData;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;
@@ -68,7 +69,7 @@ class Project extends Model implements SupportsOverrides
     ];
 
     protected $casts = [
-        'notifications' => \App\Project\Notifications\ProjectNotificationsData::class.':default',
+        'notifications' => ProjectNotificationsData::class,
     ];
 
     public static function newFactory(): ProjectFactory

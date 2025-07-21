@@ -6,6 +6,7 @@ use App\Account\Models\User;
 use App\Secret\Actions\LogSecretActivity;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Enums\SecretType;
+use App\Secret\Notifications\SecretNotificationsData;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -40,7 +41,7 @@ class Secret extends Model
         'type' => SecretType::class,
         'metadata' => 'array',
         'last_updated_at' => 'datetime',
-        'notifications' => \App\Secret\Notifications\SecretNotificationsData::class.':default',
+        'notifications' => SecretNotificationsData::class,
     ];
 
     public function owner(): MorphTo
