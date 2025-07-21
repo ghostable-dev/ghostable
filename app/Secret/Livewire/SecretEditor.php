@@ -59,7 +59,7 @@ class SecretEditor extends Component
             $this->value === $this->secret->value;
     }
 
-    public function update(): void
+    public function updateSecret(): void
     {
         $this->authorize('perform', [$this->secret->owner, TeamPermission::EditSecrets]);
 
@@ -120,10 +120,10 @@ class SecretEditor extends Component
                             <flux:button variant="ghost">Cancel</flux:button>
                         </flux:modal.close>
                         @if($this->noChangesWereMade)
-                            <flux:button variant="primary" wire:click="update">Update</flux:button>
+                            <flux:button variant="primary" wire:click="updateSecret">Update</flux:button>
                         @else
-                            <x-auth.confirms-password wire:then="update">
-                                <flux:button variant="primary" :loading="true" wire:target="update">
+                            <x-auth.confirms-password wire:then="updateSecret">
+                                <flux:button variant="primary" :loading="true" wire:target="updateSecret">
                                     Update
                                 </flux:button>
                             </x-auth.confirms-password>

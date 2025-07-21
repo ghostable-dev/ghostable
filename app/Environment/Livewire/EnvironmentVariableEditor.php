@@ -121,7 +121,7 @@ class EnvironmentVariableEditor extends Component
      * - Applies the update and displays a success toast
      * - Closes the modal and resets component state
      */
-    public function update(): void
+    public function updateVariable(): void
     {
         $this->authorize('perform', [$this->variable->environment, TeamPermission::EditVariables]);
 
@@ -215,15 +215,15 @@ class EnvironmentVariableEditor extends Component
                         @if($this->noChangesWereMade)
                             <flux:button  
                                 variant="primary"
-                                wire:click="update">
+                                wire:click="updateVariable">
                                 {{ __('Update') }}
                             </flux:button>
                         @else
-                            <x-auth.confirms-password wire:then="update">
+                            <x-auth.confirms-password wire:then="updateVariable">
                                 <flux:button  
                                     variant="primary"
                                     :loading="true"
-                                    wire:target="update">
+                                    wire:target="updateVariable">
                                     {{ __('Update') }}
                                 </flux:button>
                             </x-auth.confirms-password>
