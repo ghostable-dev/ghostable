@@ -16,4 +16,9 @@ class EnvironmentDeletedNotification extends BaseNotification
             ->subject('Environment Deleted')
             ->line("Environment '{$this->environment->name}' was deleted from project '{$this->environment->project->name}'.");
     }
+
+    public function toSlack(object $notifiable): string
+    {
+        return "Environment '{$this->environment->name}' was deleted from project '{$this->environment->project->name}'.";
+    }
 }

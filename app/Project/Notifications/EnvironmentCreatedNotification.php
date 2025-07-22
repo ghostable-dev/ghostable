@@ -16,4 +16,9 @@ class EnvironmentCreatedNotification extends BaseNotification
             ->subject('Environment Created')
             ->line("Environment '{$this->environment->name}' was created in project '{$this->environment->project->name}'.");
     }
+
+    public function toSlack(object $notifiable): string
+    {
+        return "Environment '{$this->environment->name}' was created in project '{$this->environment->project->name}'.";
+    }
 }

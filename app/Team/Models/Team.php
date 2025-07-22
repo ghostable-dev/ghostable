@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -70,20 +71,26 @@ class Team extends Model
     use HasFactory;
     use HasUuids;
     use LogsActivity;
+    use Notifiable;
 
     protected $fillable = [
         'name',
         'slug',
         'is_personal',
         'notifications',
+        'slack_webhook_url',
+        'slack_enabled',
     ];
 
     protected $attributes = [
         'is_personal' => true,
+        'slack_enabled' => false,
     ];
 
     protected $casts = [
         'notifications' => TeamNotificationsData::class,
+        'slack_enabled' => 'boolean',
+        'slack_webhook_url' => 'string',
     ];
 
     public static function newFactory(): TeamFactory
@@ -168,5 +175,10 @@ class Team extends Model
         return once(function () {
             return $this->is_personal;
         }, $cacheKey);
+    }
+
+    public function routeNotificationForSlack($notification): ?string
+    {
+        return $this->slack_enabled ? $this->slack_webhook_url : null;
     }
 }
