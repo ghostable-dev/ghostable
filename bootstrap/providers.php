@@ -11,4 +11,5 @@ return [
     App\Billing\BillingServiceProvider::class,
     App\Integration\Integrations\Drata\DrataServiceProvider::class,
     App\Integration\Integrations\Vanta\VantaServiceProvider::class,
+    App\Integration\Integrations\Slack\SlackServiceProvider::class,
 ];

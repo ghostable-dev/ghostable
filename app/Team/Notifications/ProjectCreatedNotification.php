@@ -16,4 +16,9 @@ class ProjectCreatedNotification extends BaseNotification
             ->subject('Project Created')
             ->line("Project '{$this->project->name}' was created.");
     }
+
+    public function toSlack(object $notifiable): string
+    {
+        return "Project '{$this->project->name}' was created.";
+    }
 }

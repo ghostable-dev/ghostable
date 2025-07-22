@@ -1,4 +1,18 @@
 <section class="space-y-6">
+    <div>
+        <flux:heading size="lg">Slack Notifications</flux:heading>
+        <flux:subheading>Send team notifications to Slack.</flux:subheading>
+        <form wire:submit="saveSlackSettings" class="my-6 w-full space-y-6">
+            <flux:input type="text" label="Slack Webhook URL" wire:model.defer="slackWebhookUrl"/>
+            <div class="flex items-center gap-4">
+                <flux:switch wire:click="toggleSlackEnabled" :checked="$slackEnabled"/>
+                <flux:button variant="primary" type="submit">Save</flux:button>
+                <x-action-message class="me-3" on="slack-settings-updated">
+                    {{ __('Saved.') }}
+                </x-action-message>
+            </div>
+        </form>
+    </div>
     <flux:table>
         <flux:table.columns>
             <flux:table.column>Notification</flux:table.column>

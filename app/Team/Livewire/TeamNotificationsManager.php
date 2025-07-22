@@ -11,7 +11,15 @@ use Livewire\Component;
 
 class TeamNotificationsManager extends Component
 {
-    public function mount(): void {}
+    public bool $slackEnabled = false;
+
+    public string $slackWebhookUrl = '';
+
+    public function mount(): void
+    {
+        $this->slackEnabled = (bool) $this->team->slack_enabled;
+        $this->slackWebhookUrl = $this->team->slack_webhook_url ?? '';
+    }
 
     #[Computed]
     public function team(): Team
@@ -30,6 +38,23 @@ class TeamNotificationsManager extends Component
         );
 
         $this->team->refresh();
+    }
+
+    public function toggleSlackEnabled(): void
+    {
+        $this->slackEnabled = ! $this->slackEnabled;
+    }
+
+    public function saveSlackSettings(): void
+    {
+        $this->team->update([
+            'slack_enabled' => $this->slackEnabled,
+            'slack_webhook_url' => $this->slackWebhookUrl,
+        ]);
+
+        $this->team->refresh();
+
+        $this->dispatch('slack-settings-updated');
     }
 
     public function render()

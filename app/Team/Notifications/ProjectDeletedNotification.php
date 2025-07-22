@@ -16,4 +16,9 @@ class ProjectDeletedNotification extends BaseNotification
             ->subject('Project Deleted')
             ->line("Project '{$this->project->name}' was deleted.");
     }
+
+    public function toSlack(object $notifiable): string
+    {
+        return "Project '{$this->project->name}' was deleted.";
+    }
 }
