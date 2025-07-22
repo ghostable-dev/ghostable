@@ -2,15 +2,15 @@
 
 use App\Integration\Integrations\Slack\SlackChannel;
 use App\Integration\Integrations\Slack\SlackClient;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Mockery;
 
 it('sends a message via webhook', function () {
     Http::fake();
 
-    $client = new SlackClient();
+    $client = new SlackClient;
     $client->sendWebhook('https://hooks.slack.com/services/test', 'hello');
 
     Http::assertSent(function ($request) {
@@ -25,7 +25,8 @@ it('sends a notification via the slack channel', function () {
 
     $channel = new SlackChannel($client);
 
-    $notifiable = new class {
+    $notifiable = new class
+    {
         use Notifiable;
 
         public function routeNotificationForSlack($notification)
@@ -34,7 +35,8 @@ it('sends a notification via the slack channel', function () {
         }
     };
 
-    $notification = new class extends Notification {
+    $notification = new class extends Notification
+    {
         public function toSlack($notifiable)
         {
             return 'notify';

@@ -12,6 +12,7 @@ use Livewire\Component;
 class TeamNotificationsManager extends Component
 {
     public bool $slackEnabled = false;
+
     public string $slackWebhookUrl = '';
 
     public function mount(): void

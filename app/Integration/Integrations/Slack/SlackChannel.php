@@ -6,9 +6,7 @@ use Illuminate\Notifications\Notification;
 
 class SlackChannel
 {
-    public function __construct(protected SlackClient $client)
-    {
-    }
+    public function __construct(protected SlackClient $client) {}
 
     public function send(object $notifiable, Notification $notification): void
     {
