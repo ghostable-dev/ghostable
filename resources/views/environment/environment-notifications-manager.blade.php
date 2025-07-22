@@ -1,4 +1,13 @@
 <section class="space-y-6">
+    @php $team = $this->environment->owningTeam(); @endphp
+    @if($team->slack_enabled && $team->slack_webhook_url)
+        <flux:callout icon="slack" variant="ghost" inline>
+            <flux:callout.heading>Slack Notifications Enabled</flux:callout.heading>
+            <flux:callout.text>
+                Notifications for this environment will also be sent to Slack via the parent team.
+            </flux:callout.text>
+        </flux:callout>
+    @endif
     <flux:table>
         <flux:table.columns>
             <flux:table.column>Notification</flux:table.column>
