@@ -1,7 +1,15 @@
 <section class="space-y-6">
     <div>
-        <flux:heading size="lg">Slack Notifications</flux:heading>
-        <flux:subheading>Send team notifications to Slack.</flux:subheading>
+        <flux:heading size="lg">
+            <span class="inline-flex items-center gap-2">
+                <flux:icon.slack class="size-5" />
+                Slack Notifications
+            </span>
+        </flux:heading>
+        <flux:subheading>
+            Send team notifications to Slack. All notifications for projects,
+            environments, and secrets will also be routed to this endpoint.
+        </flux:subheading>
         <form wire:submit="saveSlackSettings" class="my-6 w-full space-y-6">
             <flux:input type="text" label="Slack Webhook URL" wire:model.defer="slackWebhookUrl"/>
             <div class="flex items-center gap-4">
