@@ -29,7 +29,7 @@ it('sends a notification via the slack channel', function () {
     {
         use Notifiable;
 
-        public function routeNotificationForSlack($notification)
+        public function routeNotificationForSlack()
         {
             return 'https://hooks.slack.com/services/test';
         }

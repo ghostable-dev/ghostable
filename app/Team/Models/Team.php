@@ -177,7 +177,7 @@ class Team extends Model
         }, $cacheKey);
     }
 
-    public function routeNotificationForSlack($notification): ?string
+    public function routeNotificationForSlack(): ?string
     {
         return $this->slack_enabled ? $this->slack_webhook_url : null;
     }

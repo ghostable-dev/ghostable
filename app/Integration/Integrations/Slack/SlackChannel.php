@@ -2,6 +2,7 @@
 
 namespace App\Integration\Integrations\Slack;
 
+use App\Integration\Integrations\Slack\SlackNotifiable;
 use Illuminate\Notifications\Notification;
 
 class SlackChannel
@@ -10,11 +11,13 @@ class SlackChannel
 
     public function send(object $notifiable, Notification $notification): void
     {
-        if (! method_exists($notification, 'toSlack')) {
+        if (! $notification instanceof SlackNotifiable) {
             return;
         }
 
-        $webhookUrl = $notifiable->routeNotificationFor('slack', $notification);
+        $webhookUrl = $notification->forTeam()->routeNotificationForSlack();
+                
+        //dd($notification, $notifiable);
 
         if (! $webhookUrl) {
             return;

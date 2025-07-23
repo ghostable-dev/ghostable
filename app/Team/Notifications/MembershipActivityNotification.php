@@ -2,10 +2,11 @@
 
 namespace App\Team\Notifications;
 
+use App\Integration\Integrations\Slack\SlackNotifiable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-abstract class MembershipActivityNotification extends Notification
+abstract class MembershipActivityNotification extends Notification implements SlackNotifiable
 {
     protected bool $unsubscribable = true;
 

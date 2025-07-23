@@ -3,18 +3,25 @@
 namespace App\Environment\Notifications;
 
 use App\Environment\Models\Environment;
+use App\Integration\Integrations\Slack\SlackNotifiable;
+use App\Team\Models\Team;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-abstract class EnvironmentNotification extends Notification
+abstract class EnvironmentNotification extends Notification implements SlackNotifiable
 {
     protected bool $unsubscribable = true;
 
     public function __construct(
         protected Environment $environment,
     ) {}
+    
+    public function forTeam(): Team
+    {
+        return $this->environment->owningTeam();
+    }
 
-    public function via(object $notifiable): array
+    public function via(object $notifiable): array|string
     {
         return ['mail', 'slack'];
     }

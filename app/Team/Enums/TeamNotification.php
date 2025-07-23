@@ -35,16 +35,6 @@ enum TeamNotification: string
         };
     }
 
-    public function notification(): string
-    {
-        return match ($this) {
-            self::MEMBERSHIP_ACTIVITY => MembershipActivityNotification::class,
-            self::ACCESS_CHANGE => AccessChangeNotification::class,
-            self::TEAM_SETTINGS_CHANGED => TeamSettingsChangedNotification::class,
-            self::PROJECT_ACTIVITY => ProjectActivityNotification::class
-        };
-    }
-
     public function isAvailableForTeam(Team $team): bool
     {
         return match ($this) {

@@ -3,7 +3,7 @@
 namespace App\Project\Notifications;
 
 class ProjectCreatedNotification extends ProjectNotification
-{
+{    
     protected function subject(): string
     {
         return 'New project created';

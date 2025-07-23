@@ -11,6 +11,11 @@ class MemberRemovedNotification extends MembershipActivityNotification
         public Team $team,
         public User $user
     ) {}
+    
+    public function forTeam(): Team
+    {
+        return $this->team;
+    }
 
     protected function subject(): string
     {

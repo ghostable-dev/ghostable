@@ -2,6 +2,7 @@
 
 namespace App\Team\Notifications;
 
+use App\Team\Models\Team;
 use App\Team\Models\TeamInvite;
 
 class MemberJoinedNotification extends MembershipActivityNotification
@@ -9,6 +10,11 @@ class MemberJoinedNotification extends MembershipActivityNotification
     public function __construct(
         public TeamInvite $invite
     ) {}
+    
+    public function forTeam(): Team
+    {
+        return $this->invite->team;
+    }
 
     protected function subject(): string
     {

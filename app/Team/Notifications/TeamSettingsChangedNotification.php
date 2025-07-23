@@ -2,17 +2,23 @@
 
 namespace App\Team\Notifications;
 
+use App\Integration\Integrations\Slack\SlackNotifiable;
 use App\Team\Models\Team;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TeamSettingsChangedNotification extends Notification
+class TeamSettingsChangedNotification extends Notification implements SlackNotifiable
 {
     protected bool $unsubscribable = true;
 
     public function __construct(protected Team $team) {}
+    
+    public function forTeam(): Team
+    {
+        return $this->team;
+    }
 
-    public function via(object $notifiable): array
+    public function via(object $notifiable): array|string
     {
         return ['mail', 'slack'];
     }
