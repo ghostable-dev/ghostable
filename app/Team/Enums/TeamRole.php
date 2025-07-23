@@ -8,6 +8,7 @@ enum TeamRole: string
     case BILLING_ONLY = 'billing_only';
     case DEVELOPER = 'developer';
     case DEVELOPER_READ_ONLY = 'developer_read_only';
+    case AUDITOR = 'auditor';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum TeamRole: string
             self::BILLING_ONLY => 'Billing Only',
             self::DEVELOPER => 'Developer',
             self::DEVELOPER_READ_ONLY => 'Developer (Read Only)',
+            self::AUDITOR => 'Auditor',
         };
     }
 
@@ -26,6 +28,7 @@ enum TeamRole: string
             self::BILLING_ONLY => 'Access to billing settings only. No access to projects or environments.',
             self::DEVELOPER => 'Create and manage projects and environments. No access to billing or team settings.',
             self::DEVELOPER_READ_ONLY => 'Read-only access to projects and environments.',
+            self::AUDITOR => 'View audit logs for security monitoring. No edit permissions.',
         };
     }
 
@@ -66,6 +69,10 @@ enum TeamRole: string
             self::DEVELOPER_READ_ONLY => [
                 TeamPermission::ViewVariables,
                 TeamPermission::ViewSecrets,
+            ],
+
+            self::AUDITOR => [
+                TeamPermission::ViewAuditLogs,
             ],
         };
     }
