@@ -10,7 +10,7 @@ class MemberJoinedNotification extends MembershipActivityNotification
     public function __construct(
         public TeamInvite $invite
     ) {}
-    
+
     public function forTeam(): Team
     {
         return $this->invite->team;

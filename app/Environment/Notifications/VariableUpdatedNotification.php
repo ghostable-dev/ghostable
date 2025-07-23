@@ -11,7 +11,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class VariableUpdatedNotification extends BaseNotification implements SlackNotifiable
 {
     public function __construct(protected EnvironmentVariable $variable) {}
-    
+
     public function forTeam(): Team
     {
         return $this->variable->environment->owningTeam();

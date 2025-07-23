@@ -15,7 +15,7 @@ abstract class EnvironmentNotification extends Notification implements SlackNoti
     public function __construct(
         protected Environment $environment,
     ) {}
-    
+
     public function forTeam(): Team
     {
         return $this->environment->owningTeam();

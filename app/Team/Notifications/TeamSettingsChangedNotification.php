@@ -12,7 +12,7 @@ class TeamSettingsChangedNotification extends Notification implements SlackNotif
     protected bool $unsubscribable = true;
 
     public function __construct(protected Team $team) {}
-    
+
     public function forTeam(): Team
     {
         return $this->team;

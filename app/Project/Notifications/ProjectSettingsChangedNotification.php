@@ -13,7 +13,7 @@ class ProjectSettingsChangedNotification extends Notification implements SlackNo
     protected bool $unsubscribable = true;
 
     public function __construct(protected Project $project) {}
-    
+
     public function forTeam(): Team
     {
         return $this->project->team;

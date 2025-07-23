@@ -15,7 +15,7 @@ abstract class ProjectNotification extends Notification implements SlackNotifiab
     public function __construct(
         protected Project $project,
     ) {}
-    
+
     public function forTeam(): Team
     {
         return $this->project->team;

@@ -2,11 +2,7 @@
 
 namespace App\Team\Enums;
 
-use App\Project\Notifications\ProjectActivityNotification;
 use App\Team\Models\Team;
-use App\Team\Notifications\AccessChangeNotification;
-use App\Team\Notifications\MembershipActivityNotification;
-use App\Team\Notifications\TeamSettingsChangedNotification;
 
 enum TeamNotification: string
 {

@@ -16,7 +16,7 @@ class AccessChangeNotification extends Notification implements SlackNotifiable
         protected Team $team,
         protected User $user,
     ) {}
-    
+
     public function forTeam(): Team
     {
         return $this->team;
