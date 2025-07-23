@@ -28,14 +28,10 @@ enum TeamNotification: string
     public function description(): string
     {
         return match ($this) {
-            self::MEMBERSHIP_ACTIVITY =>
-                'Notifies when users are invited, join, or are removed from the team.',
-            self::ACCESS_CHANGE =>
-                'Alerts when a team member’s role or access permissions are updated.',
-            self::TEAM_SETTINGS_CHANGED =>
-                'Fires when core team-level settings are modified.',
-            self::PROJECT_ACTIVITY =>
-                'Notifies when projects are created or deleted from the team.',
+            self::MEMBERSHIP_ACTIVITY => 'Notifies when users are invited, join, or are removed from the team.',
+            self::ACCESS_CHANGE => 'Alerts when a team member’s role or access permissions are updated.',
+            self::TEAM_SETTINGS_CHANGED => 'Fires when core team-level settings are modified.',
+            self::PROJECT_ACTIVITY => 'Notifies when projects are created or deleted from the team.',
         };
     }
 
@@ -48,7 +44,7 @@ enum TeamNotification: string
             self::PROJECT_ACTIVITY => ProjectActivityNotification::class
         };
     }
-    
+
     public function isAvailableForTeam(Team $team): bool
     {
         return match ($this) {
@@ -58,7 +54,7 @@ enum TeamNotification: string
             self::TEAM_SETTINGS_CHANGED => true,
         };
     }
-    
+
     public function requiredPermission(): string
     {
         return match ($this) {

@@ -31,7 +31,7 @@ class UpdateEnvVariable
         $data->variable->createVersionBy($data->updatedBy);
 
         $data->variable->logActivity('updated', user: $data->updatedBy);
-        
+
         EnvironmentVariableUpdated::dispatch($data->variable);
 
         return $data->variable;

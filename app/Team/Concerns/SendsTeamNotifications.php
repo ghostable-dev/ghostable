@@ -19,11 +19,10 @@ trait SendsTeamNotifications
     protected function isNotificationEnabled(
         Team $team,
         string $key
-    ): bool
-    {
+    ): bool {
         return app(IsNotificationEnabled::class)->handle($team, $key);
     }
-    
+
     /**
      * Get the team notifiable recipients.
      */
@@ -31,15 +30,14 @@ trait SendsTeamNotifications
     {
         return app(GetNotifiableTeamUsers::class)->handle($team);
     }
-    
+
     /**
      * Send the notificiation to the given notifiable.
      */
     protected function sendNotification(
         User $recipient,
         Notification $notification
-    ): void
-    {
+    ): void {
         Sender::send($recipient, $notification);
     }
 }

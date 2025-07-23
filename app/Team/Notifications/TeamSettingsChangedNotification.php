@@ -10,8 +10,7 @@ class TeamSettingsChangedNotification extends Notification
 {
     protected bool $unsubscribable = true;
 
-    public function __construct(protected Team $team) 
-    {}
+    public function __construct(protected Team $team) {}
 
     public function via(object $notifiable): array
     {
@@ -33,7 +32,7 @@ class TeamSettingsChangedNotification extends Notification
 
     protected function subject(): string
     {
-        return "Team settings changed";
+        return 'Team settings changed';
     }
 
     protected function messageLine(): string

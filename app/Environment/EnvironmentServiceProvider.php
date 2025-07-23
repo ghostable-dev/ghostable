@@ -74,19 +74,19 @@ class EnvironmentServiceProvider extends ServiceProvider
             'environment' => 'App\Environment\Models\Environment',
             'variable' => 'App\Environment\Models\EnvironmentVariable',
         ]);
-        
+
         Event::listen(
-            EnvironmentVariableUpdated::class, 
+            EnvironmentVariableUpdated::class,
             SendEnvironmentVariableUpdatedNotification::class
         );
-        
+
         Event::listen(
-            EnvironmentCreated::class, 
+            EnvironmentCreated::class,
             SendEnvironmentActivityNotification::class
         );
-        
+
         Event::listen(
-            EnvironmentDeleted::class, 
+            EnvironmentDeleted::class,
             SendEnvironmentActivityNotification::class
         );
     }

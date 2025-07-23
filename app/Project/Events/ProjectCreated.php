@@ -2,5 +2,4 @@
 
 namespace App\Project\Events;
 
-class ProjectCreated extends ProjectEvent
-{}
+class ProjectCreated extends ProjectEvent {}

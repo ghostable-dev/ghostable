@@ -26,7 +26,7 @@ class ProjectNotificationsManager extends Component
     {
         return ResolveProject::onceWithContext($this->projectId);
     }
-    
+
     #[Computed(persist: true)]
     public function notificationOptions(): array
     {

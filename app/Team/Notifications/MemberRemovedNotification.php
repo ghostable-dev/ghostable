@@ -4,7 +4,6 @@ namespace App\Team\Notifications;
 
 use App\Account\Models\User;
 use App\Team\Models\Team;
-use App\Team\Notifications\MembershipActivityNotification;
 
 class MemberRemovedNotification extends MembershipActivityNotification
 {
@@ -12,7 +11,7 @@ class MemberRemovedNotification extends MembershipActivityNotification
         public Team $team,
         public User $user
     ) {}
-    
+
     protected function subject(): string
     {
         return "{$this->user->email} removed from {$this->team->name}";

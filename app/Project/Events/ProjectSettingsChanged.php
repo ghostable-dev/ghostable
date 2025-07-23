@@ -2,5 +2,4 @@
 
 namespace App\Project\Events;
 
-class ProjectSettingsChanged extends ProjectEvent
-{}
+class ProjectSettingsChanged extends ProjectEvent {}

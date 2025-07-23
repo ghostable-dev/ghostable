@@ -26,7 +26,7 @@ class EnvironmentNotificationsManager extends Component
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
     }
-    
+
     #[Computed(persist: true)]
     public function notificationOptions(): array
     {

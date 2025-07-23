@@ -32,7 +32,7 @@ class ProjectSettingsChangedNotification extends Notification
 
     protected function subject(): string
     {
-        return "Project settings changed";
+        return 'Project settings changed';
     }
 
     protected function messageLine(): string

@@ -11,9 +11,9 @@ class UpdateProjectName
     {
         $project->update([
             'name' => $name,
-            'description' => $description
+            'description' => $description,
         ]);
-        
+
         ProjectSettingsChanged::dispatch($project);
 
         return $project;

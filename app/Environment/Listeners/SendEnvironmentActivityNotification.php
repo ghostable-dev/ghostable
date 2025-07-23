@@ -20,40 +20,39 @@ class SendEnvironmentActivityNotification implements ShouldQueue
     public function handle(EnvironmentCreated|EnvironmentDeleted $event): void
     {
         $team = $event->environment->owningTeam();
-        
-        if (!$this->notificationEnabled($team)) {
+
+        if (! $this->notificationEnabled($team)) {
             return;
         }
 
         $recipients = app(GetNotifiableTeamUsers::class)->handle($team);
-        
+
         $notification = $this->getNotification($event);
-        
+
         foreach ($recipients as $recipient) {
             Notification::send($recipient, $notification);
         }
     }
-    
+
     protected function notificationEnabled(Team $team): bool
     {
         return app(IsNotificationEnabled::class)->handle(
-            model: $team, 
+            model: $team,
             key: ProjectNotification::ENVIRONMENT_ACTIVITY->value
         );
     }
-    
+
     protected function getNotification(
         EnvironmentCreated|EnvironmentDeleted $event
-    ): EnvironmentNotification
-    {
+    ): EnvironmentNotification {
         if (is_a($event, EnvironmentCreated::class)) {
             return new EnvironmentCreatedNotification($event->environment);
         }
-        
+
         if (is_a($event, EnvironmentDeleted::class)) {
             return new EnvironmentDeletedNotification($event->environment);
         }
-        
-        throw new Exception("Unknown environment event.");   
+
+        throw new Exception('Unknown environment event.');
     }
 }

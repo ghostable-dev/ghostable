@@ -10,7 +10,7 @@ class UpdateTeamName
     public function handle(Team $team, string $name): Team
     {
         $team->update(['name' => $name]);
-        
+
         TeamSettingsChanged::dispatch($team);
 
         return $team;

@@ -73,7 +73,7 @@ class Project extends Model implements SupportsOverrides
     protected $casts = [
         'notifications' => ProjectNotificationsData::class,
     ];
-    
+
     protected $dispatchesEvents = [
         'created' => ProjectCreated::class,
         'deleted' => ProjectDeleted::class,

@@ -11,7 +11,7 @@ class RemoveTeamMember
     public function handle(User $member, Team $team): Team
     {
         $member->teamMembership()->removeFromTeam($team);
-        
+
         MemberRemoved::dispatch($team, $member);
 
         return $team;

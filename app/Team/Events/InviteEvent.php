@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 abstract class InviteEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    
+
     public Team $team;
 
     public function __construct(public TeamInvite $invite)

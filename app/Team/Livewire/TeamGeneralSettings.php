@@ -22,7 +22,7 @@ class TeamGeneralSettings extends Component
         $this->authorize('manageSettings', $this->team);
 
         app(UpdateTeamName::class)->handle($this->team, $this->name);
-        
+
         $this->team->refresh();
 
         $this->dispatch('name-updated', name: $this->name);

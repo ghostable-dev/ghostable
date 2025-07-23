@@ -73,11 +73,11 @@ class ProjectGeneralSettings extends Component
         $validated = $this->validate(ProjectRules::updateRules($this->project));
 
         app(UpdateProjectName::class)->handle(
-            project: $this->project, 
+            project: $this->project,
             name: $validated['name'],
             description: $validated['description']
         );
-        
+
         $this->project->refresh();
 
         $this->dispatch('project-updated');

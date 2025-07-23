@@ -13,7 +13,7 @@ class AcceptInvite
         $user->teamMembership()->assignToTeam(team: $invite->team, role: $invite->role);
 
         $invite->markAsAccepted();
-        
+
         InviteAccepted::dispatch($invite);
     }
 }

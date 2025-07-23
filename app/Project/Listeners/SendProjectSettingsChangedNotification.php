@@ -16,24 +16,24 @@ class SendProjectSettingsChangedNotification implements ShouldQueue
     public function handle(ProjectSettingsChanged $event): void
     {
         $team = $event->project->owningTeam();
-        
-        if (!$this->notificationEnabled($team)) {
+
+        if (! $this->notificationEnabled($team)) {
             return;
         }
 
         $recipients = app(GetNotifiableTeamUsers::class)->handle($team);
-        
+
         $notification = new ProjectSettingsChangedNotification($event->project);
-        
+
         foreach ($recipients as $recipient) {
             Notification::send($recipient, $notification);
         }
     }
-    
+
     protected function notificationEnabled(Team $team): bool
     {
         return app(IsNotificationEnabled::class)->handle(
-            model: $team, 
+            model: $team,
             key: ProjectNotification::PROJECT_SETTINGS_CHANGED->value
         );
     }

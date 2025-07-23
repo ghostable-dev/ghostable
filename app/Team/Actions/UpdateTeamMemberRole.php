@@ -24,7 +24,7 @@ class UpdateTeamMemberRole
 
         // Update the pivot record
         $member->teams()->updateExistingPivot($team->id, $attributes);
-        
+
         MemberRoleChanged::dispatch($team, $member);
     }
 }

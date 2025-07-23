@@ -25,7 +25,7 @@ class ProjectServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'project' => 'App\Project\Models\Project',
         ]);
-        
+
         Event::listen(ProjectSettingsChanged::class, SendProjectSettingsChangedNotification::class);
         Event::listen(ProjectCreated::class, SendProjectActivityNotification::class);
         Event::listen(ProjectDeleted::class, SendProjectActivityNotification::class);

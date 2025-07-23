@@ -2,7 +2,6 @@
 
 namespace App\Team;
 
-use App\Team\Listeners\SendMembershipActivityNotification;
 use App\Team\Enums\TeamPermission;
 use App\Team\Events\InviteAccepted;
 use App\Team\Events\InviteCreated;
@@ -11,6 +10,7 @@ use App\Team\Events\MemberRemoved;
 use App\Team\Events\MemberRoleChanged;
 use App\Team\Events\TeamSettingsChanged;
 use App\Team\Listeners\SendAccessChangeNotification;
+use App\Team\Listeners\SendMembershipActivityNotification;
 use App\Team\Listeners\SendTeamInvite;
 use App\Team\Listeners\SendTeamSettingsChangedNotification;
 use App\Team\Listeners\UpdateInviteSentTimestamp;
@@ -46,39 +46,39 @@ class TeamServiceProvider extends ServiceProvider
         Blade::component('team-role-select', TeamRoleSelect::class);
 
         Gate::policy(Team::class, TeamPolicy::class);
-        
+
         Event::listen(
-            InviteCreated::class, 
+            InviteCreated::class,
             SendTeamInvite::class
         );
-        
+
         Event::listen(
-            InviteSent::class, 
+            InviteSent::class,
             UpdateInviteSentTimestamp::class
         );
-        
+
         Event::listen(
-            InviteCreated::class, 
+            InviteCreated::class,
             SendMembershipActivityNotification::class
         );
-        
+
         Event::listen(
-            InviteAccepted::class, 
+            InviteAccepted::class,
             SendMembershipActivityNotification::class
         );
-        
+
         Event::listen(
-            MemberRemoved::class, 
+            MemberRemoved::class,
             SendMembershipActivityNotification::class
         );
-        
+
         Event::listen(
-            MemberRoleChanged::class, 
+            MemberRoleChanged::class,
             SendAccessChangeNotification::class
         );
-        
+
         Event::listen(
-            TeamSettingsChanged::class, 
+            TeamSettingsChanged::class,
             SendTeamSettingsChangedNotification::class
         );
     }

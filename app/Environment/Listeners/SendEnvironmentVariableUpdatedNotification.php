@@ -16,24 +16,24 @@ class SendEnvironmentVariableUpdatedNotification implements ShouldQueue
     public function handle(EnvironmentVariableUpdated $event): void
     {
         $team = $event->variable->environment->owningTeam();
-        
-        if (!$this->notificationEnabled($team)) {
+
+        if (! $this->notificationEnabled($team)) {
             return;
         }
 
         $recipients = app(GetNotifiableTeamUsers::class)->handle($team);
-        
+
         $notification = new VariableUpdatedNotification($event->variable);
-        
+
         foreach ($recipients as $recipient) {
             Notification::send($recipient, $notification);
         }
     }
-    
+
     protected function notificationEnabled(Team $team): bool
     {
         return app(IsNotificationEnabled::class)->handle(
-            model: $team, 
+            model: $team,
             key: EnvironmentNotification::VARIABLE_UPDATED->value
         );
     }

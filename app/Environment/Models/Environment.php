@@ -80,7 +80,7 @@ class Environment extends Model implements SupportsOverrides
         'file_format' => EnvFileFormat::class,
         'notifications' => EnvironmentNotificationsData::class,
     ];
-    
+
     protected $dispatchesEvents = [
         'created' => EnvironmentCreated::class,
         'deleted' => EnvironmentDeleted::class,

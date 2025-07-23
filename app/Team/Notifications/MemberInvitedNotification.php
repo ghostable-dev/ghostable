@@ -3,14 +3,13 @@
 namespace App\Team\Notifications;
 
 use App\Team\Models\TeamInvite;
-use App\Team\Notifications\MembershipActivityNotification;
 
 class MemberInvitedNotification extends MembershipActivityNotification
 {
     public function __construct(
         public TeamInvite $invite
     ) {}
-        
+
     protected function subject(): string
     {
         return "{$this->invite->email} invited to {$this->invite->team->name}";

@@ -18,10 +18,8 @@ enum ProjectNotification: string
     public function description(): string
     {
         return match ($this) {
-            self::PROJECT_SETTINGS_CHANGED =>
-                'Fires when project settings are modified (e.g. name, notifications, etc).',
-            self::ENVIRONMENT_ACTIVITY =>
-                'Notifies when environments are created or deleted.',
+            self::PROJECT_SETTINGS_CHANGED => 'Fires when project settings are modified (e.g. name, notifications, etc).',
+            self::ENVIRONMENT_ACTIVITY => 'Notifies when environments are created or deleted.',
         };
     }
 }

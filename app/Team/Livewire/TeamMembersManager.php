@@ -110,7 +110,7 @@ class TeamMembersManager extends Component
     public function removeMember(): void
     {
         $this->authorize('manageMembers', $this->team);
-        
+
         if ($this->memberToBeDeleted) {
             app(RemoveTeamMember::class)->handle(
                 member: $this->memberToBeDeleted,
@@ -118,7 +118,7 @@ class TeamMembersManager extends Component
             );
             Flux::toast('Team member successfully removed.');
         }
-        
+
         $this->reset(['memberToBeDeletedId']);
         $this->modal('remove-member')->close();
     }
