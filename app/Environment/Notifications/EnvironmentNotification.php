@@ -2,28 +2,37 @@
 
 namespace App\Environment\Notifications;
 
-enum EnvironmentNotification: string
+use App\Environment\Models\Environment;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+abstract class EnvironmentNotification extends Notification
 {
-    case VARIABLE_UPDATED = 'variable_updated';
+    protected bool $unsubscribable = true;
 
-    public function label(): string
+    public function __construct(
+        protected Environment $environment,
+    ) {}
+
+    public function via(object $notifiable): array
     {
-        return match ($this) {
-            self::VARIABLE_UPDATED => 'Variable Updated',
-        };
+        return ['mail', 'slack'];
     }
 
-    public function description(): string
+    public function toMail(object $notifiable): MailMessage
     {
-        return match ($this) {
-            self::VARIABLE_UPDATED => 'An environment variable was updated.',
-        };
+        return (new MailMessage)
+            ->subject($this->subject())
+            ->line($this->messageLine())
+            ->line('You are receiving this alert because you are an administrator of this team.');
     }
 
-    public function notification(): string
+    public function toSlack(object $notifiable): string
     {
-        return match ($this) {
-            self::VARIABLE_UPDATED => VariableUpdatedNotification::class,
-        };
+        return $this->messageLine();
     }
+
+    abstract protected function subject(): string;
+
+    abstract protected function messageLine(): string;
 }

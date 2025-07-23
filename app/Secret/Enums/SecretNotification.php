@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Secret\Notifications;
+namespace App\Secret\Enums;
 
 enum SecretNotification: string
 {
@@ -17,13 +17,6 @@ enum SecretNotification: string
     {
         return match ($this) {
             self::SECRET_UPDATED => 'A secret was updated.',
-        };
-    }
-
-    public function notification(): string
-    {
-        return match ($this) {
-            self::SECRET_UPDATED => SecretUpdatedNotification::class,
         };
     }
 }

@@ -4,6 +4,7 @@ namespace App\Project\Livewire;
 
 use App\Project\Actions\UpdateProjectNotifications;
 use App\Project\Entities\ProjectNotificationsData;
+use App\Project\Enums\ProjectNotification;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use Livewire\Attributes\Computed;
@@ -24,6 +25,12 @@ class ProjectNotificationsManager extends Component
     public function project(): Project
     {
         return ResolveProject::onceWithContext($this->projectId);
+    }
+    
+    #[Computed(persist: true)]
+    public function notificationOptions(): array
+    {
+        return ProjectNotification::cases();
     }
 
     public function toggle(string $key): void

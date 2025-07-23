@@ -1,8 +1,9 @@
-<section class="space-y-6">
-    <div>
+<section class="space-y-12 pb-10">
+    
+    <flux:card class="space-y-4 bg-zinc-100/20">
         <flux:heading size="lg">
             <span class="inline-flex items-center gap-2">
-                <flux:icon.slack class="size-5" />
+                <flux:icon.slack/>
                 Slack Notifications
             </span>
         </flux:heading>
@@ -10,35 +11,45 @@
             Send team notifications to Slack. All notifications for projects,
             environments, and secrets will also be routed to this endpoint.
         </flux:subheading>
-        <form wire:submit="saveSlackSettings" class="my-6 w-full space-y-6">
-            <flux:input type="text" label="Slack Webhook URL" wire:model.defer="slackWebhookUrl"/>
-            <div class="flex items-center gap-4">
-                <flux:switch wire:click="toggleSlackEnabled" :checked="$slackEnabled"/>
-                <flux:button variant="primary" type="submit">Save</flux:button>
-                <x-action-message class="me-3" on="slack-settings-updated">
-                    {{ __('Saved.') }}
-                </x-action-message>
-            </div>
-        </form>
-    </div>
-    <flux:table>
-        <flux:table.columns>
-            <flux:table.column>Notification</flux:table.column>
-            <flux:table.column>Description</flux:table.column>
-            <flux:table.column></flux:table.column>
-        </flux:table.columns>
-        <flux:table.rows>
-            @foreach(\App\Team\Notifications\TeamNotification::cases() as $case)
-                <flux:table.row wire:key="team-notify-{{ $case->value }}">
-                    <flux:table.cell>{{ $case->label() }}</flux:table.cell>
-                    <flux:table.cell>{{ $case->description() }}</flux:table.cell>
-                    <flux:table.cell inset="top bottom" align="end">
-                        <flux:switch
-                            wire:click="toggle('{{ $case->value }}')"
-                            :checked="$this->team->notifications->{$case->value} ?? false"/>
-                    </flux:table.cell>
-                </flux:table.row>
+        <div>
+            <flux:switch 
+                align="left" 
+                label="Enabled"
+                wire:model.live="slack_enabled"/>
+        </div>
+        @if($slack_enabled)
+            <form wire:submit="saveSlackSettings" class="space-y-4">
+                <flux:input 
+                    label="Slack Webhook URL" 
+                    type="url" 
+                    wire:model="slack_webhook_url"/>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-end">
+                        <flux:button variant="primary" type="submit" class="w-full">
+                            {{ __('Save') }}
+                        </flux:button>
+                    </div>
+                    <x-action-message class="me-3" on="slack-webhook-updated">
+                        {{ __('Saved.') }}
+                    </x-action-message>
+                </div>
+            </form>
+        @endif
+    </flux:card>
+    
+    <flux:fieldset>
+        <div class="space-y-4">
+            @foreach($this->teamNotificationOptions as $notification)
+                <flux:switch
+                    wire:click="toggle('{{ $notification['key'] }}')"
+                    :checked="$notification['enabled']"
+                    label="{{ $notification['label'] }}"
+                    description="{{ $notification['description'] }}"/>
+
+                @if (!$loop->last)
+                    <flux:separator variant="subtle" />
+                @endif
             @endforeach
-        </flux:table.rows>
-    </flux:table>
+        </div>
+    </flux:fieldset>
 </section>

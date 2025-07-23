@@ -7,7 +7,9 @@ use Spatie\LaravelData\Data;
 class TeamNotificationsData extends Data
 {
     public function __construct(
-        public bool $project_created = true,
-        public bool $project_deleted = true,
+        public bool $membership_activity = true,
+        public bool $access_change = true,
+        public bool $team_settings_changed = true,
+        public bool $project_activity = true,
     ) {}
 }

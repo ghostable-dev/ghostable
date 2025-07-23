@@ -19,6 +19,6 @@ class VariableUpdatedNotification extends BaseNotification
 
     public function toSlack(object $notifiable): string
     {
-        return "Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}'.";
+        return "Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}' of the \"{$this->variable->environment->project->name}\" project on the \"{$this->variable->environment->project->team->name}\" team.";
     }
 }

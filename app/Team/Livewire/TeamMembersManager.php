@@ -3,6 +3,7 @@
 namespace App\Team\Livewire;
 
 use App\Account\Models\User;
+use App\Team\Actions\RemoveTeamMember;
 use App\Team\Actions\UpdateTeamMemberRole;
 use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
@@ -109,13 +110,16 @@ class TeamMembersManager extends Component
     public function removeMember(): void
     {
         $this->authorize('manageMembers', $this->team);
-
-        $this->memberToBeDeleted()->teamMembership()->removeFromTeam($this->team);
-
+        
+        if ($this->memberToBeDeleted) {
+            app(RemoveTeamMember::class)->handle(
+                member: $this->memberToBeDeleted,
+                team: $this->team
+            );
+            Flux::toast('Team member successfully removed.');
+        }
+        
         $this->reset(['memberToBeDeletedId']);
-
-        Flux::toast('Team member successfully removed.');
-
         $this->modal('remove-member')->close();
     }
 

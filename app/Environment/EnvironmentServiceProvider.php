@@ -2,6 +2,11 @@
 
 namespace App\Environment;
 
+use App\Environment\Events\EnvironmentCreated;
+use App\Environment\Events\EnvironmentDeleted;
+use App\Environment\Events\EnvironmentVariableUpdated;
+use App\Environment\Listeners\SendEnvironmentActivityNotification;
+use App\Environment\Listeners\SendEnvironmentVariableUpdatedNotification;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
 use App\Environment\Registry\EnvironmentVariableRegistry;
@@ -9,6 +14,7 @@ use App\Environment\Validation\ValidationServiceProvider;
 use App\Environment\View\Components\EnvTokenExpiryReminder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -68,5 +74,20 @@ class EnvironmentServiceProvider extends ServiceProvider
             'environment' => 'App\Environment\Models\Environment',
             'variable' => 'App\Environment\Models\EnvironmentVariable',
         ]);
+        
+        Event::listen(
+            EnvironmentVariableUpdated::class, 
+            SendEnvironmentVariableUpdatedNotification::class
+        );
+        
+        Event::listen(
+            EnvironmentCreated::class, 
+            SendEnvironmentActivityNotification::class
+        );
+        
+        Event::listen(
+            EnvironmentDeleted::class, 
+            SendEnvironmentActivityNotification::class
+        );
     }
 }

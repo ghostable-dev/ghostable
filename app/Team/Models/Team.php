@@ -88,7 +88,7 @@ class Team extends Model
     ];
 
     protected $casts = [
-        'notifications' => TeamNotificationsData::class,
+        'notifications' => TeamNotificationsData::class.':default',
         'slack_enabled' => 'boolean',
         'slack_webhook_url' => 'string',
     ];

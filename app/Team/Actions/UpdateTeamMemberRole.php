@@ -4,6 +4,7 @@ namespace App\Team\Actions;
 
 use App\Account\Models\User;
 use App\Team\Enums\TeamRole;
+use App\Team\Events\MemberRoleChanged;
 use App\Team\Models\Team;
 
 class UpdateTeamMemberRole
@@ -23,5 +24,7 @@ class UpdateTeamMemberRole
 
         // Update the pivot record
         $member->teams()->updateExistingPivot($team->id, $attributes);
+        
+        MemberRoleChanged::dispatch($team, $member);
     }
 }

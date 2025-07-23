@@ -5,6 +5,8 @@ namespace App\Environment\Models;
 use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Events\EnvironmentCreated;
+use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;
@@ -77,6 +79,11 @@ class Environment extends Model implements SupportsOverrides
         'type' => EnvironmentType::class,
         'file_format' => EnvFileFormat::class,
         'notifications' => EnvironmentNotificationsData::class,
+    ];
+    
+    protected $dispatchesEvents = [
+        'created' => EnvironmentCreated::class,
+        'deleted' => EnvironmentDeleted::class,
     ];
 
     public static function newFactory(): EnvironmentFactory

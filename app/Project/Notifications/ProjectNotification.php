@@ -2,32 +2,37 @@
 
 namespace App\Project\Notifications;
 
-enum ProjectNotification: string
+use App\Project\Models\Project;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+abstract class ProjectNotification extends Notification
 {
-    case ENVIRONMENT_CREATED = 'environment_created';
-    case ENVIRONMENT_DELETED = 'environment_deleted';
+    protected bool $unsubscribable = true;
 
-    public function label(): string
+    public function __construct(
+        protected Project $project,
+    ) {}
+
+    public function via(object $notifiable): array
     {
-        return match ($this) {
-            self::ENVIRONMENT_CREATED => 'Environment Created',
-            self::ENVIRONMENT_DELETED => 'Environment Deleted',
-        };
+        return ['mail', 'slack'];
     }
 
-    public function description(): string
+    public function toMail(object $notifiable): MailMessage
     {
-        return match ($this) {
-            self::ENVIRONMENT_CREATED => 'A new environment was created in this project.',
-            self::ENVIRONMENT_DELETED => 'An environment was deleted from this project.',
-        };
+        return (new MailMessage)
+            ->subject($this->subject())
+            ->line($this->messageLine())
+            ->line('You are receiving this alert because you are an administrator of this team.');
     }
 
-    public function notification(): string
+    public function toSlack(object $notifiable): string
     {
-        return match ($this) {
-            self::ENVIRONMENT_CREATED => EnvironmentCreatedNotification::class,
-            self::ENVIRONMENT_DELETED => EnvironmentDeletedNotification::class,
-        };
+        return $this->messageLine();
     }
+
+    abstract protected function subject(): string;
+
+    abstract protected function messageLine(): string;
 }

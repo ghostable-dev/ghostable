@@ -2,6 +2,7 @@
 
 namespace App\Project\Livewire;
 
+use App\Project\Actions\UpdateProjectName;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use App\Project\Rules\ProjectRules;
@@ -71,10 +72,13 @@ class ProjectGeneralSettings extends Component
 
         $validated = $this->validate(ProjectRules::updateRules($this->project));
 
-        $this->project->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-        ]);
+        app(UpdateProjectName::class)->handle(
+            project: $this->project, 
+            name: $validated['name'],
+            description: $validated['description']
+        );
+        
+        $this->project->refresh();
 
         $this->dispatch('project-updated');
     }

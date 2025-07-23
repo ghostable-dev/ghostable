@@ -1,12 +1,7 @@
 <section class="space-y-6">
     @php $team = $this->project->owningTeam(); @endphp
     @if($team->slack_enabled && $team->slack_webhook_url)
-        <flux:callout icon="slack" variant="ghost" inline>
-            <flux:callout.heading>Slack Notifications Enabled</flux:callout.heading>
-            <flux:callout.text>
-                Notifications for this project will also be sent to Slack via the parent team.
-            </flux:callout.text>
-        </flux:callout>
+        @include('core.slack-enabled-message')
     @endif
     <flux:table>
         <flux:table.columns>
@@ -15,7 +10,7 @@
             <flux:table.column></flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
-            @foreach(\App\Project\Notifications\ProjectNotification::cases() as $case)
+            @foreach($this->notificationOptions as $case)
                 <flux:table.row wire:key="proj-notify-{{ $case->value }}">
                     <flux:table.cell>{{ $case->label() }}</flux:table.cell>
                     <flux:table.cell>{{ $case->description() }}</flux:table.cell>

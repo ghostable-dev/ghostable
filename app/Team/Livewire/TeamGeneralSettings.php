@@ -2,6 +2,7 @@
 
 namespace App\Team\Livewire;
 
+use App\Team\Actions\UpdateTeamName;
 use App\Team\Models\Team;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -20,7 +21,9 @@ class TeamGeneralSettings extends Component
     {
         $this->authorize('manageSettings', $this->team);
 
-        $this->team->update(['name' => $this->name]);
+        app(UpdateTeamName::class)->handle($this->team, $this->name);
+        
+        $this->team->refresh();
 
         $this->dispatch('name-updated', name: $this->name);
     }
