@@ -13,7 +13,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/pricing', function () {
-    return view('pricing');
+    return view('pricing-temp');
 })->name('pricing');
 
 Route::view('dashboard', 'dashboard')

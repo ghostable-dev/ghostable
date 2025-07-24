@@ -1,4 +1,4 @@
-<div class="mx-auto py-12 px-10 max-w-3xl">
+<div class="mx-auto py-12 px-10 max-w-3xl dark">
     <flux:accordion>
         
         <flux:accordion.item>

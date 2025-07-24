@@ -1,7 +1,7 @@
 <style>
   @keyframes ringPulse {
     0% {
-      transform: scale(0.6);
+      transform: scale(0.1);
       opacity: 0.6;
     }
     50% {
@@ -24,7 +24,7 @@
     @class([
         'py-48',
         'relative w-full flex items-center justify-center overflow-hidden',
-        'bg-gradient-to-r from-brand-extra-dark to-black'
+        'bg-gradient-to-r from-brand-dark to-brand'
     ])>
     
     {{-- Ring cluster --}}
@@ -33,9 +33,9 @@
             $ringCount = 300;
             $rings = collect(range(1, $ringCount))->map(function () {
                 return [
-                    'inset' => rand(1, 50),
-                    'opacity' => rand(5, 20),
-                    'duration' => rand(5, 40),
+                    'inset' => rand(1, 2),
+                    'opacity' => rand(5, 2),
+                    'duration' => rand(5, 2),
                 ];
             });
         @endphp
@@ -57,7 +57,7 @@
       @class([
         'inline my-6 py-6 !font-bold leading-tighter tracking-tighter',
         '!text-7xl lg:text-8xl',
-        'bg-gradient-to-r from-brand to-teal-200 shadow-xl bg-clip-text text-transparent'
+        'bg-gradient-to-r from-brand to-brand-light shadow-xl bg-clip-text text-transparent'
       ])>
       AES-256-GCM Encryption
     </flux:heading>

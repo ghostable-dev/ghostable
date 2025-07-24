@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'animate.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -28,11 +29,13 @@
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
     
-    --color-crypto: var(--color-teal-500);
+    
+    --color-crypto: #46B9A8;
     --color-brand: var(--color-crypto);
     --color-brand-light: color-mix(in srgb, var(--color-crypto) 50%, white);
     --color-brand-dark: color-mix(in srgb, var(--color-crypto) 40%, black);
     --color-brand-extra-dark: color-mix(in srgb, var(--color-crypto) 20%, black);
+    --color-brand-xx-dark: color-mix(in srgb, var(--color-crypto) 5%, black);
 }
 
 @layer theme {
@@ -86,4 +89,23 @@ select:focus[data-flux-control] {
 ::selection {
   background-color: var(--color-crypto);
   color: #ffffff;
+}
+
+@keyframes float {
+    0% {
+        box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+        transform: translatey(0px);
+    }
+    50% {
+        box-shadow: 0 25px 15px 0px rgba(0,0,0,0.2);
+        transform: translatey(-10px);
+    }
+    100% {
+        box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+        transform: translatey(0px);
+    }
+}
+
+.floating {
+  animation: float 4s ease-in-out infinite;
 }

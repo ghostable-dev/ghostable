@@ -1,4 +1,4 @@
-<section class="w-full bg-zinc-50 dark:bg-transparent py-24">
+<section class="w-full bg-zinc-50 dark:bg-transparent py-24 md:rounded-t-[1.5rem] lg:rounded-t-[3.25rem]">
   <div class="mx-auto max-w-4xl">
 
     {{-- Section Heading --}}
@@ -36,41 +36,7 @@
           <p><span class="text-zinc-500">></span> (3) added, (5) updated, & (1) removed</p>
       </x-terminal>
 
-    {{-- Feature Columns --}}
-    <div class="grid grid-cols-1 gap-10 sm:grid-cols-3 mt-16 px-10">
-      {{-- Column 1 --}}
-      <div class="flex flex-col items-start space-y-4">
-        <flux:icon.lock-closed class="text-brand" variant="solid"/>
-        <flux:heading class="font-semibold" level="3" size="lg">
-          Built-In Security
-        </flux:heading>
-        <flux:subheading>
-          All environment files are encrypted in transit and at rest—keeping sensitive configs safe by default.
-        </flux:subheading>
-      </div>
-
-      {{-- Column 2 --}}
-      <div class="flex flex-col items-start space-y-4">
-        <flux:icon.users class="text-brand" variant="solid"/>
-        <flux:heading class="font-semibold" level="3" size="lg">
-          Share with Precision
-        </flux:heading>
-        <flux:subheading>
-          Grant access to teammates with fine-grained roles—no more blind sharing or permission confusion.
-        </flux:subheading>
-      </div>
-
-      {{-- Column 3 --}}
-      <div class="flex flex-col items-start space-y-4">
-        <flux:icon.clock class="text-brand" variant="solid"/>
-        <flux:heading class="font-semibold" level="3" size="lg">
-          Full Visibility
-        </flux:heading>
-        <flux:subheading>
-          Track every edit, push, and pull across your environments—right when it happens.
-        </flux:subheading>
-      </div>
-    </div>
+   
 
   </div>
 </section>
