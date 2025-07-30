@@ -12,7 +12,6 @@ class EnvironmentRules
         return [
             'name' => self::nameRules($project),
             'type' => self::typeRules(),
-            'fileFormat' => self::formatRules(required: false),
         ];
     }
 
