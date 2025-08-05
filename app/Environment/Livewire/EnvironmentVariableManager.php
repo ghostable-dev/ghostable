@@ -11,6 +11,7 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\RenderEnvFile;
+use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Actions\SuggestEnvKeys;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
@@ -232,10 +233,20 @@ class EnvironmentVariableManager extends Component
     #[Computed]
     public function variables(): Collection
     {
-        return $this->environment->variables()
-            ->with('latestVersion')
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->get();
+        $vars = resolve(ResolveEnvironmentVariables::class)
+            ->handle($this->environment);
+            
+        if ($this->sortBy === 'key') {
+            return $this->sortDirection === 'desc'
+                ? $vars->sortByDesc('key')
+                : $vars->sortBy('key');
+        } elseif ($this->sortBy === 'last_updated_at') {
+            return $this->sortDirection === 'desc'
+                ? $vars->sortByDesc('last_updated_at')
+                : $vars->sortBy('last_updated_at');
+        }
+        
+        return $vars;
     }
 
     /**
@@ -248,7 +259,7 @@ class EnvironmentVariableManager extends Component
      */
     public function sort(string $column): void
     {
-        if (! in_array($column, ['key', 'updated_at'], true)) {
+        if (! in_array($column, ['key', 'last_updated_at'], true)) {
             return;
         }
 
@@ -323,7 +334,11 @@ class EnvironmentVariableManager extends Component
      */
     public function editVariable(EnvironmentVariable $variable): void
     {
-        $this->dispatch(EnvironmentVariableEditor::LAUNCH, $variable->id);
+        $this->dispatch(
+            EnvironmentVariableEditor::LAUNCH, 
+            variable: $variable->id, 
+            targetEnvironment: $this->environment->id
+        );
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Models\Environment;
 
@@ -9,7 +10,10 @@ class RenderEnvFile
 {
     public static function handle(Environment $env): string
     {
-        $variables = $env->variables()->get(['key', 'value', 'is_commented']);
+        $variables = resolve(ResolveEnvironmentVariables::class)
+            ->handle($env)
+            ->map(fn ($var) => (object) $var->only(['key', 'value', 'is_commented']))
+            ->values();
 
         $format = $env->file_format ?? EnvFileFormat::ALPHABETICAL;
 

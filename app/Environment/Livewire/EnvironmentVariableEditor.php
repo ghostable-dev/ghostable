@@ -3,11 +3,14 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Actions\CreateEnvVariable;
 use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\UpdateEnvVariable;
+use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Entities\UpdateEnvVariableData;
+use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
@@ -40,6 +43,11 @@ class EnvironmentVariableEditor extends Component
      * The ID of the environment variable currently being edited.
      */
     public ?string $environmentVariableId = null;
+    
+    /**
+     * The ID of the target environment.
+     */
+    public ?string $targetEnvironmentId = null;
 
     /**
      * The key of the environment variable being edited.
@@ -60,11 +68,15 @@ class EnvironmentVariableEditor extends Component
      * - Triggers the UI to show the modal
      */
     #[On(self::LAUNCH)]
-    public function launchEditorModal(EnvironmentVariable $variable): void
+    public function launchEditorModal(
+        EnvironmentVariable $variable,
+        ?Environment $targetEnvironment = null
+    ): void
     {
         $this->authorize('perform', [$variable->environment, TeamPermission::EditVariables]);
 
         $this->environmentVariableId = $variable->id;
+        $this->targetEnvironmentId = $targetEnvironment?->id;
         $this->key = $variable->key;
         $this->value = $variable->value;
 
@@ -84,6 +96,18 @@ class EnvironmentVariableEditor extends Component
     public function variable(): ?EnvironmentVariable
     {
         return EnvironmentVariable::find($this->environmentVariableId);
+    }
+    
+    /**
+     * Retrieve the target environment instance based 
+     * on optionally provided environment ID.
+     */
+    #[Computed]
+    public function targetEnvironment(): ?Environment
+    {
+        return $this->targetEnvironmentId 
+            ? Environment::find($this->targetEnvironmentId)
+            : $this->variable?->environment ?? null;
     }
 
     /**
@@ -123,22 +147,30 @@ class EnvironmentVariableEditor extends Component
      */
     public function updateVariable(): void
     {
-        $this->authorize('perform', [$this->variable->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::EditVariables]);
 
         // No actual changes were made.
         if ($this->noChangesWereMade()) {
             $this->showing = false;
-            $this->reset('key', 'value', 'environmentVariableId');
+            $this->reset('key', 'value', 'environmentVariableId', 'targetEnvironmentId');
 
             return;
         }
 
         $validated = $this->validate(EnvVariableRules::update());
 
-        app(UpdateEnvVariable::class)->handle(
-            $this->toUpdateVariableData($validated)
-        );
-
+        if ($this->variable->environment_id !== $this->targetEnvironment->id) {
+            // Inherited: create override
+            resolve(CreateEnvVariable::class)->handle(
+                $this->toCreateVariableData($validated)
+            );
+        } else {
+            // Owned: update
+            resolve(UpdateEnvVariable::class)->handle(
+                $this->toUpdateVariableData($validated)
+            );
+        }
+        
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         Flux::toast(
@@ -150,6 +182,17 @@ class EnvironmentVariableEditor extends Component
         $this->dispatch(self::UPDATED, $this->environmentVariableId);
         $this->showing = false;
         $this->reset('key', 'value', 'environmentVariableId');
+    }
+    
+    private function toCreateVariableData(array $input): CreateEnvVariableData
+    {
+        return new CreateEnvVariableData(
+            environment: $this->targetEnvironment,
+            key: $this->variable->key,
+            value: $input['value'],
+            is_override: true,
+            createdBy: Auth::user()
+        );
     }
 
     /**

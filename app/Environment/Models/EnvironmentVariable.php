@@ -4,11 +4,14 @@ namespace App\Environment\Models;
 
 use App\Account\Models\User;
 use App\Environment\Actions\LogVariableActivity;
+use App\Environment\Builders\EnvironmentVariableBuilder;
 use App\Environment\Casts\EncryptedString;
 use App\Environment\Concerns\HasSecretValues;
 use App\Environment\Versioning\Actions\CreateVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use Database\Factories\EnvironmentVariableFactory;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +58,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @mixin \Eloquent
  */
+#[UseEloquentBuilder(EnvironmentVariableBuilder::class)]
+#[UseFactory(EnvironmentVariableFactory::class)]
 class EnvironmentVariable extends Model
 {
     use HasFactory;
@@ -66,6 +71,8 @@ class EnvironmentVariable extends Model
         'key',
         'value',
         'is_commented',
+        'is_override',
+        'is_deleted',
         'last_updated_at',
         'last_updated_by',
     ];
@@ -74,11 +81,6 @@ class EnvironmentVariable extends Model
         'value' => EncryptedString::class,
         'last_updated_at' => 'datetime',
     ];
-
-    public static function newFactory(): EnvironmentVariableFactory
-    {
-        return EnvironmentVariableFactory::new();
-    }
 
     public function environment(): BelongsTo
     {

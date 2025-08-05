@@ -4,12 +4,19 @@ namespace App\Environment\Rules;
 
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
+use Illuminate\Validation\Rule;
 
 class EnvironmentRules
 {
     public static function createRules(Project $project): array
     {
         return [
+            'base_id' => [
+                'nullable',
+                'sometimes',
+                Rule::exists('environments', 'id')
+                    ->where(fn ($query) => $query->where('project_id', $project->id)),
+            ],
             'name' => self::nameRules($project),
             'type' => self::typeRules(),
         ];
@@ -26,7 +33,13 @@ class EnvironmentRules
 
     public static function nameRules(Project $project, ?Environment $environment = null): array
     {
-        return ['required', 'max:100', new UniqueEnvironmentName($project, $environment)];
+        return [
+            'required', 
+            'string', 
+            'max:100', 
+            'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+            new UniqueEnvironmentName($project, $environment)
+        ];
     }
 
     public static function typeRules(): array

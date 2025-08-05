@@ -22,6 +22,8 @@ class CreateEnvVariable
             'key' => $data->key,
             'value' => $data->value,
             'is_commented' => $data->is_commented,
+            'is_override' => $data->is_override,
+            'is_deleted' => $data->is_deleted,
             'last_updated_at' => now(),
         ]);
 

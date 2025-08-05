@@ -81,6 +81,7 @@
         {{-- Variable table display  --}}
         <flux:table>
             <flux:table.columns>
+                <flux:table.column></flux:table.column>
                 <flux:table.column 
                     sortable 
                     :sorted="$sortBy === 'key'" 
@@ -98,6 +99,17 @@
             <flux:table.rows>
                 @foreach ($this->variables as $var)
                     <flux:table.row wire:key="var-{{ $var }}">
+                        <flux:table.cell>
+                            @if($var->inherited)
+                                <flux:badge color="blue" icon="git-branch" size="sm" class="mb-2">
+                                    {{ $var->origin }}
+                                </flux:badge>
+                            @elseif($var->is_override)
+                                <flux:badge icon="arrow-path" size="sm" class="mb-2">
+                                    override
+                                </flux:badge>
+                            @endif
+                        </flux:table.cell>
                         <flux:table.cell>
                             <flux:text size="sm">{{ $var->key }}</flux:text>
                         </flux:table.cell>

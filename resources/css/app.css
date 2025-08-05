@@ -48,7 +48,6 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -58,13 +57,13 @@
     }
 }
 
-[data-flux-field]:not(ui-radio, ui-checkbox) {
+/*[data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
 
 [data-flux-label] {
     @apply  !mb-0 !leading-tight;
-}
+}*/
 
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],

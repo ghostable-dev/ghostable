@@ -11,6 +11,7 @@ class UpdateEnvVariableData
         public EnvironmentVariable $variable,
         public string $value,
         public ?bool $is_commented = null,
+        public ?bool $is_override = null,
         public ?User $updatedBy = null,
     ) {}
 }

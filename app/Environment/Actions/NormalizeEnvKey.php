@@ -14,7 +14,7 @@ class NormalizeEnvKey
         // Allow only letters, numbers, and underscores
         $normalized = preg_replace('/[^A-Z0-9_]/i', '_', $raw);
 
-        // Collapse consecutive underscores (optional)
+        // Collapse consecutive underscores
         $normalized = preg_replace('/_+/', '_', $normalized);
 
         return strtoupper($normalized);

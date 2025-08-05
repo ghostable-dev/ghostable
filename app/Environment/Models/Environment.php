@@ -2,6 +2,7 @@
 
 namespace App\Environment\Models;
 
+use App\Environment\Actions\BuildEnvironmentAncestryChain;
 use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
@@ -95,6 +96,16 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
+    
+    public function base(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class, 'base_id');
+    }
+    
+    public function derived(): HasMany
+    {
+        return $this->hasMany(Environment::class, 'base_id');
+    }
 
     public function variables(): HasMany
     {
@@ -109,6 +120,11 @@ class Environment extends Model implements SupportsOverrides
     public function rules(): HasMany
     {
         return $this->hasMany(EnvironmentVariableRule::class);
+    }
+    
+    public function ancestryChain(): array
+    {
+        return BuildEnvironmentAncestryChain::handle($this);
     }
 
     public function getActivitylogOptions(): LogOptions
