@@ -105,6 +105,14 @@ class EnvironmentVariable extends Model
     }
 
     /**
+     * Does the variable belong to the given environment (directly)
+     */
+    public function belongsToEnvironment(Environment $environment): bool
+    {
+        return $this->environment_id === $environment->id;
+    }
+
+    /**
      * Create a new version snapshot for this environment variable.
      *
      * This is a convenience wrapper around the CreateVariableVersion action,

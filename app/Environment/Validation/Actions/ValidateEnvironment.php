@@ -25,7 +25,7 @@ class ValidateEnvironment
             ->handle($environment)
             ->mapWithKeys(fn ($v) => [$v->key => $v->value])
             ->toArray();
-        
+
         $rules = $this->buildRules($environment, $data);
 
         Validator::make(

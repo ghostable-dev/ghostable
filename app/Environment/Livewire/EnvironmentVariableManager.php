@@ -4,7 +4,6 @@ namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Actions\DeleteEnvVariable;
 use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\LogEnvironmentViewed;
@@ -61,14 +60,6 @@ class EnvironmentVariableManager extends Component
      * Table sort direction
      */
     public string $sortDirection = 'asc';
-
-    /**
-     * The ID of the variable currently selected for removal.
-     *
-     * Used to resolve the environment variable
-     * instance prior to deletion.
-     */
-    public ?string $variableToRemoveId = null;
 
     #[Locked]
     public array $showing = [];
@@ -235,7 +226,7 @@ class EnvironmentVariableManager extends Component
     {
         $vars = resolve(ResolveEnvironmentVariables::class)
             ->handle($this->environment);
-            
+
         if ($this->sortBy === 'key') {
             return $this->sortDirection === 'desc'
                 ? $vars->sortByDesc('key')
@@ -245,7 +236,7 @@ class EnvironmentVariableManager extends Component
                 ? $vars->sortByDesc('last_updated_at')
                 : $vars->sortBy('last_updated_at');
         }
-        
+
         return $vars;
     }
 
@@ -272,57 +263,19 @@ class EnvironmentVariableManager extends Component
     }
 
     /**
-     * Begin the variable removal process by storing the variable ID
-     * and showing the confirmation modal.
+     * Dispatch an event to open the environment
+     * variable deleter for the given variable.
      *
-     * This method checks that the authenticated user has edit access
-     * to the variable before proceeding.
+     * This triggers the `EnvironmentVariableDeleter`
+     * component to load and show the modal.
      */
-    public function confirmVariableRemoval(EnvironmentVariable $var): void
+    public function removeVariable(EnvironmentVariable $var): void
     {
-        $this->variableToRemoveId = $var->id;
-
-        $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
-
-        Flux::modal('confirm-variable-removal')->show();
-    }
-
-    /**
-     * Resolve the variable that is pending removal.
-     *
-     * Returns the variable based on the stored ID, or null if not set.
-     */
-    #[Computed]
-    public function variableToRemove(): ?EnvironmentVariable
-    {
-        return $this->environment->variables()
-            ->firstWhere('id', $this->variableToRemoveId);
-    }
-
-    /**
-     * Permanently delete the selected variable.
-     *
-     * Authorization is checked against the variable.
-     * After deletion, the confirmation modal is closed.
-     */
-    public function removeVariable(): void
-    {
-        $environment = $this->variableToRemove->environment;
-
-        $this->authorize('perform', [$environment, TeamPermission::EditVariables]);
-
-        app(DeleteEnvVariable::class)->handle(
-            var: $this->variableToRemove,
-            deletedBy: Auth::user()
+        $this->dispatch(
+            EnvironmentVariableDeleter::LAUNCH,
+            variable: $var->id,
+            targetEnvironment: $this->environment->id
         );
-
-        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-        $this->refreshVars();
-
-        Flux::modal('confirm-variable-removal')->close();
-        Flux::toast("Variable '{$this->variableToRemove->key}' remove.");
-
-        $this->reset('variableToRemoveId');
     }
 
     /**
@@ -335,8 +288,8 @@ class EnvironmentVariableManager extends Component
     public function editVariable(EnvironmentVariable $variable): void
     {
         $this->dispatch(
-            EnvironmentVariableEditor::LAUNCH, 
-            variable: $variable->id, 
+            EnvironmentVariableEditor::LAUNCH,
+            variable: $variable->id,
             targetEnvironment: $this->environment->id
         );
     }

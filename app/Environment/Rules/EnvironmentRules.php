@@ -34,11 +34,11 @@ class EnvironmentRules
     public static function nameRules(Project $project, ?Environment $environment = null): array
     {
         return [
-            'required', 
-            'string', 
-            'max:100', 
+            'required',
+            'string',
+            'max:100',
             'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-            new UniqueEnvironmentName($project, $environment)
+            new UniqueEnvironmentName($project, $environment),
         ];
     }
 

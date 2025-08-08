@@ -39,7 +39,7 @@ class EnvironmentVariableBuilder extends Builder
     public function recent(int $days = 7): Builder
     {
         $after = now()->subDays($days);
-        
+
         return $this->where('last_updated_at', '>=', $after);
     }
 

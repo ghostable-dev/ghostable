@@ -27,7 +27,7 @@ class GenerateSuggestedEnvironmentNames
         $suggestions = [];
 
         // Start with the base slug itself if available
-        if (!$project->environments()->where('name', $baseSlug)->exists()) {
+        if (! $project->environments()->where('name', $baseSlug)->exists()) {
             $suggestions[] = $baseSlug;
         }
 
@@ -44,7 +44,7 @@ class GenerateSuggestedEnvironmentNames
 
             foreach ($memberNames as $memberSlug) {
                 $combinedSlug = "{$baseSlug}-{$memberSlug}";
-                if (!$project->environments()->where('name', $combinedSlug)->exists()) {
+                if (! $project->environments()->where('name', $combinedSlug)->exists()) {
                     $suggestions[] = $combinedSlug;
                 }
                 if (count($suggestions) >= $maxSuggestions) {
@@ -57,7 +57,7 @@ class GenerateSuggestedEnvironmentNames
         $count = 1;
         while (count($suggestions) < $maxSuggestions && $count <= $suffixLimit) {
             $numberedSlug = "{$baseSlug}-{$count}";
-            if (!$project->environments()->where('name', $numberedSlug)->exists()) {
+            if (! $project->environments()->where('name', $numberedSlug)->exists()) {
                 $suggestions[] = $numberedSlug;
             }
             $count++;

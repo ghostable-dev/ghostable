@@ -16,7 +16,7 @@ class DatabaseConnection extends EnvironmentVariableDefinition
     {
         return 'The type of database connection to use (e.g., mysql, pgsql, sqlite).';
     }
-    
+
     public function suggestedValues(): array
     {
         return ['mysql', 'pgsql', 'sqlite'];

@@ -19,7 +19,7 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
         });
-        
+
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->boolean('is_deleted')->after('is_commented')->default(false)->index();
             $table->boolean('is_override')->after('is_commented')->default(false)->index();
@@ -34,7 +34,7 @@ return new class extends Migration
         Schema::table('environments', function (Blueprint $table) {
             $table->dropColumn(['base_id']);
         });
-        
+
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->dropColumn(['is_deleted', 'is_override']);
         });

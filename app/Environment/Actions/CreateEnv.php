@@ -10,12 +10,11 @@ use App\Project\Models\Project;
 class CreateEnv
 {
     public function handle(
-        string $name, 
-        EnvironmentType $type, 
+        string $name,
+        EnvironmentType $type,
         Project $project,
         ?Environment $base = null
-    ): Environment
-    {
+    ): Environment {
         $env = new Environment;
         $env->name = $name;
         $env->type = $type;

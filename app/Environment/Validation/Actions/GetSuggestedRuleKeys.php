@@ -17,7 +17,7 @@ class GetSuggestedRuleKeys
     public function handle(Environment $environment): array
     {
         $registry = app(EnvironmentVariableRegistry::class);
-        
+
         $vars = resolve(ResolveEnvironmentVariables::class)
             ->handle($environment);
 

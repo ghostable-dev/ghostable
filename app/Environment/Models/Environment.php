@@ -96,12 +96,12 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
-    
+
     public function base(): BelongsTo
     {
         return $this->belongsTo(Environment::class, 'base_id');
     }
-    
+
     public function derived(): HasMany
     {
         return $this->hasMany(Environment::class, 'base_id');
@@ -121,7 +121,19 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->hasMany(EnvironmentVariableRule::class);
     }
-    
+
+    public function isDescendantOf(Environment $possibleAncestor): bool
+    {
+        return $possibleAncestor->isAncestorOf($this);
+    }
+
+    public function isAncestorOf(Environment $possibleDescendant): bool
+    {
+        $chain = BuildEnvironmentAncestryChain::handle($possibleDescendant);
+
+        return collect($chain)->contains(fn (Environment $env) => $env->id === $this->id);
+    }
+
     public function ancestryChain(): array
     {
         return BuildEnvironmentAncestryChain::handle($this);

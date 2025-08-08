@@ -15,28 +15,28 @@ class CreateProject
         $project->name = $name;
         $project->team()->associate($team);
         $project->save();
-        
+
         if ($populate) {
             $production = resolve(CreateEnv::class)->handle(
-                name: 'production', 
-                type: EnvironmentType::PRODUCTION, 
+                name: 'production',
+                type: EnvironmentType::PRODUCTION,
                 project: $project
             );
             $testing = resolve(CreateEnv::class)->handle(
-                name: 'testing', 
-                type: EnvironmentType::TESTING, 
+                name: 'testing',
+                type: EnvironmentType::TESTING,
                 project: $project,
                 base: $production
             );
             $development = resolve(CreateEnv::class)->handle(
-                name: 'development', 
-                type: EnvironmentType::DEVELOPMENT, 
+                name: 'development',
+                type: EnvironmentType::DEVELOPMENT,
                 project: $project,
                 base: $testing
             );
             $local = resolve(CreateEnv::class)->handle(
-                name: 'local', 
-                type: EnvironmentType::LOCAL, 
+                name: 'local',
+                type: EnvironmentType::LOCAL,
                 project: $project,
                 base: $development
             );

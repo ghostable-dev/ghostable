@@ -40,8 +40,8 @@ class ResolveEnvironmentVariables
         }
 
         // 2. Mark overrides (owned vars that override inherited ones)
-        return $resolved->map(function ($var) use ($env) {
-            if (!$var->inherited) {
+        return $resolved->map(function ($var) {
+            if (! $var->inherited) {
                 $var->overrides = true;
             }
 

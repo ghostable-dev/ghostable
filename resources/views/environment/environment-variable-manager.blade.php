@@ -98,120 +98,26 @@
             </flux:table.columns>
             <flux:table.rows>
                 @foreach ($this->variables as $var)
-                    <flux:table.row wire:key="var-{{ $var }}">
-                        <flux:table.cell>
-                            @if($var->inherited)
-                                <flux:badge color="blue" icon="git-branch" size="sm" class="mb-2">
-                                    {{ $var->origin }}
-                                </flux:badge>
-                            @elseif($var->is_override)
-                                <flux:badge icon="arrow-path" size="sm" class="mb-2">
-                                    override
-                                </flux:badge>
-                            @endif
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <flux:text size="sm">{{ $var->key }}</flux:text>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            @php
-                                $secret = $var->isSecret();
-                                $showingSecret = $this->showing[$var->id] ?? null;
-                            @endphp
-                            <flux:input 
-                                value="{{ $showingSecret ? $var->value : $var->displayValue() }}"
-                                :copyable="!$secret || $showingSecret"
-                                readonly>
-                                @if($secret)
-                                    <x-slot name="iconTrailing">
-                                        <flux:button 
-                                            wire:click="toggleSecret('{{ $var->id }}')" 
-                                            size="sm" 
-                                            variant="subtle" 
-                                            icon="{{ !$showingSecret ? 'eye' : 'eye-slash'}}" 
-                                            class="-mr-1" />
-                                    </x-slot>
-                                @endif
-                            </flux:input>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            {{ $var->latestVersion->version }}
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            {{ $var->last_updated_at->shortAbsoluteDiffForHumans() }}
-                        </flux:table.cell>
-                        <flux:table.cell align="end">
-                            @if($this->canEditVariables)
-                            <flux:dropdown position="left">
-                                <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
-                                <flux:menu>
-                                    <flux:menu.item 
-                                        wire:click="editVariable('{{ $var->id }}')">
-                                        Edit
-                                    </flux:menu.item>
-                                    <flux:menu.item 
-                                        wire:click="confirmVariableRemoval('{{ $var->id }}')"
-                                        variant="danger">
-                                        Delete
-                                    </flux:menu.item>
-                                    <flux:separator/>
-                                    <flux:menu.item 
-                                        wire:click="viewVariableActivity('{{ $var->id }}')">
-                                        Activity
-                                    </flux:menu.item>
-                                    @if($var->latestVersion->version > 1)
-                                    <flux:menu.item 
-                                        wire:click="viewVersions('{{ $var->id }}')">
-                                        Versions
-                                    </flux:menu.item>
-                                    @endif
-                                </flux:menu>
-                            </flux:dropdown>
-                            @endif
-                        </flux:table.cell>
-                    </flux:table.row>
+                    @if ($var->is_deleted)
+                        @include('environment.variables.table.row-tombstoned')
+                    @else
+                        @include('environment.variables.table.row-active')
+                    @endif
                 @endforeach
             </flux:table.rows>
         </flux:table>
-        
     </x-section>
     
     {{-- Variable editor modal --}}
     <livewire:environment.livewire.environment-variable-editor />
+    
+    {{-- Variable deleter modal --}}
+    <livewire:environment.livewire.environment-variable-deleter />
         
     {{-- Variable activity feed modal --}}
     <livewire:environment.livewire.environment-variable-activity-feed />
     
     {{-- Variable activity feed modal --}}
     <livewire:environment.versioning.livewire.version-manager />
-        
-    {{-- Remove variable modal --}}
-    <flux:modal name="confirm-variable-removal" class="md:w-lg">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">Remove Variable</flux:heading>
-                <flux:text class="mt-2">
-                    Are you sure you want to remove the
-                    <flux:text class="inline" variant="strong">
-                        “{{ $this->variableToRemove?->key }}”
-                    </flux:text>
-                    key and corresponding value?
-                </flux:text>
-            </div>
-            <div class="flex gap-2">
-                <flux:spacer />
-                <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
-                </flux:modal.close>
-                <x-auth.confirms-password wire:then="removeVariable">
-                    <flux:button  
-                        variant="danger"
-                        :loading="true"
-                        wire:target="removeVariable">
-                        {{ __('Remove Variable') }}
-                    </flux:button>
-                </x-auth.confirms-password>
-            </div>
-        </div>
-    </flux:modal>
+    
 </div>

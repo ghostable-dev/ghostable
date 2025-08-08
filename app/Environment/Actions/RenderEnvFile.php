@@ -2,7 +2,6 @@
 
 namespace App\Environment\Actions;
 
-use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Models\Environment;
 

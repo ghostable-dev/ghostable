@@ -23,7 +23,7 @@ class ProjectEnvironmentsManager extends Component
 
     #[Locked]
     public string $projectId;
-    
+
     /**
      * The base environment.
      */
@@ -73,7 +73,7 @@ class ProjectEnvironmentsManager extends Component
     {
         return EnvironmentType::selectOptions();
     }
-    
+
     #[Computed]
     public function nameSuggestions(): array
     {
@@ -82,12 +82,12 @@ class ProjectEnvironmentsManager extends Component
             type: $this->type
         );
     }
-    
+
     public function updatedType()
     {
         $this->name = $this->nameSuggestions[0] ?? '';
     }
-    
+
     public function updatedName($value)
     {
         $this->name = resolve(NormalizeEnvironmentName::class)->handle($value);
@@ -101,7 +101,7 @@ class ProjectEnvironmentsManager extends Component
         $this->authorize('perform', [$this->project, TeamPermission::CreateEnvironments]);
 
         $validated = $this->validate(EnvironmentRules::createRules($this->project));
-        
+
         $validated['base_id'] = $validated['base_id'] ?: null;
         $base = $this->project->environments()->where('id', $validated['base_id'])->first();
 

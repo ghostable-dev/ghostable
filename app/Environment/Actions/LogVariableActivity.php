@@ -44,6 +44,9 @@ class LogVariableActivity
             'deleted' => "Removed variable \"{$key}\" from \"{$environment}\"",
             'revealed' => "Revealed value for \"{$key}\" in \"{$environment}\"",
             'restored' => "Restored variable \"{$key}\" in \"{$environment}\"",
+            'disabled-inherited' => "Disabled inherited variable \"{$key}\" in \"{$environment}\"",
+            'disabled-override' => "Disabled local override for \"{$key}\" in \"{$environment}\"",
+            'removed-override' => "Removed overriden variable \"{$key}\" in \"{$environment}\"",
             default => ucfirst($event)." variable \"{$key}\" in \"{$environment}\"",
         };
     }

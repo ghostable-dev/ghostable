@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Environment\Actions;
+namespace App\Environment\Variable\Actions;
 
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\EnvironmentVariable;
 
-class CreateEnvVariable
+class CreateVariable
 {
     /**
      * Create a new environment variable within the given environment.
      *
-     * This method:
-     * - Creates the variable with its initial key, value, and comment state
-     * - Associates it with the environment and user who created it
-     * - Records the initial version in the version history table
-     * - Logs the creation event for auditing purposes
+     * This includes:
+     * - Creating the variable with initial state
+     * - Linking it to the environment and user
+     * - Versioning
+     * - Logging the activity (optional)
      */
-    public function handle(CreateEnvVariableData $data): EnvironmentVariable
+    public function handle(CreateEnvVariableData $data, bool $silently = false): EnvironmentVariable
     {
         $var = new EnvironmentVariable([
             'key' => $data->key,
@@ -33,7 +33,9 @@ class CreateEnvVariable
 
         $var->createVersionBy($data->createdBy);
 
-        $var->logActivity('created', user: $data->createdBy);
+        if (! $silently) {
+            $var->logActivity('created', user: $data->createdBy);
+        }
 
         return $var;
     }

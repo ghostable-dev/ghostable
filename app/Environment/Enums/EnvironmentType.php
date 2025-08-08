@@ -39,7 +39,7 @@ enum EnvironmentType: string
             self::OTHER => 'Other'
         };
     }
-    
+
     public function slug(): string
     {
         return str($this->label())->slug();

@@ -22,7 +22,7 @@ class EnvironmentFactory extends Factory
         return [
             'name' => $type->value,
             'type' => $type->value,
-            'file_format' => EnvFileFormat::ALPHABETICAL->value,
+            'file_format' => EnvFileFormat::GROUPED->value,
         ];
     }
 
@@ -30,6 +30,13 @@ class EnvironmentFactory extends Factory
     {
         return $this->state([
             'project_id' => $project->id,
+        ]);
+    }
+
+    public function basedOn(Environment $environment): static
+    {
+        return $this->state([
+            'base_id' => $environment->id,
         ]);
     }
 }

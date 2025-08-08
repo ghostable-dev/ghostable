@@ -6,7 +6,6 @@ use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\CreateEnvVariable;
 use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogVariableRevealed;
-use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\UpdateEnvVariable;
 use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Entities\UpdateEnvVariableData;
@@ -16,6 +15,7 @@ use App\Environment\Rules\EnvVariableRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -43,16 +43,11 @@ class EnvironmentVariableEditor extends Component
      * The ID of the environment variable currently being edited.
      */
     public ?string $environmentVariableId = null;
-    
+
     /**
      * The ID of the target environment.
      */
     public ?string $targetEnvironmentId = null;
-
-    /**
-     * The key of the environment variable being edited.
-     */
-    public string $key = '';
 
     /**
      * The value of the environment variable being edited.
@@ -71,13 +66,11 @@ class EnvironmentVariableEditor extends Component
     public function launchEditorModal(
         EnvironmentVariable $variable,
         ?Environment $targetEnvironment = null
-    ): void
-    {
+    ): void {
         $this->authorize('perform', [$variable->environment, TeamPermission::EditVariables]);
 
         $this->environmentVariableId = $variable->id;
         $this->targetEnvironmentId = $targetEnvironment?->id;
-        $this->key = $variable->key;
         $this->value = $variable->value;
 
         if ($this->variable()->isSecret()) {
@@ -97,15 +90,15 @@ class EnvironmentVariableEditor extends Component
     {
         return EnvironmentVariable::find($this->environmentVariableId);
     }
-    
+
     /**
-     * Retrieve the target environment instance based 
+     * Retrieve the target environment instance based
      * on optionally provided environment ID.
      */
     #[Computed]
     public function targetEnvironment(): ?Environment
     {
-        return $this->targetEnvironmentId 
+        return $this->targetEnvironmentId
             ? Environment::find($this->targetEnvironmentId)
             : $this->variable?->environment ?? null;
     }
@@ -121,69 +114,129 @@ class EnvironmentVariableEditor extends Component
     #[Computed]
     public function valueSuggestions(): array
     {
-        return app(GetSuggestedEnvValues::class)->handle($this->key);
-    }
+        if (! $this->variable) {
+            return [];
+        }
 
-    /**
-     * Livewire lifecycle hook: triggered when the `key` property is updated.
-     *
-     * Normalizes the environment variable key by converting it to an uppercase
-     * slug-style string using underscores (e.g., "app url" becomes "APP_URL").
-     */
-    public function updatedKey($value)
-    {
-        $this->key = app(NormalizeEnvKey::class)->handle($value);
+        return app(GetSuggestedEnvValues::class)->handle($this->variable?->key);
     }
 
     /**
      * Update the selected environment variable with new key and/or value input.
-     *
-     * This method:
-     * - Authorizes the user for the `EnvPush` permission on the variable's environment
-     * - Skips the update entirely if no changes were made
-     * - Validates the new key and value using update rules
-     * - Applies the update and displays a success toast
-     * - Closes the modal and resets component state
      */
     public function updateVariable(): void
     {
-        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::EditVariables]);
+        $this->authorizeEditOrOverride();
 
-        // No actual changes were made.
         if ($this->noChangesWereMade()) {
-            $this->showing = false;
-            $this->reset('key', 'value', 'environmentVariableId', 'targetEnvironmentId');
+            $this->closeAndReset();
 
             return;
         }
 
         $validated = $this->validate(EnvVariableRules::update());
 
-        if ($this->variable->environment_id !== $this->targetEnvironment->id) {
-            // Inherited: create override
-            resolve(CreateEnvVariable::class)->handle(
-                $this->toCreateVariableData($validated)
-            );
-        } else {
-            // Owned: update
-            resolve(UpdateEnvVariable::class)->handle(
-                $this->toUpdateVariableData($validated)
-            );
-        }
-        
-        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $this->isEditingDirectVariable
+            ? $this->update($validated)
+            : $this->createOverride($validated);
 
-        Flux::toast(
-            variant: 'success',
-            heading: 'Variable Updated',
-            text: "“{$this->key}” was successfully updated."
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $this->dispatch(self::UPDATED, $this->environmentVariableId);
+        $this->closeAndReset();
+    }
+
+    /**
+     * Authorize the edit or override operation.
+     */
+    private function authorizeEditOrOverride(): void
+    {
+        // The `targetEnvironment` represents the environment context in which the edit is occurring,
+        // not necessarily the one that owns the variable. Regardless of whether the variable is
+        // directly owned or inherited, the user must have permission to edit variables in the
+        // target environment, since the edit (or override) will apply there.
+        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::EditVariables]);
+
+        // If the variable is inherited, ensure it is actually from an ancestor of the target.
+        // This prevents spoofing or tampering with unrelated variables by enforcing a valid
+        // inheritance relationship.
+        if (! $this->isEditingDirectVariable) {
+            if (! $this->targetEnvironment->isDescendantOf($this->variable->environment)) {
+                Log::warning('Blocked variable override attempt with invalid ancestry.', [
+                    'user_id' => Auth::user()->id,
+                    'target_env' => $this->targetEnvironment->id,
+                    'variable_env' => $this->variable->environment->id,
+                    'variable_key' => $this->variable->key,
+                ]);
+                abort(403, 'Invalid inheritance.');
+            }
+        }
+    }
+
+    /**
+     * Editing a variable direct inside the target variable.
+     */
+    #[Computed]
+    public function isEditingDirectVariable(): bool
+    {
+        return $this->variable?->belongsToEnvironment($this->targetEnvironment) ?? true;
+    }
+
+    /**
+     * Determine if the current value input matches the original variable.
+     *
+     * This is used to detect whether any actual changes were made before saving.
+     */
+    #[Computed]
+    public function noChangesWereMade(): bool
+    {
+        return $this->value === $this->variable?->value;
+    }
+
+    /**
+     * Updated environment variable.
+     */
+    private function update(array $input): void
+    {
+        resolve(UpdateEnvVariable::class)->handle(
+            $this->toUpdateVariableData($input)
         );
 
-        $this->dispatch(self::UPDATED, $this->environmentVariableId);
-        $this->showing = false;
-        $this->reset('key', 'value', 'environmentVariableId');
+        $this->successToast(
+            'Variable Updated',
+            "“{$this->variable->key}” was successfully updated."
+        );
     }
-    
+
+    /**
+     * Transform a raw input array into a UpdateEnvVariableData DTO.
+     */
+    private function toUpdateVariableData(array $input): UpdateEnvVariableData
+    {
+        return new UpdateEnvVariableData(
+            variable: $this->variable,
+            value: $input['value'] ?? '',
+            updatedBy: Auth::user()
+        );
+    }
+
+    /**
+     * Create environment variable.
+     */
+    private function createOverride(array $input): void
+    {
+        resolve(CreateEnvVariable::class)->handle(
+            $this->toCreateVariableData($input)
+        );
+
+        $this->successToast(
+            'Override Created',
+            "“{$this->variable->key}” now overrides the inherited value in this environment."
+        );
+    }
+
+    /**
+     * Transform a raw input array into a CreateEnvVariableData DTO.
+     */
     private function toCreateVariableData(array $input): CreateEnvVariableData
     {
         return new CreateEnvVariableData(
@@ -196,31 +249,21 @@ class EnvironmentVariableEditor extends Component
     }
 
     /**
-     * Transform a raw input array into a UpdateEnvVariableData DTO.
-     *
-     * This helper is used to convert incoming data.
-     * into a structured format suitable for updating an environment variable.
-     * It automatically associates the current variable and authenticated user.
+     * Display a "success" toast.
      */
-    private function toUpdateVariableData(array $input): UpdateEnvVariableData
+    private function successToast(string $heading, string $text): void
     {
-        return new UpdateEnvVariableData(
-            variable: $this->variable,
-            value: $input['value'] ?? '',
-            updatedBy: Auth::user()
-        );
+        Flux::toast(variant: 'success', heading: $heading, text: $text);
     }
 
     /**
-     * Determine if the current key and value inputs match the original variable.
-     *
-     * This is used to detect whether any actual changes were made before saving.
+     * Reset the editor state.
      */
-    #[Computed]
-    public function noChangesWereMade(): bool
+    private function closeAndReset(): void
     {
-        return $this->key === $this->variable?->key
-            && $this->value === $this->variable?->value;
+        $this->showing = false;
+
+        $this->reset('value', 'environmentVariableId', 'targetEnvironmentId');
     }
 
     public function render()
@@ -229,11 +272,13 @@ class EnvironmentVariableEditor extends Component
             <flux:modal wire:model="showing" class="md:w-lg">
                 <div class="space-y-6">
                     <div>
-                        <flux:heading size="lg">Update Variable</flux:heading>
+                        <flux:heading size="lg">
+                            {{ $this->isEditingDirectVariable ? 'Update' : 'Override' }} Variable
+                        </flux:heading>
                     </div>
                     <div class="space-y-4">
                         <flux:input 
-                            wire:model="key" 
+                            value="{{ $this->variable?->key }}" 
                             readonly 
                             icon:trailing="lock-closed"
                             label="Key"/>
