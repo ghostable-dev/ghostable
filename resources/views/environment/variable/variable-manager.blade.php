@@ -109,13 +109,13 @@
     </x-section>
     
     {{-- Variable editor modal --}}
-    <livewire:environment.livewire.environment-variable-editor />
+    <livewire:environment.variable.livewire.variable-editor />
     
     {{-- Variable deleter modal --}}
-    <livewire:environment.livewire.environment-variable-deleter />
+    <livewire:environment.variable.livewire.variable-deleter />
         
     {{-- Variable activity feed modal --}}
-    <livewire:environment.livewire.environment-variable-activity-feed />
+    <livewire:environment.variable.livewire.variable-activity-feed />
     
     {{-- Variable activity feed modal --}}
     <livewire:environment.versioning.livewire.version-manager />

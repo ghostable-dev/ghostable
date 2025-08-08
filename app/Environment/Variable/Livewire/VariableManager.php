@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Livewire;
+namespace App\Environment\Variable\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\LogEnvironmentDownloaded;
@@ -8,6 +8,7 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Actions\SuggestEnvKeys;
+use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Validation\Actions\ValidateEnvironment;
@@ -31,7 +32,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class EnvironmentVariableManager extends Component
+class VariableManager extends Component
 {
     use ConfirmsPasswords;
 
@@ -266,13 +267,13 @@ class EnvironmentVariableManager extends Component
      * Dispatch an event to open the environment
      * variable deleter for the given variable.
      *
-     * This triggers the `EnvironmentVariableDeleter`
+     * This triggers the `VariableDeleter`
      * component to load and show the modal.
      */
     public function removeVariable(EnvironmentVariable $var): void
     {
         $this->dispatch(
-            EnvironmentVariableDeleter::LAUNCH,
+            VariableDeleter::LAUNCH,
             variable: $var->id,
             targetEnvironment: $this->environment->id
         );
@@ -282,13 +283,13 @@ class EnvironmentVariableManager extends Component
      * Dispatch an event to open the environment
      * variable editor for the given variable.
      *
-     * This triggers the `EnvironmentVariableEditor`
+     * This triggers the `VariableEditor`
      * component to load and show the modal.
      */
     public function editVariable(EnvironmentVariable $variable): void
     {
         $this->dispatch(
-            EnvironmentVariableEditor::LAUNCH,
+            VariableEditor::LAUNCH,
             variable: $variable->id,
             targetEnvironment: $this->environment->id
         );
@@ -300,7 +301,7 @@ class EnvironmentVariableManager extends Component
      */
     public function viewVariableActivity(EnvironmentVariable $variable): void
     {
-        $this->dispatch(EnvironmentVariableActivityFeed::LAUNCH, $variable->id);
+        $this->dispatch(VariableActivityFeed::LAUNCH, $variable->id);
     }
 
     /**
@@ -338,10 +339,10 @@ class EnvironmentVariableManager extends Component
      * Livewire listener to refresh the list of environment variables
      * after a variable has been updated via the editor.
      *
-     * This is triggered by the `EnvironmentVariableEditor::UPDATED` event.
+     * This is triggered by the `VariableEditor::UPDATED` event.
      */
     #[On([
-        EnvironmentVariableEditor::UPDATED,
+        VariableEditor::UPDATED,
         VersionManager::VERSION_RESTORED,
     ])]
     public function refreshVars(): void
@@ -370,6 +371,6 @@ class EnvironmentVariableManager extends Component
 
     public function render()
     {
-        return view('environment.environment-variable-manager');
+        return view('environment.variable.variable-manager');
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Livewire;
+namespace App\Environment\Variable\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Models\Environment;
@@ -20,7 +20,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class EnvironmentVariableEditor extends Component
+class VariableEditor extends Component
 {
     use ConfirmsPasswords;
 

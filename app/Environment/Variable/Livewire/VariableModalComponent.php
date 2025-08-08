@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Livewire;
+namespace App\Environment\Variable\Livewire;
 
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-abstract class EnvironmentVariableModalComponent extends Component
+abstract class VariableModalComponent extends Component
 {
     /**
      * Event name used to trigger the variable editor modal.

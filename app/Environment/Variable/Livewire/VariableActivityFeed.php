@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Livewire;
+namespace App\Environment\Variable\Livewire;
 
 use App\Environment\Variable\Models\EnvironmentVariable;
 use Livewire\Attributes\Computed;
@@ -8,7 +8,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Spatie\Activitylog\Models\Activity;
 
-class EnvironmentVariableActivityFeed extends Component
+class VariableActivityFeed extends Component
 {
     public bool $showing = false;
 

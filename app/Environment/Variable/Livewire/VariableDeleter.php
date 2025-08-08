@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Environment\Livewire;
+namespace App\Environment\Variable\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Models\Environment;
@@ -12,7 +12,7 @@ use App\Team\Enums\TeamPermission;
 use Auth;
 use Livewire\Attributes\On;
 
-class EnvironmentVariableDeleter extends EnvironmentVariableModalComponent
+class VariableDeleter extends VariableModalComponent
 {
     use ConfirmsPasswords;
 
