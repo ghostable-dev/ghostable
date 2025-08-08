@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Project\Notifications;
-
-use App\Environment\Notifications\EnvironmentNotification;
+namespace App\Environment\Notifications;
 
 class EnvironmentCreatedNotification extends EnvironmentNotification
 {

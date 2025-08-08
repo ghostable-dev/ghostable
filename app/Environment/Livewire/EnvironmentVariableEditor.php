@@ -3,15 +3,15 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
-use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Actions\GetSuggestedEnvValues;
-use App\Environment\Actions\LogVariableRevealed;
-use App\Environment\Actions\UpdateEnvVariable;
-use App\Environment\Entities\CreateEnvVariableData;
-use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
-use App\Environment\Rules\EnvVariableRules;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Actions\GetSuggestedVariableValues;
+use App\Environment\Variable\Actions\LogVariableRevealed;
+use App\Environment\Variable\Actions\UpdateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Entities\UpdateVariableData;
+use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Rules\VariableRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -106,7 +106,7 @@ class EnvironmentVariableEditor extends Component
     /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
-     * Suggestions are provided by the EnvironmentVariableRegistry based on the key's
+     * Suggestions are provided by the VariableRegistry based on the key's
      * corresponding definition class. Returns an empty array if the key has no suggestions defined.
      *
      * @return array<int, string>
@@ -118,7 +118,7 @@ class EnvironmentVariableEditor extends Component
             return [];
         }
 
-        return app(GetSuggestedEnvValues::class)->handle($this->variable?->key);
+        return app(GetSuggestedVariableValues::class)->handle($this->variable?->key);
     }
 
     /**
@@ -134,7 +134,7 @@ class EnvironmentVariableEditor extends Component
             return;
         }
 
-        $validated = $this->validate(EnvVariableRules::update());
+        $validated = $this->validate(VariableRules::update());
 
         $this->isEditingDirectVariable
             ? $this->update($validated)
@@ -197,7 +197,7 @@ class EnvironmentVariableEditor extends Component
      */
     private function update(array $input): void
     {
-        resolve(UpdateEnvVariable::class)->handle(
+        resolve(UpdateVariable::class)->handle(
             $this->toUpdateVariableData($input)
         );
 
@@ -208,11 +208,11 @@ class EnvironmentVariableEditor extends Component
     }
 
     /**
-     * Transform a raw input array into a UpdateEnvVariableData DTO.
+     * Transform a raw input array into a UpdateVariableData DTO.
      */
-    private function toUpdateVariableData(array $input): UpdateEnvVariableData
+    private function toUpdateVariableData(array $input): UpdateVariableData
     {
-        return new UpdateEnvVariableData(
+        return new UpdateVariableData(
             variable: $this->variable,
             value: $input['value'] ?? '',
             updatedBy: Auth::user()
@@ -224,7 +224,7 @@ class EnvironmentVariableEditor extends Component
      */
     private function createOverride(array $input): void
     {
-        resolve(CreateEnvVariable::class)->handle(
+        resolve(CreateVariable::class)->handle(
             $this->toCreateVariableData($input)
         );
 
@@ -235,11 +235,11 @@ class EnvironmentVariableEditor extends Component
     }
 
     /**
-     * Transform a raw input array into a CreateEnvVariableData DTO.
+     * Transform a raw input array into a CreateVariableData DTO.
      */
-    private function toCreateVariableData(array $input): CreateEnvVariableData
+    private function toCreateVariableData(array $input): CreateVariableData
     {
-        return new CreateEnvVariableData(
+        return new CreateVariableData(
             environment: $this->targetEnvironment,
             key: $this->variable->key,
             value: $input['value'],

@@ -3,22 +3,22 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
-use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Actions\GetSuggestedEnvValues;
 use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\LogEnvironmentViewed;
-use App\Environment\Actions\LogVariableRevealed;
-use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Actions\SuggestEnvKeys;
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
-use App\Environment\Registry\EnvironmentVariableRegistry;
 use App\Environment\Resolvers\ResolveEnvironment;
-use App\Environment\Rules\EnvVariableRules;
 use App\Environment\Validation\Actions\ValidateEnvironment;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Actions\GetSuggestedVariableValues;
+use App\Environment\Variable\Actions\LogVariableRevealed;
+use App\Environment\Variable\Actions\NormalizeVariableKey;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Registry\VariableRegistry;
+use App\Environment\Variable\Rules\VariableRules;
 use App\Environment\Versioning\Livewire\VersionManager;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
@@ -127,8 +127,8 @@ class EnvironmentVariableManager extends Component
     /**
      * Get the description for the currently selected environment variable key.
      *
-     * Returns null if no key is selected or if the key is not registered
-     * in the EnvironmentVariableRegistry.
+     * Returns null if no key is selected or if the key
+     * is not registered in the VariableRegistry.
      */
     #[Computed]
     public function keyDescription(): ?string
@@ -137,13 +137,13 @@ class EnvironmentVariableManager extends Component
             return null;
         }
 
-        return app(EnvironmentVariableRegistry::class)->get($this->key)?->description();
+        return app(VariableRegistry::class)->get($this->key)?->description();
     }
 
     /**
      * Get a list of suggested values for the currently selected environment variable key.
      *
-     * Suggestions are provided by the EnvironmentVariableRegistry based on the key's
+     * Suggestions are provided by the VariableRegistry based on the key's
      * corresponding definition class. Returns an empty array if the key has no suggestions defined.
      *
      * @return array<int, string>
@@ -151,7 +151,7 @@ class EnvironmentVariableManager extends Component
     #[Computed]
     public function valueSuggestions(): array
     {
-        return app(GetSuggestedEnvValues::class)->handle($this->key);
+        return app(GetSuggestedVariableValues::class)->handle($this->key);
     }
 
     /**
@@ -162,7 +162,7 @@ class EnvironmentVariableManager extends Component
      */
     public function updatedKey($value)
     {
-        $this->key = app(NormalizeEnvKey::class)->handle($value);
+        $this->key = app(NormalizeVariableKey::class)->handle($value);
 
         $this->value = '';
     }
@@ -182,11 +182,11 @@ class EnvironmentVariableManager extends Component
         $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
 
         $validated = $this->validate(
-            rules: EnvVariableRules::create($this->environment),
+            rules: VariableRules::create($this->environment),
             attributes: ['key' => $this->key, 'value' => $this->value]
         );
 
-        $variable = app(CreateEnvVariable::class)
+        $variable = app(CreateVariable::class)
             ->handle($this->toCreateVariableData($validated));
 
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
@@ -197,15 +197,15 @@ class EnvironmentVariableManager extends Component
     }
 
     /**
-     * Transform a raw input array into a CreateEnvVariableData DTO.
+     * Transform a raw input array into a CreateVariableData DTO.
      *
      * This helper is used to convert incoming data (e.g., from a request or import)
      * into a structured format suitable for creating an environment variable.
      * It automatically associates the current environment and authenticated user.
      */
-    private function toCreateVariableData(array $input): CreateEnvVariableData
+    private function toCreateVariableData(array $input): CreateVariableData
     {
-        return new CreateEnvVariableData(
+        return new CreateVariableData(
             environment: $this->environment,
             key: $input['key'],
             value: $input['value'],

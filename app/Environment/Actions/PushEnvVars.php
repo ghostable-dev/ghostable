@@ -2,13 +2,16 @@
 
 namespace App\Environment\Actions;
 
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Entities\EnvLine;
 use App\Environment\Entities\PushResultData;
-use App\Environment\Entities\UpdateEnvVariableData;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Services\EnvParser;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Actions\DeleteVariable;
+use App\Environment\Variable\Actions\UpdateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Entities\UpdateVariableData;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -120,14 +123,14 @@ class PushEnvVars
     ): void {
 
         foreach ($added as $key) {
-            app(CreateEnvVariable::class)->handle(
+            app(CreateVariable::class)->handle(
                 $this->toCreateVariableData($env, $incoming[$key])
             );
         }
 
         foreach ($updated as $key => $line) {
             $varToUpdate = $env->findVariableForKey($key);
-            app(UpdateEnvVariable::class)->handle(
+            app(UpdateVariable::class)->handle(
                 $this->toUpdateVariableData($varToUpdate, $line)
             );
         }
@@ -135,7 +138,7 @@ class PushEnvVars
         foreach ($removed as $key) {
             $varToDelete = $env->findVariableForKey($key);
             if ($varToDelete) {
-                app(DeleteEnvVariable::class)->handle(
+                app(DeleteVariable::class)->handle(
                     var: $varToDelete,
                     deletedBy: Auth::user()
                 );
@@ -144,7 +147,7 @@ class PushEnvVars
     }
 
     /**
-     * Transform an incoming item into a structured CreateEnvVariableData DTO.
+     * Transform an incoming item into a structured CreateVariableData DTO.
      *
      * This is used to convert raw incoming data (e.g., from a push or batch operation)
      * into a standardized format for creating a new environment variable.
@@ -152,8 +155,8 @@ class PushEnvVars
     private function toCreateVariableData(
         Environment $env,
         object $item
-    ): CreateEnvVariableData {
-        return new CreateEnvVariableData(
+    ): CreateVariableData {
+        return new CreateVariableData(
             environment: $env,
             key: $item->key,
             value: $item->value ?? '',
@@ -163,7 +166,7 @@ class PushEnvVars
     }
 
     /**
-     * Transform an incoming data line and existing variable into an UpdateEnvVariableData DTO.
+     * Transform an incoming data line and existing variable into an UpdateVariableData DTO.
      *
      * This helper is used to prepare structured data for updating an environment variable,
      * typically as part of a batch or sync operation. It extracts the value and comment status
@@ -172,8 +175,8 @@ class PushEnvVars
     private function toUpdateVariableData(
         EnvironmentVariable $variable,
         object $line
-    ): UpdateEnvVariableData {
-        return new UpdateEnvVariableData(
+    ): UpdateVariableData {
+        return new UpdateVariableData(
             variable: $variable,
             value: $line->value ?? '',
             is_commented: $line->commented ?? false,

@@ -2,7 +2,7 @@
 
 namespace App\Environment\Livewire;
 
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;

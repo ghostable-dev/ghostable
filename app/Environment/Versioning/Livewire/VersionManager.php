@@ -3,9 +3,9 @@
 namespace App\Environment\Versioning\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
-use App\Environment\Actions\LogVariableRevealed;
 use App\Environment\Livewire\EnvironmentActivity;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\LogVariableRevealed;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Versioning\Actions\RestoreVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use App\Team\Enums\TeamPermission;

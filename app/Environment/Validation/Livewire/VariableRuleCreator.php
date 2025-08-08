@@ -2,7 +2,6 @@
 
 namespace App\Environment\Validation\Livewire;
 
-use App\Environment\Actions\NormalizeEnvKey;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentComponent;
 use App\Environment\Validation\Actions\CreateVariableRule;
@@ -10,6 +9,7 @@ use App\Environment\Validation\Actions\GetSuggestedRuleKeys;
 use App\Environment\Validation\Entities\CreateVariableRuleData;
 use App\Environment\Validation\Enums\EnvironmentVariableRuleType;
 use App\Environment\Validation\Rules\VariableRuleFormRules;
+use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -112,7 +112,7 @@ class VariableRuleCreator extends EnvironmentComponent
      */
     public function updatedKey($value)
     {
-        $this->key = app(NormalizeEnvKey::class)->handle($value);
+        $this->key = app(NormalizeVariableKey::class)->handle($value);
     }
 
     /**

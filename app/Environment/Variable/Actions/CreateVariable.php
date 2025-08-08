@@ -2,8 +2,8 @@
 
 namespace App\Environment\Variable\Actions;
 
-use App\Environment\Entities\CreateEnvVariableData;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Models\EnvironmentVariable;
 
 class CreateVariable
 {
@@ -16,7 +16,7 @@ class CreateVariable
      * - Versioning
      * - Logging the activity (optional)
      */
-    public function handle(CreateEnvVariableData $data, bool $silently = false): EnvironmentVariable
+    public function handle(CreateVariableData $data, bool $silently = false): EnvironmentVariable
     {
         $var = new EnvironmentVariable([
             'key' => $data->key,

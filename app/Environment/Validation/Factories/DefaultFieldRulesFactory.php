@@ -2,14 +2,14 @@
 
 namespace App\Environment\Validation\Factories;
 
-use App\Environment\Registry\EnvironmentVariableDefinition;
-use App\Environment\Registry\EnvironmentVariableRegistry;
 use App\Environment\Validation\Entities\FieldRules;
+use App\Environment\Variable\Registry\VariableDefinition;
+use App\Environment\Variable\Registry\VariableRegistry;
 
 final class DefaultFieldRulesFactory
 {
     public function __construct(
-        protected EnvironmentVariableRegistry $registry
+        protected VariableRegistry $registry
     ) {}
 
     /**
@@ -20,7 +20,7 @@ final class DefaultFieldRulesFactory
     public function make(): array
     {
         return collect($this->registry->all())
-            ->map(fn (EnvironmentVariableDefinition $definition) => $definition->fieldRules())
+            ->map(fn (VariableDefinition $definition) => $definition->fieldRules())
             ->values()
             ->all();
     }

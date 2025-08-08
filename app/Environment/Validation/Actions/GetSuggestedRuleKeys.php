@@ -4,7 +4,7 @@ namespace App\Environment\Validation\Actions;
 
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Models\Environment;
-use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\Variable\Registry\VariableRegistry;
 
 class GetSuggestedRuleKeys
 {
@@ -16,7 +16,7 @@ class GetSuggestedRuleKeys
      */
     public function handle(Environment $environment): array
     {
-        $registry = app(EnvironmentVariableRegistry::class);
+        $registry = app(VariableRegistry::class);
 
         $vars = resolve(ResolveEnvironmentVariables::class)
             ->handle($environment);

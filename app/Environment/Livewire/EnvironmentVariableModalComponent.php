@@ -3,8 +3,8 @@
 namespace App\Environment\Livewire;
 
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
 use App\Environment\Resolvers\ResolveEnvironment;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Team\Enums\TeamPermission;
 use Exception;
 use Flux\Flux;

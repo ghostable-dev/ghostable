@@ -3,7 +3,7 @@
 namespace App\Environment\Variable\Actions;
 
 use App\Account\Models\User;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 
 class DisableOverrideVariable
 {

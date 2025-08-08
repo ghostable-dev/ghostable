@@ -15,7 +15,7 @@ test('persists a new environment record and returns JSON shape', function () {
     $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
     $project = $this->createProject(name: 'Website', team: $team);
     Sanctum::actingAs($ray);
-    $payload = ['name' => 'Staging', 'type' => EnvironmentType::STAGING->value];
+    $payload = ['name' => 'staging', 'type' => EnvironmentType::STAGING->value];
     $this->postJson("/api/projects/{$project->id}/environments", $payload)
         ->assertStatus(201)
         ->assertJsonStructure([
@@ -42,7 +42,7 @@ describe('validation', function () {
 
     test('fails when name is not a unique', function () {
         $existingEnv = $this->createEnvironment(
-            name: 'Website',
+            name: 'website',
             type: EnvironmentType::DEVELOPMENT,
             project: $this->project
         );
@@ -73,7 +73,7 @@ describe('authorization', function () {
     test('forbids non-members from creating', function () {
         Sanctum::actingAs($this->zuul);
         $this->postJson($this->endpoint, [
-            'name' => 'Staging',
+            'name' => 'staging',
             'type' => EnvironmentType::STAGING->value,
         ])->assertForbidden();
     });
@@ -83,7 +83,7 @@ describe('authorization', function () {
         $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::DEVELOPER_READ_ONLY);
         Sanctum::actingAs($peter);
         $this->postJson($this->endpoint, [
-            'name' => 'Staging',
+            'name' => 'staging',
             'type' => EnvironmentType::STAGING->value,
         ])->assertForbidden();
     });

@@ -9,6 +9,7 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Project\Models\Project;
 use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
@@ -26,19 +27,31 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
+ * @property string|null $base_id
  * @property int $is_restricted
  * @property string $project_id
  * @property string $name
  * @property EnvironmentType $type
+ * @property EnvFileFormat $file_format
+ * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
+ * @property-read Environment|null $base
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $derived
+ * @property-read int|null $derived_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Environment\Models\EnvironmentVariable> $variables
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableRule> $rules
+ * @property-read int|null $rules_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
+ * @property-read int|null $secrets_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
+ * @property-read int|null $tokens_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariable> $variables
  * @property-read int|null $variables_count
  *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
@@ -46,15 +59,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereBaseId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereFileFormat($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereIsRestricted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereNotifications($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withoutTrashed()
  *
  * @mixin \Eloquent

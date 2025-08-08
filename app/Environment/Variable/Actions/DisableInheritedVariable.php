@@ -3,8 +3,8 @@
 namespace App\Environment\Variable\Actions;
 
 use App\Account\Models\User;
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Models\Environment;
+use App\Environment\Variable\Entities\CreateVariableData;
 
 class DisableInheritedVariable
 {
@@ -13,7 +13,7 @@ class DisableInheritedVariable
         Environment $environment,
         ?User $user = null
     ): void {
-        $data = new CreateEnvVariableData(
+        $data = new CreateVariableData(
             environment: $environment,
             key: $key,
             value: '',

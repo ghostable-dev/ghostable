@@ -5,12 +5,11 @@ namespace App\Core\Concerns;
 use App\Account\Actions\RegisterUser;
 use App\Account\Models\User;
 use App\Environment\Actions\CreateEnv;
-use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
-use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Registry\VariableRegistry;
 use App\Project\Models\Project;
 use App\Team\Actions\CreateTeam;
 use App\Team\Actions\CreateTeamInvite;
@@ -95,10 +94,10 @@ trait CreatesAccountData
     ) {
         for ($i = 0; $i < $amount; $i++) {
             $def = collect(
-                resolve(EnvironmentVariableRegistry::class)->all()
+                resolve(VariableRegistry::class)->all()
             )->random();
 
-            $data = new CreateEnvVariableData(
+            $data = new CreateVariableData(
                 environment: $env,
                 key: $def->key(),
                 value: empty($def->suggestedValues())
@@ -107,21 +106,7 @@ trait CreatesAccountData
                 createdBy: $createdBy
             );
 
-            resolve(CreateEnvVariable::class)->handle($data);
+            resolve(CreateVariable::class)->handle($data);
         }
-
-        // $vars = EnvironmentVariable::factory()
-        //     ->forEnvironment($env)
-        //     ->count($amount)
-        //     ->create();
-
-        // dd($vars);
-
-        // foreach ($vars as $var) {
-        //     $var->createVersionBy($var->lastUpdatedBy);
-        //     $var->logActivity('created', user: $var->lastUpdatedBy);
-        // }
-
-        // return $vars;
     }
 }

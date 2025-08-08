@@ -3,11 +3,11 @@
 namespace App\Environment\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
-use App\Environment\Actions\DeleteEnvVariable;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\DeleteVariable;
 use App\Environment\Variable\Actions\DisableInheritedVariable;
 use App\Environment\Variable\Actions\DisableOverrideVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Team\Enums\TeamPermission;
 use Auth;
 use Livewire\Attributes\On;
@@ -118,7 +118,7 @@ class EnvironmentVariableDeleter extends EnvironmentVariableModalComponent
      */
     protected function deleteVariable(): void
     {
-        app(DeleteEnvVariable::class)->handle(
+        app(DeleteVariable::class)->handle(
             var: $this->variable,
             deletedBy: Auth::user()
         );

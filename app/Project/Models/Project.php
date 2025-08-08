@@ -26,6 +26,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $name
  * @property string|null $description
  * @property string $team_id
+ * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -35,6 +36,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $environments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
+ * @property-read int|null $secrets_count
  * @property-read Team $team
  *
  * @method static \Database\Factories\ProjectFactory factory($count = null, $state = [])
@@ -48,9 +51,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereIsRestricted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereNotifications($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereTeamId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withoutTrashed()
  *
  * @mixin \Eloquent

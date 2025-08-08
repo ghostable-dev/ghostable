@@ -1,8 +1,8 @@
 <?php
 
-use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 use App\Team\Enums\TeamRole;
 use Laravel\Sanctum\Sanctum;
 
@@ -14,15 +14,15 @@ beforeEach(function () {
     $project = $this->createProject(name: 'Website', team: $this->team);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
 
-    app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
+    app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $this->env, key: 'APP_NAME', value: 'Ray’s Occult', createdBy: $this->ray
     ));
 
-    app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
+    app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $this->env, key: 'APP_DEBUG', value: 'TRUE', createdBy: $this->ray
     ));
 
-    app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
+    app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $this->env, key: 'APP_ENV', value: 'development', createdBy: $this->ray
     ));
 

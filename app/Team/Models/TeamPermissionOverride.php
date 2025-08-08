@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride whereUpdatedAt($value)
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride whereUserId($value)
  * @method static TeamPermissionOverrideBuilder<static>|TeamPermissionOverride withPermission(\App\Team\Enums\TeamPermission $permission)
- * @method static Builder<static>|TeamPermissionOverride withTrashed()
+ * @method static Builder<static>|TeamPermissionOverride withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|TeamPermissionOverride withoutTrashed()
  *
  * @mixin \Eloquent
