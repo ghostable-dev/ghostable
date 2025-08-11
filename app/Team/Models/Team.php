@@ -24,20 +24,27 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
+ * @property string|null $stripe_id
  * @property string|null $slug
  * @property string $name
  * @property int $is_personal
  * @property string|null $owner_id
+ * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property string|null $slack_webhook_url
+ * @property bool $slack_enabled
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamInvite> $invites
  * @property-read int|null $invites_count
+ * @property-read int|null $notifications_count
  * @property-read User|null $owner
  * @property-read mixed $plan
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Project> $projects
  * @property-read int|null $projects_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
+ * @property-read int|null $secrets_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
  * @property-read int|null $subscriptions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
@@ -54,13 +61,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static TeamBuilder<static>|Team whereId($value)
  * @method static TeamBuilder<static>|Team whereIsPersonal($value)
  * @method static TeamBuilder<static>|Team whereName($value)
+ * @method static TeamBuilder<static>|Team whereNotifications($value)
  * @method static TeamBuilder<static>|Team whereOwnerId($value)
+ * @method static TeamBuilder<static>|Team whereSlackEnabled($value)
+ * @method static TeamBuilder<static>|Team whereSlackWebhookUrl($value)
  * @method static TeamBuilder<static>|Team whereSlug($value)
- * @method static TeamBuilder<static>|Team whereUpdatedAt($value)
- *
- * @property string|null $stripe_id
- *
  * @method static TeamBuilder<static>|Team whereStripeId($value)
+ * @method static TeamBuilder<static>|Team whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */

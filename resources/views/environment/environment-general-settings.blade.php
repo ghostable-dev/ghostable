@@ -1,3 +1,4 @@
+<x-layouts.environment :environment="$this->environment">
 <section class="w-xl space-y-12">
     
     {{-- Environment ID --}}
@@ -101,3 +102,4 @@
     </flux:modal>
         
 </section>
+</x-layouts.environment>

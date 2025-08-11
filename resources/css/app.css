@@ -48,7 +48,6 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -58,13 +57,13 @@
     }
 }
 
-[data-flux-field]:not(ui-radio, ui-checkbox) {
+/*[data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
 
 [data-flux-label] {
     @apply  !mb-0 !leading-tight;
-}
+}*/
 
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
@@ -108,4 +107,13 @@ select:focus[data-flux-control] {
 
 .floating {
   animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(70,185,168,0.4); }
+  50% { box-shadow: 0 0 20px rgba(70,185,168,0.75); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.4s ease-in-out infinite;
 }

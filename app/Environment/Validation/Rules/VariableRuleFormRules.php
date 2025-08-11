@@ -3,9 +3,9 @@
 namespace App\Environment\Validation\Rules;
 
 use App\Environment\Models\Environment;
-use App\Environment\Rules\EnvVariableRules;
 use App\Environment\Validation\Enums\EnvironmentVariableRuleType;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
+use App\Environment\Variable\Rules\VariableRules;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
@@ -42,7 +42,7 @@ class VariableRuleFormRules
     public static function keyRules(Environment $environment): array
     {
         return array_merge(
-            EnvVariableRules::keyRules(),
+            VariableRules::keyRules(),
             [
                 Rule::unique('environment_variable_rules', 'key')
                     ->where('environment_id', $environment->id),
@@ -53,7 +53,7 @@ class VariableRuleFormRules
     public static function keyUpdateRules(EnvironmentVariableRule $rule): array
     {
         return array_merge(
-            EnvVariableRules::keyRules(),
+            VariableRules::keyRules(),
             [
                 Rule::unique('environment_variable_rules', 'key')
                     ->where('environment_id', $rule->environment_id)

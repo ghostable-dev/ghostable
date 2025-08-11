@@ -25,7 +25,7 @@
                     </flux:callout.text>
                     <x-slot name="actions">
                         @foreach($project->environments as $env)
-                            <flux:link href="{{ route('environment.view', $env) }}">{{ $env->name }}</flux:link>
+                            <flux:link href="{{ route('environment.variables', $env) }}">{{ $env->name }}</flux:link>
                         @endforeach
                     </x-slot>
                 </flux:callout>

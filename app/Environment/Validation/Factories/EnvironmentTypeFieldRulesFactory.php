@@ -2,8 +2,6 @@
 
 namespace App\Environment\Validation\Factories;
 
-use App\Environment\Definitions\AppDebug;
-use App\Environment\Definitions\AppEnv;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Validation\Entities\FieldRules;
 use App\Environment\Validation\Entities\RuleParameters;
@@ -11,6 +9,8 @@ use App\Environment\Validation\Rules\EnumKeyRule;
 use App\Environment\Validation\Rules\KeyRule;
 use App\Environment\Validation\Rules\RequiredKeyRule;
 use App\Environment\Validation\Rules\StringKeyRule;
+use App\Environment\Variable\Definitions\AppDebug;
+use App\Environment\Variable\Definitions\AppEnv;
 
 final class EnvironmentTypeFieldRulesFactory
 {

@@ -2,6 +2,7 @@
 
 namespace App\Environment\Validation\Actions;
 
+use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Models\Environment;
 use App\Environment\Validation\Factories\EnvironmentValidationPlanFactory;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +21,8 @@ class ValidateEnvironment
      */
     public function handle(Environment $environment): void
     {
-        $data = $environment->variables
+        $data = resolve(ResolveEnvironmentVariables::class)
+            ->handle($environment)
             ->mapWithKeys(fn ($v) => [$v->key => $v->value])
             ->toArray();
 

@@ -3,6 +3,8 @@
 namespace App\Secret\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Models\Environment;
+use App\Project\Models\Project;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Actions\DeleteSecret;
 use App\Secret\Enums\SecretType;
@@ -52,11 +54,17 @@ class SecretsManager extends Component
         return Gate::allows('perform', [$this->owner, TeamPermission::EditSecrets]);
     }
 
-    public function mount(Model $owner): void
+    public function setOwner(Environment|Project $owner): void
     {
         $this->ownerType = $owner->getMorphClass();
+
         $this->ownerId = $owner->getKey();
     }
+    // public function mount(Model $owner): void
+    // {
+    //     $this->ownerType = $owner->getMorphClass();
+    //     $this->ownerId = $owner->getKey();
+    // }
 
     #[Computed]
     public function owner(): Model

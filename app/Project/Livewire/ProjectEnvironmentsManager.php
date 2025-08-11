@@ -3,6 +3,8 @@
 namespace App\Project\Livewire;
 
 use App\Environment\Actions\CreateEnv;
+use App\Environment\Actions\GenerateSuggestedEnvironmentNames;
+use App\Environment\Actions\NormalizeEnvironmentName;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
 use App\Project\Models\Project;
@@ -23,6 +25,11 @@ class ProjectEnvironmentsManager extends Component
     public string $projectId;
 
     /**
+     * The base environment.
+     */
+    public ?string $base_id = '';
+
+    /**
      * The name of the new environment.
      */
     public string $name = '';
@@ -35,7 +42,7 @@ class ProjectEnvironmentsManager extends Component
     /**
      * The selected environment type (e.g., Production, Staging).
      */
-    public EnvironmentType $type = EnvironmentType::STAGING;
+    public EnvironmentType $type = EnvironmentType::DEVELOPMENT;
 
     public function mount(Project $project): void
     {
@@ -67,6 +74,25 @@ class ProjectEnvironmentsManager extends Component
         return EnvironmentType::selectOptions();
     }
 
+    #[Computed]
+    public function nameSuggestions(): array
+    {
+        return GenerateSuggestedEnvironmentNames::handle(
+            project: $this->project,
+            type: $this->type
+        );
+    }
+
+    public function updatedType()
+    {
+        $this->name = $this->nameSuggestions[0] ?? '';
+    }
+
+    public function updatedName($value)
+    {
+        $this->name = resolve(NormalizeEnvironmentName::class)->handle($value);
+    }
+
     /**
      * Create a new environment under the current project.
      */
@@ -74,12 +100,16 @@ class ProjectEnvironmentsManager extends Component
     {
         $this->authorize('perform', [$this->project, TeamPermission::CreateEnvironments]);
 
-        $this->validate(EnvironmentRules::createRules($this->project));
+        $validated = $this->validate(EnvironmentRules::createRules($this->project));
+
+        $validated['base_id'] = $validated['base_id'] ?: null;
+        $base = $this->project->environments()->where('id', $validated['base_id'])->first();
 
         app(CreateEnv::class)->handle(
             name: $this->name,
             type: $this->type,
-            project: $this->project
+            project: $this->project,
+            base: $base
         );
 
         $this->reset('type', 'name');

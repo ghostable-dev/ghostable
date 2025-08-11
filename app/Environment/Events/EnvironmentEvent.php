@@ -13,7 +13,5 @@ abstract class EnvironmentEvent
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(
-        public Environment $environment,
-    ) {}
+    public function __construct(public Environment $environment) {}
 }

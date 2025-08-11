@@ -10,6 +10,7 @@
 </x-slot>
 
 <section class="space-y-6">
+     
     <div class="relative w-full">
         <flux:badge size="sm" class="mb-2">
             {{ $this->environment->type->label() }}
@@ -42,40 +43,40 @@
 
         <flux:tab.panel name="variables">
             @perform($this->environment, 'var:view')
-                <livewire:environment.livewire.environment-variable-manager
+                <livewire:environment.variable.livewire.variable-manager
                 :environment="$this->environment"/>
             @else
                 <x-access-restricted/>
             @endperform
         </flux:tab.panel>
 
-        <flux:tab.panel name="secrets">
+        {{-- <flux:tab.panel name="secrets">
             @perform($this->environment, 'secret:view')
                 <livewire:secret.livewire.secrets-manager :owner="$this->environment"/>
             @else
                 <x-access-restricted/>
             @endperform
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
         
-        <flux:tab.panel name="validation">
+        {{-- <flux:tab.panel name="validation">
             @perform($this->environment, 'var:manage-rules')
                 <livewire:environment.validation.livewire.variable-rule-manager 
                     :environment="$this->environment"/>
             @else
                 <x-access-restricted/>
             @endperform
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
         
-        <flux:tab.panel name="general">
+        {{-- <flux:tab.panel name="general">
             @perform($this->environment, 'env:manage-settings')
                 <livewire:environment.livewire.environment-general-settings 
                     :environment="$this->environment"/>
             @else
                 <x-access-restricted/>
             @endperform
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
         
-        <flux:tab.panel name="access">
+        {{-- <flux:tab.panel name="access">
             @if(!$this->environment->owningTeam()->isPersonal())
                 @can('manageAccessControls', $this->environment->owningTeam())
                     <div class="space-y-6">
@@ -90,13 +91,13 @@
             @else
                 <x-non-personal-team-restricted/>
             @endif
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
 
-        <flux:tab.panel name="notifications">
+        {{-- <flux:tab.panel name="notifications">
             <livewire:environment.livewire.environment-notifications-manager :environment="$this->environment"/>
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
 
-        <flux:tab.panel name="activity">
+        {{-- <flux:tab.panel name="activity">
             @if(!$this->environment->owningTeam()->isPersonal())
                 @can('viewAuditLogs', $this->environment->owningTeam())
                     <livewire:environment.livewire.environment-activity 
@@ -107,7 +108,7 @@
             @else
                 <x-non-personal-team-restricted/>
             @endif
-        </flux:tab.panel>
+        </flux:tab.panel> --}}
         
     </flux:tab.group>
     

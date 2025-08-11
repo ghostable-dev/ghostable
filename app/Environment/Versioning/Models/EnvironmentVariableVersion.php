@@ -3,9 +3,9 @@
 namespace App\Environment\Versioning\Models;
 
 use App\Account\Models\User;
-use App\Environment\Casts\EncryptedString;
-use App\Environment\Concerns\HasSecretValues;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Casts\EncryptedString;
+use App\Environment\Variable\Concerns\HasSecretValues;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read User|null $changedBy
- * @property-read \App\Environment\Models\EnvironmentVariable $environmentVariable
+ * @property-read EnvironmentVariable $variable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newQuery()

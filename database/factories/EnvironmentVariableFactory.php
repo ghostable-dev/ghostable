@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

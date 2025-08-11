@@ -9,11 +9,33 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property-read \App\Environment\Models\Environment|null $environment
+ * @property string $id
+ * @property string $environment_id
+ * @property string $key
+ * @property string|null $description
+ * @property int $is_required
+ * @property EnvironmentVariableRuleType $type
+ * @property int|null $min
+ * @property int|null $max
+ * @property array<array-key, mixed>|null $allowed_values
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read Environment $environment
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereAllowedValues($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereEnvironmentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereIsRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereMax($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereMin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */

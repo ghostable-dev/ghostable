@@ -19,8 +19,8 @@
         "laravel/nightwatch": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
-        "livewire/flux": "^2.1.1",
-        "livewire/flux-pro": "^2.1",
+        "livewire/flux": "^2.0",
+        "livewire/flux-pro": "^2.0",
         "livewire/volt": "^1.7.0",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-data": "^4.15",
@@ -77,10 +77,11 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
         ],
         "pint": "./vendor/bin/pint",
-        "ide": "php artisan ide-helper:generate"
+        "ide": "php artisan ide-helper:generate",
+        "ide-models": "php artisan ide-helper:models -RW"
     },
     "extra": {
         "laravel": {

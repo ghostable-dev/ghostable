@@ -9,7 +9,13 @@ use App\Environment\Api\Controllers\GetEnvironmentTypes;
 use App\Environment\Api\Controllers\PullEnvironment;
 use App\Environment\Api\Controllers\PushEnvironment;
 use App\Environment\Api\Controllers\ValidateEnvironment;
-use App\Environment\Livewire\EnvironmentView;
+use App\Environment\Livewire\EnvironmentAccessManager;
+use App\Environment\Livewire\EnvironmentActivity;
+use App\Environment\Livewire\EnvironmentGeneralSettings;
+use App\Environment\Livewire\EnvironmentNotificationsManager;
+use App\Environment\Livewire\EnvironmentSecretsManager;
+use App\Environment\Validation\Livewire\ValidationManager;
+use App\Environment\Variable\Livewire\VariableManager;
 use Illuminate\Support\Facades\Route;
 
 class EnvironmentRoutes
@@ -36,7 +42,18 @@ class EnvironmentRoutes
 
     public static function web(): void
     {
-        Route::get('environments/{environment}', EnvironmentView::class)
-            ->name('environment.view');
+        Route::middleware(['auth', 'verified'])
+            ->prefix('environments/{environment}/')
+            ->name('environment.')
+            ->group(function () {
+                // Route::redirect('/', '/variables')->name('view');
+                Route::get('variables', VariableManager::class)->name('variables');
+                Route::get('/secrets', EnvironmentSecretsManager::class)->name('secrets');
+                Route::get('validation', ValidationManager::class)->name('validation');
+                Route::get('settings', EnvironmentGeneralSettings::class)->name('settings');
+                Route::get('access', EnvironmentAccessManager::class)->name('access');
+                Route::get('notifications', EnvironmentNotificationsManager::class)->name('notifications');
+                Route::get('activity', EnvironmentActivity::class)->name('activity');
+            });
     }
 }

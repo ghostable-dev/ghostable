@@ -3,7 +3,7 @@
 namespace App\Environment\Versioning\Actions;
 
 use App\Account\Models\User;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 
 class CreateVariableVersion

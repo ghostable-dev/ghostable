@@ -3,7 +3,7 @@
 namespace App\Environment\Rules;
 
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 

@@ -31,7 +31,7 @@
                                 <flux:badge>{{ $env->type->label() }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:link href="{{ route('environment.view', $env) }}">
+                                <flux:link href="{{ route('environment.variables', $env) }}">
                                     View
                                 </flux:link>
                             </flux:table.cell>
@@ -48,17 +48,23 @@
                 class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 @foreach($this->environments as $env)
                     <li class="col-span-1" wire:key="board-{{ $env->id }}">
-                        <flux:callout>
+                        <x-environment.display-card :$env/>
+                        {{-- <flux:callout>
                             <flux:callout.heading>
+                                @if($env->base_id)
+                                    <flux:badge color="blue" icon="git-branch" size="sm" class="mb-2">
+                                        {{ $env->base->name }}
+                                    </flux:badge>
+                                @endif
                                 <flux:badge size="sm" class="mb-2">
                                     {{ $env->type->label() }}
                                 </flux:badge>
                             </flux:callout.heading>
                             <flux:callout.heading>{{ $env->name }}</flux:callout.heading>
                             <x-slot name="actions">
-                                <flux:link href="{{ route('environment.view', $env) }}">View</flux:link>
+                                <flux:link href="{{ route('environment.variables', $env) }}">View</flux:link>
                             </x-slot>
-                        </flux:callout>
+                        </flux:callout> --}}
                     </li>
                 @endforeach
             </ul>
@@ -72,20 +78,64 @@
     </div> --}}
     
     {{-- Create environment modal --}}
-    <flux:modal name="create-env" class="md:w-md">
-        <form wire:submit="createEnvironment" class="space-y-6">
+    <flux:modal name="create-env" class="max-w-full md:w-[36rem]">
+        <form wire:submit="createEnvironment" class="flex-1 space-y-6">
             <div>
                 <flux:heading size="lg">Create Environment</flux:heading>
-                <flux:text class="mt-2">Choose a name and environment type to add a new environment to this project.</flux:text>
+                {{-- <flux:text class="mt-2">Set up a new environment to securely manage and share your variables. Optionally link it to a base environment to inherit and override settings automatically.</flux:text> --}}
             </div>
-            <flux:input label="Name" wire:model="name" required />
-            <flux:select label="Type" wire:model="type">
-                @foreach($this->typeOptions as $key => $option)
-                    <flux:select.option wire:key="type-{{ $key }}" value="{{ $key }}">
-                        {{ $option }}
+            <div>
+                <div class="flex items-start gap-4">
+                    <div class="flex-none">
+                        <flux:select 
+                            variant="listbox" 
+                            label="Type" 
+                            wire:model.live="type">
+                            @foreach($this->typeOptions as $key => $option)
+                                <flux:select.option wire:key="type-{{ $key }}" value="{{ $key }}">
+                                    {{ $option }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </div>
+                    <div class="flex-1">
+                        <flux:autocomplete 
+                            class="w-auto"
+                            label="Name" 
+                            wire:model.live.debounce.350ms="name" 
+                            required>
+                             @foreach ($this->nameSuggestions as $suggestion)
+                                <flux:autocomplete.item 
+                                    wire:key="name-suggestion-{{ $suggestion }}">
+                                    {{ $suggestion }}
+                                </flux:autocomplete.item>
+                            @endforeach
+                        </flux:autocomplete>
+                    </div>
+                </div>
+                <flux:description class="mt-3">
+                    Must be unique within this project. Use lowercase letters, numbers, and dashes.
+                </flux:description>
+            </div>
+            
+            <flux:select 
+                variant="listbox"
+                wire:model="base_id"
+                label="Base Environment"
+                searchable
+                description-trailing="Dynamically link from a base environment, with support for overrides and custom variables.">
+                <flux:select.option wire:key="base-none" value="">
+                    None (standalone)
+                </flux:select.option>
+                @foreach($this->environments as $env)
+                    <flux:select.option 
+                        wire:key="base-{{ $env->id }}" 
+                        value="{{ $env->id }}">
+                        <x-icon.git-branch class="inline size-4 mr-2 opacity-60"/> {{ $env->name }}
                     </flux:select.option>
                 @endforeach
             </flux:select>
+            
             <div class="flex gap-2">
                 <flux:spacer />
                 <flux:modal.close>

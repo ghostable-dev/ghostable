@@ -7,13 +7,14 @@ use App\Account\Models\User;
 use App\Environment\Actions\CreateEnv;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
-use App\Environment\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Registry\VariableRegistry;
 use App\Project\Models\Project;
 use App\Team\Actions\CreateTeam;
 use App\Team\Actions\CreateTeamInvite;
 use App\Team\Enums\TeamRole;
 use App\Team\Models\Team;
-use Illuminate\Support\Collection;
 
 trait CreatesAccountData
 {
@@ -75,27 +76,37 @@ trait CreatesAccountData
     protected function createEnvironment(
         string $name,
         EnvironmentType $type,
-        Project $project
+        Project $project,
+        ?Environment $base = null
     ): Environment {
         return app(CreateEnv::class)->handle(
             name: $name,
             type: $type,
-            project: $project
+            project: $project,
+            base: $base
         );
     }
 
-    protected function createVariables(Environment $env, int $amount = 5): Collection
-    {
-        $vars = EnvironmentVariable::factory()
-            ->forEnvironment($env)
-            ->count($amount)
-            ->create();
+    protected function createVariables(
+        Environment $env,
+        int $amount = 5,
+        ?User $createdBy = null
+    ) {
+        for ($i = 0; $i < $amount; $i++) {
+            $def = collect(
+                resolve(VariableRegistry::class)->all()
+            )->random();
 
-        foreach ($vars as $var) {
-            $var->createVersionBy($var->lastUpdatedBy);
-            $var->logActivity('created', user: $var->lastUpdatedBy);
+            $data = new CreateVariableData(
+                environment: $env,
+                key: $def->key(),
+                value: empty($def->suggestedValues())
+                    ? 'some-random-value'
+                    : collect($def->suggestedValues())->random(),
+                createdBy: $createdBy
+            );
+
+            resolve(CreateVariable::class)->handle($data);
         }
-
-        return $vars;
     }
 }

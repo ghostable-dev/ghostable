@@ -32,6 +32,7 @@ class TeamServiceProvider extends ServiceProvider
     {
         Relation::enforceMorphMap([
             'team' => 'App\Team\Models\Team',
+            'team-invite' => 'App\Team\Models\TeamInvite',
         ]);
 
         Blade::if('perform', function (mixed $resource, string $permission) {

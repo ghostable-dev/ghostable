@@ -1,9 +1,9 @@
 <?php
 
 use App\Core\Models\Activity;
-use App\Environment\Actions\CreateEnvVariable;
-use App\Environment\Entities\CreateEnvVariableData;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 use App\Integration\Integrations\Drata\Jobs\SendAuditEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -21,7 +21,7 @@ beforeEach(function () {
 test('logging activity dispatches drata job', function () {
     Queue::fake();
 
-    app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
+    app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $this->env,
         key: 'APP_NAME',
         value: 'test',
@@ -34,7 +34,7 @@ test('logging activity dispatches drata job', function () {
 test('drata job sends audit event', function () {
     $responseData = [];
 
-    app(CreateEnvVariable::class)->handle(new CreateEnvVariableData(
+    app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $this->env,
         key: 'APP_URL',
         value: 'https://example.com',

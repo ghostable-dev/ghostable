@@ -3,7 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
-use App\Environment\Registry\EnvironmentVariableRegistry;
+use App\Environment\Variable\Registry\VariableRegistry;
 
 class SuggestEnvKeys
 {
@@ -15,7 +15,7 @@ class SuggestEnvKeys
      */
     public function handle(Environment $environment): array
     {
-        $registry = app(EnvironmentVariableRegistry::class);
+        $registry = app(VariableRegistry::class);
         $existingKeys = $environment->variables->pluck('key')->map(fn ($k) => strtoupper($k));
 
         // 1. Get all known keys from the registry, grouped by their defined group
