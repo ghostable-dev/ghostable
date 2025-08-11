@@ -1,11 +1,11 @@
 @props(['environment'])
 
 <x-drop-button 
-    href="{{ route('environment.view', $environment) }}"
+    href="{{ route('environment.variables', $environment) }}"
     x-data="{ selected: '{{ $environment->id }}' }" 
     x-init="$watch('selected', id => {
         if (id !== '{{ $environment->id }}') {
-            window.location.href = `/environments/${id}`;
+            window.location.href = `/environments/${id}/variables`;
         }
      })">
     <span class="block max-w-[8rem] truncate text-left">

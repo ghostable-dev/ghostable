@@ -1,4 +1,4 @@
-
+<x-layouts.environment :environment="$this->environment">
 <div>
     <x-section>
         <x-slot:title>Activity History</x-slot:title>
@@ -47,3 +47,4 @@
     </x-section>
  
 </div>
+</x-layouts.environment>

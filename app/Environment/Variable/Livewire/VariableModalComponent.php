@@ -5,6 +5,7 @@ namespace App\Environment\Variable\Livewire;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Resolvers\ResolveVariable;
 use App\Team\Enums\TeamPermission;
 use Exception;
 use Flux\Flux;
@@ -59,7 +60,11 @@ abstract class VariableModalComponent extends Component
     #[Computed]
     public function variable(): ?EnvironmentVariable
     {
-        return EnvironmentVariable::find($this->environmentVariableId);
+        if (!$this->environmentVariableId) {
+            return null;
+        }
+        
+        return ResolveVariable::onceWithContext($this->environmentVariableId);
     }
 
     /**
@@ -76,24 +81,24 @@ abstract class VariableModalComponent extends Component
     /**
      * Authorize the edit or override operation.
      */
-    protected function authorizeEditOrOverride(): void
+    protected function authorizeEnvironment(EnvironmentVariable $variable, Environment $target): void
     {
         // The `targetEnvironment` represents the environment context in which the edit is occurring,
         // not necessarily the one that owns the variable. Regardless of whether the variable is
         // directly owned or inherited, the user must have permission to edit variables in the
         // target environment, since the edit (or override) will apply there.
-        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$target, TeamPermission::EditVariables]);
 
         // If the variable is inherited, ensure it is actually from an ancestor of the target.
         // This prevents spoofing or tampering with unrelated variables by enforcing a valid
         // inheritance relationship.
-        if (! $this->isEditingDirectVariable) {
-            if (! $this->targetEnvironment->isDescendantOf($this->variable->environment)) {
+        if (! $variable?->belongsToEnvironment($target)) {
+            if (! $target->isDescendantOf($variable->environment)) {
                 Log::warning('Blocked variable override attempt with invalid ancestry.', [
                     'user_id' => Auth::user()->id,
-                    'target_env' => $this->targetEnvironment->id,
-                    'variable_env' => $this->variable->environment->id,
-                    'variable_key' => $this->variable->key,
+                    'target_env' => $target->id,
+                    'variable_env' => $variable->environment->id,
+                    'variable_key' => $variable->key,
                 ]);
                 abort(403, 'Invalid inheritance.');
             }
@@ -104,7 +109,7 @@ abstract class VariableModalComponent extends Component
      * Is the variable owned by the target environment?
      */
     #[Computed()]
-    public function isVariableOwnedByTargetEnvironment(): bool
+    public function isLocalToTarget(): bool
     {
         return $this->variable?->belongsToEnvironment($this->targetEnvironment) ?? true;
     }

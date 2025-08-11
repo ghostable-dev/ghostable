@@ -2,11 +2,15 @@
 
 namespace App\Environment;
 
+use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
+use App\Environment\Events\EnvironmentEvent;
+use App\Environment\Events\EnvironmentNameChanged;
 use App\Environment\Listeners\SendEnvironmentActivityNotification;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
+use App\Environment\Resolvers\EnvironmentAncestryResolver;
 use App\Environment\Validation\ValidationServiceProvider;
 use App\Environment\Variable\VariableServiceProvider;
 use App\Environment\View\Components\EnvTokenExpiryReminder;
@@ -34,15 +38,24 @@ class EnvironmentServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'environment' => 'App\Environment\Models\Environment',
         ]);
-
+        
+        // Send activity notification
         Event::listen(
-            EnvironmentCreated::class,
+            [EnvironmentCreated::class, EnvironmentDeleted::class],
             SendEnvironmentActivityNotification::class
         );
-
+        
+        // Bust ancestry resolver cache
         Event::listen(
-            EnvironmentDeleted::class,
-            SendEnvironmentActivityNotification::class
+            [
+                EnvironmentCreated::class, 
+                EnvironmentDeleted::class,
+                EnvironmentBaseChanged::class,
+                EnvironmentNameChanged::class
+            ],
+            function(EnvironmentEvent $event) {
+                resolve(EnvironmentAncestryResolver::class)->bust($event->environment);
+            }
         );
     }
 }

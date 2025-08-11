@@ -3,35 +3,32 @@
 namespace App\Environment\Variable\Livewire;
 
 use App\Auth\Concerns\ConfirmsPasswords;
+use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\DeleteVariable;
-use App\Environment\Variable\Actions\DisableInheritedVariable;
-use App\Environment\Variable\Actions\DisableOverrideVariable;
+use App\Environment\Variable\Actions\SuppressInheritedVariable;
+use App\Environment\Variable\Actions\SuppressOverrideVariable;
 use App\Environment\Variable\Models\EnvironmentVariable;
-use App\Team\Enums\TeamPermission;
 use Auth;
 use Livewire\Attributes\On;
 
 class VariableDeleter extends VariableModalComponent
 {
-    use ConfirmsPasswords;
-
     public string $deleteMode = 'delete';
 
     /**
-     * Event name used to trigger the variable editor modal.
+     * Events
      */
     public const LAUNCH = 'variable-deleter:launch';
+    public const DELETED = 'variable-deleted:deleted';
 
     /**
      * Livewire event listener to launch the environment variable modal.
      */
     #[On(self::LAUNCH)]
-    public function launchModal(
-        EnvironmentVariable $variable,
-        ?Environment $targetEnvironment = null
-    ): void {
-        $this->authorize('perform', [$targetEnvironment, TeamPermission::EditVariables]);
+    public function launchModal(EnvironmentVariable $variable, ?Environment $targetEnvironment = null): void
+    {
+        $this->authorizeEnvironment(variable: $variable, target: $targetEnvironment);
 
         parent::launchModal($variable, $targetEnvironment);
     }
@@ -46,17 +43,17 @@ class VariableDeleter extends VariableModalComponent
      */
     public function removeVariable(): void
     {
-        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::EditVariables]);
+        $this->authorizeEnvironment(variable: $this->variable, target: $this->targetEnvironment);
 
-        if (! $this->isVariableOwnedByTargetEnvironment) {
+        if (! $this->isLocalToTarget) {
             // The variable is inherited from a parent environment and does not exist locally.
-            // The only valid action is to disable it in this environment to prevent inheritance.
-            $this->disableInherited();
+            // The only valid action is to suppress it in this environment to prevent inheritance.
+            $this->suppressInherited();
 
-        } elseif ($this->isOverride && $this->deleteMode === 'disable') {
+        } elseif ($this->isOverride && $this->deleteMode === 'suppress') {
             // The variable is defined locally and overrides a parent value.
-            // The user chose to disable it instead of deleting it, which prevents fallback to the parent.
-            $this->disableOverride();
+            // The user chose to suppress it instead of deleting it, which prevents fallback to the parent.
+            $this->suppressOverride();
 
         } else {
             // The variable is owned by this environment and can be deleted directly.
@@ -64,47 +61,50 @@ class VariableDeleter extends VariableModalComponent
             $this->deleteVariable();
         }
 
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
+        $this->dispatch(self::DELETED, $this->environmentVariableId);
+
         $this->closeAndReset();
     }
 
     /**
-     * Disables an inherited variable by creating a tombstone record.
+     * Suppresses an inherited variable by creating a "tombstone" record.
      *
      * This method prevents the current environment from inheriting a variable
      * defined in a parent environment. It does not affect the original source
      * variable, but instead creates a local tombstone to block inheritance.
      */
-    protected function disableInherited(): void
+    protected function suppressInherited(): void
     {
-        resolve(DisableInheritedVariable::class)->handle(
+        resolve(SuppressInheritedVariable::class)->handle(
             key: $this->variable->key,
             environment: $this->targetEnvironment,
-            user: Auth::user()
+            suppressedBy: Auth::user()
         );
 
         $this->successToast(
-            heading: 'Inherited Variable Disabled',
+            heading: 'Inherited Variable Supressed',
             text: sprintf('The key “%s” will no longer be inherited in this environment.', $this->variable->key)
         );
     }
 
     /**
-     * Disables a locally defined override to block inheritance from a parent environment.
+     * Supress a locally defined override to block inheritance from a parent environment.
      *
      * This marks the current variable (owned by the target environment) as deleted,
      * effectively preventing the system from falling back to a value defined in any
-     * parent environment. Unlike a full delete, this keeps the record as a tombstone
+     * parent environment. Unlike a full delete, this keeps the record as a "tombstone"
      * to explicitly block inheritance.
      */
-    protected function disableOverride(): void
+    protected function suppressOverride(): void
     {
-        resolve(DisableOverrideVariable::class)->handle(
+        resolve(SuppressOverrideVariable::class)->handle(
             var: $this->variable,
-            disabledBy: Auth::user()
+            suppressedBy: Auth::user()
         );
 
         $this->successToast(
-            heading: 'Override Disabled',
+            heading: 'Override Surpressed',
             text: sprintf('The key “%s” has been blocked from inheriting a value.', $this->variable->key)
         );
     }
@@ -145,12 +145,12 @@ class VariableDeleter extends VariableModalComponent
                     <div class="space-y-4">
                         <flux:heading size="lg">Remove Variable</flux:heading>
 
-                        @if ($this->isVariableOwnedByTargetEnvironment)
+                        @if ($this->isLocalToTarget)
                             @if ($this->isOverride)
                                 {{-- Variable is owned and shadows a parent — give both options --}}
                                 <flux:radio.group wire:model.live="deleteMode" label="Choose what to do with this variable">
                                     <flux:radio value="delete" label="Delete (fall back to inherited value)" />
-                                    <flux:radio value="disable" label="Disable in this environment" />
+                                    <flux:radio value="suppress" label="Suppress in this environment" />
                                 </flux:radio.group>
 
                                 @switch($this->deleteMode)
@@ -162,9 +162,9 @@ class VariableDeleter extends VariableModalComponent
                                         </flux:text>
                                         @break
 
-                                    @case('disable')
+                                    @case('suppress')
                                         <flux:text class="mt-2">
-                                            This will disable the
+                                            This will suppress the
                                             <flux:text class="inline" variant="strong">“{{ $this->variable?->key }}”</flux:text>
                                             key in this environment, even if it exists in a parent environment.
                                         </flux:text>
@@ -183,7 +183,7 @@ class VariableDeleter extends VariableModalComponent
                             <flux:text class="mt-2">
                                 This variable is inherited from 
                                 <flux:text class="inline" variant="strong">“{{ $this->variable?->environment->name }}”</flux:text>.
-                                You can disable it to prevent it from being used in this environment.
+                                You can suppress it to prevent it from being used in this environment.
                             </flux:text>
 
                             <flux:text class="mt-2">
@@ -199,18 +199,15 @@ class VariableDeleter extends VariableModalComponent
                             <flux:button variant="ghost">Cancel</flux:button>
                         </flux:modal.close>
 
-                        <x-auth.confirms-password wire:then="removeVariable">
-                            <flux:button  
-                                variant="danger"
-                                :loading="true"
-                                wire:target="removeVariable">
-                                {{ match($this->deleteMode) {
-                                    'delete' => 'Delete',
-                                    'disable' => 'Disable',
-                                    default => 'Confirm',
-                                } }}
-                            </flux:button>
-                        </x-auth.confirms-password>
+                        <flux:button  
+                            variant="danger"
+                            wire:click="removeVariable">
+                            {{ match($this->deleteMode) {
+                                'delete' => 'Delete',
+                                'suppress' => 'Suppress',
+                                default => 'Confirm',
+                            } }}
+                        </flux:button>
                     </div>
                 </div>
             </flux:modal>

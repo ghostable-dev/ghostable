@@ -7,6 +7,26 @@ use App\Environment\Variable\Models\EnvironmentVariable;
 
 class LogVariableActivity
 {
+    public const CREATED = 'created';
+
+    public const UPDATED = 'updated';
+
+    public const DELETED = 'deleted';
+
+    public const REVEALED = 'revealed';
+
+    public const REINSTATE_INHERITED = 'reinstated-inherited';
+
+    public const SUPPRESS_INHERITED = 'suppress-inherited';
+
+    public const REINSTATE_OVERRIDE = 'reinstated-override';
+
+    public const SUPPRESS_OVERRIDE = 'suppress-override';
+
+    public const REMOVED_OVERRIDE = 'removed-override';
+
+    public const RESTORED = 'restored';
+
     /**
      * Record an activity log entry for a variable-related action.
      *
@@ -39,14 +59,14 @@ class LogVariableActivity
         $environment = $variable->environment->name;
 
         return match ($event) {
-            'created' => "Added variable \"{$key}\" to \"{$environment}\"",
-            'updated' => "Updated variable \"{$key}\" in \"{$environment}\"",
-            'deleted' => "Removed variable \"{$key}\" from \"{$environment}\"",
-            'revealed' => "Revealed value for \"{$key}\" in \"{$environment}\"",
-            'restored' => "Restored variable \"{$key}\" in \"{$environment}\"",
-            'disabled-inherited' => "Disabled inherited variable \"{$key}\" in \"{$environment}\"",
-            'disabled-override' => "Disabled local override for \"{$key}\" in \"{$environment}\"",
-            'removed-override' => "Removed overriden variable \"{$key}\" in \"{$environment}\"",
+            self::CREATED => "Added variable \"{$key}\" to \"{$environment}\"",
+            self::UPDATED => "Updated variable \"{$key}\" in \"{$environment}\"",
+            self::DELETED => "Removed variable \"{$key}\" from \"{$environment}\"",
+            self::REVEALED => "Revealed value for \"{$key}\" in \"{$environment}\"",
+            self::RESTORED => "Restored variable \"{$key}\" in \"{$environment}\"",
+            self::SUPPRESS_INHERITED => "Suppress inherited variable \"{$key}\" in \"{$environment}\"",
+            self::SUPPRESS_OVERRIDE => "Suppress local override for \"{$key}\" in \"{$environment}\"",
+            self::REMOVED_OVERRIDE => "Removed overriden variable \"{$key}\" in \"{$environment}\"",
             default => ucfirst($event)." variable \"{$key}\" in \"{$environment}\"",
         };
     }

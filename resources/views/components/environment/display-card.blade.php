@@ -44,7 +44,7 @@
 
     {{-- Action slot --}}
     <x-slot name="actions">
-        <flux:link href="{{ route('environment.view', $env) }}">
+        <flux:link href="{{ route('environment.variables', $env) }}">
             View
         </flux:link>
     </x-slot>

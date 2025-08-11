@@ -1,13 +1,13 @@
 <flux:table.row wire:key="var-{{ $var }}">
     <flux:table.cell>
         @if($var->inherited)
-            <flux:badge color="blue" icon="git-branch" size="sm" class="mb-2">
-                {{ $var->origin }}
-            </flux:badge>
+            <flux:tooltip content="{{ $var->origin }}">
+                <flux:button variant="subtle" icon="git-branch" size="xs" class="!text-brand"/>
+            </flux:tooltip>
         @elseif($var->is_override)
-            <flux:badge icon="arrow-path" size="sm" class="mb-2">
-                override
-            </flux:badge>
+            <flux:tooltip content="{{ $this->environment->base->name }}">
+                <flux:button variant="subtle" icon="arrow-path" size="xs" class="!text-brand"/>
+            </flux:tooltip>
         @endif
     </flux:table.cell>
     <flux:table.cell>
@@ -51,7 +51,7 @@
                     <flux:menu.item wire:click="removeVariable('{{ $var->id }}')" variant="danger">
                         Delete
                     </flux:menu.item>
-                    <flux:separator/>
+                    <flux:menu.separator/>
                     <flux:menu.item wire:click="viewVariableActivity('{{ $var->id }}')">
                         Activity
                     </flux:menu.item>

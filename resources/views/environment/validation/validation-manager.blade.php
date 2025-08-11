@@ -1,4 +1,4 @@
-<div>
+<x-layouts.environment :environment="$this->environment">
     
     <x-section>
         <x-slot:title>Validation</x-slot:title>
@@ -132,4 +132,4 @@
         </div>
     </flux:modal>
 
-</div>
+</x-layouts.environment>

@@ -64,7 +64,7 @@ class AppSetup extends Command
         $phishing = $this->createProject('Phishing', $curricula);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $phishing);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $phishing, $production);
-        $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $production, $staging);
+        $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
         $this->createEnvironment('local-jr', EnvironmentType::LOCAL, $phishing, $local);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
 

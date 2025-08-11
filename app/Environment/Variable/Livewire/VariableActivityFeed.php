@@ -3,6 +3,7 @@
 namespace App\Environment\Variable\Livewire;
 
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Resolvers\ResolveVariable;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -28,7 +29,11 @@ class VariableActivityFeed extends Component
     #[Computed]
     public function variable(): ?EnvironmentVariable
     {
-        return EnvironmentVariable::find($this->environmentVariableId);
+        if (!$this->environmentVariableId) {
+            return null;
+        }
+        
+        return ResolveVariable::onceWithContext($this->environmentVariableId);
     }
 
     #[Computed]

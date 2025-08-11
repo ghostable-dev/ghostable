@@ -31,7 +31,7 @@
                                 <flux:badge>{{ $env->type->label() }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:link href="{{ route('environment.view', $env) }}">
+                                <flux:link href="{{ route('environment.variables', $env) }}">
                                     View
                                 </flux:link>
                             </flux:table.cell>
@@ -62,7 +62,7 @@
                             </flux:callout.heading>
                             <flux:callout.heading>{{ $env->name }}</flux:callout.heading>
                             <x-slot name="actions">
-                                <flux:link href="{{ route('environment.view', $env) }}">View</flux:link>
+                                <flux:link href="{{ route('environment.variables', $env) }}">View</flux:link>
                             </x-slot>
                         </flux:callout> --}}
                     </li>

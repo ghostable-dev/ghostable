@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
-class VariableRuleManager extends EnvironmentComponent
+class ValidationManager extends EnvironmentComponent
 {
     /**
      * Default sort key
@@ -152,6 +152,6 @@ class VariableRuleManager extends EnvironmentComponent
 
     public function render()
     {
-        return view('environment.validation.variable-rule-manager');
+        return view('environment.validation.validation-manager');
     }
 }

@@ -1,3 +1,4 @@
+<x-layouts.environment :environment="$this->environment">
 <section class="space-y-6">
     @php $team = $this->environment->owningTeam(); @endphp
     @if($team->slack_enabled && $team->slack_webhook_url)
@@ -24,3 +25,4 @@
         </flux:table.rows>
     </flux:table>
 </section>
+</x-layouts.environment>

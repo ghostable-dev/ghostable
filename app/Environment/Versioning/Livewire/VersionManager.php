@@ -6,6 +6,7 @@ use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Variable\Actions\LogVariableRevealed;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Resolvers\ResolveVariable;
 use App\Environment\Versioning\Actions\RestoreVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use App\Team\Enums\TeamPermission;
@@ -68,7 +69,11 @@ class VersionManager extends Component
     #[Computed]
     public function variable(): ?EnvironmentVariable
     {
-        return EnvironmentVariable::find($this->environmentVariableId);
+        if (!$this->environmentVariableId) {
+            return null;
+        }
+        
+        return ResolveVariable::onceWithContext($this->environmentVariableId);
     }
 
     /**

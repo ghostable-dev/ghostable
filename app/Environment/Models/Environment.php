@@ -8,6 +8,7 @@ use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
+use App\Environment\Events\EnvironmentUpdated;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Project\Models\Project;
@@ -100,6 +101,7 @@ class Environment extends Model implements SupportsOverrides
 
     protected $dispatchesEvents = [
         'created' => EnvironmentCreated::class,
+        'updated' => EnvironmentUpdated::class,
         'deleted' => EnvironmentDeleted::class,
     ];
 

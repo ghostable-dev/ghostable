@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Environment\Actions;
+namespace App\Environment\Resolvers;
 
 use App\Environment\Models\Environment;
-use App\Environment\Resolvers\EnvironmentAncestryResolver;
 use Illuminate\Support\Collection;
 
 class ResolveEnvironmentVariables
 {
-    public static function handle(Environment $env): Collection
+    public function handle(Environment $env): Collection
     {
         // 1. Walk from root → base → current and collect all vars along the way
-        $chain = resolve(EnvironmentAncestryResolver::class)->get($env)->reverse(); // now current → root
+        $chain = $this->ancestryChain($env)->reverse(); // now current → root
 
         $resolved = collect(); // Final result keyed by `key`
 
@@ -53,7 +52,7 @@ class ResolveEnvironmentVariables
     /**
      * Build ancestry chain from root → current env.
      */
-    protected static function ancestryChain(Environment $env): Collection
+    protected function ancestryChain(Environment $env): Collection
     {
         $chain = collect();
 

@@ -1,20 +1,28 @@
-<div class="space-y-6">
+<x-layouts.environment :environment="$this->environment">
     
     @if ($this->validationErrors->isNotEmpty())
-        <flux:callout icon="exclamation-triangle" variant="warning">
-            <flux:callout.heading>
-                This environment has {{ $this->validationErrors->count() }} validation issue{{ $this->validationErrors->count() > 1 ? 's' : '' }}.
-            </flux:callout.heading>
-            <flux:callout.text>
-                <ul class="list-disc list-inside space-y-1">
-                    @foreach ($this->validationErrors->all() as $message)
-                        <li>{{ $message }}</li>
-                    @endforeach
-                </ul>
-            </flux:callout.text>
-        </flux:callout>
+    <flux:callout icon="exclamation-triangle" variant="warning">
+        <flux:accordion transition>
+            <flux:accordion.item>
+                <flux:accordion.heading>
+                    <flux:callout.heading>
+                        This environment has {{ $this->validationErrors->count() }} validation issue{{ $this->validationErrors->count() > 1 ? 's' : '' }}.
+                    </flux:callout.heading>
+                </flux:accordion.heading>
+                <flux:accordion.content>
+                    <flux:callout.text>
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach ($this->validationErrors->all() as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        </ul>
+                    </flux:callout.text>
+                </flux:accordion.content>
+            </flux:accordion.item>
+        </flux:accordion>
+    </flux:callout>
     @endif
-    
+
     <x-section>
         <x-slot:title>Variables</x-slot:title>
         <x-slot:subheading>
@@ -36,45 +44,7 @@
         {{-- Add environment var form --}}
         @perform($this->environment, 'var:edit')
             <x-slot:form>
-                <form wire:submit="addEnvironmentVariable" class="flex flex-inline items-end gap-4">
-                    <div class="basis-1/2 grow-0">
-                        <x-environment-key-autocomplete
-                            wire:model.live="key" 
-                            label="Key" 
-                            placeholder="e.g. PARANORMAL_STATUS"
-                            required
-                            :groupedSuggestions="$this->keySuggestions"/>
-                    </div>
-                    <div class="basis-1/2 grow-0">
-                        <flux:autocomplete 
-                            wire:model.live="value" 
-                            label="Value" 
-                            placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
-                            required>
-                            @foreach($this->valueSuggestions as $suggestion)
-                                <flux:autocomplete.item wire:key="value-{{ $suggestion }}">
-                                    {{ $suggestion }}
-                                </flux:autocomplete.item>
-                            @endforeach
-                        </flux:autocomplete>
-                    </div>
-                    <div class="flex-none">
-                        <flux:button 
-                            type="submit" 
-                            variant="primary" 
-                            icon:trailing="plus">
-                            Add Variable
-                        </flux:button>
-                    </div>
-                </form>
-                <flux:text variant="subtle" class="mt-4 flex flex-inline gap-1">
-                    @if($this->keyDescription)
-                        <flux:icon.information-circle variant="mini"/>
-                        <span>{{ $this->keyDescription }}</span>
-                    @else
-                        Define a new key-value pair in this environment.
-                    @endif
-                </flux:text>
+                <livewire:environment.variable.livewire.variable-creator :environment="$this->environment"/>
             </x-slot:form>
         @endperform
         
@@ -99,9 +69,9 @@
             <flux:table.rows>
                 @foreach ($this->variables as $var)
                     @if ($var->is_deleted)
-                        @include('environment.variables.table.row-tombstoned')
+                        @include('environment.variable.table.row-tombstoned')
                     @else
-                        @include('environment.variables.table.row-active')
+                        @include('environment.variable.table.row-active')
                     @endif
                 @endforeach
             </flux:table.rows>
@@ -113,11 +83,14 @@
     
     {{-- Variable deleter modal --}}
     <livewire:environment.variable.livewire.variable-deleter />
+    
+    {{-- Variable reinstater modal --}}
+    <livewire:environment.variable.livewire.variable-reinstater />
         
     {{-- Variable activity feed modal --}}
     <livewire:environment.variable.livewire.variable-activity-feed />
     
     {{-- Variable activity feed modal --}}
     <livewire:environment.versioning.livewire.version-manager />
-    
-</div>
+
+</x-layouts.environment>
