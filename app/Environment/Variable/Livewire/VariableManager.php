@@ -86,7 +86,7 @@ class VariableManager extends Component
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
     }
-    
+
     /**
      * Determine if the authenticated user can edit variables
      * inside of the given environment.

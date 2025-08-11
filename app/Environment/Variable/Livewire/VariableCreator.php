@@ -26,7 +26,7 @@ class VariableCreator extends Component
      * Events
      */
     public const CREATED = 'variable-creator:created';
-    
+
     /**
      * The ID of the environment currently being managed.
      */
@@ -161,7 +161,7 @@ class VariableCreator extends Component
             createdBy: Auth::user()
         );
     }
-    
+
     #[On(VariableDeleter::DELETED)]
     public function refresh(): void
     {

@@ -16,9 +16,9 @@ class EnvironmentSecretsManager extends SecretsManager
     public function mount(Environment $environment): void
     {
         $this->authorize('view', $environment);
-        
+
         $this->environmentId = $environment->id;
-        
+
         $this->setOwner($environment);
     }
 
@@ -27,7 +27,7 @@ class EnvironmentSecretsManager extends SecretsManager
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
     }
-    
+
     public function render()
     {
         return view('environment.environment-secrets-manager');

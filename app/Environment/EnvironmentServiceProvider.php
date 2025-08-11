@@ -38,22 +38,22 @@ class EnvironmentServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'environment' => 'App\Environment\Models\Environment',
         ]);
-        
+
         // Send activity notification
         Event::listen(
             [EnvironmentCreated::class, EnvironmentDeleted::class],
             SendEnvironmentActivityNotification::class
         );
-        
+
         // Bust ancestry resolver cache
         Event::listen(
             [
-                EnvironmentCreated::class, 
+                EnvironmentCreated::class,
                 EnvironmentDeleted::class,
                 EnvironmentBaseChanged::class,
-                EnvironmentNameChanged::class
+                EnvironmentNameChanged::class,
             ],
-            function(EnvironmentEvent $event) {
+            function (EnvironmentEvent $event) {
                 resolve(EnvironmentAncestryResolver::class)->bust($event->environment);
             }
         );

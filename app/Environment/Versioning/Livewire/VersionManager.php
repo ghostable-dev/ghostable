@@ -69,10 +69,10 @@ class VersionManager extends Component
     #[Computed]
     public function variable(): ?EnvironmentVariable
     {
-        if (!$this->environmentVariableId) {
+        if (! $this->environmentVariableId) {
             return null;
         }
-        
+
         return ResolveVariable::onceWithContext($this->environmentVariableId);
     }
 

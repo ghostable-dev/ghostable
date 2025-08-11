@@ -16,12 +16,14 @@ class VariableReinstater extends VariableModalComponent
      * Events
      */
     public const LAUNCH = 'variable-reinstater:launch';
+
     public const REINSTATED = 'variable-reinstated:reinstated';
 
     /**
      * Modes
      */
     private const MODE_USE_INHERITED = 'use_inherited';
+
     private const MODE_USE_OVERRIDE = 'use_override';
 
     /**

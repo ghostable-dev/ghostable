@@ -7,9 +7,8 @@ use App\Environment\Models\Environment;
 class EnvironmentNameChanged extends EnvironmentEvent
 {
     public function __construct(
-        public Environment $environment, 
+        public Environment $environment,
         public string $old,
         public string $new
-    ) 
-    {}
+    ) {}
 }

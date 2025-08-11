@@ -2,7 +2,6 @@
 
 namespace App\Environment\Variable\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\DeleteVariable;
@@ -20,6 +19,7 @@ class VariableDeleter extends VariableModalComponent
      * Events
      */
     public const LAUNCH = 'variable-deleter:launch';
+
     public const DELETED = 'variable-deleted:deleted';
 
     /**
