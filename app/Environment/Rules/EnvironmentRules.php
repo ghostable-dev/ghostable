@@ -25,6 +25,14 @@ class EnvironmentRules
     public static function updateRules(Environment $environment): array
     {
         return [
+            'base_id' => [
+                'nullable',
+                'sometimes',
+                Rule::exists('environments', 'id')
+                    ->where(fn ($query) => $query
+                        ->where('project_id', $environment->project_id)
+                        ->where('id', '!=', $environment->id)),
+            ],
             'name' => self::nameRules($environment->project, $environment),
             'type' => self::typeRules(),
             'fileFormat' => self::formatRules(),

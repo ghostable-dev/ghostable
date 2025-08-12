@@ -35,6 +35,14 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
+                <flux:select label="Base Environment" wire:model="base_id" :readonly="!$this->canEdit">
+                    <flux:select.option wire:key="base-none" value="">None (standalone)</flux:select.option>
+                    @foreach($this->baseOptions as $env)
+                        <flux:select.option wire:key="base-{{ $env->id }}" value="{{ $env->id }}">
+                            {{ $env->name }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
                 <div class="flex items-center gap-4">
                     @if($this->canEdit)
                         <div class="flex items-center justify-end">
@@ -49,7 +57,22 @@
                 </div>
             </form>
         </div>
-                    
+
+        <flux:modal name="confirm-base-change" focusable class="max-w-lg">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('Change Base Environment') }}</flux:heading>
+                    <flux:subheading>{{ __('Changing the base will update inherited variables for this environment.') }}</flux:subheading>
+                </div>
+                <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                    <flux:modal.close>
+                        <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button variant="danger" wire:click="confirmBaseChange">{{ __('Change') }}</flux:button>
+                </div>
+            </div>
+        </flux:modal>
+
         {{-- Delete environment callout --}}
         @perform($this->environment->project, 'env:delete')
             <flux:separator variant="subtle" />

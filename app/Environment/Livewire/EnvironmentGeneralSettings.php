@@ -5,10 +5,13 @@ namespace App\Environment\Livewire;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\EnvironmentAncestryResolver;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;
 use App\Team\Enums\TeamPermission;
+use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -33,6 +36,11 @@ class EnvironmentGeneralSettings extends Component
      */
     public EnvFileFormat $fileFormat;
 
+    /**
+     * The ID of the base environment this environment derives from.
+     */
+    public ?string $base_id = null;
+
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
@@ -43,6 +51,7 @@ class EnvironmentGeneralSettings extends Component
 
         $this->type = $environment->type;
         $this->fileFormat = $environment->file_format;
+        $this->base_id = $environment->base_id;
     }
 
     /**
@@ -71,6 +80,13 @@ class EnvironmentGeneralSettings extends Component
         return EnvFileFormat::selectOptions();
     }
 
+    #[Computed]
+    public function baseOptions(): Collection
+    {
+        return $this->environment->project->environments
+            ->reject(fn (Environment $env) => $env->id === $this->environment->id || $env->isDescendantOf($this->environment));
+    }
+
     /**
      * Determine whether the authenticated user can manage the current environment's settings.
      *
@@ -88,19 +104,40 @@ class EnvironmentGeneralSettings extends Component
      * Authorizes the user with the manageSettings policy and validates input
      * before applying updates. Emits an 'environment-updated' event on success.
      */
-    public function updateEnvironment(): void
+    public function updateEnvironment(bool $confirmed = false): void
     {
         $this->authorize('manageSettings', $this->environment);
 
         $validated = $this->validate(EnvironmentRules::updateRules($this->environment));
+        $validated['base_id'] = $validated['base_id'] ?? null;
+
+        if (! $confirmed && $validated['base_id'] !== $this->environment->base_id) {
+            Flux::modal('confirm-base-change')->open();
+            return;
+        }
+
+        $base = $this->environment->project->environments()->where('id', $validated['base_id'])->first();
+        if ($base && $base->isDescendantOf($this->environment)) {
+            $this->addError('base_id', 'The selected base environment is invalid.');
+            return;
+        }
 
         $this->environment->update([
             'name' => $validated['name'],
             'type' => $validated['type'],
             'file_format' => $validated['fileFormat'],
+            'base_id' => $validated['base_id'],
         ]);
 
+        resolve(EnvironmentAncestryResolver::class)->bust($this->environment);
+
         $this->dispatch('environment-updated');
+    }
+
+    public function confirmBaseChange(): void
+    {
+        $this->updateEnvironment(true);
+        Flux::modal('confirm-base-change')->close();
     }
 
     /**
