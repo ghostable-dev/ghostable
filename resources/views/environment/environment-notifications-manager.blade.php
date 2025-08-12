@@ -1,28 +1,35 @@
 <x-layouts.environment-settings :environment="$this->environment">
-    <section class="space-y-6 max-w-3xl ">
-        @php $team = $this->environment->owningTeam(); @endphp
-        @if($team->slack_enabled && $team->slack_webhook_url)
-            @include('core.slack-enabled-message')
-        @endif
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>Notification</flux:table.column>
-                <flux:table.column>Description</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @foreach($this->notificationOptions as $case)
-                    <flux:table.row wire:key="env-notify-{{ $case->value }}">
-                        <flux:table.cell>{{ $case->label() }}</flux:table.cell>
-                        <flux:table.cell>{{ $case->description() }}</flux:table.cell>
-                        <flux:table.cell inset="top bottom" align="end">
-                            <flux:switch
-                                wire:click="toggle('{{ $case->value }}')"
-                                :checked="$this->environment->notifications->{$case->value} ?? false"/>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforeach
-            </flux:table.rows>
-        </flux:table>
-    </section>
+    <div class="space-y-6 max-w-3xl">
+        <x-section>
+            <x-slot:title>Notifications</x-slot:title>
+            <x-slot:subheading>
+                <div class="max-w-2xl">
+                    Choose which emails you'd like to receive for this environment.
+                </div>
+            </x-slot:subheading>
+
+            @php $team = $this->environment->owningTeam(); @endphp
+            @if($team->slack_enabled && $team->slack_webhook_url)
+                @include('core.slack-enabled-message')
+            @endif
+
+            <flux:fieldset>
+                <flux:legend>Email notifications</flux:legend>
+
+                <div class="space-y-4">
+                    @foreach($this->notificationOptions as $case)
+                        <flux:switch
+                            wire:model.live="notifications.{{ $case->value }}"
+                            label="{{ $case->label() }}"
+                            description="{{ $case->description() }}"/>
+
+                        @if (! $loop->last)
+                            <flux:separator variant="subtle" />
+                        @endif
+                    @endforeach
+                </div>
+            </flux:fieldset>
+        </x-section>
+    </div>
 </x-layouts.environment-settings>
+

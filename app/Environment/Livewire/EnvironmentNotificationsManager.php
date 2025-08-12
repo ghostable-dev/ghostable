@@ -16,9 +16,22 @@ class EnvironmentNotificationsManager extends Component
     #[Locked]
     public string $environmentId;
 
+    /**
+     * The current notification preferences for the environment.
+     *
+     * @var array<string, bool>
+     */
+    public array $notifications = [];
+
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
+
+        $this->notifications = collect(EnvironmentNotification::cases())
+            ->mapWithKeys(fn ($case) => [
+                $case->value => $environment->notifications->{$case->value} ?? false,
+            ])
+            ->toArray();
     }
 
     #[Computed]
@@ -33,14 +46,11 @@ class EnvironmentNotificationsManager extends Component
         return EnvironmentNotification::cases();
     }
 
-    public function toggle(string $key): void
+    public function updatedNotifications($value, string $key): void
     {
-        $data = $this->environment->notifications->toArray();
-        $data[$key] = ! ($data[$key] ?? false);
-
         app(UpdateEnvironmentNotifications::class)->handle(
             environment: $this->environment,
-            data: EnvironmentNotificationsData::from($data)
+            data: EnvironmentNotificationsData::from($this->notifications),
         );
 
         $this->environment->refresh();
