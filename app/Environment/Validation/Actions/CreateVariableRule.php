@@ -17,6 +17,8 @@ class CreateVariableRule extends VariableRuleAction
             'max' => $data->max,
             'allowed_values' => $data->allowedValues,
             'description' => $data->description,
+            'is_override' => $data->isOverride,
+            'is_deleted' => $data->isDeleted,
         ]);
 
         $rule->environment()->associate($data->environment);

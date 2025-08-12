@@ -2,14 +2,11 @@
 
 namespace App\Environment\Validation\Livewire;
 
-use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentComponent;
-use App\Environment\Validation\Actions\DeleteVariableRule;
+use App\Environment\Validation\Actions\ResolveEnvironmentVariableRules;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Team\Enums\TeamPermission;
-use Flux\Flux;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -25,14 +22,6 @@ class ValidationManager extends EnvironmentComponent
      * Table sort direction
      */
     public string $sortDirection = 'asc';
-
-    /**
-     * The ID of the rule currently selected for removal.
-     *
-     * Used to resolve the variable rule
-     * instance prior to deletion.
-     */
-    public ?string $ruleToRemoveId = null;
 
     /**
      * Update the sorting configuration for validation rules.
@@ -63,9 +52,20 @@ class ValidationManager extends EnvironmentComponent
     #[Computed]
     public function rules(): Collection
     {
-        return $this->environment->rules()
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->get();
+        $rules = resolve(ResolveEnvironmentVariableRules::class)
+            ->handle($this->environment);
+
+        if ($this->sortBy === 'key') {
+            return $this->sortDirection === 'desc'
+                ? $rules->sortByDesc('key')
+                : $rules->sortBy('key');
+        } elseif ($this->sortBy === 'updated_at') {
+            return $this->sortDirection === 'desc'
+                ? $rules->sortByDesc('updated_at')
+                : $rules->sortBy('updated_at');
+        }
+
+        return $rules;
     }
 
     /**
@@ -91,51 +91,35 @@ class ValidationManager extends EnvironmentComponent
      */
     public function editRule(EnvironmentVariableRule $rule): void
     {
-        $this->dispatch(VariableRuleEditor::LAUNCH, $rule->id);
+        $this->dispatch(
+            VariableRuleEditor::LAUNCH,
+            rule: $rule->id,
+            targetEnvironment: $this->environment->id
+        );
     }
 
     /**
-     * Prepare to remove an environment variable rule by setting the rule ID,
-     * performing an authorization check, and showing the confirmation modal.
+     * Dispatch an event to open the rule deleter for the given rule.
      */
-    public function confirmRuleRemoval(EnvironmentVariableRule $rule): void
+    public function removeRule(EnvironmentVariableRule $rule): void
     {
-        $this->ruleToRemoveId = $rule->id;
-
-        $this->authorize('perform', [$rule->environment, TeamPermission::ManageValidationRules]);
-
-        Flux::modal('confirm-rule-removal')->show();
+        $this->dispatch(
+            VariableRuleDeleter::LAUNCH,
+            rule: $rule->id,
+            targetEnvironment: $this->environment->id
+        );
     }
 
     /**
-     * Get the environment variable rule marked for removal, if any.
-     *
-     * This looks up the rule by its ID within the current environment's rules.
+     * Dispatch an event to open the rule reinstater for the given rule.
      */
-    #[Computed]
-    public function ruleToRemove(): ?EnvironmentVariableRule
+    public function reinstateRule(EnvironmentVariableRule $rule): void
     {
-        return $this->environment->rules()->firstWhere('id', $this->ruleToRemoveId);
-    }
-
-    /**
-     * Permanently delete the selected environment variable rule.
-     */
-    public function removeRule(): void
-    {
-        $rule = $this->ruleToRemove;
-
-        $this->authorize('perform', [$rule->environment, TeamPermission::ManageValidationRules]);
-
-        app(DeleteVariableRule::class)->handle(rule: $rule, user: Auth::user());
-
-        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-        $this->refreshRules();
-
-        Flux::modal('confirm-rule-removal')->close();
-        Flux::toast("Rule '{$rule->key}' removed.");
-
-        $this->reset('ruleToRemoveId');
+        $this->dispatch(
+            VariableRuleReinstater::LAUNCH,
+            rule: $rule->id,
+            targetEnvironment: $this->environment->id
+        );
     }
 
     /**
@@ -144,6 +128,8 @@ class ValidationManager extends EnvironmentComponent
     #[On([
         VariableRuleCreator::ADDED,
         VariableRuleEditor::UPDATED,
+        VariableRuleDeleter::DELETED,
+        VariableRuleReinstater::REINSTATED,
     ])]
     public function refreshRules(): void
     {

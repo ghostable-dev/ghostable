@@ -3,7 +3,10 @@
 namespace App\Environment\Validation\Livewire;
 
 use App\Environment\Livewire\EnvironmentActivity;
+use App\Environment\Models\Environment;
+use App\Environment\Validation\Actions\CreateVariableRule;
 use App\Environment\Validation\Actions\UpdateVariableRule;
+use App\Environment\Validation\Entities\CreateVariableRuleData;
 use App\Environment\Validation\Entities\UpdateVariableRuleData;
 use App\Environment\Validation\Enums\EnvironmentVariableRuleType;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
@@ -36,6 +39,11 @@ class VariableRuleEditor extends Component
      * The ID of the environment variable rule currently being edited.
      */
     public ?string $ruleId = null;
+
+    /**
+     * The ID of the environment where the rule is being edited.
+     */
+    public ?string $targetEnvironmentId = null;
 
     /**
      * The key of the environment variable the rule applies to.
@@ -81,11 +89,14 @@ class VariableRuleEditor extends Component
      * - Opens the modal for editing
      */
     #[On(self::LAUNCH)]
-    public function launchEditorModal(EnvironmentVariableRule $rule): void
+    public function launchEditorModal(EnvironmentVariableRule $rule, ?Environment $targetEnvironment = null): void
     {
-        $this->authorize('perform', [$rule->environment, TeamPermission::ManageValidationRules]);
+        $environment = $targetEnvironment ?? $rule->environment;
+
+        $this->authorize('perform', [$environment, TeamPermission::ManageValidationRules]);
 
         $this->ruleId = $rule->id;
+        $this->targetEnvironmentId = $environment->id;
 
         $this->key = $rule->key;
         $this->is_required = $rule->is_required;
@@ -111,6 +122,28 @@ class VariableRuleEditor extends Component
     }
 
     /**
+     * Retrieve the environment where the rule is being edited.
+     */
+    #[Computed]
+    public function targetEnvironment(): ?Environment
+    {
+        return $this->targetEnvironmentId
+            ? Environment::find($this->targetEnvironmentId)
+            : null;
+    }
+
+    /**
+     * Determine if the rule belongs directly to the target environment.
+     */
+    #[Computed]
+    public function isLocalToTarget(): bool
+    {
+        return $this->rule
+            && $this->targetEnvironmentId
+            && $this->rule->environment_id === $this->targetEnvironmentId;
+    }
+
+    /**
      * Get the available rule types for environment variable validation.
      *
      * @return EnvironmentVariableRuleType[] Array of all defined rule types.
@@ -123,7 +156,10 @@ class VariableRuleEditor extends Component
 
     public function update(): void
     {
-        $this->authorize('perform', [$this->rule->environment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [
+            $this->targetEnvironment ?? $this->rule->environment,
+            TeamPermission::ManageValidationRules,
+        ]);
 
         if ($this->noChangesWereMade()) {
             $this->showing = false;
@@ -136,19 +172,56 @@ class VariableRuleEditor extends Component
 
         $validated = $this->validate($rules);
 
-        app(UpdateVariableRule::class)->handle($this->toUpdateRuleData($validated));
-
-        Flux::toast(
-            variant: 'success',
-            heading: 'Rule Updated',
-            text: "Rule for \"{$this->key}\" was successfully updated."
-        );
+        $this->isLocalToTarget
+            ? $this->updateRule($validated)
+            : $this->createOverride($validated);
 
         $this->dispatch(self::UPDATED, $this->ruleId);
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         $this->showing = false;
         $this->resetAll();
+    }
+
+    /**
+     * Update the existing rule in place.
+     */
+    private function updateRule(array $input): void
+    {
+        app(UpdateVariableRule::class)->handle($this->toUpdateRuleData($input));
+
+        Flux::toast(
+            variant: 'success',
+            heading: 'Rule Updated',
+            text: "Rule for \"{$this->key}\" was successfully updated."
+        );
+    }
+
+    /**
+     * Create an override of the inherited rule in the target environment.
+     */
+    private function createOverride(array $input): void
+    {
+        app(CreateVariableRule::class)->handle(
+            new CreateVariableRuleData(
+                environment: $this->targetEnvironment,
+                key: $input['key'],
+                isRequired: $input['is_required'],
+                type: $input['type'],
+                min: $input['min'] ?? null,
+                max: $input['max'] ?? null,
+                allowedValues: $input['allowed_values'] ?? [],
+                description: $input['description'] ?? null,
+                isOverride: true,
+                createdBy: Auth::user(),
+            )
+        );
+
+        Flux::toast(
+            variant: 'success',
+            heading: 'Override Created',
+            text: "Rule for \"{$input['key']}\" now overrides the inherited rule in this environment."
+        );
     }
 
     /**
@@ -190,6 +263,8 @@ class VariableRuleEditor extends Component
             max: $input['max'] ?? null,
             allowedValues: $input['allowed_values'] ?? [],
             description: $input['description'] ?? null,
+            isOverride: $this->rule->is_override,
+            isDeleted: $this->rule->is_deleted,
             updatedBy: Auth::user(),
         );
     }
@@ -204,6 +279,7 @@ class VariableRuleEditor extends Component
     {
         $this->reset([
             'ruleId',
+            'targetEnvironmentId',
             'key',
             'is_required',
             'type',

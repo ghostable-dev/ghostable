@@ -49,6 +49,10 @@ class LogVariableRuleActivity
             'created' => "Added validation rule for \"{$key}\" in \"{$environment}\"",
             'updated' => "Updated validation rule for \"{$key}\" in \"{$environment}\"",
             'deleted' => "Removed validation rule for \"{$key}\" from \"{$environment}\"",
+            'suppress-inherited' => "Suppress inherited validation rule \"{$key}\" in \"{$environment}\"",
+            'suppress-override' => "Suppress local override validation rule \"{$key}\" in \"{$environment}\"",
+            'reinstate-inherited' => "Reinstated inherited validation rule \"{$key}\" in \"{$environment}\"",
+            'reinstate-override' => "Reinstated override validation rule \"{$key}\" in \"{$environment}\"",
             default => ucfirst($event)." rule \"{$key}\" in \"{$environment}\"",
         };
     }

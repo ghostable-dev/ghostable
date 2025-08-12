@@ -18,6 +18,8 @@ class CreateVariableRuleData extends Data
         public ?int $max,
         public array $allowedValues = [],
         public ?string $description = null,
+        public bool $isOverride = false,
+        public bool $isDeleted = false,
         public ?User $createdBy = null,
     ) {
         if (is_string($this->type)) {

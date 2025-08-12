@@ -1,7 +1,9 @@
 <flux:modal wire:model="showing" class="md:w-xl">
     <div class="space-y-6">
         <div>
-            <flux:heading size="lg">Update Validation Rule</flux:heading>
+            <flux:heading size="lg">
+                {{ $this->isLocalToTarget ? 'Update' : 'Override' }} Validation Rule
+            </flux:heading>
         </div>
 
         <form wire:submit="update" class="space-y-6">
@@ -92,16 +94,16 @@
                 </flux:modal.close>
 
                 @if ($this->noChangesWereMade)
-                    <flux:button 
+                    <flux:button
                         variant="primary"
                         type="submit">
-                        Update
+                        {{ $this->isLocalToTarget ? 'Update' : 'Override' }}
                     </flux:button>
                 @else
-                    <flux:button 
+                    <flux:button
                         variant="primary"
                         wire:click="update">
-                        Update
+                        {{ $this->isLocalToTarget ? 'Update' : 'Override' }}
                     </flux:button>
                 @endif
             </div>
