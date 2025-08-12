@@ -20,12 +20,14 @@
             @if(count($this->rules))
                 <flux:table>
                     <flux:table.columns>
-                        <flux:table.column 
-                            sortable 
-                            :sorted="$sortBy === 'key'" 
-                            :direction="$sortDirection" 
+                        <flux:table.column></flux:table.column>
+                        <flux:table.column
+                            sortable
+                            :sorted="$sortBy === 'key'"
+                            :direction="$sortDirection"
                             wire:click="sort('key')">Key</flux:table.column>
                         <flux:table.column>Rule</flux:table.column>
+                        <flux:table.column>Description</flux:table.column>
                         <flux:table.column></flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>
