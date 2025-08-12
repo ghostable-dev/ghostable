@@ -29,7 +29,7 @@
         <flux:separator class="md:hidden" />
 
         <div class="flex-1 self-stretch max-md:pt-6">
-            <div class="mt-5 w-full space-y-12">
+            <div class="w-full space-y-12">
                  {{ $slot }}
             </div>
         </div>

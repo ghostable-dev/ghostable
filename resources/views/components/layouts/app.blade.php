@@ -6,7 +6,7 @@
 <x-layouts.app.header :$title :$breadcrumbs>
     
     <div>
-        <div>
+        <div class="bg-zinc-50">
             {{ $subheader ?? '' }}
         </div>
         <div>
