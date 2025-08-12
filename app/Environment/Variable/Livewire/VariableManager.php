@@ -49,8 +49,6 @@ class VariableManager extends Component
     {
         $this->authorize('perform', [$environment, TeamPermission::ViewVariables]);
 
-        $this->forcePasswordConfirmation();
-
         $this->environmentId = $environment->id;
 
         app(LogEnvironmentViewed::class)->handle(

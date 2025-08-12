@@ -31,6 +31,20 @@ class EnvironmentRules
         ];
     }
 
+    public static function updateBaseRules(Environment $environment): array
+    {
+        return [
+            'base_id' => [
+                'nullable',
+                'sometimes',
+                Rule::exists('environments', 'id')
+                    ->where(fn ($query) => $query
+                        ->where('project_id', $environment->project_id)
+                        ->where('id', '!=', $environment->id)),
+            ],
+        ];
+    }
+
     public static function nameRules(Project $project, ?Environment $environment = null): array
     {
         return [

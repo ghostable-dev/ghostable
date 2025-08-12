@@ -47,6 +47,36 @@ class EnvironmentPolicy
     }
 
     /**
+     * Determine if the user can update the base (parent) environment
+     * that the given environment inherits variables from.
+     */
+    public function updateBase(User $user, Environment $environment, ?Environment $base): bool
+    {
+        // Switching to standalone
+        if (is_null($base)) {
+            return $this->manageSettings($user, $environment);
+        }
+
+        // Only allow within the same project
+        if ($environment->project_id !== $base->project_id) {
+            return false;
+        }
+
+        // Not self, block cycles
+        if ($environment->is($base) || $base->isDescendantOf($environment)) {
+            return false;
+        }
+
+        // Require team-level ManageEnvironmentSettings (not overridable)
+        if (! $this->manageSettings($user, $environment)
+            || ! $this->perform($user, $environment, TeamPermission::EditVariables)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * General-purpose policy method for environment-level permissions
      * that may be overridden per user.
      *
