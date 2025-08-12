@@ -17,6 +17,8 @@ class UpdateVariableRule extends VariableRuleAction
             'max' => $data->max,
             'allowed_values' => $data->allowedValues,
             'description' => $data->description,
+            'is_override' => $data->isOverride,
+            'is_deleted' => $data->isDeleted,
         ]);
 
         $this->logger->handle(rule: $data->rule, event: 'updated', user: $data->updatedBy);

@@ -160,6 +160,8 @@ class VariableRuleCreator extends EnvironmentComponent
             max: $input['max'] ?? null,
             allowedValues: $input['allowed_values'] ?? [],
             description: $input['description'] ?? null,
+            isOverride: false,
+            isDeleted: false,
             createdBy: Auth::user(),
         );
     }

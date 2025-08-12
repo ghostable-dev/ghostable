@@ -18,6 +18,8 @@ class UpdateVariableRuleData extends Data
         public ?int $max,
         public array $allowedValues,
         public ?string $description,
+        public bool $isOverride,
+        public bool $isDeleted,
         public User $updatedBy,
     ) {
         if (is_string($this->type)) {

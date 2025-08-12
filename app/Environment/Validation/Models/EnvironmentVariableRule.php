@@ -51,15 +51,27 @@ class EnvironmentVariableRule extends Model
         'max',
         'min',
         'type',
+        'is_override',
+        'is_deleted',
     ];
 
     public $casts = [
         'allowed_values' => 'array',
         'type' => EnvironmentVariableRuleType::class,
+        'is_override' => 'boolean',
+        'is_deleted' => 'boolean',
     ];
 
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class, 'environment_id');
+    }
+
+    /**
+     * Determine if the rule belongs directly to the given environment.
+     */
+    public function belongsToEnvironment(Environment $environment): bool
+    {
+        return $this->environment_id === $environment->id;
     }
 }
