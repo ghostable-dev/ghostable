@@ -2,6 +2,7 @@
 
 namespace App\Environment\Livewire;
 
+use App\Environment\Actions\UpdateBaseEnvironment;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
@@ -73,13 +74,31 @@ class EnvironmentGeneralSettings extends Component
     {
         return EnvironmentType::selectOptions();
     }
-
+    
+    /**
+     * Get the available environment file format options for selection.
+     *
+     * This is a computed, persistent property so that the options
+     * remain cached between Livewire component requests.
+     *
+     * @return array<int, string>
+     */
     #[Computed(persist: true)]
     public function formatOptions(): array
     {
         return EnvFileFormat::selectOptions();
     }
-
+    
+    /**
+     * Get the list of valid environments that can be selected
+     * as the base (parent) for the current environment.
+     *
+     * Excludes:
+     * - The current environment itself.
+     * - Any descendant environments (to prevent inheritance cycles).
+     *
+     * @return Collection<int, Environment>
+     */
     #[Computed]
     public function baseOptions(): Collection
     {
@@ -104,40 +123,64 @@ class EnvironmentGeneralSettings extends Component
      * Authorizes the user with the manageSettings policy and validates input
      * before applying updates. Emits an 'environment-updated' event on success.
      */
-    public function updateEnvironment(bool $confirmed = false): void
+    public function updateEnvironment(): void
     {
         $this->authorize('manageSettings', $this->environment);
 
         $validated = $this->validate(EnvironmentRules::updateRules($this->environment));
-        $validated['base_id'] = $validated['base_id'] ?? null;
-
-        if (! $confirmed && $validated['base_id'] !== $this->environment->base_id) {
-            Flux::modal('confirm-base-change')->open();
-            return;
-        }
-
-        $base = $this->environment->project->environments()->where('id', $validated['base_id'])->first();
-        if ($base && $base->isDescendantOf($this->environment)) {
-            $this->addError('base_id', 'The selected base environment is invalid.');
-            return;
-        }
 
         $this->environment->update([
             'name' => $validated['name'],
             'type' => $validated['type'],
             'file_format' => $validated['fileFormat'],
-            'base_id' => $validated['base_id'],
         ]);
-
-        resolve(EnvironmentAncestryResolver::class)->bust($this->environment);
-
-        $this->dispatch('environment-updated');
     }
-
-    public function confirmBaseChange(): void
+    
+    /**
+     * Livewire lifecycle hook triggered when the `base_id` property changes.
+     *
+     * If the selected base environment ID differs from the current
+     * environment's existing base ID, show a confirmation modal
+     * to ensure the user intends to change the inheritance.
+     *
+     * This is used to guard against accidental base environment
+     * changes, since such changes may affect variables in all
+     * derived environments.
+     */
+    public function updatedBaseId(): void
     {
-        $this->updateEnvironment(true);
-        Flux::modal('confirm-base-change')->close();
+        if (! $this->base_id !== $this->environment->base_id) {
+            Flux::modal('confirm-base-change')->show();
+            return;
+        }
+    }
+    
+    /**
+     * Handle updating the base (parent) environment for the current environment.
+     *
+     * Workflow:
+     * - Validate the incoming `base_id` using the update base rules.
+     * - Retrieve the selected base environment from the same project.
+     * - Authorize the action via the `updateBase` policy method.
+     * - Perform the base change via the `UpdateBaseEnvironment` action.
+     * - Bust the environment ancestry cache so inheritance relationships are recalculated.
+     * - Redirect back to the general settings page for the environment.
+     */
+    public function updateBaseEnvironment(): void
+    {
+        $validated = $this->validate(EnvironmentRules::updateBaseRules($this->environment));
+        
+        $base = $this->environment->project->environments()
+            ->where('id', $validated['base_id'] ?? null)
+            ->first();
+        
+        $this->authorize('updateBase', [$this->environment, $base]);
+        
+        resolve(UpdateBaseEnvironment::class)->handle($this->environment, base: $base);
+        
+        resolve(EnvironmentAncestryResolver::class)->bust($this->environment);
+        
+        $this->redirect(route('environment.settings.general', $this->environment));
     }
 
     /**
