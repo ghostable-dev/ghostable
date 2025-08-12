@@ -8,10 +8,6 @@
         </flux:heading>
 
         <div class="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
-            <flux:badge size="sm" variant="soft">
-                {{ $environment->type->label() }}
-            </flux:badge>
-
             @if ($environment->base)
                 <div class="flex items-center gap-1">
                     <flux:icon.git-branch variant="micro"/>
@@ -23,7 +19,13 @@
             @endif
         </div>
     </div>
-
+    
+    <div class="flex-shrink-0">
+        <flux:badge variant="soft">
+            {{ $environment->type->label() }}
+        </flux:badge>
+    </div>
+            
     {{-- Right: Avatars --}}
     {{-- <flux:avatar.group class="flex-shrink-0">
         @foreach($this->environment->project->team->users as $user)
