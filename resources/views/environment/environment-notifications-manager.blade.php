@@ -1,5 +1,5 @@
 <x-layouts.environment-settings :environment="$this->environment">
-    <div class="space-y-6 max-w-3xl">
+    <div class="space-y-6 max-w-4xl">
         <x-section>
             <x-slot:title>Notifications</x-slot:title>
             <x-slot:subheading>
@@ -17,6 +17,7 @@
                 <div class="space-y-4">
                     @foreach($this->notificationOptions as $case)
                         <flux:switch
+                            align="left"
                             wire:model.live="notifications.{{ $case->value }}"
                             label="{{ $case->label() }}"
                             description="{{ $case->description() }}"/>
