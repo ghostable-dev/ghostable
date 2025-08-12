@@ -96,7 +96,7 @@ class Environment extends Model implements SupportsOverrides
     protected $casts = [
         'type' => EnvironmentType::class,
         'file_format' => EnvFileFormat::class,
-        'notifications' => EnvironmentNotificationsData::class,
+        'notifications' => EnvironmentNotificationsData::class.':default',
     ];
 
     protected $dispatchesEvents = [

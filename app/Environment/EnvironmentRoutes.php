@@ -48,12 +48,18 @@ class EnvironmentRoutes
             ->group(function () {
                 // Route::redirect('/', '/variables')->name('view');
                 Route::get('variables', VariableManager::class)->name('variables');
-                Route::get('/secrets', EnvironmentSecretsManager::class)->name('secrets');
-                Route::get('validation', ValidationManager::class)->name('validation');
-                Route::get('settings', EnvironmentGeneralSettings::class)->name('settings');
-                Route::get('access', EnvironmentAccessManager::class)->name('access');
-                Route::get('notifications', EnvironmentNotificationsManager::class)->name('notifications');
+                Route::get('secrets', EnvironmentSecretsManager::class)->name('secrets');
+                //Route::get('validation', ValidationManager::class)->name('validation');
                 Route::get('activity', EnvironmentActivity::class)->name('activity');
+                
+                Route::prefix('settings/')
+                    ->name('settings.')
+                    ->group(function () {
+                        Route::get('general', EnvironmentGeneralSettings::class)->name('general');
+                        Route::get('validation', ValidationManager::class)->name('validation');
+                        Route::get('access', EnvironmentAccessManager::class)->name('access');
+                        Route::get('notifications', EnvironmentNotificationsManager::class)->name('notifications');
+                    });
             });
     }
 }

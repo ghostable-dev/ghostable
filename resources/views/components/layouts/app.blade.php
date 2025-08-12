@@ -1,12 +1,20 @@
 @props([
     'title' => null,
-    'breadcrumbs' => null    
+    'breadcrumbs' => null,
+    'subheader' => null    
 ])
 <x-layouts.app.header :$title :$breadcrumbs>
     
-    <flux:main container>
-        {{ $slot }}
-    </flux:main>
+    <div>
+        <div>
+            {{ $subheader ?? '' }}
+        </div>
+        <div>
+            <flux:main container>
+                {{ $slot }}
+            </flux:main>
+        </div>
+    </div>
     
     @persist('toast')
         <flux:toast />

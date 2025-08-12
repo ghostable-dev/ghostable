@@ -31,7 +31,7 @@
 
         <flux:tab.panel name="secrets">
             @perform($this->project, 'secret:view')
-                <livewire:secret.livewire.secrets-manager :owner="$this->project"/>
+                <livewire:project.livewire.project-secrets-manager :project="$this->project"/>
             @else
                 <x-access-restricted/>
             @endperform

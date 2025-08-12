@@ -1,5 +1,5 @@
 <section>
-    <flux:card class="!bg-black/2 p-3">
+    <flux:card class="!bg-black/2 p-1.5 rounded-2xl">
         @if(isset($title) || isset($subheading) || isset($actions))
             <div class="flex items-center justify-between gap-8 pb-4 pt-2 px-3">
                 <div>
