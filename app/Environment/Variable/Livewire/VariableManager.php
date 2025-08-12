@@ -2,7 +2,6 @@
 
 namespace App\Environment\Variable\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\RenderEnvFile;
@@ -27,8 +26,6 @@ use Livewire\Component;
 
 class VariableManager extends Component
 {
-    use ConfirmsPasswords;
-
     /**
      * The ID of the environment currently being managed.
      */

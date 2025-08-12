@@ -20,11 +20,9 @@
                             <flux:menu.item>
                                 <x-env-token-expiry-reminder :token="$token"/>
                             </flux:menu.item>
-                            <x-auth.confirms-password wire:then="remove('{{ $token->id }}')">
-                                <flux:menu.item>
-                                    Remove<span class="sr-only"> token, {{ $token->name }}</span>
-                                </flux:menu.item>
-                            </x-auth.confirms-password>
+                            <flux:menu.item wire:click="remove('{{ $token->id }}')">
+                                Remove<span class="sr-only"> token, {{ $token->name }}</span>
+                            </flux:menu.item>
                         </x-slot:menu>
                     </x-environment.token-list-item>
                 @endforeach

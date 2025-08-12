@@ -28,11 +28,15 @@
                 <div>
                     <flux:input 
                         type="password" 
+                        name="confirm"
                         placeholder="{{ __('Password') }}" 
                         autocomplete="current-password"
-                        x-ref="confirmable_password"
+                        x-ref="cheese"
                         wire:model="confirmablePassword"
-                        wire:keydown.enter="confirmPassword" />
+                        wire:keydown.enter="confirmPassword"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false" />
                 </div>
                 <div class="flex gap-2">
                     <flux:spacer />

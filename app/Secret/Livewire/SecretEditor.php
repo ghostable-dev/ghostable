@@ -2,7 +2,6 @@
 
 namespace App\Secret\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Secret\Actions\UpdateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
@@ -15,8 +14,6 @@ use Livewire\Component;
 
 class SecretEditor extends Component
 {
-    use ConfirmsPasswords;
-
     public const LAUNCH = 'secret-editor:launch';
 
     public const UPDATED = 'secret-editor:updated';
@@ -119,15 +116,9 @@ class SecretEditor extends Component
                         <flux:modal.close>
                             <flux:button variant="ghost">Cancel</flux:button>
                         </flux:modal.close>
-                        @if($this->noChangesWereMade)
-                            <flux:button variant="primary" wire:click="updateSecret">Update</flux:button>
-                        @else
-                            <x-auth.confirms-password wire:then="updateSecret">
-                                <flux:button variant="primary" :loading="true" wire:target="updateSecret">
-                                    Update
-                                </flux:button>
-                            </x-auth.confirms-password>
-                        @endif
+                        <flux:button variant="primary" wire:click="updateSecret">
+                            Update
+                        </flux:button>
                     </div>
                 </div>
             </flux:modal>

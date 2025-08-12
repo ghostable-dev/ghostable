@@ -44,13 +44,10 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 @if($version->id !== $this->variable->latestVersion->id)
-                                    <x-auth.confirms-password wire:then="restoreToVersion('{{ $version->id }}')">
-                                        <flux:button  
-                                            :loading="true"
-                                            wire:target="restoreToVersion('{{ $version->id }}')">
-                                            {{ __('Restore') }}
-                                        </flux:button>
-                                    </x-auth.confirms-password>
+                                    <flux:button  
+                                        wire:click="restoreToVersion('{{ $version->id }}')">
+                                        {{ __('Restore') }}
+                                    </flux:button>
                                 @endif
                             </flux:table.cell>
                         </flux:table.row>

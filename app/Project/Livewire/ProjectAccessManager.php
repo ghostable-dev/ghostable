@@ -3,7 +3,6 @@
 namespace App\Project\Livewire;
 
 use App\Account\Models\User;
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use App\Team\Actions\CreatePermissionOverride;
@@ -18,8 +17,6 @@ use Livewire\Component;
 
 class ProjectAccessManager extends Component
 {
-    use ConfirmsPasswords;
-
     #[Locked]
     public string $projectId;
 

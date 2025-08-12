@@ -2,7 +2,6 @@
 
 namespace App\Environment\Versioning\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Variable\Actions\LogVariableRevealed;
 use App\Environment\Variable\Models\EnvironmentVariable;
@@ -20,8 +19,6 @@ use Livewire\Component;
 
 class VersionManager extends Component
 {
-    use ConfirmsPasswords;
-
     /**
      * Whether the version manager UI is currently visible.
      */

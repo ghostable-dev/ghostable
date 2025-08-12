@@ -2,7 +2,6 @@
 
 namespace App\Secret\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
 use App\Secret\Actions\CreateSecret;
@@ -22,8 +21,6 @@ use Livewire\Component;
 
 class SecretsManager extends Component
 {
-    use ConfirmsPasswords;
-
     #[Locked]
     public string $ownerType;
 

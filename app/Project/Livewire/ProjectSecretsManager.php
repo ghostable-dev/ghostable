@@ -18,7 +18,7 @@ class ProjectSecretsManager extends SecretsManager
         $this->authorize('view', $project);
 
         $this->projectId = $project->id;
-        
+
         $this->setOwner($project);
     }
 

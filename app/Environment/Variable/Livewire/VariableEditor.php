@@ -2,7 +2,6 @@
 
 namespace App\Environment\Variable\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\CreateVariable;
@@ -19,8 +18,6 @@ use Livewire\Attributes\On;
 
 class VariableEditor extends VariableModalComponent
 {
-    use ConfirmsPasswords;
-
     /**
      * Event name used to trigger the variable editor modal.
      */
@@ -172,7 +169,7 @@ class VariableEditor extends VariableModalComponent
                         <flux:autocomplete 
                             wire:model.live="value"
                             label="Value"
-                            wire:keydown.enter="$dispatch('confirm-password', { then: 'update' })"
+                            wire:keydown.enter="updateVariable"
                             autofocus
                             required>
                             @foreach($this->valueSuggestions as $suggestion)
@@ -187,22 +184,11 @@ class VariableEditor extends VariableModalComponent
                         <flux:modal.close>
                             <flux:button variant="ghost">Cancel</flux:button>
                         </flux:modal.close>
-                        @if($this->noChangesWereMade)
-                            <flux:button  
-                                variant="primary"
-                                wire:click="updateVariable">
-                                {{ __('Update') }}
-                            </flux:button>
-                        @else
-                            <x-auth.confirms-password wire:then="updateVariable">
-                                <flux:button  
-                                    variant="primary"
-                                    :loading="true"
-                                    wire:target="updateVariable">
-                                    {{ __('Update') }}
-                                </flux:button>
-                            </x-auth.confirms-password>
-                        @endif
+                        <flux:button  
+                            variant="primary"
+                            wire:click="updateVariable">
+                            {{ __('Update') }}
+                        </flux:button>
                     </div>
                 </div>
             </flux:modal>

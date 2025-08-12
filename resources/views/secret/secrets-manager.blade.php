@@ -122,11 +122,9 @@
                 <flux:modal.close>
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <x-auth.confirms-password wire:then="removeSecret">
-                    <flux:button variant="danger" :loading="true" wire:target="removeSecret">
-                        {{ __('Remove Secret') }}
-                    </flux:button>
-                </x-auth.confirms-password>
+                <flux:button variant="danger" wire:click="removeSecret">
+                    {{ __('Remove Secret') }}
+                </flux:button>
             </div>
         </div>
     </flux:modal>

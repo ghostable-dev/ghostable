@@ -2,7 +2,6 @@
 
 namespace App\Environment\Livewire;
 
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Auth\Models\PersonalAccessToken;
 use App\Environment\Actions\Token\CreateEnvToken;
 use App\Environment\Actions\Token\DeleteEnvToken;
@@ -13,8 +12,6 @@ use Livewire\Attributes\Computed;
 
 class EnvironmentAccessTokenManager extends EnvironmentComponent
 {
-    use ConfirmsPasswords;
-
     /**
      * The user-provided name for a new CLI token.
      */

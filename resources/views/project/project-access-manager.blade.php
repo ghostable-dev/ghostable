@@ -41,14 +41,14 @@
                 <div class="flex gap-2">
                     <flux:spacer />
                     <flux:button variant="ghost" wire:click="cancelIsRestrictedChange">Cancel</flux:button>
-                    <x-auth.confirms-password wire:then="updateIsRestricted">
+                    <flux:button variant="danger" wire:click="updateIsRestricted">
                         <span x-show="is_restricted">
-                            <flux:button variant="danger">Yes, Restrict Access</flux:button>
+                            Yes, Restrict Access
                         </span>
                         <span x-show="!is_restricted">
-                            <flux:button variant="primary">Yes, Disable Restriction</flux:button>
+                            Yes, Disable Restriction
                         </span>
-                    </x-auth.confirms-password>
+                    </flux:button>
                 </div>
             </div>
         </flux:modal>

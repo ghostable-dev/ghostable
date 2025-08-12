@@ -3,7 +3,6 @@
 namespace App\Environment\Livewire;
 
 use App\Account\Models\User;
-use App\Auth\Concerns\ConfirmsPasswords;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Team\Actions\CreatePermissionOverride;
@@ -18,8 +17,6 @@ use Livewire\Component;
 
 class EnvironmentAccessManager extends Component
 {
-    use ConfirmsPasswords;
-
     #[Locked]
     public string $environmentId;
 
