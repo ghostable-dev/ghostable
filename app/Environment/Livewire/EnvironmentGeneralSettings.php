@@ -11,8 +11,8 @@ use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -74,7 +74,7 @@ class EnvironmentGeneralSettings extends Component
     {
         return EnvironmentType::selectOptions();
     }
-    
+
     /**
      * Get the available environment file format options for selection.
      *
@@ -88,7 +88,7 @@ class EnvironmentGeneralSettings extends Component
     {
         return EnvFileFormat::selectOptions();
     }
-    
+
     /**
      * Get the list of valid environments that can be selected
      * as the base (parent) for the current environment.
@@ -135,7 +135,7 @@ class EnvironmentGeneralSettings extends Component
             'file_format' => $validated['fileFormat'],
         ]);
     }
-    
+
     /**
      * Livewire lifecycle hook triggered when the `base_id` property changes.
      *
@@ -151,10 +151,11 @@ class EnvironmentGeneralSettings extends Component
     {
         if (! $this->base_id !== $this->environment->base_id) {
             Flux::modal('confirm-base-change')->show();
+
             return;
         }
     }
-    
+
     /**
      * Handle updating the base (parent) environment for the current environment.
      *
@@ -169,17 +170,17 @@ class EnvironmentGeneralSettings extends Component
     public function updateBaseEnvironment(): void
     {
         $validated = $this->validate(EnvironmentRules::updateBaseRules($this->environment));
-        
+
         $base = $this->environment->project->environments()
             ->where('id', $validated['base_id'] ?? null)
             ->first();
-        
+
         $this->authorize('updateBase', [$this->environment, $base]);
-        
+
         resolve(UpdateBaseEnvironment::class)->handle($this->environment, base: $base);
-        
+
         resolve(EnvironmentAncestryResolver::class)->bust($this->environment);
-        
+
         $this->redirect(route('environment.settings.general', $this->environment));
     }
 

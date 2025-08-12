@@ -30,7 +30,7 @@ class EnvironmentRules
             'fileFormat' => self::formatRules(),
         ];
     }
-    
+
     public static function updateBaseRules(Environment $environment): array
     {
         return [
@@ -41,7 +41,7 @@ class EnvironmentRules
                     ->where(fn ($query) => $query
                         ->where('project_id', $environment->project_id)
                         ->where('id', '!=', $environment->id)),
-            ]
+            ],
         ];
     }
 
