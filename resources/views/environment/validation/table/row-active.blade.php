@@ -1,4 +1,17 @@
 <flux:table.row wire:key="rule-{{ $rule->id }}">
+    {{-- Origin / Override indicator --}}
+    <flux:table.cell>
+        @if($rule->inherited)
+            <flux:tooltip content="{{ $rule->origin }}">
+                <flux:button variant="subtle" icon="git-branch" size="xs" class="!text-brand" />
+            </flux:tooltip>
+        @elseif($rule->is_override)
+            <flux:tooltip content="{{ $this->environment->base->name }}">
+                <flux:button variant="subtle" icon="arrow-path" size="xs" class="!text-brand" />
+            </flux:tooltip>
+        @endif
+    </flux:table.cell>
+
     {{-- Key --}}
     <flux:table.cell>
         <flux:text>{{ $rule->key }}</flux:text>

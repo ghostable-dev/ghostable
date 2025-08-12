@@ -1,5 +1,10 @@
 <flux:table.row wire:key="rule-{{ $rule->id }}">
     <flux:table.cell>
+        <flux:tooltip content="{{ $rule->origin }}">
+            <flux:button variant="subtle" icon="x-mark" size="xs" />
+        </flux:tooltip>
+    </flux:table.cell>
+    <flux:table.cell>
         <flux:text size="sm" class="line-through">{{ $rule->key }}</flux:text>
     </flux:table.cell>
     <flux:table.cell colspan="2">
