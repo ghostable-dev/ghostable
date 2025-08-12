@@ -14,8 +14,6 @@
             @endif
 
             <flux:fieldset>
-                <flux:legend>Email notifications</flux:legend>
-
                 <div class="space-y-4">
                     @foreach($this->notificationOptions as $case)
                         <flux:switch
