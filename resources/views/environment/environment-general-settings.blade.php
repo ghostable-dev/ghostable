@@ -3,60 +3,71 @@
     <div class="space-y-6 max-w-2xl">
     
         {{-- Environment ID --}}
-        <div>
-            <div class="mb-4">
-                <flux:heading size="lg">{{ __('Environment ID') }}</flux:heading>
-                <flux:subheading>Your environment's unique ID.</flux:subheading>
-            </div>
-            <div>
-                <flux:input wire:model="environmentId" readonly copyable/>
-            </div>
-        </div>
-        
-        {{-- Base --}}
-        <div>
-            <div class="mb-4">
-                <flux:heading size="lg">{{ __('Base Enviromment') }}</flux:heading>
-                <flux:subheading>The enviromment for which this environment will 
-                inherit it's variables and validation from.</flux:subheading>
-            </div>
-            <div>
-                <flux:select wire:model.live="base_id" :readonly="!$this->canEdit">
-                    <flux:select.option wire:key="base-none" value="">None (standalone)</flux:select.option>
-                    @foreach($this->baseOptions as $env)
-                        <flux:select.option wire:key="base-{{ $env->id }}" value="{{ $env->id }}">
-                            {{ $env->name }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
-            </div>
-            
-            {{-- Base change confirmation modal --}}
-            <flux:modal name="confirm-base-change" focusable class="max-w-lg">
-                <div class="space-y-6">
-                    <div>
-                        <flux:heading size="lg">{{ __('Change Base Environment') }}</flux:heading>
-                        <flux:subheading>{{ __('Changing the base will update inherited variables and validation rules 
-                        for this environment.') }}</flux:subheading>
-                    </div>
-                    <div class="flex justify-end space-x-2 rtl:space-x-reverse">
-                        <flux:modal.close>
-                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
-                        </flux:modal.close>
-                        <flux:button variant="danger" wire:click="updateBaseEnvironment">{{ __('Change') }}</flux:button>
-                    </div>
-                </div>
-            </flux:modal>
-
-        </div>
+        <x-section>
+            <x-slot:title>{{ __('Environment ID') }}</x-slot:title>
+            <x-slot:subheading>
+                Your environment's unique ID.
+                <div class="max-w-2xl">
                     
-        {{-- Environment name/type editor --}}
-        <div>
-            <div>
-                <flux:heading size="lg">{{ __('Settings') }}</flux:heading>
-                <flux:subheading>{{ __('Update this environment\'s configuration.') }}</flux:subheading>
+                </div>
+            </x-slot:subheading>
+            <flux:input wire:model="environmentId" readonly copyable/>
+        </x-section>
+        
+        {{-- Base Environment --}}
+        <x-section>
+            <x-slot:title>{{ __('Base Enviromment') }}</x-slot:title>
+            <x-slot:subheading>
+                <div class="max-w-2xl">
+                    The enviromment for which this environment will 
+                    inherit it's variables and validation from.
+                </div>
+            </x-slot:subheading>
+            <flux:select wire:model.live="base_id" :readonly="!$this->canEdit">
+                <flux:select.option wire:key="base-none" value="">None (standalone)</flux:select.option>
+                @foreach($this->baseOptions as $env)
+                    <flux:select.option wire:key="base-{{ $env->id }}" value="{{ $env->id }}">
+                        {{ $env->name }}
+                    </flux:select.option>
+                @endforeach
+            </flux:select>
+        </x-section>
+        
+        {{-- Base change confirmation modal --}}
+        <flux:modal name="confirm-base-change" focusable class="max-w-lg">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('Change Base Environment') }}</flux:heading>
+                    <flux:subheading>{{ __('Changing the base will update inherited variables and validation rules 
+                    for this environment.') }}</flux:subheading>
+                </div>
+                <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                    <flux:modal.close>
+                        <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button variant="danger" wire:click="updateBaseEnvironment">{{ __('Change') }}</flux:button>
+                </div>
             </div>
-            <form wire:submit="updateEnvironment" class="my-6 w-full space-y-6">
+        </flux:modal>
+        
+        {{-- Environment name/type editor --}}
+        <x-section>
+            <x-slot:title>{{ __('General Settings') }}</x-slot:title>
+            <x-slot:subheading>
+                <div class="max-w-2xl">
+                    {{ __('Update this environment\'s configuration.') }}
+                </div>
+            </x-slot:subheading>
+            <x-slot:actions>
+                @if($this->canEdit)
+                    <div class="flex items-center justify-end">
+                        <flux:button variant="primary" wire:click="updateEnvironment" class="w-full">
+                            {{ __('Save') }}
+                        </flux:button>
+                    </div>
+                @endif
+            </x-slot:actions>
+            <form class="w-full space-y-6">
                 <flux:input wire:model="name" label="Name" :readonly="!$this->canEdit" required/>
                 <flux:select label="Type" wire:model="type" :readonly="!$this->canEdit" required>
                     @foreach($this->typeOptions as $key => $option)
@@ -72,26 +83,13 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
-                
-                <div class="flex items-center gap-4">
-                    @if($this->canEdit)
-                        <div class="flex items-center justify-end">
-                            <flux:button variant="primary" type="submit" class="w-full">
-                                {{ __('Save') }}
-                            </flux:button>
-                        </div>
-                    @endif
-                    <x-action-message class="me-3" on="environment-updated">
-                        {{ __('Saved.') }}
-                    </x-action-message>
-                </div>
             </form>
-        </div>
+        </x-section>
         
         {{-- Delete environment callout --}}
         @perform($this->environment->project, 'env:delete')
             <flux:separator variant="subtle" />
-            <div class="pt-6">
+            <div>
                 <flux:callout icon="trash" color="red" inline>
                     <flux:callout.heading>Danger Zone</flux:callout.heading>
                     <flux:callout.text>
