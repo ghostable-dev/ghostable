@@ -1,6 +1,6 @@
 <?php
 
-use App\Environment\Actions\PushEnvironmentVariables;
+use App\Environment\Actions\PushEnvironment;
 use App\Environment\Enums\EnvironmentType;
 use Laravel\Sanctum\Sanctum;
 
@@ -19,7 +19,7 @@ test('unauthenticated users cannot get validate environments', function () {
 });
 
 test('returns ok with valid environment', function () {
-    app(PushEnvironmentVariables::class)->handle($this->env, [
+    app(PushEnvironment::class)->handle($this->env, [
         'APP_DEBUG=TRUE',
         'APP_ENV=development',
         'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
@@ -37,7 +37,7 @@ test('users cannot view validate environments they are not members of', function
 });
 
 test('returns errors with invalid environment', function () {
-    app(PushEnvironmentVariables::class)->handle($this->env, [
+    app(PushEnvironment::class)->handle($this->env, [
         'APP_DEBUG=TRUE',
         'APP_ENV=development',
         'APP_URL=https://www.raysoccultbooks.com',
