@@ -10,12 +10,12 @@ use App\Environment\Resolvers\ResolveEnvironmentVariables;
 use App\Environment\Services\EnvParser;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Actions\DeleteVariable;
+use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Actions\ReinstateInheritedVariable;
 use App\Environment\Variable\Actions\ReinstateOverrideVariable;
 use App\Environment\Variable\Actions\SuppressInheritedVariable;
 use App\Environment\Variable\Actions\SuppressOverrideVariable;
 use App\Environment\Variable\Actions\UpdateVariable;
-use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Entities\UpdateVariableData;
 use Illuminate\Support\Collection;
@@ -119,6 +119,7 @@ class PushEnvironmentVariables
             ->filter(fn (EnvLine $line) => $line->isValid())
             ->map(function (EnvLine $line) {
                 $line->key = app(NormalizeVariableKey::class)->handle($line->key ?? '');
+
                 return $line;
             })
             ->keyBy(fn ($line) => $line->key);
