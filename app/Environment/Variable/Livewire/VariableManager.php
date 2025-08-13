@@ -140,9 +140,8 @@ class VariableManager extends Component
             $this->sortDirection = 'asc';
         }
     }
-    
-    
-     /**
+
+    /**
      * Dispatch an event to open the environment
      * variable importer modal.
      */

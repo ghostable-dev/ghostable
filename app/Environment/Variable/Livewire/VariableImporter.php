@@ -19,6 +19,7 @@ class VariableImporter extends Component
      * Events
      */
     public const LAUNCH = 'variable-importer:launch';
+
     public const IMPORTED = 'variable-importer:imported';
 
     /**
@@ -31,22 +32,22 @@ class VariableImporter extends Component
      */
     #[Locked]
     public string $environmentId;
-    
+
     /**
      * The variables input.
      */
     public string $input = '';
-    
+
     public function mount(Environment $environment): void
     {
         $this->environmentId = $environment->id;
     }
-    
+
     /**
      * Livewire event listener to launch the environment modal.
      */
     #[On(self::LAUNCH)]
-    public function launchModal(): void 
+    public function launchModal(): void
     {
         $this->showing = true;
     }
@@ -61,10 +62,10 @@ class VariableImporter extends Component
     {
         return ResolveEnvironment::onceWithContext($this->environmentId);
     }
-    
+
     /**
      * Import environment variables from pasted input.
-    */
+     */
     public function import(): void
     {
         $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
@@ -74,10 +75,10 @@ class VariableImporter extends Component
         }
 
         resolve(ImportEnvironmentVariables::class)->handle(
-            environment: $this->environment, 
-            rawInput: $this->input, 
+            environment: $this->environment,
+            rawInput: $this->input,
             importedBy: Auth::user()
-        ); 
+        );
 
         $this->reset('input');
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);

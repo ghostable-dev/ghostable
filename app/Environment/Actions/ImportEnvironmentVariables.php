@@ -19,7 +19,7 @@ class ImportEnvironmentVariables
     public function handle(Environment $environment, string $rawInput, ?User $importedBy = null): void
     {
         $lines = $this->getLines($rawInput);
-        if(!$lines) {
+        if (! $lines) {
             return;
         }
 
@@ -28,14 +28,14 @@ class ImportEnvironmentVariables
             incomingRaw: $lines,
             strategy: new PushEnvironmentStrategy(silently: true),
         );
-        
+
         $this->log(
-            environment: $environment, 
-            results: $results, 
+            environment: $environment,
+            results: $results,
             importedBy: $importedBy
         );
     }
-    
+
     /**
      * Split a string into an array of lines.
      *
@@ -46,7 +46,7 @@ class ImportEnvironmentVariables
     {
         return preg_split('/\r\n|\n|\r/', $input);
     }
-    
+
     /**
      * Record an import activity for an environment.
      *
@@ -58,8 +58,7 @@ class ImportEnvironmentVariables
         Environment $environment,
         PushResultData $results,
         ?User $importedBy = null,
-    ): void
-    {
+    ): void {
         activity('variable')
             ->performedOn($environment)
             ->causedBy($importedBy)

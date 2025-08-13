@@ -89,7 +89,7 @@ class PushEnvironment
 
         $this->applyChanges($env, $added, $updated, $removed, $strategy, $ancestor);
 
-        if(!$strategy->silently) {
+        if (! $strategy->silently) {
             activity('variable')
                 ->performedOn($env)
                 ->causedBy(Auth::user())
@@ -100,7 +100,7 @@ class PushEnvironment
                     'removed' => $removed->count(),
                 ])->log("Pushed environment file to \"{$env->name}\"");
         }
-        
+
         return new PushResultData(
             added: $added->count(),
             updated: $updated->count(),
