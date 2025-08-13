@@ -5,12 +5,13 @@ namespace App\Environment\Actions;
 use App\Account\Models\User;
 use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
+use App\Environment\Enums\PushMode;
 use App\Environment\Models\Environment;
 
-class ImportEnvironmentVariables
+class ImportEnvironment
 {
     /**
-     * Process and import environment variables from a raw environment file string.
+     * Process and import environment file from a raw string string.
      *
      * Splits the raw input into individual lines, pushes the variables into the given
      * environment (silently, without triggering notifications), and logs the import
@@ -27,8 +28,7 @@ class ImportEnvironmentVariables
             env: $environment,
             incomingRaw: $lines,
             strategy: new PushEnvironmentStrategy(
-                suppressOverrideOnRemoval: true,
-                reinstateDeleted: false,
+                mode: PushMode::ADDITIVE,
                 silently: true
             ),
         );

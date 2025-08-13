@@ -2,7 +2,6 @@
 
 namespace App\Environment\Actions;
 
-use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
 use App\Environment\Models\Environment;
 use App\Environment\Validation\Actions\ValidateEnvironment;
@@ -19,7 +18,6 @@ class PushAndValidateEnvironment
             $result = app(PushEnvironment::class)->handle(
                 env: $env,
                 incomingRaw: $incomingRaw,
-                // strategy: new PushEnvironmentStrategy()
             );
 
             // Will throw ValidationException and rollback if invalid

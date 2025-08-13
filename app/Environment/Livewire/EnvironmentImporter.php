@@ -1,47 +1,32 @@
 <?php
 
-namespace App\Environment\Variable\Livewire;
+namespace App\Environment\Livewire;
 
-use App\Environment\Actions\ImportEnvironmentVariables;
-use App\Environment\Livewire\EnvironmentActivity;
-use App\Environment\Models\Environment;
-use App\Environment\Resolvers\ResolveEnvironment;
+use App\Environment\Actions\ImportEnvironment;
+use App\Environment\Enums\PushMode;
 use App\Team\Enums\TeamPermission;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
-use Livewire\Component;
 
-class VariableImporter extends Component
+class EnvironmentImporter extends EnvironmentComponent
 {
     /**
      * Events
      */
-    public const LAUNCH = 'variable-importer:launch';
+    public const LAUNCH = 'environment-importer:launch';
 
-    public const IMPORTED = 'variable-importer:imported';
+    public const IMPORTED = 'environment-importer:imported';
 
     /**
-     * Indicates whether the variable editor modal is currently visible.
+     * Indicates whether the modal is currently visible.
      */
     public bool $showing = false;
-
-    /**
-     * The ID of the environment currently being managed.
-     */
-    #[Locked]
-    public string $environmentId;
 
     /**
      * The variables input.
      */
     public string $input = '';
-
-    public function mount(Environment $environment): void
-    {
-        $this->environmentId = $environment->id;
-    }
 
     /**
      * Livewire event listener to launch the environment modal.
@@ -52,15 +37,10 @@ class VariableImporter extends Component
         $this->showing = true;
     }
 
-    /**
-     * Retrieve the current environment instance based on the provided environment ID.
-     *
-     * This method will throw a ModelNotFoundException if the environment does not exist.
-     */
-    #[Computed]
-    public function environment(): Environment
+    #[Computed(persist: true)]
+    public function description(): string
     {
-        return ResolveEnvironment::onceWithContext($this->environmentId);
+        return PushMode::ADDITIVE->description();
     }
 
     /**
@@ -74,7 +54,7 @@ class VariableImporter extends Component
             return;
         }
 
-        resolve(ImportEnvironmentVariables::class)->handle(
+        resolve(ImportEnvironment::class)->handle(
             environment: $this->environment,
             rawInput: $this->input,
             importedBy: Auth::user()
@@ -93,6 +73,7 @@ class VariableImporter extends Component
                 <div class="space-y-6">
                     <div class="space-y-4">
                         <flux:heading size="lg">Import Environment File</flux:heading>
+                        <flux:callout variant="secondary" icon="information-circle" heading="{{ $this->description }}" />
                         <flux:textarea wire:model.defer="input" rows="12" label="Copy and paste the environment file contents." />
                         <div class="flex gap-2">
                             <flux:spacer />
