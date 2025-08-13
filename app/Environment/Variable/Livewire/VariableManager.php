@@ -25,12 +25,9 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 class VariableManager extends Component
 {
-    use WithFileUploads;
-
     /**
      * The ID of the environment currently being managed.
      */
@@ -51,9 +48,14 @@ class VariableManager extends Component
     public array $showing = [];
 
     /**
-     * Uploaded environment file.
+     * Whether the import modal is currently displayed.
      */
-    public $envUpload;
+    public bool $showImportModal = false;
+
+    /**
+     * Raw contents of the environment file pasted into the import modal.
+     */
+    public string $envInput = '';
 
     public function mount(Environment $environment): void
     {
@@ -243,17 +245,17 @@ class VariableManager extends Component
     }
 
     /**
-     * Import an uploaded environment file.
+     * Import environment variables from pasted input.
      */
     public function importEnvFile(): void
     {
         $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
 
-        if (! $this->envUpload) {
+        if (blank($this->envInput)) {
             return;
         }
 
-        $lines = preg_split('/\r\n|\n|\r/', $this->envUpload->get());
+        $lines = preg_split('/\r\n|\n|\r/', $this->envInput);
 
         app(LogEnvironmentImported::class)->handle(
             environment: $this->environment,
@@ -266,7 +268,7 @@ class VariableManager extends Component
             incomingRaw: $lines,
         );
 
-        $this->envUpload = null;
+        $this->reset(['envInput', 'showImportModal']);
 
         $this->refreshVars();
 

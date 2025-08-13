@@ -3,7 +3,6 @@
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Variable\Livewire\VariableManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
@@ -17,10 +16,8 @@ it('imports environment file and logs activity', function () {
 
     $this->actingAs($user);
 
-    $file = UploadedFile::fake()->createWithContent('env.env', "FOO=BAR\n");
-
     Livewire::test(VariableManager::class, ['environment' => $env])
-        ->set('envUpload', $file)
+        ->set('envInput', "FOO=BAR\n")
         ->call('importEnvFile');
 
     expect($env->fresh()->variables()->where('key', 'FOO')->exists())->toBeTrue();
