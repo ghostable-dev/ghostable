@@ -15,12 +15,13 @@ use App\Environment\Variable\Actions\ReinstateOverrideVariable;
 use App\Environment\Variable\Actions\SuppressInheritedVariable;
 use App\Environment\Variable\Actions\SuppressOverrideVariable;
 use App\Environment\Variable\Actions\UpdateVariable;
+use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Entities\UpdateVariableData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class PushEnvVars
+class PushEnvironmentVariables
 {
     /**
      * Push a new set of variables to the given environment.
@@ -116,6 +117,10 @@ class PushEnvVars
     {
         return collect($raw)
             ->filter(fn (EnvLine $line) => $line->isValid())
+            ->map(function (EnvLine $line) {
+                $line->key = app(NormalizeVariableKey::class)->handle($line->key ?? '');
+                return $line;
+            })
             ->keyBy(fn ($line) => $line->key);
     }
 
