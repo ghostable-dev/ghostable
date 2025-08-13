@@ -2,9 +2,7 @@
 
 namespace App\Environment\Variable\Livewire;
 
-use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\LogEnvironmentViewed;
-use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentImporter;
@@ -209,28 +207,6 @@ class VariableManager extends Component
     public function viewVersions(EnvironmentVariable $variable): void
     {
         $this->dispatch(VersionManager::LAUNCH, $variable->id);
-    }
-
-    /**
-     * Download the full environment file.
-     */
-    public function downloadEnvFile()
-    {
-        $this->authorize('perform', [$this->environment, TeamPermission::ViewVariables]);
-
-        $content = RenderEnvFile::handle(env: $this->environment);
-
-        app(LogEnvironmentDownloaded::class)->handle(
-            environment: $this->environment,
-            user: Auth::user(),
-            source: 'ui',
-        );
-
-        $filename = 'environment-'.str($this->environment->name)->slug().'.env';
-
-        return response()->streamDownload(function () use ($content) {
-            echo $content;
-        }, $filename);
     }
 
     /**
