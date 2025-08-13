@@ -3,8 +3,9 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Entities\EnvLine;
-use App\Environment\Entities\PushEnvVarsStrategy;
+use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
+use App\Environment\Enums\PushMode;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironmentVariables;
 use App\Environment\Services\EnvParser;
@@ -31,9 +32,9 @@ class PushEnvironment
     public function handle(
         Environment $env,
         array $incomingRaw,
-        ?PushEnvVarsStrategy $strategy = null
+        ?PushEnvironmentStrategy $strategy = null
     ): PushResultData {
-        $strategy ??= new PushEnvVarsStrategy;
+        $strategy ??= new PushEnvironmentStrategy;
 
         $parser = new EnvParser;
         $incoming = $this->normalizeIncoming($parser->parse($incomingRaw));
@@ -78,7 +79,7 @@ class PushEnvironment
         }
 
         foreach ($activeExisting as $key => $dto) {
-            if (! $incoming->has($key)) {
+            if (! $incoming->has($key) && $strategy->mode === PushMode::REPLACE) {
                 $removed->push($key);
             }
         }
@@ -89,16 +90,17 @@ class PushEnvironment
 
         $this->applyChanges($env, $added, $updated, $removed, $strategy, $ancestor);
 
-        // Log results
-        activity('variable')
-            ->performedOn($env)
-            ->causedBy(Auth::user())
-            ->event('push')
-            ->withProperties([
-                'added' => $added->count(),
-                'updated' => $updated->count(),
-                'removed' => $removed->count(),
-            ])->log("Pushed environment file to \"{$env->name}\"");
+        if (! $strategy->silently) {
+            activity('variable')
+                ->performedOn($env)
+                ->causedBy(Auth::user())
+                ->event('push')
+                ->withProperties([
+                    'added' => $added->count(),
+                    'updated' => $updated->count(),
+                    'removed' => $removed->count(),
+                ])->log("Pushed environment file to \"{$env->name}\"");
+        }
 
         return new PushResultData(
             added: $added->count(),
@@ -150,7 +152,7 @@ class PushEnvironment
         Collection $added,
         Collection $updated,
         Collection $removed,
-        PushEnvVarsStrategy $strategy,
+        PushEnvironmentStrategy $strategy,
         Collection $ancestor
     ): void {
 
@@ -170,7 +172,7 @@ class PushEnvironment
         }
 
         foreach ($updated as $key => $line) {
-            $varToUpdate = $env->findVariableForKey($key);
+            $varToUpdate = $env->findLocalVariableForKey($key);
             if (! $varToUpdate) {
                 continue;
             }
@@ -186,7 +188,7 @@ class PushEnvironment
         }
 
         foreach ($removed as $key) {
-            $var = $env->findVariableForKey($key);
+            $var = $env->findLocalVariableForKey($key);
 
             if (! $var) {
                 if ($strategy->suppressInheritedOnRemoval) {

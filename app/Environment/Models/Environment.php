@@ -184,7 +184,7 @@ class Environment extends Model implements SupportsOverrides
         }, "owningTeam:{$this->id}");
     }
 
-    public function findVariableForKey(string $key): ?EnvironmentVariable
+    public function findLocalVariableForKey(string $key): ?EnvironmentVariable
     {
         return $this->variables()->where('key', $key)->first();
     }

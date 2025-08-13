@@ -17,7 +17,7 @@ class PushAndValidateEnvironment
         return DB::transaction(function () use ($env, $incomingRaw) {
             $result = app(PushEnvironment::class)->handle(
                 env: $env,
-                incomingRaw: $incomingRaw
+                incomingRaw: $incomingRaw,
             );
 
             // Will throw ValidationException and rollback if invalid

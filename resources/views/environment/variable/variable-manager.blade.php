@@ -6,7 +6,8 @@
             <flux:accordion.item>
                 <flux:accordion.heading>
                     <flux:callout.heading>
-                        This environment has {{ $this->validationErrors->count() }} validation issue{{ $this->validationErrors->count() > 1 ? 's' : '' }}.
+                        @php $count = $this->validationErrors->count(); @endphp
+                        This environment has {{ $count }} validation {{ str()->plural('issue', $count) }}.
                     </flux:callout.heading>
                 </flux:accordion.heading>
                 <flux:accordion.content>
@@ -33,12 +34,16 @@
             </div>
         </x-slot:subheading>
         <x-slot:actions>
-            <flux:button
-                wire:click="downloadEnvFile"
-                variant="ghost"
-                icon="arrow-down-tray">
-                Download .env
-            </flux:button>
+            <div class="flex gap-3">
+                <flux:button variant="ghost" icon="arrow-down-tray" wire:click="downloadEnvFile">Download</flux:button>
+                <flux:button
+                    variant="ghost"
+                    icon="arrow-up-tray"
+                    x-on:click="$wire.dispatch('{{ \App\Environment\Livewire\EnvironmentImporter::LAUNCH }}')"
+                    :disabled="!$this->canEditVariables">
+                    Import
+                </flux:button>
+            </div>
         </x-slot:actions>
         
         {{-- Add environment var form --}}
@@ -78,6 +83,9 @@
         </flux:table>
     </x-section>
     
+    {{-- Variable importer modal --}}
+    <livewire:environment.livewire.environment-importer :environment="$this->environment" />
+
     {{-- Variable editor modal --}}
     <livewire:environment.variable.livewire.variable-editor />
     

@@ -7,6 +7,7 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Livewire\EnvironmentActivity;
+use App\Environment\Livewire\EnvironmentImporter;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Validation\Actions\ValidateEnvironment;
@@ -239,6 +240,7 @@ class VariableManager extends Component
      * This is triggered by the `VariableEditor::UPDATED` event.
      */
     #[On([
+        EnvironmentImporter::IMPORTED,
         VariableEditor::UPDATED,
         VariableCreator::CREATED,
         VariableDeleter::DELETED,
