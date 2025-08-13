@@ -2,11 +2,18 @@
 
 namespace App\Environment\Resolvers;
 
+use App\Environment\Entities\ResolvedVariableData;
 use App\Environment\Models\Environment;
 use Illuminate\Support\Collection;
 
 class ResolveEnvironmentVariables
 {
+    /**
+     * Resolve the full set of variables for an environment, including
+     * inherited values and metadata about their origin.
+     *
+     * @return Collection<int, ResolvedVariableData>
+     */
     public function handle(Environment $env): Collection
     {
         // 1. Walk from root → base → current and collect all vars along the way
@@ -27,25 +34,23 @@ class ResolveEnvironmentVariables
                     continue;
                 }
 
-                // Track inheritance and origin details
-                $var->forceFill([
-                    'inherited' => $envInChain->id !== $env->id,
-                    'overridden' => false, // set later
-                    'overrides' => false,
-                    'origin' => $envInChain->name,
-                ]);
-
-                $resolved->put($key, $var);
+                $resolved->put($key, new ResolvedVariableData(
+                    variable: $var,
+                    inherited: $envInChain->id !== $env->id,
+                    overridden: false, // set later if needed
+                    overrides: false,
+                    origin: $envInChain->name,
+                ));
             }
         }
 
         // 2. Mark overrides (owned vars that override inherited ones)
-        return $resolved->map(function ($var) {
-            if (! $var->inherited) {
-                $var->overrides = true;
+        return $resolved->map(function (ResolvedVariableData $data) {
+            if (! $data->inherited) {
+                $data->overrides = true;
             }
 
-            return $var;
+            return $data;
         })->values();
     }
 
