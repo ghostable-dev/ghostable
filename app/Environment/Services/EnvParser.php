@@ -74,10 +74,18 @@ class EnvParser
         }
 
         foreach ($parsed as $entry) {
+
+            $valueOpt = $entry->getValue(); // PhpOption\Some or PhpOption\None
+
+            // Default to empty string if no value present
+            $value = $valueOpt->isDefined()
+                ? $this->sanitizeParsedValue($valueOpt->get()->getChars())
+                : '';
+
             return new EnvLine(
                 type: EnvLineType::ENV,
                 key: $entry->getName(),
-                value: $this->sanitizeParsedValue($entry->getValue()->get()->getChars()),
+                value: $value,
                 commented: $commented,
                 raw: $raw
             );
