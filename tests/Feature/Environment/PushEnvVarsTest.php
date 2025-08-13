@@ -20,7 +20,7 @@ it('reinstates suppressed inherited variable when re-added', function () {
 
     resolve(SuppressInheritedVariable::class)->handle('FOO', $env);
 
-    app(PushEnvVars::class)->handle($env, ['FOO=child'], new PushEnvVarsStrategy());
+    app(PushEnvVars::class)->handle($env, ['FOO=child'], new PushEnvVarsStrategy);
 
     $var = $env->variables()->where('key', 'FOO')->first();
     expect($var)->not->toBeNull();
@@ -37,10 +37,9 @@ it('suppresses inherited variable when removed', function () {
     ]);
     $env = $this->createEnvironment('Child', EnvironmentType::DEVELOPMENT, $project, $base);
 
-    app(PushEnvVars::class)->handle($env, [], new PushEnvVarsStrategy());
+    app(PushEnvVars::class)->handle($env, [], new PushEnvVarsStrategy);
 
     $var = $env->variables()->where('key', 'BAR')->first();
     expect($var)->not->toBeNull();
     expect((bool) $var->is_deleted)->toBeTrue();
 });
-

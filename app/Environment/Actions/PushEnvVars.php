@@ -33,9 +33,9 @@ class PushEnvVars
         array $incomingRaw,
         ?PushEnvVarsStrategy $strategy = null
     ): PushResultData {
-        $strategy ??= new PushEnvVarsStrategy();
+        $strategy ??= new PushEnvVarsStrategy;
 
-        $parser = new EnvParser();
+        $parser = new EnvParser;
         $incoming = $this->normalizeIncoming($parser->parse($incomingRaw));
 
         $existing = $this->loadExisting($env); // keyed by key
