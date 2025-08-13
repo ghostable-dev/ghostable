@@ -1,7 +1,7 @@
 <?php
 
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Variable\Livewire\VariableImporter;
+use App\Environment\Livewire\EnvironmentImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
@@ -16,7 +16,7 @@ it('imports environment file and logs activity', function () {
 
     $this->actingAs($user);
 
-    Livewire::test(VariableImporter::class, ['environment' => $env->id])
+    Livewire::test(EnvironmentImporter::class, ['environment' => $env->id])
         ->set('input', "FOO=BAR\n")
         ->call('import');
 

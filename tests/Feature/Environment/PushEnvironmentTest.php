@@ -53,7 +53,7 @@ it('does not suppress inherited variable when missing in additive mode', functio
     ]);
     $env = $this->createEnvironment('Child', EnvironmentType::DEVELOPMENT, $project, $base);
 
-    app(PushEnvironment::class)->handle($env, []); // default additive mode
+    app(PushEnvironment::class)->handle($env, [], new PushEnvironmentStrategy(mode: PushMode::ADDITIVE));
 
     $var = $env->variables()->where('key', 'BAR')->first();
     expect($var)->toBeNull();

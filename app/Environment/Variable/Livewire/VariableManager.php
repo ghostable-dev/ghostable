@@ -7,6 +7,7 @@ use App\Environment\Actions\LogEnvironmentViewed;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Livewire\EnvironmentActivity;
+use App\Environment\Livewire\EnvironmentImporter;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Validation\Actions\ValidateEnvironment;
@@ -143,15 +144,6 @@ class VariableManager extends Component
 
     /**
      * Dispatch an event to open the environment
-     * variable importer modal.
-     */
-    public function launchImporterModal(): void
-    {
-        $this->dispatch(VariableImporter::LAUNCH);
-    }
-
-    /**
-     * Dispatch an event to open the environment
      * variable editor for the given variable.
      */
     public function editVariable(EnvironmentVariable $var): void
@@ -248,7 +240,7 @@ class VariableManager extends Component
      * This is triggered by the `VariableEditor::UPDATED` event.
      */
     #[On([
-        VariableImporter::IMPORTED,
+        EnvironmentImporter::IMPORTED,
         VariableEditor::UPDATED,
         VariableCreator::CREATED,
         VariableDeleter::DELETED,

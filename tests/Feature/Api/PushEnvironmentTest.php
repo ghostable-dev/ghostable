@@ -61,7 +61,7 @@ test('pushes vars for member user', function () {
         'APP_URL=https://www.raysoccultbooks.com',
     ]]);
 
-    $response->assertOk()->assertJsonFragment(['added' => 0, 'updated' => 1, 'removed' => 0]);
+    $response->assertOk()->assertJsonFragment(['added' => 0, 'updated' => 1, 'removed' => 1]);
 });
 
 test('forbids non-members from pushing', function () {
