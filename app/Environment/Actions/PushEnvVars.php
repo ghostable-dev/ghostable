@@ -17,7 +17,6 @@ use App\Environment\Variable\Actions\SuppressOverrideVariable;
 use App\Environment\Variable\Actions\UpdateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Entities\UpdateVariableData;
-use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
