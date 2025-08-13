@@ -5,6 +5,7 @@ namespace App\Environment\Actions;
 use App\Environment\Entities\EnvLine;
 use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
+use App\Environment\Enums\PushMode;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironmentVariables;
 use App\Environment\Services\EnvParser;
@@ -78,7 +79,7 @@ class PushEnvironment
         }
 
         foreach ($activeExisting as $key => $dto) {
-            if (! $incoming->has($key)) {
+            if (! $incoming->has($key) && $strategy->mode === PushMode::REPLACE) {
                 $removed->push($key);
             }
         }
