@@ -1,7 +1,7 @@
 <?php
 
 use App\Environment\Actions\PushEnvironment;
-use App\Environment\Entities\PushEnvVarsStrategy;
+use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Variable\Actions\SuppressInheritedVariable;
 use App\Environment\Variable\Models\EnvironmentVariable;
@@ -20,7 +20,7 @@ it('reinstates suppressed inherited variable when re-added', function () {
 
     resolve(SuppressInheritedVariable::class)->handle('FOO', $env);
 
-    app(PushEnvironment::class)->handle($env, ['FOO=child'], new PushEnvVarsStrategy);
+    app(PushEnvironment::class)->handle($env, ['FOO=child'], new PushEnvironmentStrategy);
 
     $var = $env->variables()->where('key', 'FOO')->first();
     expect($var)->not->toBeNull();
@@ -37,7 +37,7 @@ it('suppresses inherited variable when removed', function () {
     ]);
     $env = $this->createEnvironment('Child', EnvironmentType::DEVELOPMENT, $project, $base);
 
-    app(PushEnvironment::class)->handle($env, [], new PushEnvVarsStrategy);
+    app(PushEnvironment::class)->handle($env, [], new PushEnvironmentStrategy);
     $var = $env->variables()->where('key', 'BAR')->first();
     expect($var)->not->toBeNull();
     expect((bool) $var->is_deleted)->toBeTrue();
@@ -47,7 +47,7 @@ it('normalizes variable keys when pushing', function () {
     $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
     $env = $this->createEnvironment('Env', EnvironmentType::DEVELOPMENT, $project);
 
-    app(PushEnvironment::class)->handle($env, ['fooBar=baz'], new PushEnvVarsStrategy);
+    app(PushEnvironment::class)->handle($env, ['fooBar=baz'], new PushEnvironmentStrategy);
 
     $var = $env->variables()->where('key', 'FOOBAR')->first();
     expect($var)->not->toBeNull();

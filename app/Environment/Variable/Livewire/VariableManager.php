@@ -143,6 +143,15 @@ class VariableManager extends Component
 
     /**
      * Dispatch an event to open the environment
+     * variable importer modal.
+     */
+    public function launchImporterModal(): void
+    {
+        $this->dispatch(VariableImporter::LAUNCH);
+    }
+
+    /**
+     * Dispatch an event to open the environment
      * variable editor for the given variable.
      */
     public function editVariable(EnvironmentVariable $var): void
@@ -239,6 +248,7 @@ class VariableManager extends Component
      * This is triggered by the `VariableEditor::UPDATED` event.
      */
     #[On([
+        VariableImporter::IMPORTED,
         VariableEditor::UPDATED,
         VariableCreator::CREATED,
         VariableDeleter::DELETED,
