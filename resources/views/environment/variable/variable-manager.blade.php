@@ -35,13 +35,18 @@
         </x-slot:subheading>
         <x-slot:actions>
             <div class="flex gap-3">
-                <flux:button variant="ghost" icon="arrow-down-tray" wire:click="downloadEnvFile">Download</flux:button>
+                <flux:button
+                    variant="ghost"
+                    icon="arrow-down-tray"
+                    x-on:click="$wire.dispatch('{{ \App\Environment\Livewire\EnvironmentDownloader::LAUNCH }}')">
+                    Download...
+                </flux:button>
                 <flux:button
                     variant="ghost"
                     icon="arrow-up-tray"
                     x-on:click="$wire.dispatch('{{ \App\Environment\Livewire\EnvironmentImporter::LAUNCH }}')"
                     :disabled="!$this->canEditVariables">
-                    Import
+                    Import...
                 </flux:button>
             </div>
         </x-slot:actions>
@@ -83,8 +88,11 @@
         </flux:table>
     </x-section>
     
-    {{-- Variable importer modal --}}
+    {{-- Variable importer modal --}} 
     <livewire:environment.livewire.environment-importer :environment="$this->environment" />
+
+    {{-- Environment downloader modal --}}
+    <livewire:environment.livewire.environment-downloader :environment="$this->environment" />
 
     {{-- Variable editor modal --}}
     <livewire:environment.variable.livewire.variable-editor />

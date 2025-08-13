@@ -7,14 +7,14 @@ use App\Environment\Models\Environment;
 
 class RenderEnvFile
 {
-    public static function handle(Environment $env): string
+    public static function handle(Environment $env, ?EnvFileFormat $format = null): string
     {
         $variables = resolve(ResolveEnvironmentVariables::class)
             ->handle($env)
             ->map(fn ($var) => (object) $var->only(['key', 'value', 'is_commented']))
             ->values();
 
-        $format = $env->file_format ?? EnvFileFormat::ALPHABETICAL;
+        $format ??= $env->file_format ?? EnvFileFormat::ALPHABETICAL;
 
         if ($format === EnvFileFormat::ALPHABETICAL) {
             return $variables->sortBy('key')
