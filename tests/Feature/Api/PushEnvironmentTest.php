@@ -60,6 +60,7 @@ test('pushes vars for member user', function () {
         'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
         'APP_URL=https://www.raysoccultbooks.com',
     ]]);
+    
     $response->assertOk()->assertJsonFragment(['added' => 0, 'updated' => 1, 'removed' => 1]);
 });
 

@@ -3,7 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Entities\EnvLine;
-use App\Environment\Entities\PushEnvVarsStrategy;
+use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironmentVariables;
@@ -31,9 +31,9 @@ class PushEnvironment
     public function handle(
         Environment $env,
         array $incomingRaw,
-        ?PushEnvVarsStrategy $strategy = null
+        ?PushEnvironmentStrategy $strategy = null
     ): PushResultData {
-        $strategy ??= new PushEnvVarsStrategy;
+        $strategy ??= new PushEnvironmentStrategy;
 
         $parser = new EnvParser;
         $incoming = $this->normalizeIncoming($parser->parse($incomingRaw));
@@ -89,17 +89,18 @@ class PushEnvironment
 
         $this->applyChanges($env, $added, $updated, $removed, $strategy, $ancestor);
 
-        // Log results
-        activity('variable')
-            ->performedOn($env)
-            ->causedBy(Auth::user())
-            ->event('push')
-            ->withProperties([
-                'added' => $added->count(),
-                'updated' => $updated->count(),
-                'removed' => $removed->count(),
-            ])->log("Pushed environment file to \"{$env->name}\"");
-
+        if(!$strategy->silently) {
+            activity('variable')
+                ->performedOn($env)
+                ->causedBy(Auth::user())
+                ->event('push')
+                ->withProperties([
+                    'added' => $added->count(),
+                    'updated' => $updated->count(),
+                    'removed' => $removed->count(),
+                ])->log("Pushed environment file to \"{$env->name}\"");
+        }
+        
         return new PushResultData(
             added: $added->count(),
             updated: $updated->count(),
@@ -150,7 +151,7 @@ class PushEnvironment
         Collection $added,
         Collection $updated,
         Collection $removed,
-        PushEnvVarsStrategy $strategy,
+        PushEnvironmentStrategy $strategy,
         Collection $ancestor
     ): void {
 
