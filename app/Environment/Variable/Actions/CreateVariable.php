@@ -4,6 +4,7 @@ namespace App\Environment\Variable\Actions;
 
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\PropagateVariableToDescendants;
 
 class CreateVariable
 {
@@ -36,6 +37,8 @@ class CreateVariable
         if (! $silently) {
             $var->logActivity('created', user: $data->createdBy);
         }
+
+        app(PropagateVariableToDescendants::class)->handle($var);
 
         return $var;
     }

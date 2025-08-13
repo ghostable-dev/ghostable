@@ -176,7 +176,7 @@ class VariableCreator extends Component
                 <form wire:submit="addVariable" class="flex flex-inline items-end gap-4">
                     <div class="basis-1/2 grow-0">
                         <x-environment-key-autocomplete
-                            wire:model.live="key" 
+                            wire:model.live.debounce.350ms="key" 
                             label="Key" 
                             placeholder="e.g. PARANORMAL_STATUS"
                             required
