@@ -87,7 +87,7 @@ class PushEnvVars
             ? resolve(ResolveEnvironmentVariables::class)->handle($env->base)->keyBy(fn ($dto) => $dto->variable->key)
             : collect();
 
-        $this->applyChanges($env, $incoming, $added, $updated, $removed, $strategy, $ancestor);
+        $this->applyChanges($env, $added, $updated, $removed, $strategy, $ancestor);
 
         // Log results
         activity('variable')
@@ -133,19 +133,6 @@ class PushEnvVars
     }
 
     /**
-     * Determine which existing variables need to be updated.
-     *
-     * @param  Collection<string, EnvLine>  $incoming
-     * @param  Collection<string, array{id: int, value: string, is_commented: bool}>  $existing
-     * @return Collection<string, EnvLine>
-     */
-    private function findUpdates(Collection $incoming, Collection $existing): Collection
-    {
-        // unused with new strategy but kept for BC if needed
-        return collect();
-    }
-
-    /**
      * Apply variable adds, updates, and deletes to the environment.
      *
      * @param  Collection<string, EnvLine>  $incoming
@@ -155,7 +142,6 @@ class PushEnvVars
      */
     private function applyChanges(
         Environment $env,
-        Collection $incoming,
         Collection $added,
         Collection $updated,
         Collection $removed,
@@ -169,7 +155,7 @@ class PushEnvVars
             app(CreateVariable::class)->handle(
                 new CreateVariableData(
                     environment: $env,
-                    key: $line->key,
+                    key: $line->key ?? '',
                     value: $line->value ?? '',
                     is_commented: $line->commented ?? false,
                     is_override: $isOverride,
@@ -223,45 +209,5 @@ class PushEnvVars
                 deletedBy: Auth::user()
             );
         }
-    }
-
-    /**
-     * Transform an incoming item into a structured CreateVariableData DTO.
-     *
-     * This is used to convert raw incoming data (e.g., from a push or batch operation)
-     * into a standardized format for creating a new environment variable.
-     */
-    private function toCreateVariableData(
-        Environment $env,
-        object $item
-    ): CreateVariableData {
-        // unused, retained for backwards compatibility
-        return new CreateVariableData(
-            environment: $env,
-            key: $item->key,
-            value: $item->value ?? '',
-            is_commented: $item->commented ?? false,
-            createdBy: Auth::user(),
-        );
-    }
-
-    /**
-     * Transform an incoming data line and existing variable into an UpdateVariableData DTO.
-     *
-     * This helper is used to prepare structured data for updating an environment variable,
-     * typically as part of a batch or sync operation. It extracts the value and comment status
-     * from the input line and associates the update with the authenticated user.
-     */
-    private function toUpdateVariableData(
-        EnvironmentVariable $variable,
-        object $line
-    ): UpdateVariableData {
-        // unused, retained for backwards compatibility
-        return new UpdateVariableData(
-            variable: $variable,
-            value: $line->value ?? '',
-            is_commented: $line->commented ?? false,
-            updatedBy: Auth::user(),
-        );
     }
 }
