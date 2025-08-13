@@ -4,7 +4,6 @@ namespace App\Environment\Variable\Actions;
 
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Models\EnvironmentVariable;
-use App\Environment\Variable\Actions\PropagateVariableToDescendants;
 
 class CreateVariable
 {
