@@ -97,4 +97,3 @@ class EnvironmentDownloader extends EnvironmentComponent
         BLADE;
     }
 }
-

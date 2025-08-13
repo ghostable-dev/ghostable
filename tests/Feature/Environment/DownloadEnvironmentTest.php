@@ -49,4 +49,3 @@ it('downloads environment file with selected format without changing environment
     expect($env->fresh()->file_format)->toBe(EnvFileFormat::GROUPED);
     expect(Activity::query()->where('event', 'downloaded')->where('subject_id', $env->id)->exists())->toBeTrue();
 });
-
