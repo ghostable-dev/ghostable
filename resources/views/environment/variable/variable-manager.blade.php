@@ -33,12 +33,16 @@
             </div>
         </x-slot:subheading>
         <x-slot:actions>
-            <flux:button
-                wire:click="downloadEnvFile"
-                variant="ghost"
-                icon="arrow-down-tray">
-                Download .env
-            </flux:button>
+            <div x-data>
+                <flux:dropdown>
+                    <flux:button variant="ghost" icon="arrow-down-tray"></flux:button>
+                    <flux:menu>
+                        <flux:menu.item wire:click="downloadEnvFile">Download .env</flux:menu.item>
+                        <flux:menu.item x-on:click.prevent="$refs.envFile.click()">Upload .env</flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+                <input type="file" class="hidden" x-ref="envFile" wire:model="envUpload" wire:change="importEnvFile" />
+            </div>
         </x-slot:actions>
         
         {{-- Add environment var form --}}

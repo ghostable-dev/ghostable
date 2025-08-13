@@ -3,7 +3,9 @@
 namespace App\Environment\Variable\Livewire;
 
 use App\Environment\Actions\LogEnvironmentDownloaded;
+use App\Environment\Actions\LogEnvironmentImported;
 use App\Environment\Actions\LogEnvironmentViewed;
+use App\Environment\Actions\PushEnvVars;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Livewire\EnvironmentActivity;
@@ -23,9 +25,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class VariableManager extends Component
 {
+    use WithFileUploads;
+
     /**
      * The ID of the environment currently being managed.
      */
@@ -44,6 +49,11 @@ class VariableManager extends Component
 
     #[Locked]
     public array $showing = [];
+
+    /**
+     * Uploaded environment file.
+     */
+    public $envUpload;
 
     public function mount(Environment $environment): void
     {
@@ -230,6 +240,37 @@ class VariableManager extends Component
         return response()->streamDownload(function () use ($content) {
             echo $content;
         }, $filename);
+    }
+
+    /**
+     * Import an uploaded environment file.
+     */
+    public function importEnvFile(): void
+    {
+        $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
+
+        if (! $this->envUpload) {
+            return;
+        }
+
+        $lines = preg_split('/\r\n|\n|\r/', $this->envUpload->get());
+
+        app(LogEnvironmentImported::class)->handle(
+            environment: $this->environment,
+            user: Auth::user(),
+            source: 'ui',
+        );
+
+        app(PushEnvVars::class)->handle(
+            env: $this->environment,
+            incomingRaw: $lines,
+        );
+
+        $this->envUpload = null;
+
+        $this->refreshVars();
+
+        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
     }
 
     /**
