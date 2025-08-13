@@ -23,12 +23,38 @@ test('persists a new environment record and returns JSON shape', function () {
                 'id',
                 'name',
                 'type',
+                'base_id',
                 'created_at',
                 'updated_at',
             ],
-        ]);
+        ])
+        ->assertJsonPath('data.base_id', null);
     $env = $project->fresh()->environments()->where($payload)->first();
     $this->assertNotNull($env);
+    expect($env->base_id)->toBeNull();
+});
+
+test('can set a base environment when creating', function () {
+    $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
+    $project = $this->createProject(name: 'Website', team: $team);
+    $base = $this->createEnvironment(
+        name: 'production',
+        type: EnvironmentType::PRODUCTION,
+        project: $project,
+    );
+    Sanctum::actingAs($ray);
+    $payload = [
+        'name' => 'staging',
+        'type' => EnvironmentType::STAGING->value,
+        'base_id' => $base->id,
+    ];
+    $this->postJson("/api/projects/{$project->id}/environments", $payload)
+        ->assertStatus(201)
+        ->assertJsonPath('data.base_id', $base->id);
+    $env = $project->fresh()->environments()->where('name', 'staging')->first();
+    $this->assertNotNull($env);
+    expect($env->base_id)->toBe($base->id);
 });
 
 describe('validation', function () {

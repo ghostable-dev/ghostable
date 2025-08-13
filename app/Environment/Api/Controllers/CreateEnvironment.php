@@ -21,10 +21,15 @@ class CreateEnvironment extends Controller
             EnvironmentRules::createRules($project),
         );
 
+        $base = $project->environments()
+            ->where('id', $validated['base_id'] ?? null)
+            ->first();
+
         $env = app(CreateEnv::class)->handle(
             name: $validated['name'],
             type: EnvironmentType::from($validated['type']),
-            project: $project
+            project: $project,
+            base: $base
         );
 
         return new EnvironmentResource($env);
