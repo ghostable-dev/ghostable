@@ -34,8 +34,14 @@
         </x-slot:subheading>
         <x-slot:actions>
             <div class="flex gap-3">
-                <flux:button variant="ghost" icon="arrow-down-tray" wire:click="downloadEnvFile"></flux:button>
-                <flux:button variant="ghost" icon="arrow-up-tray" wire:click="$set('showImportModal', true)"></flux:button>
+                <flux:button variant="ghost" icon="arrow-down-tray" wire:click="downloadEnvFile">Download</flux:button>
+                <flux:button
+                    variant="ghost"
+                    icon="arrow-up-tray"
+                    wire:click="launchImporterModal"
+                    :disabled="!$this->canEditVariables">
+                    Import
+                </flux:button>
             </div>
         </x-slot:actions>
         
@@ -75,26 +81,9 @@
             </flux:table.rows>
         </flux:table>
     </x-section>
-
-    <flux:modal wire:model="showImportModal" class="md:w-lg">
-        <x-modal.form wire:submit="importEnvFile">
-            <x-slot:title>Import Environment File</x-slot:title>
-
-            <div class="space-y-6 mb-4">
-                <flux:textarea wire:model.defer="envInput" rows="12" label="Env file contents" />
-            </div>
-
-            <x-slot:actions>
-                <div class="flex gap-3">
-                    <flux:spacer />
-                    <flux:modal.close>
-                        <flux:button variant="ghost">Cancel</flux:button>
-                    </flux:modal.close>
-                    <flux:button type="submit" variant="primary">Import</flux:button>
-                </div>
-            </x-slot:actions>
-        </x-modal.form>
-    </flux:modal>
+    
+    {{-- Variable importer modal --}}
+    <livewire:environment.variable.livewire.variable-importer :environment="$this->environment" />
 
     {{-- Variable editor modal --}}
     <livewire:environment.variable.livewire.variable-editor />

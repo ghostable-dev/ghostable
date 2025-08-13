@@ -3,9 +3,7 @@
 namespace App\Environment\Variable\Livewire;
 
 use App\Environment\Actions\LogEnvironmentDownloaded;
-use App\Environment\Actions\LogEnvironmentImported;
 use App\Environment\Actions\LogEnvironmentViewed;
-use App\Environment\Actions\PushEnvVars;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Livewire\EnvironmentActivity;
@@ -46,16 +44,6 @@ class VariableManager extends Component
 
     #[Locked]
     public array $showing = [];
-
-    /**
-     * Whether the import modal is currently displayed.
-     */
-    public bool $showImportModal = false;
-
-    /**
-     * Raw contents of the environment file pasted into the import modal.
-     */
-    public string $envInput = '';
 
     public function mount(Environment $environment): void
     {
@@ -152,6 +140,16 @@ class VariableManager extends Component
             $this->sortDirection = 'asc';
         }
     }
+    
+    
+     /**
+     * Dispatch an event to open the environment
+     * variable importer modal.
+     */
+    public function launchImporterModal(): void
+    {
+        $this->dispatch(VariableImporter::LAUNCH);
+    }
 
     /**
      * Dispatch an event to open the environment
@@ -245,43 +243,13 @@ class VariableManager extends Component
     }
 
     /**
-     * Import environment variables from pasted input.
-     */
-    public function importEnvFile(): void
-    {
-        $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
-
-        if (blank($this->envInput)) {
-            return;
-        }
-
-        $lines = preg_split('/\r\n|\n|\r/', $this->envInput);
-
-        app(LogEnvironmentImported::class)->handle(
-            environment: $this->environment,
-            user: Auth::user(),
-            source: 'ui',
-        );
-
-        app(PushEnvVars::class)->handle(
-            env: $this->environment,
-            incomingRaw: $lines,
-        );
-
-        $this->reset(['envInput', 'showImportModal']);
-
-        $this->refreshVars();
-
-        $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
-    }
-
-    /**
      * Livewire listener to refresh the list of environment variables
      * after a variable has been updated via the editor.
      *
      * This is triggered by the `VariableEditor::UPDATED` event.
      */
     #[On([
+        VariableImporter::IMPORTED,
         VariableEditor::UPDATED,
         VariableCreator::CREATED,
         VariableDeleter::DELETED,
