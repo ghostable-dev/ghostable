@@ -20,6 +20,7 @@ class ValidateEnvironment
      * If no data is provided, the environment's current variables will be used.
      *
      * @param  array<string, mixed>|null  $data
+     *
      * @throws ValidationException
      */
     public function handle(Environment $environment, ?array $data = null): void
