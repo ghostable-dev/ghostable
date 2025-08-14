@@ -27,7 +27,7 @@ class PullEnvironment extends Controller
         $this->authorize('perform', [$env, TeamPermission::ViewVariables]);
 
         $validated = $request->validate([
-            'format' => ['nullable', new ValidEnvFileFormat()],
+            'format' => ['nullable', new ValidEnvFileFormat],
         ]);
 
         $format = isset($validated['format'])
