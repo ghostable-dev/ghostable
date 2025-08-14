@@ -2,6 +2,7 @@
 
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
+use App\Team\Actions\CreateTeam;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -25,6 +26,19 @@ test('users can authenticate using the login screen', function () {
         ->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticated();
+});
+
+test('multi-team users are prompted to select a team after login', function () {
+    $user = User::factory()->create();
+
+    CreateTeam::handle('Another Team', $user);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    expect(session()->has('show-team-switcher'))->toBeTrue();
 });
 
 test('users can not authenticate with invalid password', function () {

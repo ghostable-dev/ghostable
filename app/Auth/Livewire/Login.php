@@ -59,6 +59,10 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
+        if ($user->teams()->count() > 1) {
+            session(['show-team-switcher' => true]);
+        }
+
         $this->redirectIntended(
             default: route('dashboard', absolute: false),
             navigate: true

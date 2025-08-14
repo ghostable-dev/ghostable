@@ -2,8 +2,10 @@
     
     {{-- Pending Invites --}}
     <livewire:account.livewire.pending-invites/>
-    
+
     <livewire:project.livewire.team-projects/>
+
+    <livewire:team.livewire.team-switcher-modal/>
     
     {{-- <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
