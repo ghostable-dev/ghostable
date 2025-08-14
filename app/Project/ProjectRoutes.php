@@ -4,6 +4,7 @@ namespace App\Project;
 
 use App\Project\Api\Controllers\GetEnvironments;
 use App\Project\Api\Controllers\ProjectController;
+use App\Project\Api\Controllers\GenerateSuggestedEnvironmentNames;
 use App\Project\Livewire\ProjectView;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,7 @@ class ProjectRoutes
             Route::get('teams/{team}/projects', [ProjectController::class, 'index']);
             Route::get('/projects/{project}', [ProjectController::class, 'show']);
             Route::get('/projects/{project}/environments', GetEnvironments::class);
+            Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
             Route::post('teams/{team}/projects', [ProjectController::class, 'store']);
         });
     }
