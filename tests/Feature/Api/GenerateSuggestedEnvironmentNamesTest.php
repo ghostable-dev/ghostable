@@ -48,4 +48,3 @@ test('returns suggestions in correct structure', function () {
             ],
         ]);
 });
-
