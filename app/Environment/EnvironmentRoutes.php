@@ -7,6 +7,7 @@ use App\Environment\Api\Controllers\DeployEnvironment;
 use App\Environment\Api\Controllers\GetEnvironment;
 use App\Environment\Api\Controllers\GetEnvironmentTypes;
 use App\Environment\Api\Controllers\GetEnvFileFormats;
+use App\Environment\Api\Controllers\DiffEnvironment;
 use App\Environment\Api\Controllers\PullEnvironment;
 use App\Environment\Api\Controllers\PushEnvironment;
 use App\Environment\Api\Controllers\ValidateEnvironment;
@@ -36,6 +37,7 @@ class EnvironmentRoutes
                 ->group(function () {
                     Route::get('/', GetEnvironment::class);
                     Route::post('/push', PushEnvironment::class);
+                    Route::post('/diff', DiffEnvironment::class);
                     Route::get('/pull', PullEnvironment::class);
                     Route::get('/validate', ValidateEnvironment::class);
                 });
