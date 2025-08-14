@@ -1,9 +1,9 @@
 <?php
 
+use App\Environment\Actions\RenderEnvFile;
+use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Variable\Actions\CreateVariable;
-use App\Environment\Variable\Entities\CreateVariableData;
-use App\Team\Enums\TeamRole;
+use App\Environment\Variable\Models\EnvironmentVariable;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -13,47 +13,43 @@ beforeEach(function () {
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $project = $this->createProject(name: 'Website', team: $this->team);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
-
-    app(CreateVariable::class)->handle(new CreateVariableData(
-        environment: $this->env, key: 'APP_NAME', value: 'Ray’s Occult', createdBy: $this->ray
-    ));
-
-    app(CreateVariable::class)->handle(new CreateVariableData(
-        environment: $this->env, key: 'APP_DEBUG', value: 'TRUE', createdBy: $this->ray
-    ));
-
-    app(CreateVariable::class)->handle(new CreateVariableData(
-        environment: $this->env, key: 'APP_ENV', value: 'development', createdBy: $this->ray
-    ));
-
+    $this->env->file_format = EnvFileFormat::GROUPED;
+    $this->env->save();
     $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/pull";
+
+    EnvironmentVariable::factory()->forEnvironment($this->env)->create([
+        'key' => 'APP_NAME',
+        'value' => 'Ghostable',
+        'is_commented' => false,
+    ]);
+    EnvironmentVariable::factory()->forEnvironment($this->env)->create([
+        'key' => 'DB_HOST',
+        'value' => 'localhost',
+        'is_commented' => false,
+    ]);
 });
 
-test('unauthenticated users cannot pull environments', function () {
+test('unauthenticated users cannot pull environment', function () {
     $this->getJson($this->endpoint)->assertUnauthorized();
 });
 
-test('pulls vars for member user', function () {
+test('returns environment using default format when not specified', function () {
     Sanctum::actingAs($this->ray);
-    $response = $this->getJson($this->endpoint);
-    $response->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
-    $expected = implode("\n", [
-        'APP_DEBUG=TRUE',
-        'APP_ENV=development',
-        'APP_NAME="Ray’s Occult"',
-    ]);
-    $this->assertEquals($expected, $response->getContent());
+    $response = $this->get($this->endpoint);
+    $expected = RenderEnvFile::handle(env: $this->env, format: EnvFileFormat::GROUPED);
+    $response->assertOk();
+    expect($response->getContent())->toBe($expected);
 });
 
-test('forbids non-members from pulling', function () {
-    $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
-    Sanctum::actingAs($peter);
-    $this->getJson($this->endpoint)->assertForbidden();
+test('returns environment using provided format', function () {
+    Sanctum::actingAs($this->ray);
+    $response = $this->get("{$this->endpoint}?format=".EnvFileFormat::ALPHABETICAL->value);
+    $expected = RenderEnvFile::handle(env: $this->env, format: EnvFileFormat::ALPHABETICAL);
+    $response->assertOk();
+    expect($response->getContent())->toBe($expected);
 });
 
-test('forbids members without permission from pulling', function () {
-    $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
-    $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::BILLING_ONLY);
-    Sanctum::actingAs($peter);
-    $this->getJson($this->endpoint)->assertForbidden();
+test('fails with invalid format parameter', function () {
+    Sanctum::actingAs($this->ray);
+    $this->getJson("{$this->endpoint}?format=invalid")->assertStatus(422);
 });

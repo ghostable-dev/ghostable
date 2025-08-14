@@ -4,8 +4,11 @@ namespace App\Environment\Api\Controllers;
 
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\RenderEnvFile;
+use App\Environment\Enums\EnvFileFormat;
+use App\Environment\Rules\ValidEnvFileFormat;
 use App\Project\Models\Project;
 use App\Team\Enums\TeamPermission;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class PullEnvironment extends Controller
@@ -17,13 +20,21 @@ class PullEnvironment extends Controller
      *
      * Authorization: Requires 'ViewVariables' permission on the environment.
      */
-    public function __invoke(Project $project, string $name): Response
+    public function __invoke(Request $request, Project $project, string $name): Response
     {
         $env = $project->environmentOrFail($name);
 
         $this->authorize('perform', [$env, TeamPermission::ViewVariables]);
 
-        $content = RenderEnvFile::handle(env: $env);
+        $validated = $request->validate([
+            'format' => ['nullable', new ValidEnvFileFormat()],
+        ]);
+
+        $format = isset($validated['format'])
+            ? EnvFileFormat::from($validated['format'])
+            : null;
+
+        $content = RenderEnvFile::handle(env: $env, format: $format);
 
         return response($content, 200, ['Content-Type' => 'text/plain']);
     }

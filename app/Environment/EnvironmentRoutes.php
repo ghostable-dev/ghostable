@@ -6,6 +6,7 @@ use App\Environment\Api\Controllers\CreateEnvironment;
 use App\Environment\Api\Controllers\DeployEnvironment;
 use App\Environment\Api\Controllers\GetEnvironment;
 use App\Environment\Api\Controllers\GetEnvironmentTypes;
+use App\Environment\Api\Controllers\GetEnvFileFormats;
 use App\Environment\Api\Controllers\PullEnvironment;
 use App\Environment\Api\Controllers\PushEnvironment;
 use App\Environment\Api\Controllers\ValidateEnvironment;
@@ -27,6 +28,7 @@ class EnvironmentRoutes
             Route::get('/ci/deploy', DeployEnvironment::class);
 
             Route::get('/environment-types', GetEnvironmentTypes::class);
+            Route::get('/environment-formats', GetEnvFileFormats::class);
 
             Route::post('projects/{project}/environments', CreateEnvironment::class);
 
