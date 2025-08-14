@@ -15,13 +15,16 @@ class ValidateEnvironment
     ) {}
 
     /**
-     * Validate all variables on the given environment using all known rule sources.
+     * Validate the given environment variables against the environment's rules.
      *
+     * If no data is provided, the environment's current variables will be used.
+     *
+     * @param  array<string, mixed>|null  $data
      * @throws ValidationException
      */
-    public function handle(Environment $environment): void
+    public function handle(Environment $environment, ?array $data = null): void
     {
-        $data = resolve(ResolveEnvironmentVariables::class)
+        $data ??= resolve(ResolveEnvironmentVariables::class)
             ->handle($environment)
             ->mapWithKeys(fn ($v) => [$v->key => $v->value])
             ->toArray();
