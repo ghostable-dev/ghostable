@@ -1,6 +1,5 @@
 <?php
 
-use App\Environment\Actions\PushEnvironment;
 use App\Environment\Enums\EnvironmentType;
 use Laravel\Sanctum\Sanctum;
 
@@ -14,35 +13,37 @@ beforeEach(function () {
     $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/validate";
 });
 
-test('unauthenticated users cannot get validate environments', function () {
-    $this->getJson($this->endpoint)->assertUnauthorized();
+test('unauthenticated users cannot validate environments', function () {
+    $this->postJson($this->endpoint, ['vars' => []])->assertUnauthorized();
 });
 
 test('returns ok with valid environment', function () {
-    app(PushEnvironment::class)->handle($this->env, [
+    $vars = [
         'APP_DEBUG=TRUE',
         'APP_ENV=development',
         'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
         'APP_URL=https://www.raysoccultbooks.com',
-    ]);
+    ];
+
     Sanctum::actingAs($this->ray);
-    $response = $this->getJson($this->endpoint);
-    $response->assertOk()->assertOk();
+    $response = $this->postJson($this->endpoint, ['vars' => $vars]);
+    $response->assertOk();
 });
 
-test('users cannot view validate environments they are not members of', function () {
+test('users cannot validate environments they are not members of', function () {
     $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
     Sanctum::actingAs($peter);
-    $this->getJson($this->endpoint)->assertForbidden();
+    $this->postJson($this->endpoint, ['vars' => []])->assertForbidden();
 });
 
 test('returns errors with invalid environment', function () {
-    app(PushEnvironment::class)->handle($this->env, [
+    $vars = [
         'APP_DEBUG=TRUE',
         'APP_ENV=development',
         'APP_URL=https://www.raysoccultbooks.com',
-    ]);
+    ];
+
     Sanctum::actingAs($this->ray);
-    $response = $this->getJson($this->endpoint);
+    $response = $this->postJson($this->endpoint, ['vars' => $vars]);
     $response->assertStatus(422);
 });

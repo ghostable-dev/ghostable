@@ -39,7 +39,7 @@ class EnvironmentRoutes
                     Route::post('/push', PushEnvironment::class);
                     Route::post('/diff', DiffEnvironment::class);
                     Route::get('/pull', PullEnvironment::class);
-                    Route::get('/validate', ValidateEnvironment::class);
+                    Route::post('/validate', ValidateEnvironment::class);
                 });
         });
     }
