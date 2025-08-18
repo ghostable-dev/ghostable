@@ -4,6 +4,9 @@ use App\Account\Models\User;
 use App\Auth\Livewire\Login;
 use App\Team\Actions\CreateTeam;
 use Livewire\Livewire;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
+use Laravel\Fortify\RecoveryCode;
+use PragmaRX\Google2FA\Google2FA;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -39,6 +42,33 @@ test('multi-team users are prompted to select a team after login', function () {
         ->call('login');
 
     expect(session()->has('show-team-switcher'))->toBeTrue();
+});
+
+test('multi-team users are prompted to select a team after two factor login', function () {
+    $provider = app(TwoFactorAuthenticationProvider::class);
+    $secret = $provider->generateSecretKey();
+    $code = app(Google2FA::class)->getCurrentOtp($secret);
+
+    $user = User::factory()->create([
+        'two_factor_secret' => encrypt($secret),
+        'two_factor_confirmed_at' => now(),
+        'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
+    ]);
+
+    CreateTeam::handle('Another Team', $user);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('two-factor.login', absolute: false));
+
+    $this->post('/two-factor-challenge', [
+        'code' => $code,
+    ])->assertRedirect('/dashboard');
+
+    expect(session()->has('show-team-switcher'))->toBeTrue();
+    $this->assertAuthenticatedAs($user);
 });
 
 test('users can not authenticate with invalid password', function () {
