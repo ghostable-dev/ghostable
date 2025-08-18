@@ -109,3 +109,28 @@ test('fails with invalid two factor code', function () {
         'message' => 'Invalid two-factor authentication code.',
     ]);
 });
+
+test('cannot login with recovery code', function () {
+    $provider = app(TwoFactorAuthenticationProvider::class);
+    $secret = $provider->generateSecretKey();
+    $recoveryCode = RecoveryCode::generate();
+
+    $user = User::factory()->create([
+        'two_factor_secret' => encrypt($secret),
+        'two_factor_confirmed_at' => now(),
+        'two_factor_recovery_codes' => encrypt(json_encode([$recoveryCode])),
+    ]);
+
+    $response = $this->postJson('/api/cli/login', [
+        'email' => $user->email,
+        'password' => 'password',
+        'recovery_code' => $recoveryCode,
+    ]);
+
+    $response->assertOk()->assertJson([
+        'two_factor' => true,
+    ]);
+
+    expect($response->json('token'))->toBeNull();
+});
+

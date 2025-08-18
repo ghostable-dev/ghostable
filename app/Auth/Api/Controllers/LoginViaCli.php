@@ -16,7 +16,6 @@ class LoginViaCli extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
             'code' => ['nullable', 'string'],
-            'recovery_code' => ['nullable', 'string'],
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -26,31 +25,17 @@ class LoginViaCli extends Controller
         }
 
         if (! empty($user->two_factor_secret) && $user->two_factor_confirmed_at) {
-            if (! $request->code && ! $request->recovery_code) {
+            if (! $request->code) {
                 return response()->json([
                     'two_factor' => true,
                     'message' => 'Two-factor authentication code required.',
                 ]);
             }
 
-            if ($request->filled('code')) {
-                if (! $twoFactor->verify(decrypt($user->two_factor_secret), $request->code)) {
-                    return response()->json([
-                        'message' => 'Invalid two-factor authentication code.',
-                    ], 422);
-                }
-            } else {
-                $recoveryCode = collect($user->recoveryCodes())->first(function ($code) use ($request) {
-                    return hash_equals($code, $request->recovery_code);
-                });
-
-                if (! $recoveryCode) {
-                    return response()->json([
-                        'message' => 'Invalid recovery code.',
-                    ], 422);
-                }
-
-                $user->replaceRecoveryCode($recoveryCode);
+            if (! $twoFactor->verify(decrypt($user->two_factor_secret), $request->code)) {
+                return response()->json([
+                    'message' => 'Invalid two-factor authentication code.',
+                ], 422);
             }
         }
 
@@ -61,3 +46,4 @@ class LoginViaCli extends Controller
         ]);
     }
 }
+

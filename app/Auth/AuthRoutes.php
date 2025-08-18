@@ -8,6 +8,7 @@ use App\Auth\Http\Controllers\VerifyEmailController;
 use App\Auth\Livewire\ConfirmPassword;
 use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\Login;
+use App\Auth\Livewire\TwoFactorAuthentication;
 use App\Auth\Livewire\ResetPassword;
 use App\Auth\Livewire\VerifyEmail;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,7 @@ class AuthRoutes
 {
     public static function api(): void
     {
-        Route::post('/cli/login', LoginViaCli::class);
+        Route::post('/cli/login', LoginViaCli::class)->middleware('throttle:10,1');
     }
 
     public static function web(): void
@@ -37,6 +38,10 @@ class AuthRoutes
 
             Route::get('confirm-password', ConfirmPassword::class)
                 ->name('password.confirm');
+
+            Route::prefix('settings')->name('settings.')->group(function () {
+                Route::get('two-factor', TwoFactorAuthentication::class)->name('two-factor');
+            });
         });
 
         Route::post('logout', Logout::class)->name('logout');

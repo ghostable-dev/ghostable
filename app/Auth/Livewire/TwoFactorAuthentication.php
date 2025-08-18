@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Account\Livewire;
+namespace App\Auth\Livewire;
 
 use App\Account\Models\User;
 use App\Auth\Concerns\ConfirmsPasswords;
@@ -99,6 +99,7 @@ class TwoFactorAuthentication extends Component
 
     public function render()
     {
-        return view('account.two-factor-authentication');
+        return view('auth.settings.two-factor-authentication');
     }
 }
+
