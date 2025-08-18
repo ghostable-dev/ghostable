@@ -24,7 +24,13 @@ class TwoFactorAuthentication extends Component
 
     public string $code = '';
 
-    public function mount(): void {}
+    public function mount(): void
+    {
+        if (! empty($this->user->two_factor_secret) && empty($this->user->two_factor_confirmed_at)) {
+            $this->showingQrCode = true;
+            $this->showingConfirmation = true;
+        }
+    }
 
     #[Computed()]
     public function enabled(): bool
@@ -44,15 +50,18 @@ class TwoFactorAuthentication extends Component
         $enable(Auth::user());
 
         $this->showingQrCode = true;
+        $this->showingConfirmation = true;
     }
 
     public function confirmTwoFactorAuthentication(ConfirmTwoFactorAuthentication $confirm): void
     {
         $confirm(Auth::user(), $this->code);
 
+        Auth::user()->refresh();
+
         $this->showingQrCode = false;
         $this->showingRecoveryCodes = true;
-        $this->enabled = true;
+        $this->showingConfirmation = false;
         $this->reset('code');
     }
 
@@ -72,7 +81,9 @@ class TwoFactorAuthentication extends Component
     {
         $disable(Auth::user());
 
+        $this->showingQrCode = false;
         $this->showingRecoveryCodes = false;
+        $this->showingConfirmation = false;
     }
 
     public function getQrCodeProperty(): string
