@@ -34,4 +34,3 @@ class GenerateSuggestedEnvironmentNames extends Controller
         return SuggestedEnvironmentNameResource::collection(collect($suggestions));
     }
 }
-

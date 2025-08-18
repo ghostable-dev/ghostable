@@ -14,4 +14,3 @@ class SuggestedEnvironmentNameResource extends JsonResource
         ];
     }
 }
-

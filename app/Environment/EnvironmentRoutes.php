@@ -4,10 +4,10 @@ namespace App\Environment;
 
 use App\Environment\Api\Controllers\CreateEnvironment;
 use App\Environment\Api\Controllers\DeployEnvironment;
+use App\Environment\Api\Controllers\DiffEnvironment;
+use App\Environment\Api\Controllers\GetEnvFileFormats;
 use App\Environment\Api\Controllers\GetEnvironment;
 use App\Environment\Api\Controllers\GetEnvironmentTypes;
-use App\Environment\Api\Controllers\GetEnvFileFormats;
-use App\Environment\Api\Controllers\DiffEnvironment;
 use App\Environment\Api\Controllers\PullEnvironment;
 use App\Environment\Api\Controllers\PushEnvironment;
 use App\Environment\Api\Controllers\ValidateEnvironment;
