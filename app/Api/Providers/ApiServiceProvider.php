@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Api\Providers;
+
+use App\Api\Http\Exception\ApiExceptionMap;
+use App\Api\Http\Middleware\AddApiControlHeaders;
+use App\Api\Http\Middleware\ApplyApiVersion;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+
+final class ApiServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        $router = $this->app['router'];
+
+        $router->aliasMiddleware('api.version', ApplyApiVersion::class);
+        $router->pushMiddlewareToGroup('api', AddApiControlHeaders::class);
+
+        Route::prefix('api/v1')
+            ->middleware('api')
+            ->group(__DIR__.'/../Routes/v1.php');
+
+        Route::prefix('api/v2')
+            ->middleware('api')
+            ->group(__DIR__.'/../Routes/v2.php');
+
+        ApiExceptionMap::register();
+    }
+}

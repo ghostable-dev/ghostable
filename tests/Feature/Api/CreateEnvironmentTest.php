@@ -7,7 +7,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot create environments', function () {
-    $this->postJson('/api/projects/123/environments')->assertUnauthorized();
+    $this->postJson('/api/v1/projects/123/environments')->assertUnauthorized();
 });
 
 test('persists a new environment record and returns JSON shape', function () {
@@ -16,7 +16,7 @@ test('persists a new environment record and returns JSON shape', function () {
     $project = $this->createProject(name: 'Website', team: $team);
     Sanctum::actingAs($ray);
     $payload = ['name' => 'staging', 'type' => EnvironmentType::STAGING->value];
-    $this->postJson("/api/projects/{$project->id}/environments", $payload)
+    $this->postJson("/api/v1/projects/{$project->id}/environments", $payload)
         ->assertStatus(201)
         ->assertJsonStructure([
             'data' => [
@@ -49,7 +49,7 @@ test('can set a base environment when creating', function () {
         'type' => EnvironmentType::STAGING->value,
         'base_id' => $base->id,
     ];
-    $this->postJson("/api/projects/{$project->id}/environments", $payload)
+    $this->postJson("/api/v1/projects/{$project->id}/environments", $payload)
         ->assertStatus(201)
         ->assertJsonPath('data.base_id', $base->id);
     $env = $project->fresh()->environments()->where('name', 'staging')->first();
@@ -63,7 +63,7 @@ describe('validation', function () {
         $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
         $this->project = $this->createProject(name: 'Website', team: $team);
         Sanctum::actingAs($ray);
-        $this->endpoint = "/api/projects/{$this->project->id}/environments";
+        $this->endpoint = "/api/v1/projects/{$this->project->id}/environments";
     });
 
     test('fails when name is not a unique', function () {
@@ -93,7 +93,7 @@ describe('authorization', function () {
         $this->project = $this->createProject(name: 'Website', team: $this->team);
         $this->zuul = $this->createUser(name: 'Zuul', email: 'zuul@gozers-minions.com');
         Sanctum::actingAs($ray);
-        $this->endpoint = "/api/projects/{$this->project->id}/environments";
+        $this->endpoint = "/api/v1/projects/{$this->project->id}/environments";
     });
 
     test('forbids non-members from creating', function () {

@@ -15,7 +15,7 @@ beforeEach(function () {
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
     $this->env->file_format = EnvFileFormat::GROUPED;
     $this->env->save();
-    $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/pull";
+    $this->endpoint = "/api/v1/projects/{$project->id}/environments/{$this->env->name}/pull";
 
     EnvironmentVariable::factory()->forEnvironment($this->env)->create([
         'key' => 'APP_NAME',

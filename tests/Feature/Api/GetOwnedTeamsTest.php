@@ -7,7 +7,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot fetch owned teams', function () {
-    $this->getJson('/api/owned-teams')
+    $this->getJson('/api/v1/owned-teams')
         ->assertUnauthorized();
 });
 
@@ -21,7 +21,7 @@ test('returns only teams owned by the user', function () {
 
     Sanctum::actingAs($alice, ['*']);
 
-    $response = $this->getJson('/api/owned-teams');
+    $response = $this->getJson('/api/v1/owned-teams');
 
     $response->assertOk()
         ->assertJsonCount(2, 'data')
@@ -35,7 +35,7 @@ test('response uses TeamResource structure', function () {
 
     Sanctum::actingAs($alice, ['*']);
 
-    $this->getJson('/api/owned-teams')
+    $this->getJson('/api/v1/owned-teams')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [

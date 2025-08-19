@@ -6,7 +6,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot fetch team roles', function () {
-    $this->getJson('/api/team-roles')
+    $this->getJson('/api/v1/team-roles')
         ->assertUnauthorized();
 });
 
@@ -21,7 +21,7 @@ test('returns all team roles in the correct format', function () {
             'description' => $role->description(),
         ]);
 
-    $response = $this->getJson('/api/team-roles');
+    $response = $this->getJson('/api/v1/team-roles');
 
     $response->assertOk()
         ->assertJsonCount($expected->count(), 'data')

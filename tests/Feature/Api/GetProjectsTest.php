@@ -9,7 +9,7 @@ beforeEach(function () {
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $this->website = $this->createProject(name: 'Website', team: $this->team);
     $this->createProject(name: 'Store', team: $this->team);
-    $this->endpoint = "/api/teams/{$this->team->id}/projects";
+    $this->endpoint = "/api/v1/teams/{$this->team->id}/projects";
 });
 
 test('unauthenticated users cannot fetch team projects', function () {

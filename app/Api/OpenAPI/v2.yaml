@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Ghostable API v2
+  version: 2.0.0
+servers:
+  - url: https://ghostable.dev/api/v2 
+  - url: https://staging.ghostable.dev/api/v2
+  - url: /api/v2 
+paths:
+  /cli/login:
+    post:
+      summary: Login via CLI
+      responses: {}
+  /teams/{team}/projects:
+    get:
+      summary: List team projects
+      responses: {}
+    post:
+      summary: Create project
+      responses: {}
+  /projects/{project}:
+    get:
+      summary: Get project
+      responses: {}
+  /projects/{project}/environments:
+    get:
+      summary: Get project environments
+      responses: {}
+    post:
+      summary: Create environment
+      responses: {}
+  /projects/{project}/generate-suggested-environment-names:
+    post:
+      summary: Generate suggested environment names
+      responses: {}
+  /ci/deploy:
+    get:
+      summary: Deploy environment
+      responses: {}
+  /environment-types:
+    get:
+      summary: Get environment types
+      responses: {}
+  /environment-formats:
+    get:
+      summary: Get environment formats
+      responses: {}
+  /projects/{project}/environments/{name}:
+    get:
+      summary: Get environment
+      responses: {}
+  /projects/{project}/environments/{name}/push:
+    post:
+      summary: Push environment
+      responses: {}
+  /projects/{project}/environments/{name}/diff:
+    post:
+      summary: Diff environment
+      responses: {}
+  /projects/{project}/environments/{name}/pull:
+    get:
+      summary: Pull environment
+      responses: {}
+  /projects/{project}/environments/{name}/validate:
+    post:
+      summary: Validate environment
+      responses: {}
+# TODO: generate complete spec

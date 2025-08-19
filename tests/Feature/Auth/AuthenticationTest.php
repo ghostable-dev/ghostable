@@ -3,9 +3,9 @@
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
 use App\Team\Actions\CreateTeam;
-use Livewire\Livewire;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
+use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
