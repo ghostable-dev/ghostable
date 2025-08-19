@@ -8,14 +8,20 @@ use PragmaRX\Google2FA\Google2FA;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('email and password are required', function () {
-    $this->postJson('/api/cli/login', [])
-        ->assertStatus(422)
-        ->assertJsonValidationErrors(['email', 'password']);
+    $response = $this->postJson('/api/v1/cli/login', []);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('error.code', 'GHO-VAL-0001')
+        ->assertJsonStructure([
+            'error' => [
+                'fields' => ['email', 'password'],
+            ],
+        ]);
 });
 
 test('fails with invalid credentials', function () {
     $user = User::factory()->create();
-    $this->postJson('/api/cli/login', [
+    $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ])->assertStatus(401)
@@ -26,7 +32,7 @@ test('fails with invalid credentials', function () {
 
 test('returns token, user and teams on successful login', function () {
     $user = User::factory()->create();
-    $response = $this->postJson('/api/cli/login', [
+    $response = $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -57,7 +63,7 @@ test('two factor code is required when enabled', function () {
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    $this->postJson('/api/cli/login', [
+    $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'password',
     ])->assertOk()->assertJson([
@@ -76,7 +82,7 @@ test('can login with valid two factor code', function () {
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    $response = $this->postJson('/api/cli/login', [
+    $response = $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'password',
         'code' => $code,
@@ -101,7 +107,7 @@ test('fails with invalid two factor code', function () {
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    $this->postJson('/api/cli/login', [
+    $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'password',
         'code' => '123456',
@@ -121,7 +127,7 @@ test('cannot login with recovery code', function () {
         'two_factor_recovery_codes' => encrypt(json_encode([$recoveryCode])),
     ]);
 
-    $response = $this->postJson('/api/cli/login', [
+    $response = $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
         'password' => 'password',
         'recovery_code' => $recoveryCode,
@@ -133,4 +139,3 @@ test('cannot login with recovery code', function () {
 
     expect($response->json('token'))->toBeNull();
 });
-

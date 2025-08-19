@@ -11,7 +11,7 @@ beforeEach(function () {
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $project = $this->createProject(name: 'Website', team: $this->team);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
-    $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/push";
+    $this->endpoint = "/api/v1/projects/{$project->id}/environments/{$this->env->name}/push";
 });
 
 test('unauthenticated users cannot push environments', function () {
@@ -27,7 +27,7 @@ test('fails with production debug true', function () {
     $project = $this->createProject(name: 'Store', team: $this->team);
     $production = $this->createEnvironment(name: 'Production', type: EnvironmentType::PRODUCTION, project: $project);
     Sanctum::actingAs($this->ray);
-    $this->postJson("/api/projects/{$project->id}/environments/{$production->name}/push", ['vars' => [
+    $this->postJson("/api/v1/projects/{$project->id}/environments/{$production->name}/push", ['vars' => [
         'APP_DEBUG=TRUE',
         'APP_ENV=production',
         'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',

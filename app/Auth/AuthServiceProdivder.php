@@ -3,6 +3,7 @@
 namespace App\Auth;
 
 use App\Auth\Models\PersonalAccessToken;
+use App\Auth\Responses\TeamAwareTwoFactorLoginResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -11,7 +12,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Sanctum\Sanctum;
-use App\Auth\Responses\TeamAwareTwoFactorLoginResponse;
 
 class AuthServiceProdivder extends ServiceProvider
 {

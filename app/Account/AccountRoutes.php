@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Route;
 
 class AccountRoutes
 {
-    public static function api(): void {}
-
     public static function web(): void
     {
         Route::middleware(['auth'])

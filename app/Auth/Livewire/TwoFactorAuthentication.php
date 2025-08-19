@@ -102,4 +102,3 @@ class TwoFactorAuthentication extends Component
         return view('auth.settings.two-factor-authentication');
     }
 }
-

@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 class BillingRoutes
 {
-    public static function api() {}
-
     public static function web()
     {
         Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])

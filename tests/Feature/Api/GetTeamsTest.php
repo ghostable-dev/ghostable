@@ -5,7 +5,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot fetch teams', function () {
-    $this->getJson('/api/teams')
+    $this->getJson('/api/v1/teams')
         ->assertUnauthorized();
 });
 
@@ -15,7 +15,7 @@ test('returns only teams the user is a member of', function () {
 
     Sanctum::actingAs($ray);
 
-    $response = $this->getJson('/api/teams');
+    $response = $this->getJson('/api/v1/teams');
     $response->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonFragment(['id' => $ray->personalTeam()->id])
@@ -34,7 +34,7 @@ test('returns teams the user is a member of (regardless of role)', function () {
 
     Sanctum::actingAs($egon);
 
-    $response = $this->getJson('/api/teams');
+    $response = $this->getJson('/api/v1/teams');
     $response->assertOk()
         ->assertJsonCount(2, 'data')
         ->assertJsonFragment(['id' => $egon->personalTeam()->id])
@@ -47,7 +47,7 @@ test('response uses TeamResource structure', function () {
 
     Sanctum::actingAs($ray);
 
-    $this->getJson('/api/teams')
+    $this->getJson('/api/v1/teams')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [

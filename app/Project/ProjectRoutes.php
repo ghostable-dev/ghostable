@@ -2,25 +2,11 @@
 
 namespace App\Project;
 
-use App\Project\Api\Controllers\GenerateSuggestedEnvironmentNames;
-use App\Project\Api\Controllers\GetEnvironments;
-use App\Project\Api\Controllers\ProjectController;
 use App\Project\Livewire\ProjectView;
 use Illuminate\Support\Facades\Route;
 
 class ProjectRoutes
 {
-    public static function api(): void
-    {
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::get('teams/{team}/projects', [ProjectController::class, 'index']);
-            Route::get('/projects/{project}', [ProjectController::class, 'show']);
-            Route::get('/projects/{project}/environments', GetEnvironments::class);
-            Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
-            Route::post('teams/{team}/projects', [ProjectController::class, 'store']);
-        });
-    }
-
     public static function web(): void
     {
         Route::middleware(['auth', 'verified'])->group(function () {

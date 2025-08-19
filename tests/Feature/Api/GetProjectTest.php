@@ -8,7 +8,7 @@ beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $this->website = $this->createProject(name: 'Website', team: $this->team);
-    $this->endpoint = "/api/projects/{$this->website->id}";
+    $this->endpoint = "/api/v1/projects/{$this->website->id}";
 });
 
 test('unauthenticated users cannot fetch project', function () {

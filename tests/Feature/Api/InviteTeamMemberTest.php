@@ -9,7 +9,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot invite team members', function () {
-    $this->postJson('api/teams/123/invite')
+    $this->postJson('/api/v1/teams/123/invite')
         ->assertUnauthorized();
 });
 
@@ -18,7 +18,7 @@ describe('validation', function () {
         $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
         $this->peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
         $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray, members: [$this->peter]);
-        $this->endpoint = "/api/teams/{$team->id}/invite";
+        $this->endpoint = "/api/v1/teams/{$team->id}/invite";
         Sanctum::actingAs($ray);
     });
 
@@ -50,8 +50,8 @@ describe('authorization', function () {
         $this->peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
         $this->zuul = $this->createUser(name: 'Zuul', email: 'zuul@gozers-minions.com');
         $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray, members: [$this->peter]);
-        $this->endpoint = "/api/teams/{$team->id}/invite";
-        $this->personalEndpoint = "/api/teams/{$ray->personalTeam()->id}/invite";
+        $this->endpoint = "/api/v1/teams/{$team->id}/invite";
+        $this->personalEndpoint = "/api/v1/teams/{$ray->personalTeam()->id}/invite";
         Sanctum::actingAs($ray);
     });
 
@@ -88,7 +88,7 @@ test('team admin can invite a user by email', function () {
     Event::spy([InviteCreated::class]);
     Notification::fake();
 
-    $this->postJson("/api/teams/{$team->id}/invite", $payload)->assertStatus(200);
+    $this->postJson("/api/v1/teams/{$team->id}/invite", $payload)->assertStatus(200);
 
     $invite = $team->invites()->where($payload)->first();
     $this->assertNotNull($invite);

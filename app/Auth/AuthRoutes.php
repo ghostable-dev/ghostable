@@ -3,23 +3,17 @@
 namespace App\Auth;
 
 use App\Auth\Actions\Logout;
-use App\Auth\Api\Controllers\LoginViaCli;
 use App\Auth\Http\Controllers\VerifyEmailController;
 use App\Auth\Livewire\ConfirmPassword;
 use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\Login;
-use App\Auth\Livewire\TwoFactorAuthentication;
 use App\Auth\Livewire\ResetPassword;
+use App\Auth\Livewire\TwoFactorAuthentication;
 use App\Auth\Livewire\VerifyEmail;
 use Illuminate\Support\Facades\Route;
 
 class AuthRoutes
 {
-    public static function api(): void
-    {
-        Route::post('/cli/login', LoginViaCli::class)->middleware('throttle:10,1');
-    }
-
     public static function web(): void
     {
         Route::middleware('guest')->group(function () {

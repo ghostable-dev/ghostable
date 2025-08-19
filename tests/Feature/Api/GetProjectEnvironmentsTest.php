@@ -13,7 +13,7 @@ beforeEach(function () {
     $this->dev = $this->createEnvironment(name: 'dev', type: EnvironmentType::DEVELOPMENT, project: $this->project);
     $otherProject = $this->createProject(name: 'Store', team: $this->team);
     $this->otherEnv = $this->createEnvironment(name: 'store', type: EnvironmentType::LOCAL, project: $otherProject);
-    $this->endpoint = "/api/projects/{$this->project->id}/environments";
+    $this->endpoint = "/api/v1/projects/{$this->project->id}/environments";
 });
 
 test('unauthenticated users cannot fetch project environments', function () {

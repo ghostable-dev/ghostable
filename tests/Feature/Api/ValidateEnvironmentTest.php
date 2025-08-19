@@ -10,7 +10,7 @@ beforeEach(function () {
     $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
     $project = $this->createProject(name: 'Website', team: $this->team);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
-    $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/validate";
+    $this->endpoint = "/api/v1/projects/{$project->id}/environments/{$this->env->name}/validate";
 });
 
 test('unauthenticated users cannot validate environments', function () {
