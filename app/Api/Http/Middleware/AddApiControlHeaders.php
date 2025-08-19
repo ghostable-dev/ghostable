@@ -15,11 +15,11 @@ final class AddApiControlHeaders
         /** @var Response $response */
         $response = $next($request);
 
-        $response->headers->set('X-Ghostable-Api-Versions', 'v1,v2');
+        $response->headers->set('X-Ghostable-Api-Versions', 'v1');
 
-        if (str_starts_with($request->path(), 'api/v1')) {
-            $response->headers->set('X-Ghostable-Deprecation', 'TODO: deprecation date');
-        }
+        // if (str_starts_with($request->path(), 'api/v1')) {
+        //     $response->headers->set('X-Ghostable-Deprecation', 'TODO: deprecation date');
+        // }
 
         return $response;
     }
