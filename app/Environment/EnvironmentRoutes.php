@@ -6,9 +6,9 @@ use App\Environment\Livewire\EnvironmentAccessManager;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentGeneralSettings;
 use App\Environment\Livewire\EnvironmentNotificationsManager;
-use App\Secret\Livewire\SecretsManager;
 use App\Environment\Validation\Livewire\ValidationManager;
 use App\Environment\Variable\Livewire\VariableManager;
+use App\Secret\Livewire\SecretsManager;
 use Illuminate\Support\Facades\Route;
 
 class EnvironmentRoutes
