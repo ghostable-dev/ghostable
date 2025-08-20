@@ -15,6 +15,10 @@ use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
 use App\Api\Http\Controllers\Project\GetEnvironments;
 use App\Api\Http\Controllers\Project\GetProject;
 use App\Api\Http\Controllers\Project\GetProjects;
+use App\Api\Http\Controllers\Secret\CreateEnvironmentSecret;
+use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
+use App\Api\Http\Controllers\Secret\GetSecretTypes;
+use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
 use App\Api\Http\Controllers\Team\GetOwnedTeams;
 use App\Api\Http\Controllers\Team\GetTeam;
 use App\Api\Http\Controllers\Team\GetTeamRoles;
@@ -51,6 +55,7 @@ Route::middleware('api.version:v1')->group(function () {
 
         Route::get('/environment-types', GetEnvironmentTypes::class);
         Route::get('/environment-formats', GetEnvFileFormats::class);
+        Route::get('/secret-types', GetSecretTypes::class);
 
         Route::post('projects/{project}/environments', CreateEnvironment::class);
 
@@ -61,6 +66,9 @@ Route::middleware('api.version:v1')->group(function () {
                 Route::post('/diff', DiffEnvironment::class);
                 Route::get('/pull', PullEnvironment::class);
                 Route::post('/validate', ValidateEnvironment::class);
+                Route::get('/secrets', GetEnvironmentSecrets::class);
+                Route::post('/secrets', CreateEnvironmentSecret::class);
+                Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
             });
     });
 });
