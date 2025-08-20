@@ -11,6 +11,26 @@ paths:
     post:
       summary: Login via CLI
       responses: {}
+  /team-roles:
+    get:
+      summary: Get team roles
+      responses: {}
+  /teams:
+    get:
+      summary: List teams
+      responses: {}
+  /owned-teams:
+    get:
+      summary: List owned teams
+      responses: {}
+  /teams/{team}:
+    get:
+      summary: Get team
+      responses: {}
+  /teams/{team}/invite:
+    post:
+      summary: Invite team member
+      responses: {}
   /teams/{team}/projects:
     get:
       summary: List team projects
@@ -45,6 +65,10 @@ paths:
     get:
       summary: Get environment formats
       responses: {}
+  /secret-types:
+    get:
+      summary: Get secret types
+      responses: {}
   /projects/{project}/environments/{name}:
     get:
       summary: Get environment
@@ -64,5 +88,16 @@ paths:
   /projects/{project}/environments/{name}/validate:
     post:
       summary: Validate environment
+      responses: {}
+  /projects/{project}/environments/{name}/secrets:
+    get:
+      summary: Get environment secrets
+      responses: {}
+    post:
+      summary: Create environment secret
+      responses: {}
+  /projects/{project}/environments/{name}/secrets/{secret}:
+    put:
+      summary: Update environment secret
       responses: {}
 # TODO: generate complete spec
