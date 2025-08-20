@@ -50,13 +50,13 @@
             @endperform
         </flux:tab.panel>
 
-        {{-- <flux:tab.panel name="secrets">
-            @perform($this->environment, 'secret:view')
-                <livewire:secret.livewire.secrets-manager :owner="$this->environment"/>
-            @else
-                <x-access-restricted/>
-            @endperform
-        </flux:tab.panel> --}}
+            {{-- <flux:tab.panel name="secrets">
+                @perform($this->environment, 'secret:view')
+                    <livewire:secret.livewire.secrets-manager :environment="$this->environment"/>
+                @else
+                    <x-access-restricted/>
+                @endperform
+            </flux:tab.panel> --}}
         
         {{-- <flux:tab.panel name="validation">
             @perform($this->environment, 'var:manage-rules')

@@ -15,25 +15,7 @@ class DatabaseSeeder extends Seeder
         $environment = \App\Environment\Models\Environment::factory()->forProject($project)->create();
 
         app(\App\Secret\Actions\CreateSecret::class)->handle(
-            owner: $project,
-            name: 'Project Secret',
-            type: \App\Secret\Enums\SecretType::GENERIC,
-            value: 'project-secret',
-            metadata: ['example' => true],
-            createdBy: $user,
-        );
-
-        app(\App\Secret\Actions\CreateSecret::class)->handle(
-            owner: $team,
-            name: 'Team Secret',
-            type: \App\Secret\Enums\SecretType::TOKEN,
-            value: 'team-secret',
-            metadata: null,
-            createdBy: $user,
-        );
-
-        app(\App\Secret\Actions\CreateSecret::class)->handle(
-            owner: $environment,
+            environment: $environment,
             name: 'Environment Secret',
             type: \App\Secret\Enums\SecretType::SSH_KEY,
             value: 'env-secret',

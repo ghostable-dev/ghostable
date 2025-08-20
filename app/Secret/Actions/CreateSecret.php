@@ -3,14 +3,14 @@
 namespace App\Secret\Actions;
 
 use App\Account\Models\User;
+use App\Environment\Models\Environment;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use Illuminate\Database\Eloquent\Model;
 
 class CreateSecret
 {
     public function handle(
-        Model $owner,
+        Environment $environment,
         string $name,
         SecretType $type,
         string $value,
@@ -25,7 +25,7 @@ class CreateSecret
         ]);
 
         $secret->value = $value;
-        $secret->owner()->associate($owner);
+        $secret->environment()->associate($environment);
         $secret->createdBy()->associate($createdBy);
         $secret->lastUpdatedBy()->associate($createdBy);
         $secret->save();

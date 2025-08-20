@@ -45,18 +45,8 @@ class SecretNotificationsManager extends Component
     }
 
     #[Computed]
-    public function team(): ?Team
+    public function team(): Team
     {
-        $owner = $this->secret->owner;
-
-        if ($owner instanceof Team) {
-            return $owner;
-        }
-
-        if (method_exists($owner, 'owningTeam')) {
-            return $owner->owningTeam();
-        }
-
-        return null;
+        return $this->secret->environment->owningTeam();
     }
 }

@@ -43,8 +43,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $plan
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Project> $projects
  * @property-read int|null $projects_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
- * @property-read int|null $secrets_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
  * @property-read int|null $subscriptions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
@@ -148,11 +146,6 @@ class Team extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
-    }
-
-    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
-    {
-        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
     }
 
     public function getActivitylogOptions(): LogOptions

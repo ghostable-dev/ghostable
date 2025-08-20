@@ -6,7 +6,7 @@ use App\Environment\Livewire\EnvironmentAccessManager;
 use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentGeneralSettings;
 use App\Environment\Livewire\EnvironmentNotificationsManager;
-use App\Environment\Livewire\EnvironmentSecretsManager;
+use App\Secret\Livewire\SecretsManager;
 use App\Environment\Validation\Livewire\ValidationManager;
 use App\Environment\Variable\Livewire\VariableManager;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +21,7 @@ class EnvironmentRoutes
             ->group(function () {
                 // Route::redirect('/', '/variables')->name('view');
                 Route::get('variables', VariableManager::class)->name('variables');
-                Route::get('secrets', EnvironmentSecretsManager::class)->name('secrets');
+                Route::get('secrets', SecretsManager::class)->name('secrets');
                 // Route::get('validation', ValidationManager::class)->name('validation');
                 Route::get('activity', EnvironmentActivity::class)->name('activity');
 

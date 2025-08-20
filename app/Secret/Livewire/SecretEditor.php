@@ -31,7 +31,7 @@ class SecretEditor extends Component
     #[On(self::LAUNCH)]
     public function launchEditorModal(Secret $secret): void
     {
-        $this->authorize('perform', [$secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, TeamPermission::EditSecrets]);
 
         $this->secretId = $secret->id;
         $this->name = $secret->name;
@@ -58,7 +58,7 @@ class SecretEditor extends Component
 
     public function updateSecret(): void
     {
-        $this->authorize('perform', [$this->secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$this->secret->environment, TeamPermission::EditSecrets]);
 
         if ($this->noChangesWereMade) {
             $this->showing = false;

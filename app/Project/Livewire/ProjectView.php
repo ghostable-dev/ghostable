@@ -18,7 +18,7 @@ class ProjectView extends Component
      * The active tab within the project view.
      *
      * Defaults to 'environments'. Other valid values may include
-     * 'secrets', 'general', 'access', and 'activity'.
+     * 'general', 'access', 'notifications', and 'activity'.
      */
     public string $tab = 'environments';
 
