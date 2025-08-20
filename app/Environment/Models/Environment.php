@@ -130,9 +130,9 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariable::class);
     }
 
-    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function secrets(): HasMany
     {
-        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
+        return $this->hasMany(\App\Secret\Models\Secret::class, 'environment_id');
     }
 
     public function rules(): HasMany

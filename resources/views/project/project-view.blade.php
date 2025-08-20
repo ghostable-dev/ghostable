@@ -18,7 +18,6 @@
         
         <flux:tabs wire:model="tab">
             <flux:tab name="environments">Environments</flux:tab>
-            <flux:tab name="secrets">Secrets</flux:tab>
             <flux:tab name="general">General</flux:tab>
            <flux:tab name="access">Access</flux:tab>
             <flux:tab name="notifications">Notifications</flux:tab>
@@ -29,14 +28,6 @@
             <livewire:project.livewire.project-environments-manager :project="$this->project"/>
         </flux:tab.panel>
 
-        <flux:tab.panel name="secrets">
-            @perform($this->project, 'secret:view')
-                <livewire:project.livewire.project-secrets-manager :project="$this->project"/>
-            @else
-                <x-access-restricted/>
-            @endperform
-        </flux:tab.panel>
-        
         <flux:tab.panel name="general">
             @perform($this->project, 'project:manage-settings')
                 <livewire:project.livewire.project-general-settings :project="$this->project"/>

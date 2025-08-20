@@ -9,31 +9,30 @@ class LogSecretActivity
 {
     public function handle(Secret $secret, string $event, ?User $user = null): void
     {
-        $owner = $secret->owner;
+        $environment = $secret->environment;
 
-        $ownerName = method_exists($owner, 'name') ? $owner->name : class_basename($owner);
+        $environmentName = $environment->name;
 
         activity('secret')
             ->performedOn($secret)
             ->causedBy($user)
             ->event($event)
             ->withProperties([
-                'owner_type' => $owner?->getMorphClass(),
-                'owner_id' => $owner?->id,
+                'environment_id' => $environment?->id,
                 'name' => $secret->name,
             ])
-            ->log($this->message($event, $secret, $ownerName));
+            ->log($this->message($event, $secret, $environmentName));
     }
 
-    protected function message(string $event, Secret $secret, string $ownerName): string
+    protected function message(string $event, Secret $secret, string $environmentName): string
     {
         $name = $secret->name;
 
         return match ($event) {
-            'created' => "Added secret \"{$name}\" to \"{$ownerName}\"",
-            'updated' => "Updated secret \"{$name}\" in \"{$ownerName}\"",
-            'deleted' => "Removed secret \"{$name}\" from \"{$ownerName}\"",
-            default => ucfirst($event)." secret \"{$name}\" in \"{$ownerName}\"",
+            'created' => "Added secret \"{$name}\" to \"{$environmentName}\"",
+            'updated' => "Updated secret \"{$name}\" in \"{$environmentName}\"",
+            'deleted' => "Removed secret \"{$name}\" from \"{$environmentName}\"",
+            default => ucfirst($event)." secret \"{$name}\" in \"{$environmentName}\"",
         };
     }
 }

@@ -36,8 +36,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $environments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
- * @property-read int|null $secrets_count
  * @property-read Team $team
  *
  * @method static \Database\Factories\ProjectFactory factory($count = null, $state = [])
@@ -96,11 +94,6 @@ class Project extends Model implements SupportsOverrides
     public function environments(): HasMany
     {
         return $this->hasMany(Environment::class);
-    }
-
-    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
-    {
-        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
     }
 
     public function getActivitylogOptions(): LogOptions

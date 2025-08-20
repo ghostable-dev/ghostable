@@ -3,6 +3,7 @@
 namespace App\Secret\Models;
 
 use App\Account\Models\User;
+use App\Environment\Models\Environment;
 use App\Secret\Actions\LogSecretActivity;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Entities\SecretNotificationsData;
@@ -16,14 +17,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 
 /**
  * @property string $id
- * @property string $owner_type
- * @property string $owner_id
+ * @property string $environment_id
  * @property string $name
  * @property SecretType $type
  * @property string $value_encrypted
@@ -38,7 +37,7 @@ use Illuminate\Support\Facades\Crypt;
  * @property-read User $createdBy
  * @property-read User|null $lastUpdatedBy
  * @property-read SecretVersion|null $latestVersion
- * @property-read Model|\Eloquent $owner
+ * @property-read Environment $environment
  * @property mixed $value
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SecretVersion> $versions
  * @property-read int|null $versions_count
@@ -56,8 +55,7 @@ use Illuminate\Support\Facades\Crypt;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereMetadata($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereNotifications($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereOwnerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereOwnerType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereEnvironmentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereValueEncrypted($value)
@@ -90,9 +88,9 @@ class Secret extends Model
         'notifications' => SecretNotificationsData::class,
     ];
 
-    public function owner(): MorphTo
+    public function environment(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Environment::class, 'environment_id');
     }
 
     public function createdBy(): BelongsTo
