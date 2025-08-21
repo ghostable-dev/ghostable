@@ -115,7 +115,7 @@ class ProjectEnvironmentsManager extends Component
             );
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('environment_limit')) {
-                Flux::modal('upgrade-environment-limit')->open();
+                Flux::modal('upgrade-environment-limit')->show();
                 return;
             }
 
