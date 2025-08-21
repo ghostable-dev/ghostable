@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
@@ -59,10 +60,27 @@ class EnvironmentVariableVersion extends Model
                     return null;
                 }
 
-                return $this->variable
+                $encrypter = $this->variable
                     ->environment
-                    ->encrypter()
-                    ->decryptString($value);
+                    ->encrypter();
+
+                try {
+                    return $encrypter->decryptString($value);
+                } catch (\Throwable $e) {
+                    // Fallback to the application key to support legacy data
+                    // encrypted before per-environment keys existed.
+                    try {
+                        return app('encrypter')->decryptString($value);
+                    } catch (\Throwable $e2) {
+                        Log::warning('Environment variable version decryption failed', [
+                            'version_id' => $this->id,
+                            'exception_class' => get_class($e2),
+                            'exception_msg' => $e2->getMessage(),
+                        ]);
+
+                        return null;
+                    }
+                }
             },
             set: function ($value) {
                 if ($value === null) {

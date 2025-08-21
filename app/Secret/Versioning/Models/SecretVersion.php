@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
@@ -69,10 +70,26 @@ class SecretVersion extends Model
                     return null;
                 }
 
-                return $this->secret
+                $encrypter = $this->secret
                     ->environment
-                    ->encrypter()
-                    ->decryptString($this->value_encrypted);
+                    ->encrypter();
+
+                try {
+                    return $encrypter->decryptString($this->value_encrypted);
+                } catch (\Throwable $e) {
+                    // Fallback to the application key for legacy data.
+                    try {
+                        return app('encrypter')->decryptString($this->value_encrypted);
+                    } catch (\Throwable $e2) {
+                        Log::warning('Secret version decryption failed', [
+                            'version_id' => $this->id,
+                            'exception_class' => get_class($e2),
+                            'exception_msg' => $e2->getMessage(),
+                        ]);
+
+                        return null;
+                    }
+                }
             },
             set: function ($value) {
                 if ($value === null) {
