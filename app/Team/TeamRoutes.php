@@ -13,7 +13,7 @@ class TeamRoutes
     {
         Route::prefix('team/settings')
             ->name('team.settings.')
-            ->middleware('auth')
+            ->middleware(['auth', 'verified'])
             ->group(function () {
                 Route::redirect('/', 'settings/general')->name('index');
                 Route::get('general', TeamGeneralSettings::class)->name('general');

@@ -6,8 +6,8 @@ use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('profile page is displayed', function () {
-    $this->actingAs($user = User::factory()->create());
+test('unverified user can view profile page', function () {
+    $this->actingAs($user = User::factory()->unverified()->create());
 
     $this->get('/settings/profile')->assertOk();
 });
