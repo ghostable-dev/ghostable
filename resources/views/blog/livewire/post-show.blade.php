@@ -9,9 +9,9 @@
     :keywords="$post->meta_keywords"/>
 @endpush
 
-@push('scripts')
+{{-- @push('scripts')
     <x-schema.blog-posting :post="$post"/>
-@endpush
+@endpush --}}
 
 <div class="bg-black">
     
@@ -47,6 +47,6 @@
         </div>
     </div>
     
-    <livewire:account.livewire.mailing-list-signup-form/>
+    {{-- <livewire:account.livewire.mailing-list-signup-form/> --}}
     
 </div>

@@ -10,45 +10,26 @@ class PostSeeder extends Seeder
 {
     public function run(): void
     {
-        $posts = json_decode(file_get_contents(base_path('/database/data/sample_posts.json')));
-        foreach ($posts as $data) {
-            Post::factory()
-                ->published()
-                ->create([
-                    'category' => collect(PostCategory::cases())->random(),
-                    'title' => $data->title,
-                    'description' => $data->description,
-                    'slug' => str($data->title)->slug(),
-                    'content' => $data->content,
-                    'meta_title' => $data->meta_title,
-                    'meta_description' => $data->meta_description,
-                    'meta_keywords' => $data->meta_keywords
-                ]);
-        }
-        
-        Post::factory()
-            ->create([
-                'category' => collect(PostCategory::cases())->random(),
-                'title' => 'Work In Progress',
-                'description' => '',
-                'slug' => 'work-in-progress',
-                'content' => '',
-                'meta_title' => '',
-                'meta_description' => '',
-                'meta_keywords' => []
-            ]);
-            
-        Post::factory()
-            ->archived()
-            ->create([
-                'category' => collect(PostCategory::cases())->random(),
-                'title' => 'Archived Post',
-                'description' => '',
-                'slug' => 'archived-post',
-                'content' => '',
-                'meta_title' => '',
-                'meta_description' => '',
-                'meta_keywords' => []
-            ]);
+        Post::factory()->published()->create([
+            'category' => PostCategory::PRODUCT_UPDATES,
+            'title' => 'Welcome to Ghostable',
+            'description' => 'An introduction to managing environment configuration with Ghostable.',
+            'slug' => 'welcome-to-ghostable',
+            'content' => 'Ghostable helps your team keep environment variables in sync and secure.',
+            'meta_title' => 'Welcome to Ghostable',
+            'meta_description' => 'Learn what Ghostable is and how it simplifies environment management.',
+            'meta_keywords' => ['ghostable', 'environment management'],
+        ]);
+
+        Post::factory()->published()->create([
+            'category' => PostCategory::BEST_PRACTICES,
+            'title' => 'Sync Your .env with Confidence',
+            'description' => 'Best practices for keeping environment files consistent across teams.',
+            'slug' => 'sync-your-env-with-confidence',
+            'content' => 'Discover workflows that make sharing and validating .env files effortless.',
+            'meta_title' => 'Sync Your .env with Confidence',
+            'meta_description' => 'Tips for sharing environment variables safely using Ghostable.',
+            'meta_keywords' => ['env', 'best practices'],
+        ]);
     }
 }

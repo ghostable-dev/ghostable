@@ -20,7 +20,7 @@ class PostFactory extends Factory
             'slug' => str($title)->slug(),
             'posted_at' => now(),
             'status' => PostStatus::DRAFT,
-            'category' => PostCategory::TECHNOLOGY_UPDATES
+            'category' => PostCategory::PRODUCT_UPDATES
         ];
     }
 

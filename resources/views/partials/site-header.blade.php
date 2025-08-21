@@ -10,13 +10,18 @@
 
         <!-- Primary nav links -->
         <flux:navbar class="hidden md:flex gap-x-6">
-            <flux:navbar.item 
-                href="/pricing" 
+            <flux:navbar.item
+                href="/pricing"
                 class="!text-white">
                 Pricing
             </flux:navbar.item>
-            <flux:navbar.item  
-                href="https://docs.ghostable.dev" 
+            <flux:navbar.item
+                href="/blog"
+                class="!text-white">
+                Blog
+            </flux:navbar.item>
+            <flux:navbar.item
+                href="https://docs.ghostable.dev"
                 target="_blank"
                 class="!text-white">
                 Docs

@@ -53,5 +53,5 @@
         </div>
     </div>
     
-    <livewire:account.livewire.mailing-list-signup-form/>
+    {{-- <livewire:account.livewire.mailing-list-signup-form/> --}}
 </div>
