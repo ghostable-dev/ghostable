@@ -23,7 +23,7 @@ class ProjectCreateModal extends Component
             app(CreateProject::class)->handle(name: $this->name, team: $this->team);
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('project_limit')) {
-                Flux::modal('upgrade-project-limit')->open();
+                Flux::modal('upgrade-project-limit')->show();
                 return;
             }
 
