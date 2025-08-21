@@ -16,12 +16,14 @@ use App\Team\Concerns\HasPermissionOverrides;
 use App\Team\Contracts\SupportsOverrides;
 use App\Team\Models\Team;
 use Database\Factories\EnvironmentFactory;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Encryption\Encrypter;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -99,6 +101,15 @@ class Environment extends Model implements SupportsOverrides
         'notifications' => EnvironmentNotificationsData::class.':default',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Environment $environment) {
+            $environment->encryption_key ??= base64_encode(
+                Encrypter::generateKey(config('app.cipher')),
+            );
+        });
+    }
+
     protected $dispatchesEvents = [
         'created' => EnvironmentCreated::class,
         'updated' => EnvironmentUpdated::class,
@@ -138,6 +149,13 @@ class Environment extends Model implements SupportsOverrides
     public function rules(): HasMany
     {
         return $this->hasMany(EnvironmentVariableRule::class);
+    }
+
+    public function encrypter(): EncrypterContract
+    {
+        return $this->encryption_key
+            ? new Encrypter(base64_decode($this->encryption_key), config('app.cipher'))
+            : app('encrypter');
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool

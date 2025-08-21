@@ -2,9 +2,9 @@
 
 namespace App\Environment\Variable\Casts;
 
+use App\Environment\Models\Environment;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 class EncryptedString implements CastsAttributes
@@ -15,22 +15,33 @@ class EncryptedString implements CastsAttributes
             return null;
         }
 
-        try {
-            return Crypt::decryptString($value);
-        } catch (\Throwable $e) {
-            Log::warning('Environment variable decryption failed — possible tampered or mismatched environment ancestry.', [
-                'target_env_id' => $this->targetEnvironment->id ?? null,
-                'target_env_name' => $this->targetEnvironment->name ?? null,
-                'variable_env_id' => $this->variable->environment->id ?? null,
-                'variable_env_name' => $this->variable->environment->name ?? null,
-                'variable_key' => $this->variable->key ?? $key,
-                'model_type' => $model::class,
-                'model_id' => $model->getKey(),
-                'exception_class' => get_class($e),
-                'exception_msg' => $e->getMessage(),
-            ]);
+        $environmentId = $model->environment_id
+            ?? ($attributes['environment_id'] ?? null);
 
-            return null;
+        $environment = $environmentId
+            ? Environment::find($environmentId)
+            : null;
+
+        $encrypter = $environment?->encrypter() ?? app('encrypter');
+
+        try {
+            return $encrypter->decryptString($value);
+        } catch (\Throwable $e) {
+            // Fallback to the application key to support legacy data that
+            // may still be encrypted with the global encrypter.
+            try {
+                return app('encrypter')->decryptString($value);
+            } catch (\Throwable $e2) {
+                Log::warning('Environment variable decryption failed', [
+                    'environment_id' => $environmentId,
+                    'model_type' => $model::class,
+                    'model_id' => $model->getKey(),
+                    'exception_class' => get_class($e2),
+                    'exception_msg' => $e2->getMessage(),
+                ]);
+
+                return null;
+            }
         }
     }
 
@@ -40,6 +51,15 @@ class EncryptedString implements CastsAttributes
             return null;
         }
 
-        return Crypt::encryptString((string) $value);
+        $environmentId = $model->environment_id
+            ?? ($attributes['environment_id'] ?? null);
+
+        $environment = $environmentId
+            ? Environment::find($environmentId)
+            : null;
+
+        $encrypter = $environment?->encrypter() ?? app('encrypter');
+
+        return $encrypter->encryptString((string) $value);
     }
 }

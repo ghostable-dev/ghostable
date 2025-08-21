@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Crypt;
 
 /**
  * @property string $id
@@ -118,12 +117,24 @@ class Secret extends Model
     protected function value(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->value_encrypted
-                ? Crypt::decryptString($this->value_encrypted)
-                : null,
-            set: fn ($value) => [
-                'value_encrypted' => $value === null ? null : Crypt::encryptString($value),
-            ],
+            get: function () {
+                if (! $this->value_encrypted) {
+                    return null;
+                }
+
+                return $this->environment->encrypter()->decryptString($this->value_encrypted);
+            },
+            set: function ($value) {
+                if ($value === null) {
+                    return ['value_encrypted' => null];
+                }
+
+                return [
+                    'value_encrypted' => $this->environment
+                        ->encrypter()
+                        ->encryptString($value),
+                ];
+            },
         );
     }
 

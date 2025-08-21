@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Crypt;
 
 /**
  * @property string $id
@@ -65,12 +64,28 @@ class SecretVersion extends Model
     protected function value(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->value_encrypted
-                ? Crypt::decryptString($this->value_encrypted)
-                : null,
-            set: fn ($value) => [
-                'value_encrypted' => $value === null ? null : Crypt::encryptString($value),
-            ],
+            get: function () {
+                if (! $this->value_encrypted) {
+                    return null;
+                }
+
+                return $this->secret
+                    ->environment
+                    ->encrypter()
+                    ->decryptString($this->value_encrypted);
+            },
+            set: function ($value) {
+                if ($value === null) {
+                    return ['value_encrypted' => null];
+                }
+
+                return [
+                    'value_encrypted' => $this->secret
+                        ->environment
+                        ->encrypter()
+                        ->encryptString($value),
+                ];
+            },
         );
     }
 

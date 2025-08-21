@@ -3,9 +3,9 @@
 namespace App\Environment\Versioning\Models;
 
 use App\Account\Models\User;
-use App\Environment\Variable\Casts\EncryptedString;
 use App\Environment\Variable\Concerns\HasSecretValues;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -51,9 +51,33 @@ class EnvironmentVariableVersion extends Model
         'changed_by',
     ];
 
-    protected $casts = [
-        'value' => EncryptedString::class,
-    ];
+    protected function value(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if ($value === null) {
+                    return null;
+                }
+
+                return $this->variable
+                    ->environment
+                    ->encrypter()
+                    ->decryptString($value);
+            },
+            set: function ($value) {
+                if ($value === null) {
+                    return ['value' => null];
+                }
+
+                return [
+                    'value' => $this->variable
+                        ->environment
+                        ->encrypter()
+                        ->encryptString($value),
+                ];
+            },
+        );
+    }
 
     public function variable(): BelongsTo
     {
