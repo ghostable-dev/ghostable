@@ -38,7 +38,7 @@
                                             @endif
                                         </flux:table.cell>
                                         <flux:table.cell>{{ $activity->description }}</flux:table.cell>
-                                        <flux:table.cell>{{ $activity->created_at->diffForHumans() }}</flux:table.cell>
+                                        <flux:table.cell>{{ $activity->created_at->timezone(timezone())->diffForHumans() }}</flux:table.cell>
                                     </flux:table.row>
                                 @endforeach
                             </flux:table.rows>
