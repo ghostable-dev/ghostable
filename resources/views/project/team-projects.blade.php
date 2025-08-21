@@ -14,10 +14,10 @@
     @endcan
     
     @if($this->projects->count())
-        <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 auto-rows-fr">
             @foreach($this->projects as $project)
                 <li class="col-span-1" wire:key="project-{{ $project->id }}">
-                    <flux:callout icon="circle-stack">
+                    <flux:callout icon="circle-stack" class="h-full min-h-[180px] flex flex-col">
                         <flux:callout.heading>
                             <flux:link href="{{ route('projects.view', $project) }}">{{ $project->name }}</flux:link>
                         </flux:callout.heading>
@@ -29,18 +29,21 @@
                                 $environments = $project->environments;
                                 $total = $environments->count();
                             @endphp
+                            
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($environments->take(4) as $env)
+                                    <flux:link href="{{ route('environment.variables', $env) }}">
+                                        {{ str()->limit($env->name, 15) }}
+                                    </flux:link>
+                                @endforeach
 
-                            @foreach($environments->take(4) as $env)
-                                <flux:link href="{{ route('environment.variables', $env) }}">
-                                    {{ \Illuminate\Support\Str::limit($env->name, 15) }}
-                                </flux:link>
-                            @endforeach
-
-                            @if($total > 4)
-                                <flux:badge>
-                                    and {{ $total - 4 }} others
-                                </flux:badge>
-                            @endif
+                                @if($total > 4)
+                                    <flux:link>
+                                        @php $remaining = $total - 4; @endphp
+                                        and {{ $remaining }} {{ str()->plural('other', $remaining) }}
+                                    </flux:link>
+                                @endif
+                            </div>
                         </x-slot>
                     </flux:callout>
                 </li>
