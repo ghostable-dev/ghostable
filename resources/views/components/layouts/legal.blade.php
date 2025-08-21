@@ -13,8 +13,8 @@
             <p class="font-bold text-xs">
                 @if($lastUpdated)
                     Last Updated:
-                    <time datetime="{{ $lastUpdated->toDateString() }}">
-                        {{ $lastUpdated->format('F d, Y') }}
+                    <time datetime="{{ $lastUpdated->timezone(timezone())->toDateString() }}">
+                        {{ $lastUpdated->timezone(timezone())->format('F d, Y') }}
                     </time>
                 @endif
             </p>

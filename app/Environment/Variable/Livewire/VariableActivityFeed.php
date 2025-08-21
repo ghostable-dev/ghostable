@@ -83,7 +83,7 @@ class VariableActivityFeed extends Component
                                                     </flux:text>
                                                 </div>
                                                 <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                                                    {{ $activity->created_at->diffForHumans() }}
+                                                    {{ $activity->created_at->timezone(timezone())->diffForHumans() }}
                                                 </div>
                                             </div>
                                         </div>
