@@ -20,6 +20,7 @@ test('profile information can be updated', function () {
     $response = Livewire::test(Profile::class)
         ->set('name', 'Test User')
         ->set('email', 'test@example.com')
+        ->set('timezone', 'America/New_York')
         ->call('updateProfileInformation');
 
     $response->assertHasNoErrors();
@@ -28,6 +29,7 @@ test('profile information can be updated', function () {
 
     expect($user->name)->toEqual('Test User');
     expect($user->email)->toEqual('test@example.com');
+    expect($user->timezone)->toEqual('America/New_York');
     expect($user->email_verified_at)->toBeNull();
 });
 

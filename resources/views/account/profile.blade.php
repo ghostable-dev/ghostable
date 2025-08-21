@@ -1,7 +1,7 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your profile details')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
@@ -26,6 +26,17 @@
                     </div>
                 @endif
             </div>
+
+            <flux:select
+                wire:model="timezone"
+                :label="__('Time Zone')"
+                variant="listbox"
+                searchable
+                placeholder="{{ __('Select time zone...') }}">
+                @foreach(timezone_options() as $value => $label)
+                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                @endforeach
+            </flux:select>
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
