@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Encryption\Encrypter;
+use RuntimeException;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -153,9 +154,11 @@ class Environment extends Model implements SupportsOverrides
 
     public function encrypter(): EncrypterContract
     {
-        return $this->encryption_key
-            ? new Encrypter(base64_decode($this->encryption_key), config('app.cipher'))
-            : app('encrypter');
+        if (! $this->encryption_key) {
+            throw new RuntimeException('Environment missing encryption key');
+        }
+
+        return new Encrypter(base64_decode($this->encryption_key), config('app.cipher'));
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool

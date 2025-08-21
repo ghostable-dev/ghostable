@@ -2,7 +2,8 @@
 
 use App\Environment\Actions\DiffEnvironment;
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -11,15 +12,17 @@ it('detects added, updated, and removed variables', function () {
     $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
     $env = $this->createEnvironment('Env', EnvironmentType::DEVELOPMENT, $project);
 
-    EnvironmentVariable::factory()->forEnvironment($env)->create([
-        'key' => 'FOO',
-        'value' => 'bar',
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $env,
+        key: 'FOO',
+        value: 'bar',
+    ));
 
-    EnvironmentVariable::factory()->forEnvironment($env)->create([
-        'key' => 'BAZ',
-        'value' => 'qux',
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $env,
+        key: 'BAZ',
+        value: 'qux',
+    ));
 
     $result = app(DiffEnvironment::class)->handle($env, ['FOO=baz', 'NEW=1']);
 

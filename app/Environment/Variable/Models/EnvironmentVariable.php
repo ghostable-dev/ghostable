@@ -93,6 +93,15 @@ class EnvironmentVariable extends Model
         'last_updated_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (EnvironmentVariable $variable) {
+            if ($variable->value !== null) {
+                $variable->value = $variable->value;
+            }
+        });
+    }
+
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class, 'environment_id');

@@ -60,26 +60,19 @@ class EnvironmentVariableVersion extends Model
                     return null;
                 }
 
-                $encrypter = $this->variable
-                    ->environment
-                    ->encrypter();
-
                 try {
-                    return $encrypter->decryptString($value);
+                    return $this->variable
+                        ->environment
+                        ->encrypter()
+                        ->decryptString($value);
                 } catch (\Throwable $e) {
-                    // Fallback to the application key to support legacy data
-                    // encrypted before per-environment keys existed.
-                    try {
-                        return app('encrypter')->decryptString($value);
-                    } catch (\Throwable $e2) {
-                        Log::warning('Environment variable version decryption failed', [
-                            'version_id' => $this->id,
-                            'exception_class' => get_class($e2),
-                            'exception_msg' => $e2->getMessage(),
-                        ]);
+                    Log::warning('Environment variable version decryption failed', [
+                        'version_id' => $this->id,
+                        'exception_class' => get_class($e),
+                        'exception_msg' => $e->getMessage(),
+                    ]);
 
-                        return null;
-                    }
+                    return null;
                 }
             },
             set: function ($value) {

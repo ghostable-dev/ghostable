@@ -22,26 +22,22 @@ class EncryptedString implements CastsAttributes
             ? Environment::find($environmentId)
             : null;
 
-        $encrypter = $environment?->encrypter() ?? app('encrypter');
+        if (! $environment) {
+            return null;
+        }
 
         try {
-            return $encrypter->decryptString($value);
+            return $environment->encrypter()->decryptString($value);
         } catch (\Throwable $e) {
-            // Fallback to the application key to support legacy data that
-            // may still be encrypted with the global encrypter.
-            try {
-                return app('encrypter')->decryptString($value);
-            } catch (\Throwable $e2) {
-                Log::warning('Environment variable decryption failed', [
-                    'environment_id' => $environmentId,
-                    'model_type' => $model::class,
-                    'model_id' => $model->getKey(),
-                    'exception_class' => get_class($e2),
-                    'exception_msg' => $e2->getMessage(),
-                ]);
+            Log::warning('Environment variable decryption failed', [
+                'environment_id' => $environmentId,
+                'model_type' => $model::class,
+                'model_id' => $model->getKey(),
+                'exception_class' => get_class($e),
+                'exception_msg' => $e->getMessage(),
+            ]);
 
-                return null;
-            }
+            return null;
         }
     }
 
@@ -58,8 +54,8 @@ class EncryptedString implements CastsAttributes
             ? Environment::find($environmentId)
             : null;
 
-        $encrypter = $environment?->encrypter() ?? app('encrypter');
-
-        return $encrypter->encryptString((string) $value);
+        return $environment
+            ? $environment->encrypter()->encryptString((string) $value)
+            : (string) $value;
     }
 }

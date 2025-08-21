@@ -70,25 +70,19 @@ class SecretVersion extends Model
                     return null;
                 }
 
-                $encrypter = $this->secret
-                    ->environment
-                    ->encrypter();
-
                 try {
-                    return $encrypter->decryptString($this->value_encrypted);
+                    return $this->secret
+                        ->environment
+                        ->encrypter()
+                        ->decryptString($this->value_encrypted);
                 } catch (\Throwable $e) {
-                    // Fallback to the application key for legacy data.
-                    try {
-                        return app('encrypter')->decryptString($this->value_encrypted);
-                    } catch (\Throwable $e2) {
-                        Log::warning('Secret version decryption failed', [
-                            'version_id' => $this->id,
-                            'exception_class' => get_class($e2),
-                            'exception_msg' => $e2->getMessage(),
-                        ]);
+                    Log::warning('Secret version decryption failed', [
+                        'version_id' => $this->id,
+                        'exception_class' => get_class($e),
+                        'exception_msg' => $e->getMessage(),
+                    ]);
 
-                        return null;
-                    }
+                    return null;
                 }
             },
             set: function ($value) {

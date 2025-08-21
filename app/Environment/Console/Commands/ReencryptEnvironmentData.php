@@ -16,61 +16,95 @@ class ReencryptEnvironmentData extends Command
 
     public function handle(): int
     {
+        $appEncrypter = app('encrypter');
+
         $this->info('Re-encrypting environment variables...');
         EnvironmentVariable::withTrashed()
             ->with('environment')
-            ->chunk(100, function ($variables) {
+            ->chunk(100, function ($variables) use ($appEncrypter) {
                 foreach ($variables as $variable) {
-                    $value = $variable->value;
+                    $raw = $variable->getRawOriginal('value');
 
-                    if ($value === null) {
+                    if ($raw === null) {
                         continue;
                     }
 
-                    $variable->forceFill(['value' => $value])->saveQuietly();
+                    try {
+                        $decrypted = $appEncrypter->decryptString($raw);
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+
+                    $variable->forceFill([
+                        'value' => $decrypted,
+                    ])->saveQuietly();
                 }
             });
 
         $this->info('Re-encrypting environment variable versions...');
         EnvironmentVariableVersion::with('variable.environment')
-            ->chunk(100, function ($versions) {
+            ->chunk(100, function ($versions) use ($appEncrypter) {
                 foreach ($versions as $version) {
-                    $value = $version->value;
+                    $raw = $version->getRawOriginal('value');
 
-                    if ($value === null) {
+                    if ($raw === null) {
                         continue;
                     }
 
-                    $version->forceFill(['value' => $value])->saveQuietly();
+                    try {
+                        $decrypted = $appEncrypter->decryptString($raw);
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+
+                    $version->forceFill([
+                        'value' => $decrypted,
+                    ])->saveQuietly();
                 }
             });
 
         $this->info('Re-encrypting secrets...');
         Secret::withTrashed()
             ->with('environment')
-            ->chunk(100, function ($secrets) {
+            ->chunk(100, function ($secrets) use ($appEncrypter) {
                 foreach ($secrets as $secret) {
-                    $value = $secret->value;
+                    $raw = $secret->getRawOriginal('value_encrypted');
 
-                    if ($value === null) {
+                    if ($raw === null) {
                         continue;
                     }
 
-                    $secret->forceFill(['value' => $value])->saveQuietly();
+                    try {
+                        $decrypted = $appEncrypter->decryptString($raw);
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+
+                    $secret->forceFill([
+                        'value' => $decrypted,
+                    ])->saveQuietly();
                 }
             });
 
         $this->info('Re-encrypting secret versions...');
         SecretVersion::with('secret.environment')
-            ->chunk(100, function ($versions) {
+            ->chunk(100, function ($versions) use ($appEncrypter) {
                 foreach ($versions as $version) {
-                    $value = $version->value;
+                    $raw = $version->getRawOriginal('value_encrypted');
 
-                    if ($value === null) {
+                    if ($raw === null) {
                         continue;
                     }
 
-                    $version->forceFill(['value' => $value])->saveQuietly();
+                    try {
+                        $decrypted = $appEncrypter->decryptString($raw);
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+
+                    $version->forceFill([
+                        'value' => $decrypted,
+                    ])->saveQuietly();
                 }
             });
 

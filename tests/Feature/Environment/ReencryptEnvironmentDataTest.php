@@ -3,7 +3,8 @@
 use App\Account\Models\User;
 use App\Environment\Console\Commands\ReencryptEnvironmentData;
 use App\Environment\Models\Environment;
-use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
@@ -26,10 +27,11 @@ it('re-encrypts legacy secret and variable data with environment keys', function
     $envEncrypter = $environment->encrypter();
 
     // Environment variable with legacy encryption
-    $variable = EnvironmentVariable::factory()->forEnvironment($environment)->create([
-        'key' => 'FOO',
-        'value' => 'bar',
-    ]);
+    $variable = app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $environment,
+        key: 'FOO',
+        value: 'bar',
+    ));
 
     DB::table('environment_variables')
         ->where('id', $variable->id)
@@ -37,18 +39,18 @@ it('re-encrypts legacy secret and variable data with environment keys', function
     $variable->refresh();
 
     // Environment variable version with legacy encryption
-    $version = EnvironmentVariableVersion::forceCreate([
-        'id' => (string) Str::uuid(),
+    $versionId = (string) Str::uuid();
+    DB::table('environment_variable_versions')->insert([
+        'id' => $versionId,
         'environment_variable_id' => $variable->id,
         'key' => 'FOO',
-        'value' => '',
+        'value' => $appEncrypter->encryptString('legacy-var-ver'),
         'is_commented' => 0,
-        'version' => 1,
+        'version' => 2,
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
-    DB::table('environment_variable_versions')
-        ->where('id', $version->id)
-        ->update(['value' => $appEncrypter->encryptString('legacy-var-ver')]);
-    $version->refresh();
+    $version = EnvironmentVariableVersion::find($versionId);
 
     // Secret with legacy encryption
     $secret = Secret::forceCreate([

@@ -123,23 +123,18 @@ class Secret extends Model
                     return null;
                 }
 
-                $encrypter = $this->environment->encrypter();
-
                 try {
-                    return $encrypter->decryptString($this->value_encrypted);
+                    return $this->environment
+                        ->encrypter()
+                        ->decryptString($this->value_encrypted);
                 } catch (\Throwable $e) {
-                    // Fallback to application key for legacy data
-                    try {
-                        return app('encrypter')->decryptString($this->value_encrypted);
-                    } catch (\Throwable $e2) {
-                        Log::warning('Secret decryption failed', [
-                            'secret_id' => $this->id,
-                            'exception_class' => get_class($e2),
-                            'exception_msg' => $e2->getMessage(),
-                        ]);
+                    Log::warning('Secret decryption failed', [
+                        'secret_id' => $this->id,
+                        'exception_class' => get_class($e),
+                        'exception_msg' => $e->getMessage(),
+                    ]);
 
-                        return null;
-                    }
+                    return null;
                 }
             },
             set: function ($value) {
