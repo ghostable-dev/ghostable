@@ -4,6 +4,7 @@ namespace App\Account\Console\Commands;
 
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
+use App\Blog\Seeders\PostSeeder;
 use Illuminate\Console\Command;
 
 class AppSetup extends Command
@@ -29,6 +30,8 @@ class AppSetup extends Command
         $this->seedCurricula();
 
         $this->seedHuntress();
+
+        $this->seedBlogPosts();
     }
 
     protected function resetDatabase(): void
@@ -95,5 +98,11 @@ class AppSetup extends Command
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
 
         $this->createInvite(team: $huntress, sender: $joe, email: 'joe@curricula.com');
+    }
+
+    protected function seedBlogPosts(): void
+    {
+        $this->info('📝 Seeding blog posts...');
+        $this->call('db:seed', ['--class' => PostSeeder::class]);
     }
 }

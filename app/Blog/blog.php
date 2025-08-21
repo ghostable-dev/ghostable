@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::name('blog')
     ->get('/blog', PostsIndex::class);
-    
+
 Route::middleware(PostIsPublished::class)
     ->group(function () {
         Route::name('blog.view-post')
             ->get('/blog/{post:slug}', PostShow::class);
     });
-    
+
 Route::middleware(['auth', IsFounder::class])
     ->group(function () {
-    Route::name('blog.preview-post')
-        ->get('/blog/preview/{post:slug}', PostShow::class);
-});
+        Route::name('blog.preview-post')
+            ->get('/blog/preview/{post:slug}', PostShow::class);
+    });

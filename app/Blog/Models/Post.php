@@ -45,7 +45,7 @@ class Post extends Model implements Sitemapable
     
     protected $attributes = [
         'status' => PostStatus::DRAFT,
-        'category' => PostCategory::TECHNOLOGY_UPDATES
+        'category' => PostCategory::PRODUCT_UPDATES
     ];
     
     protected static function newFactory(): Factory
