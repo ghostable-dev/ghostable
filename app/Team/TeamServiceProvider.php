@@ -9,6 +9,7 @@ use App\Team\Events\InviteSent;
 use App\Team\Events\MemberRemoved;
 use App\Team\Events\MemberRoleChanged;
 use App\Team\Events\TeamSettingsChanged;
+use App\Team\Console\Commands\TeamLimitsCommand;
 use App\Team\Listeners\SendAccessChangeNotification;
 use App\Team\Listeners\SendMembershipActivityNotification;
 use App\Team\Listeners\SendTeamInvite;
@@ -82,5 +83,11 @@ class TeamServiceProvider extends ServiceProvider
             TeamSettingsChanged::class,
             SendTeamSettingsChangedNotification::class
         );
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                TeamLimitsCommand::class,
+            ]);
+        }
     }
 }

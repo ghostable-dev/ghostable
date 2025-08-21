@@ -148,4 +148,16 @@
         </form>
     </flux:modal>
 
+    <flux:modal name="upgrade-environment-limit" class="md:w-96">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Upgrade Required</flux:heading>
+                <flux:text class="mt-2">Environment limit reached for this project. Upgrade to create more environments.</flux:text>
+            </div>
+            <div class="flex justify-end">
+                <flux:button variant="primary">Upgrade Plan</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
 </div>

@@ -12,6 +12,7 @@ use App\Project\Resolvers\ResolveProject;
 use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -105,12 +106,21 @@ class ProjectEnvironmentsManager extends Component
         $validated['base_id'] = $validated['base_id'] ?: null;
         $base = $this->project->environments()->where('id', $validated['base_id'])->first();
 
-        app(CreateEnv::class)->handle(
-            name: $this->name,
-            type: $this->type,
-            project: $this->project,
-            base: $base
-        );
+        try {
+            app(CreateEnv::class)->handle(
+                name: $this->name,
+                type: $this->type,
+                project: $this->project,
+                base: $base
+            );
+        } catch (ValidationException $e) {
+            if ($e->validator->errors()->has('environment_limit')) {
+                Flux::modal('upgrade-environment-limit')->open();
+                return;
+            }
+
+            throw $e;
+        }
 
         $this->reset('type', 'name');
 
