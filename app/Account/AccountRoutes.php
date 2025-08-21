@@ -12,7 +12,7 @@ class AccountRoutes
 {
     public static function web(): void
     {
-        Route::middleware(['auth'])
+        Route::middleware('auth')
             ->prefix('settings')
             ->name('settings.')
             ->group(function () {

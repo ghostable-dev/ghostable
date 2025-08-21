@@ -24,10 +24,9 @@ final class DeployEnvironment extends Controller
     public function __invoke(): Response
     {
         // Retrieve the environment directly associated with the provided token.
-        /** @var Environment|null $environment */
         $environment = request()->user();
 
-        if (! $environment) {
+        if (! $environment instanceof Environment || ! $environment->tokenCan('deploy')) {
             throw new AuthorizationException('The provided token is invalid or does not correspond to any environment.');
         }
 
