@@ -32,12 +32,14 @@ class ReencryptEnvironmentData extends Command
                     try {
                         $decrypted = $appEncrypter->decryptString($raw);
                     } catch (\Throwable $e) {
+                        dd($e);
+
                         continue;
                     }
 
-                    $variable->forceFill([
+                    $variable->update([
                         'value' => $decrypted,
-                    ])->saveQuietly();
+                    ]);
                 }
             });
 
@@ -57,9 +59,9 @@ class ReencryptEnvironmentData extends Command
                         continue;
                     }
 
-                    $version->forceFill([
+                    $version->update([
                         'value' => $decrypted,
-                    ])->saveQuietly();
+                    ]);
                 }
             });
 
@@ -68,7 +70,7 @@ class ReencryptEnvironmentData extends Command
             ->with('environment')
             ->chunk(100, function ($secrets) use ($appEncrypter) {
                 foreach ($secrets as $secret) {
-                    $raw = $secret->getRawOriginal('value_encrypted');
+                    $raw = $secret->getRawOriginal('value');
 
                     if ($raw === null) {
                         continue;
@@ -80,9 +82,9 @@ class ReencryptEnvironmentData extends Command
                         continue;
                     }
 
-                    $secret->forceFill([
+                    $secret->update([
                         'value' => $decrypted,
-                    ])->saveQuietly();
+                    ]);
                 }
             });
 
@@ -90,7 +92,7 @@ class ReencryptEnvironmentData extends Command
         SecretVersion::with('secret.environment')
             ->chunk(100, function ($versions) use ($appEncrypter) {
                 foreach ($versions as $version) {
-                    $raw = $version->getRawOriginal('value_encrypted');
+                    $raw = $version->getRawOriginal('value');
 
                     if ($raw === null) {
                         continue;
@@ -102,9 +104,9 @@ class ReencryptEnvironmentData extends Command
                         continue;
                     }
 
-                    $version->forceFill([
+                    $version->update([
                         'value' => $decrypted,
-                    ])->saveQuietly();
+                    ]);
                 }
             });
 

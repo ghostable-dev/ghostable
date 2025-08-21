@@ -6,8 +6,8 @@ use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
-use Illuminate\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Encryption\Encrypter;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Environment\Models\Environment>

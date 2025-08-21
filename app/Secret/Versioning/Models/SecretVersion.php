@@ -6,18 +6,16 @@ use App\Account\Models\User;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Secret\Versioning\Casts\EncryptedSecretVersionValue;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
  * @property string $secret_id
  * @property string $name
  * @property SecretType $type
- * @property string $value_encrypted
  * @property array<array-key, mixed>|null $metadata
  * @property int $version
  * @property string|null $changed_by
@@ -51,59 +49,18 @@ class SecretVersion extends Model
     protected $fillable = [
         'name',
         'type',
-        'value_encrypted',
+        'value',
         'metadata',
         'version',
         'changed_by',
+        'secret_id',
     ];
 
     protected $casts = [
+        'value' => EncryptedSecretVersionValue::class,
         'type' => SecretType::class,
         'metadata' => 'array',
     ];
-
-    protected function value(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                if (! $this->value_encrypted) {
-                    return null;
-                }
-
-                try {
-                    return $this->secret
-                        ->environment
-                        ->encrypter()
-                        ->decryptString($this->value_encrypted);
-                } catch (\Throwable $e) {
-                    Log::warning('Secret version decryption failed', [
-                        'version_id' => $this->id,
-                        'exception_class' => get_class($e),
-                        'exception_msg' => $e->getMessage(),
-                    ]);
-
-                    return null;
-                }
-            },
-            set: function ($value) {
-                if ($value === null) {
-                    return ['value_encrypted' => null];
-                }
-
-                return [
-                    'value_encrypted' => $this->secret
-                        ->environment
-                        ->encrypter()
-                        ->encryptString($value),
-                ];
-            },
-        );
-    }
-
-    public function displayValue(): string
-    {
-        return str_repeat('•', 10);
-    }
 
     public function secret(): BelongsTo
     {

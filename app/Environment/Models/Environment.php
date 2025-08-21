@@ -24,8 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Encryption\Encrypter;
-use RuntimeException;
 use Laravel\Sanctum\HasApiTokens;
+use RuntimeException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -102,14 +102,14 @@ class Environment extends Model implements SupportsOverrides
         'notifications' => EnvironmentNotificationsData::class.':default',
     ];
 
-    protected static function booted(): void
-    {
-        static::creating(function (Environment $environment) {
-            $environment->encryption_key ??= base64_encode(
-                Encrypter::generateKey(config('app.cipher')),
-            );
-        });
-    }
+    // protected static function booted(): void
+    // {
+    //     static::creating(function (Environment $environment) {
+    //         $environment->encryption_key ??= base64_encode(
+    //             Encrypter::generateKey(config('app.cipher')),
+    //         );
+    //     });
+    // }
 
     protected $dispatchesEvents = [
         'created' => EnvironmentCreated::class,

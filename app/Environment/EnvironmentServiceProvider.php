@@ -2,12 +2,12 @@
 
 namespace App\Environment;
 
+use App\Environment\Console\Commands\ReencryptEnvironmentData;
 use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentEvent;
 use App\Environment\Events\EnvironmentNameChanged;
-use App\Environment\Console\Commands\ReencryptEnvironmentData;
 use App\Environment\Listeners\SendEnvironmentActivityNotification;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;

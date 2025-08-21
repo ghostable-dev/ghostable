@@ -5,12 +5,12 @@ namespace App\Secret\Models;
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
 use App\Secret\Actions\LogSecretActivity;
+use App\Secret\Casts\EncryptedSecretValue;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Entities\SecretNotificationsData;
 use App\Secret\Enums\SecretType;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,14 +18,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
  * @property string $environment_id
  * @property string $name
  * @property SecretType $type
- * @property string $value_encrypted
+ * @property string $value
  * @property array<array-key, mixed>|null $metadata
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
@@ -72,16 +71,18 @@ class Secret extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'type',
-        'value_encrypted',
-        'metadata',
-        'notifications',
+        'environment_id',
         'last_updated_at',
         'last_updated_by',
+        'metadata',
+        'name',
+        'notifications',
+        'type',
+        'value',
     ];
 
     protected $casts = [
+        'value' => EncryptedSecretValue::class,
         'type' => SecretType::class,
         'metadata' => 'array',
         'last_updated_at' => 'datetime',
@@ -113,42 +114,6 @@ class Secret extends Model
     {
         return $this->hasOne(SecretVersion::class)
             ->orderByDesc('version');
-    }
-
-    protected function value(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                if (! $this->value_encrypted) {
-                    return null;
-                }
-
-                try {
-                    return $this->environment
-                        ->encrypter()
-                        ->decryptString($this->value_encrypted);
-                } catch (\Throwable $e) {
-                    Log::warning('Secret decryption failed', [
-                        'secret_id' => $this->id,
-                        'exception_class' => get_class($e),
-                        'exception_msg' => $e->getMessage(),
-                    ]);
-
-                    return null;
-                }
-            },
-            set: function ($value) {
-                if ($value === null) {
-                    return ['value_encrypted' => null];
-                }
-
-                return [
-                    'value_encrypted' => $this->environment
-                        ->encrypter()
-                        ->encryptString($value),
-                ];
-            },
-        );
     }
 
     public function displayValue(): string

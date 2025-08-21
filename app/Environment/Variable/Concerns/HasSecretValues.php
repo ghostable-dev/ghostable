@@ -12,7 +12,7 @@ trait HasSecretValues
      */
     public function displayValue(): string
     {
-        return $this->isSecret() ? str_repeat('•', 10) : $this->value;
+        return $this->isSecret() ? str_repeat('•', 10) : $this->value ?? '';
     }
 
     /**

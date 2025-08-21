@@ -7,7 +7,6 @@ use App\Environment\Enums\PushMode;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Actions\SuppressInheritedVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
-use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

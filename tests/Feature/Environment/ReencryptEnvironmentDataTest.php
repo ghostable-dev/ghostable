@@ -58,12 +58,12 @@ it('re-encrypts legacy secret and variable data with environment keys', function
         'environment_id' => $environment->id,
         'name' => 'secret',
         'type' => SecretType::GENERIC,
-        'value_encrypted' => '',
+        'value' => '',
         'created_by_id' => $user->id,
     ]);
     DB::table('secrets')
         ->where('id', $secret->id)
-        ->update(['value_encrypted' => $appEncrypter->encryptString('legacy-secret')]);
+        ->update(['value' => $appEncrypter->encryptString('legacy-secret')]);
     $secret->refresh();
 
     // Secret version with legacy encryption
@@ -72,20 +72,20 @@ it('re-encrypts legacy secret and variable data with environment keys', function
         'secret_id' => $secret->id,
         'name' => 'secret',
         'type' => SecretType::GENERIC,
-        'value_encrypted' => '',
+        'value' => '',
         'version' => 1,
         'changed_by' => $user->id,
     ]);
     DB::table('secret_versions')
         ->where('id', $secretVersion->id)
-        ->update(['value_encrypted' => $appEncrypter->encryptString('legacy-secret-ver')]);
+        ->update(['value' => $appEncrypter->encryptString('legacy-secret-ver')]);
     $secretVersion->refresh();
 
     // Ensure legacy values decrypt with app key before command
     expect($appEncrypter->decryptString($variable->getRawOriginal('value')))->toBe('legacy-var');
     expect($appEncrypter->decryptString($version->getRawOriginal('value')))->toBe('legacy-var-ver');
-    expect($appEncrypter->decryptString($secret->getRawOriginal('value_encrypted')))->toBe('legacy-secret');
-    expect($appEncrypter->decryptString($secretVersion->getRawOriginal('value_encrypted')))->toBe('legacy-secret-ver');
+    expect($appEncrypter->decryptString($secret->getRawOriginal('value')))->toBe('legacy-secret');
+    expect($appEncrypter->decryptString($secretVersion->getRawOriginal('value')))->toBe('legacy-secret-ver');
 
     // Run command
     Artisan::call(ReencryptEnvironmentData::class);
@@ -99,12 +99,12 @@ it('re-encrypts legacy secret and variable data with environment keys', function
     // Values can now be decrypted with environment key
     expect($envEncrypter->decryptString($variable->getRawOriginal('value')))->toBe('legacy-var');
     expect($envEncrypter->decryptString($version->getRawOriginal('value')))->toBe('legacy-var-ver');
-    expect($envEncrypter->decryptString($secret->getRawOriginal('value_encrypted')))->toBe('legacy-secret');
-    expect($envEncrypter->decryptString($secretVersion->getRawOriginal('value_encrypted')))->toBe('legacy-secret-ver');
+    expect($envEncrypter->decryptString($secret->getRawOriginal('value')))->toBe('legacy-secret');
+    expect($envEncrypter->decryptString($secretVersion->getRawOriginal('value')))->toBe('legacy-secret-ver');
 
     // App key no longer works
     expect(fn () => $appEncrypter->decryptString($variable->getRawOriginal('value')))->toThrow(DecryptException::class);
     expect(fn () => $appEncrypter->decryptString($version->getRawOriginal('value')))->toThrow(DecryptException::class);
-    expect(fn () => $appEncrypter->decryptString($secret->getRawOriginal('value_encrypted')))->toThrow(DecryptException::class);
-    expect(fn () => $appEncrypter->decryptString($secretVersion->getRawOriginal('value_encrypted')))->toThrow(DecryptException::class);
+    expect(fn () => $appEncrypter->decryptString($secret->getRawOriginal('value')))->toThrow(DecryptException::class);
+    expect(fn () => $appEncrypter->decryptString($secretVersion->getRawOriginal('value')))->toThrow(DecryptException::class);
 });

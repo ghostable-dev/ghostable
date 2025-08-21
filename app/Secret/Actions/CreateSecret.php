@@ -18,16 +18,13 @@ class CreateSecret
         User $createdBy
     ): Secret {
         $secret = new Secret([
+            'environment_id' => $environment->id,
+            'last_updated_at' => now(),
+            'metadata' => $metadata,
             'name' => $name,
             'type' => $type,
-            'metadata' => $metadata,
-            'last_updated_at' => now(),
         ]);
 
-        // The value mutator relies on the environment relationship for
-        // the per-environment encrypter, so associate the environment
-        // before assigning the value.
-        $secret->environment()->associate($environment);
         $secret->value = $value;
         $secret->createdBy()->associate($createdBy);
         $secret->lastUpdatedBy()->associate($createdBy);

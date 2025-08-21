@@ -5,11 +5,10 @@ namespace App\Environment\Versioning\Models;
 use App\Account\Models\User;
 use App\Environment\Variable\Concerns\HasSecretValues;
 use App\Environment\Variable\Models\EnvironmentVariable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Environment\Versioning\Casts\EncryptedVariableVersionValue;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
@@ -52,43 +51,9 @@ class EnvironmentVariableVersion extends Model
         'changed_by',
     ];
 
-    protected function value(): Attribute
-    {
-        return Attribute::make(
-            get: function ($value) {
-                if ($value === null) {
-                    return null;
-                }
-
-                try {
-                    return $this->variable
-                        ->environment
-                        ->encrypter()
-                        ->decryptString($value);
-                } catch (\Throwable $e) {
-                    Log::warning('Environment variable version decryption failed', [
-                        'version_id' => $this->id,
-                        'exception_class' => get_class($e),
-                        'exception_msg' => $e->getMessage(),
-                    ]);
-
-                    return null;
-                }
-            },
-            set: function ($value) {
-                if ($value === null) {
-                    return ['value' => null];
-                }
-
-                return [
-                    'value' => $this->variable
-                        ->environment
-                        ->encrypter()
-                        ->encryptString($value),
-                ];
-            },
-        );
-    }
+    protected $casts = [
+        'value' => EncryptedVariableVersionValue::class,
+    ];
 
     public function variable(): BelongsTo
     {
