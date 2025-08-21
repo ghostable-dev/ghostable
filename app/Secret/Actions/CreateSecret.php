@@ -18,14 +18,14 @@ class CreateSecret
         User $createdBy
     ): Secret {
         $secret = new Secret([
+            'environment_id' => $environment->id,
+            'last_updated_at' => now(),
+            'metadata' => $metadata,
             'name' => $name,
             'type' => $type,
-            'metadata' => $metadata,
-            'last_updated_at' => now(),
         ]);
 
         $secret->value = $value;
-        $secret->environment()->associate($environment);
         $secret->createdBy()->associate($createdBy);
         $secret->lastUpdatedBy()->associate($createdBy);
         $secret->save();

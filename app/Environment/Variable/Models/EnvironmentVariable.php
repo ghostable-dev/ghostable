@@ -6,7 +6,7 @@ use App\Account\Models\User;
 use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\LogVariableActivity;
 use App\Environment\Variable\Builders\VariableBuilder;
-use App\Environment\Variable\Casts\EncryptedString;
+use App\Environment\Variable\Casts\EncryptedVariableValue;
 use App\Environment\Variable\Concerns\HasSecretValues;
 use App\Environment\Versioning\Actions\CreateVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
@@ -89,9 +89,18 @@ class EnvironmentVariable extends Model
     ];
 
     protected $casts = [
-        'value' => EncryptedString::class,
+        'value' => EncryptedVariableValue::class,
         'last_updated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (EnvironmentVariable $variable) {
+            if ($variable->value !== null) {
+                $variable->value = $variable->value;
+            }
+        });
+    }
 
     public function environment(): BelongsTo
     {

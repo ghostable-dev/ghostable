@@ -24257,10 +24257,6 @@ namespace App\Account\Livewire {
             }
     /**
      */
-    class TwoFactorAuthentication extends \Livewire\Component {
-            }
-    /**
-     */
     class Register extends \Livewire\Component {
             }
     }
@@ -24284,10 +24280,47 @@ namespace App\Team\Livewire {
             }
     }
 
+namespace App\Environment\Variable\Livewire {
+    /**
+     */
+    class VariableManager extends \Livewire\Component {
+            }
+    }
+
+namespace App\Secret\Livewire {
+    /**
+     */
+    class SecretsManager extends \Livewire\Component {
+            }
+    }
+
 namespace App\Environment\Livewire {
     /**
      */
-    class EnvironmentView extends \Livewire\Component {
+    class EnvironmentActivity extends \Livewire\Component {
+            }
+    /**
+     */
+    class EnvironmentGeneralSettings extends \Livewire\Component {
+            }
+    /**
+     */
+    class EnvironmentComponent extends \Livewire\Component {
+            }
+    /**
+     */
+    class EnvironmentAccessManager extends \Livewire\Component {
+            }
+    /**
+     */
+    class EnvironmentNotificationsManager extends \Livewire\Component {
+            }
+    }
+
+namespace App\Environment\Validation\Livewire {
+    /**
+     */
+    class ValidationManager extends \App\Environment\Livewire\EnvironmentComponent {
             }
     }
 
@@ -24318,6 +24351,10 @@ namespace App\Auth\Livewire {
     /**
      */
     class ConfirmPassword extends \Livewire\Component {
+            }
+    /**
+     */
+    class TwoFactorAuthentication extends \Livewire\Component {
             }
     }
 
@@ -29128,11 +29165,6 @@ namespace  {
 }
 
 
-namespace Facades\Livewire\Features\SupportFileUploads {
-    /**
-     * @mixin \Livewire\Features\SupportFileUploads\GenerateSignedUploadUrl     */
-    class GenerateSignedUploadUrl extends \Livewire\Features\SupportFileUploads\GenerateSignedUploadUrl {}
-}
 
 
 

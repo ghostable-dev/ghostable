@@ -20,7 +20,7 @@ class RestoreSecretVersion
         $secret->update([
             'name' => $version->name,
             'type' => $version->type,
-            'value_encrypted' => $version->value_encrypted,
+            'value' => $version->value,
             'metadata' => $version->metadata,
             'last_updated_at' => now(),
             'last_updated_by' => $restoredBy?->id,

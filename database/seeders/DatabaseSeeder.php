@@ -6,21 +6,5 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run(): void
-    {
-        $user = \App\Account\Models\User::factory()->create();
-
-        $team = \App\Team\Models\Team::factory()->create();
-        $project = \App\Project\Models\Project::factory()->forTeam($team)->create();
-        $environment = \App\Environment\Models\Environment::factory()->forProject($project)->create();
-
-        app(\App\Secret\Actions\CreateSecret::class)->handle(
-            environment: $environment,
-            name: 'Environment Secret',
-            type: \App\Secret\Enums\SecretType::SSH_KEY,
-            value: 'env-secret',
-            metadata: null,
-            createdBy: $user,
-        );
-    }
+    public function run(): void {}
 }

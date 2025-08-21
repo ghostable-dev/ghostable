@@ -16,15 +16,17 @@ it('marks descendant variables as overrides when ancestor adds same key', functi
     $child = Environment::factory()->forProject($project)->basedOn($root)->create();
     $grandchild = Environment::factory()->forProject($project)->basedOn($child)->create();
 
-    EnvironmentVariable::factory()->forEnvironment($child)->create([
-        'key' => 'FOO',
-        'value' => 'child',
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $child,
+        key: 'FOO',
+        value: 'child',
+    ));
 
-    EnvironmentVariable::factory()->forEnvironment($grandchild)->create([
-        'key' => 'FOO',
-        'value' => 'grandchild',
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $grandchild,
+        key: 'FOO',
+        value: 'grandchild',
+    ));
 
     app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $root,
@@ -45,10 +47,11 @@ it('removes identical descendant variable when ancestor adds same key', function
     $root = Environment::factory()->forProject($project)->create();
     $child = Environment::factory()->forProject($project)->basedOn($root)->create();
 
-    EnvironmentVariable::factory()->forEnvironment($child)->create([
-        'key' => 'BAR',
-        'value' => 'same',
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $child,
+        key: 'BAR',
+        value: 'same',
+    ));
 
     app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $root,

@@ -2,6 +2,7 @@
 
 namespace App\Environment;
 
+use App\Environment\Console\Commands\ReencryptEnvironmentData;
 use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
@@ -57,5 +58,11 @@ class EnvironmentServiceProvider extends ServiceProvider
                 resolve(EnvironmentAncestryResolver::class)->bust($event->environment);
             }
         );
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ReencryptEnvironmentData::class,
+            ]);
+        }
     }
 }
