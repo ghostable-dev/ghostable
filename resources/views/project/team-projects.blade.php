@@ -25,9 +25,22 @@
                             Select an environment from below.
                         </flux:callout.text>
                         <x-slot name="actions">
-                            @foreach($project->environments as $env)
-                                <flux:link href="{{ route('environment.variables', $env) }}">{{ $env->name }}</flux:link>
+                            @php
+                                $environments = $project->environments;
+                                $total = $environments->count();
+                            @endphp
+
+                            @foreach($environments->take(4) as $env)
+                                <flux:link href="{{ route('environment.variables', $env) }}">
+                                    {{ \Illuminate\Support\Str::limit($env->name, 15) }}
+                                </flux:link>
                             @endforeach
+
+                            @if($total > 4)
+                                <flux:badge>
+                                    and {{ $total - 4 }} others
+                                </flux:badge>
+                            @endif
                         </x-slot>
                     </flux:callout>
                 </li>
