@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property string $id
@@ -122,7 +123,24 @@ class Secret extends Model
                     return null;
                 }
 
-                return $this->environment->encrypter()->decryptString($this->value_encrypted);
+                $encrypter = $this->environment->encrypter();
+
+                try {
+                    return $encrypter->decryptString($this->value_encrypted);
+                } catch (\Throwable $e) {
+                    // Fallback to application key for legacy data
+                    try {
+                        return app('encrypter')->decryptString($this->value_encrypted);
+                    } catch (\Throwable $e2) {
+                        Log::warning('Secret decryption failed', [
+                            'secret_id' => $this->id,
+                            'exception_class' => get_class($e2),
+                            'exception_msg' => $e2->getMessage(),
+                        ]);
+
+                        return null;
+                    }
+                }
             },
             set: function ($value) {
                 if ($value === null) {
