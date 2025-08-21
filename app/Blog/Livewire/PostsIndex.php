@@ -13,7 +13,7 @@ class PostsIndex extends Component
     public function render()
     {
         return view('blog.livewire.posts-index')
-            ->layout('components.layouts.site')
+            ->layout('components.layouts.guest')
             ->with([
                 'posts' => Post::published()->latest()->paginate(6),
             ]);
