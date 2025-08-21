@@ -31,7 +31,7 @@
                                 {{ $secret->latestVersion->version }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ $secret->last_updated_at->shortAbsoluteDiffForHumans() }}
+                                {{ $secret->last_updated_at->timezone(timezone())->shortAbsoluteDiffForHumans() }}
                             </flux:table.cell>
                             <flux:table.cell align="end">
                                 <flux:dropdown position="left">
