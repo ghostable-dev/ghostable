@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Team\Entities;
+
+final class OrgTeamLimits extends TeamLimits
+{
+    public static function defaults(): static
+    {
+        $config = config('ghostable.org_defaults');
+
+        return new static(
+            projects: $config['projects'],
+            environments_per_project: $config['environments_per_project'],
+            kind: 'org',
+        );
+    }
+
+    public static function fromArray(?array $data): static
+    {
+        $defaults = static::defaults();
+        $data = $data ?? [];
+
+        return new static(
+            projects: $data['projects'] ?? $defaults->projects,
+            environments_per_project: $data['environments_per_project'] ?? $defaults->environments_per_project,
+            kind: 'org',
+        );
+    }
+}
