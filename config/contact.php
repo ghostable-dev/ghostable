@@ -23,5 +23,7 @@ return [
         'linkedin' => '',
         'x' => '',
         'youtube' => '',
+        'github' => 'https://github.com/ghostable-dev',
+        'discord' => 'https://discord.gg/g4aWumYH'
     ],
 ];
