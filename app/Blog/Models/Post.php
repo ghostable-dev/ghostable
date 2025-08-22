@@ -33,6 +33,7 @@ class Post extends Model implements Sitemapable
         'posted_at',
         'slug',
         'status',
+        'is_featured',
         'title',
     ];
     
@@ -41,11 +42,13 @@ class Post extends Model implements Sitemapable
         'meta_keywords' => 'array',
         'posted_at' => 'datetime',
         'status' => PostStatus::class,
+        'is_featured' => 'boolean',
     ];
     
     protected $attributes = [
         'status' => PostStatus::DRAFT,
-        'category' => PostCategory::PRODUCT_UPDATES
+        'category' => PostCategory::PRODUCT_UPDATES,
+        'is_featured' => false,
     ];
     
     protected static function newFactory(): Factory
