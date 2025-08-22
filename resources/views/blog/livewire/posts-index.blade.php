@@ -7,9 +7,11 @@
     :keywords="['ghostable', 'environment variables', 'best practices']"/>
 @endpush
 
-<div class="px-6 lg:px-8 py-16">
+<div class="px-6 lg:px-8 py-16 bg-white">
     <div class="mx-auto max-w-2xl lg:max-w-7xl">
-        <h1 class="text-4xl font-medium tracking-tighter text-gray-950 sm:text-6xl text-pretty">Ghostable Blog</h1>
+        <h1 class="text-4xl font-medium tracking-tighter text-gray-950 sm:text-6xl text-pretty">
+            Ghostable Blog
+        </h1>
         <p class="mt-6 max-w-3xl text-2xl font-medium text-gray-500">Stay informed with product updates, company news, and insights on managing environment configuration.</p>
 
         @if($featuredPosts->isNotEmpty())
