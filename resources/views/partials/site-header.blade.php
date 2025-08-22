@@ -21,13 +21,6 @@
                 class="!text-white">
                 Docs
             </flux:navbar.item>
-            <flux:navbar.item
-                href="https://discord.gg/TQp77Shv"
-                target="_blank"
-                class="!text-white flex items-center gap-x-1">
-                <flux:icon.discord variant="mini"/>
-                Discord
-            </flux:navbar.item>
             {{-- <flux:navbar.item
                 href="/features"
                 class="!text-white">
