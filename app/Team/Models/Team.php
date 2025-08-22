@@ -10,6 +10,7 @@ use App\Project\Models\Project;
 use App\Team\Actions\CreateNonConflictingSlug;
 use App\Team\Builders\TeamBuilder;
 use App\Team\Casts\TeamLimitsCast;
+use App\Team\Casts\TeamFeaturesCast;
 use App\Team\Entities\TeamNotificationsData;
 use Database\Factories\TeamFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -87,6 +88,7 @@ class Team extends Model
         'slack_webhook_url',
         'slack_enabled',
         'limits',
+        'features',
     ];
 
     protected $attributes = [
@@ -99,6 +101,7 @@ class Team extends Model
         'slack_enabled' => 'boolean',
         'slack_webhook_url' => 'string',
         'limits' => TeamLimitsCast::class,
+        'features' => TeamFeaturesCast::class,
     ];
 
     public static function newFactory(): TeamFactory

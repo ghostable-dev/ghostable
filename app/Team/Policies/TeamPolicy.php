@@ -50,10 +50,11 @@ class TeamPolicy
      */
     public function manageAccessControls(User $user, Team $team): bool
     {
-        return $user->teamMembership()->hasTeamPermission(
-            permission: TeamPermission::ManageAccessControls,
-            team: $team
-        );
+        return $team->features->advanced_permissions &&
+            $user->teamMembership()->hasTeamPermission(
+                permission: TeamPermission::ManageAccessControls,
+                team: $team
+            );
     }
 
     /**
@@ -72,10 +73,11 @@ class TeamPolicy
      */
     public function viewAuditLogs(User $user, Team $team): bool
     {
-        return $user->teamMembership()->hasTeamPermission(
-            permission: TeamPermission::ViewAuditLogs,
-            team: $team
-        );
+        return $team->features->audits &&
+            $user->teamMembership()->hasTeamPermission(
+                permission: TeamPermission::ViewAuditLogs,
+                team: $team
+            );
     }
 
     public function admin(User $user, Team $team): bool

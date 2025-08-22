@@ -2,7 +2,7 @@
     
     <div class="space-y-12 max-w-4xl">
         
-        @if(!$this->environment->owningTeam()->isPersonal())
+        @if($this->environment->owningTeam()->features->advanced_permissions)
             @can('manageAccessControls', $this->environment->owningTeam())
                 <div class="space-y-6">
                     
