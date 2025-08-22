@@ -1,7 +1,7 @@
 <?php
 
-use App\Environment\Enums\EnvironmentType;
 use App\Environment\Actions\Token\CreateEnvToken;
+use App\Environment\Enums\EnvironmentType;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 

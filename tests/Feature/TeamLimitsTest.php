@@ -2,7 +2,6 @@
 
 use App\Project\Models\Project;
 use App\Team\Actions\CreateTeam;
-use App\Team\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 

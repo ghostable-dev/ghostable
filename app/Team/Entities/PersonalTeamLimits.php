@@ -8,7 +8,7 @@ final class PersonalTeamLimits extends TeamLimits
     {
         $config = config('ghostable.personal_limits');
 
-        return new static(
+        return new self(
             projects: $config['projects'],
             environments_per_project: $config['environments_per_project'],
             kind: 'personal',

@@ -24,6 +24,7 @@ class ProjectCreateModal extends Component
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('project_limit')) {
                 Flux::modal('upgrade-project-limit')->show();
+
                 return;
             }
 

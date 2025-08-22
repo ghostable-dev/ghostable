@@ -8,7 +8,7 @@ final class OrgTeamLimits extends TeamLimits
     {
         $config = config('ghostable.org_defaults');
 
-        return new static(
+        return new self(
             projects: $config['projects'],
             environments_per_project: $config['environments_per_project'],
             kind: 'org',

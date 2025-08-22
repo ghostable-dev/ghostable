@@ -25,6 +25,7 @@ class TeamLimitsCommand extends Command
                 $this->line('kind: '.$limits->kind);
                 $this->line('projects: '.var_export($limits->projects, true));
                 $this->line('environments_per_project: '.var_export($limits->environments_per_project, true));
+
                 return self::SUCCESS;
             case 'set':
                 $projects = $this->option('projects');
@@ -38,14 +39,17 @@ class TeamLimitsCommand extends Command
                 $json['kind'] = $json['kind'] ?? ($team->isPersonal() ? 'personal' : 'org');
                 $team->update(['limits' => $json]);
                 $this->info('Limits updated.');
+
                 return self::SUCCESS;
             case 'clear':
                 $team->update(['limits' => []]);
                 $this->info('Limits cleared.');
+
                 return self::SUCCESS;
         }
 
         $this->error('Invalid action.');
+
         return self::INVALID;
     }
 }

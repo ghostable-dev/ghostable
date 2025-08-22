@@ -8,7 +8,7 @@ final class PersonalTeamFeatures extends TeamFeatures
     {
         $config = config('ghostable.personal_features');
 
-        return new static(
+        return new self(
             audits: $config['audits'],
             integrations: $config['integrations'],
             advanced_permissions: $config['advanced_permissions'],
