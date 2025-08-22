@@ -20,7 +20,8 @@ class PostFactory extends Factory
             'slug' => str($title)->slug(),
             'posted_at' => now(),
             'status' => PostStatus::DRAFT,
-            'category' => PostCategory::PRODUCT_UPDATES
+            'category' => PostCategory::PRODUCT_UPDATES,
+            'is_featured' => false,
         ];
     }
 
@@ -28,6 +29,13 @@ class PostFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => PostStatus::PUBLISHED,
+        ]);
+    }
+
+    public function featured(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_featured' => true,
         ]);
     }
     

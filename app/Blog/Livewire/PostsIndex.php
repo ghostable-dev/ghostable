@@ -12,10 +12,22 @@ class PostsIndex extends Component
     
     public function render()
     {
+        $featured = Post::published()
+            ->where('is_featured', true)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $posts = Post::published()
+            ->where('is_featured', false)
+            ->latest()
+            ->paginate(6);
+
         return view('blog.livewire.posts-index')
-            ->layout('components.layouts.guest')
+            ->layout('components.layouts.blog')
             ->with([
-                'posts' => Post::published()->latest()->paginate(6),
+                'featuredPosts' => $featured,
+                'posts' => $posts,
             ]);
     }
 }

@@ -12,6 +12,6 @@ class PostShow extends Component
     public function render()
     {
         return view('blog.livewire.post-show')
-            ->layout('components.layouts.guest');
+            ->layout('components.layouts.blog');
     }
 }
