@@ -37,7 +37,7 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="access">
-            @if(!$this->project->owningTeam()->isPersonal())
+            @if($this->project->owningTeam()->features->advanced_permissions)
                 @can('manageAccessControls', $this->project->owningTeam())
                     <livewire:project.livewire.project-access-manager :project="$this->project"/>
                 @else
@@ -53,7 +53,7 @@
         </flux:tab.panel>
 
         <flux:tab.panel name="activity">
-            @if(!$this->project->owningTeam()->isPersonal())
+            @if($this->project->owningTeam()->features->audits)
                 @can('viewAuditLogs', $this->project->owningTeam())
                     <livewire:project.livewire.project-activity :project="$this->project"/>
                 @else
