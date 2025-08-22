@@ -9,30 +9,12 @@
     :keywords="$post->meta_keywords"/>
 @endpush
 
-{{-- @push('scripts')
-    <x-schema.blog-posting :post="$post"/>
-@endpush --}}
+<div class="bg-white">
+    @if($post->hero)
+        <div class="h-64 w-full bg-cover bg-center" style="background-image: url({{ route('s3.asset', $post->hero) }});"></div>
+    @endif
 
-<div class="bg-black">
-    
-    <div 
-        x-data="{ opacity: 0.80 }" 
-        x-init="window.addEventListener('scroll', () => {
-          const newOpacity = Math.max(0, .80 - window.pageYOffset / 400);
-          opacity = newOpacity;
-        })"
-        @if($post->hero)
-        :style="{
-          'background-image': 'url({{ route('s3.asset', $post->hero) }})',
-          'will-change': 'transform',
-          'opacity': opacity
-        }" 
-        @endif
-        class="flex items-center justify-center bg-fixed bg-center py-28">
-        &nbsp;
-    </div>
-
-    <div class="bg-white px-6 py-12 lg:px-8">
+    <div class="px-6 py-12 lg:px-8">
         <div class="mx-auto max-w-xl text-base leading-7 text-gray-700">
             @include('partials.blog.post-details')
             <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -46,7 +28,6 @@
             </div>
         </div>
     </div>
-    
+
     {{-- <livewire:account.livewire.mailing-list-signup-form/> --}}
-    
 </div>
