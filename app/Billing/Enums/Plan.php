@@ -4,8 +4,9 @@ namespace App\Billing\Enums;
 
 enum Plan: string
 {
-    case PERSONAL = 'personal';
-    case BUSINESS = 'business';
+    case FREE = 'free';
+    case STARTER = 'starter';
+    case GROWTH = 'growth';
     case ENTERPRISE = 'enterprise';
 
     public static function selectOptions(): array
@@ -18,20 +19,26 @@ enum Plan: string
     public function label(): string
     {
         return match ($this) {
-            self::PERSONAL => 'Personal',
-            self::BUSINESS => 'Business',
-            self::ENTERPRISE => 'Enterprise'
+            self::FREE => 'Free',
+            self::STARTER => 'Starter',
+            self::GROWTH => 'Growth',
+            self::GROWTH => 'Enterprise'
         };
     }
 
-    public function isPersonal(): bool
+    public function isFree(): bool
     {
-        return $this->is(self::PERSONAL);
+        return $this->is(self::FREE);
     }
 
-    public function isBusiness(): bool
+    public function isStarter(): bool
     {
-        return $this->is(self::BUSINESS);
+        return $this->is(self::STARTER);
+    }
+
+    public function isGrowth(): bool
+    {
+        return $this->is(self::GROWTH);
     }
 
     public function isEnterprise(): bool

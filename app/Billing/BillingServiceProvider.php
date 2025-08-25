@@ -11,10 +11,6 @@ use Laravel\Cashier\Events\WebhookHandled;
 
 class BillingServiceProvider extends ServiceProvider
 {
-    public const BUSINESS = 'business';
-
-    public const ENTERPRISE = 'enterprise';
-
     public function boot(): void
     {
         Cashier::useCustomerModel(Organization::class);

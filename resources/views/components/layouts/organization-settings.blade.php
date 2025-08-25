@@ -1,21 +1,25 @@
 <div class="flex items-start max-md:flex-col">
+    
     <div class="me-10 w-full pb-4 md:w-[220px]">
-        <flux:navlist>
-            <flux:navlist.item :href="route('organization.settings.general')" wire:navigate>
-                {{ __('General') }}
-            </flux:navlist.item>
-            <flux:navlist.item :href="route('organization.settings.members')" wire:navigate>
-                {{ __('Members') }}
-            </flux:navlist.item>
-            <flux:navlist.item :href="route('organization.settings.notifications')" wire:navigate>
-                Notifications
-            </flux:navlist.item>
-            <!-- <flux:navlist.item :href="route('organization.settings.billing')" wire:navigate>
-                {{ __('Billing') }}
-            </flux:navlist.item> -->
+        <flux:navlist variant="sidebar">
+            @foreach([
+                ['route' => 'organization.settings.general', 'label' => 'General'],
+                ['route' => 'organization.settings.billing', 'label' => 'Billing'],
+                ['route' => 'organization.settings.members', 'label' => 'Members'],
+                ['route' => 'organization.settings.notifications', 'label' => 'Notifications'],
+            ] as $item)
+                <flux:navlist.item
+                    wire:key="nbi-{{ $item['route'] }}" 
+                    :href="route($item['route'])" 
+                    :current="request()->routeIs($item['route'])"
+                    wire:navigate
+                    wire:ignore>
+                    {{ $item['label'] }}
+                </flux:navlist.item>
+            @endforeach
         </flux:navlist>
-    </div>
-
+    </div> 
+        
     <flux:separator class="md:hidden" />
 
     <div class="flex-1 self-stretch max-md:pt-6">
