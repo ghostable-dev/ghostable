@@ -37,14 +37,14 @@
         </flux:tab.panel>
         
         <flux:tab.panel name="access">
-            @if($this->project->owningOrganization()->features->advanced_permissions)
+            @if($this->project->owningOrganization()->activeSubscription())
                 @can('manageAccessControls', $this->project->owningOrganization())
                     <livewire:project.livewire.project-access-manager :project="$this->project"/>
                 @else
                     <x-access-restricted/>
                 @endcan
             @else
-                <x-non-personal-organization-restricted/>
+                {{-- <x-non-personal-organization-restricted/> --}}
             @endif
         </flux:tab.panel>
 
@@ -53,14 +53,14 @@
         </flux:tab.panel>
 
         <flux:tab.panel name="activity">
-            @if($this->project->owningOrganization()->features->audits)
+            @if($this->project->owningOrganization()->activeSubscription())
                 @can('viewAuditLogs', $this->project->owningOrganization())
                     <livewire:project.livewire.project-activity :project="$this->project"/>
                 @else
                     <x-access-restricted/>
                 @endcan
             @else
-                <x-non-personal-organization-restricted/>
+                {{-- <x-non-personal-organization-restricted/> --}}
             @endif
         </flux:tab.panel>
         

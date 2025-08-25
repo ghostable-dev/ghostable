@@ -2,7 +2,7 @@
     
     <div class="space-y-12 max-w-4xl">
         
-        @if($this->environment->owningOrganization()->features->advanced_permissions)
+        @if($this->environment->owningOrganization()->activeSubscription())
             @can('manageAccessControls', $this->environment->owningOrganization())
                 <div class="space-y-6">
                     
@@ -56,7 +56,7 @@
                 <x-access-restricted/>
             @endcan
         @else
-            <x-non-personal-organization-restricted/>
+            {{-- <x-non-personal-organization-restricted/> --}}
         @endif
             
     </div>

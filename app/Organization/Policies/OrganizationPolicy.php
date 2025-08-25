@@ -50,7 +50,7 @@ class OrganizationPolicy
      */
     public function manageAccessControls(User $user, Organization $organization): bool
     {
-        return $organization->features->advanced_permissions &&
+        return $organization->activeSubscription() &&
             $user->organizationMembership()->hasOrganizationPermission(
                 permission: OrganizationPermission::ManageAccessControls,
                 organization: $organization
