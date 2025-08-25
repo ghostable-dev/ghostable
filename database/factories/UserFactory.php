@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Account\Models\User;
-use App\Organization\Actions\CreatePersonalOrganization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -38,8 +37,6 @@ class UserFactory extends Factory
 
     public function configure(): static
     {
-        return $this->afterCreating(function (User $user) {
-            app(CreatePersonalOrganization::class)->handle($user);
-        });
+        return $this->afterCreating(function (User $user) {});
     }
 }

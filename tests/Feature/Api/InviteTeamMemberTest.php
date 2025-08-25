@@ -51,15 +51,7 @@ describe('authorization', function () {
         $this->zuul = $this->createUser(name: 'Zuul', email: 'zuul@gozers-minions.com');
         $organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray, members: [$this->peter]);
         $this->endpoint = "/api/v1/organizations/{$organization->id}/invite";
-        $this->personalEndpoint = "/api/v1/organizations/{$ray->personalOrganization()->id}/invite";
         Sanctum::actingAs($ray);
-    });
-
-    test('forbids inviting on a personal organization', function () {
-        $this->postJson($this->personalEndpoint, [
-            'email' => 'egon@gmail.com',
-            'role' => OrganizationRole::DEVELOPER->value,
-        ])->assertForbidden();
     });
 
     test('forbids non-members from inviting', function () {

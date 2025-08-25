@@ -1,10 +1,13 @@
 <?php
 
-use App\Account\Models\User;
-use App\Organization\Actions\CreateOrganization;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+});
 
 test('unauthenticated users cannot fetch owned organizations', function () {
     $this->getJson('/api/v1/owned-organizations')
@@ -12,28 +15,22 @@ test('unauthenticated users cannot fetch owned organizations', function () {
 });
 
 test('returns only organizations owned by the user', function () {
+    $peter = $this->createUser(name: 'Peter', email: 'perter@ghostbusters.com');
+    $ghostbusters = $this->createOrganization(name: 'Ghostbusters', owner: $peter);
 
-    $alice = User::factory()->create();
-    $alicesOrganization = CreateOrganization::handle('Alice Co.', $alice);
-
-    $bob = User::factory()->create();
-    $bobsOrganization = CreateOrganization::handle('Bob Co.', $bob);
-
-    Sanctum::actingAs($alice, ['*']);
+    Sanctum::actingAs($this->ray, ['*']);
 
     $response = $this->getJson('/api/v1/owned-organizations');
 
     $response->assertOk()
-        ->assertJsonCount(2, 'data')
-        ->assertJsonFragment(['id' => $alicesOrganization->id])
-        ->assertJsonMissing(['id' => $bobsOrganization->id]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonFragment(['id' => $this->organization->id])
+        ->assertJsonMissing(['id' => $ghostbusters->id]);
 });
 
 test('response uses OrganizationResource structure', function () {
 
-    $alice = User::factory()->create();
-
-    Sanctum::actingAs($alice, ['*']);
+    Sanctum::actingAs($this->ray, ['*']);
 
     $this->getJson('/api/v1/owned-organizations')
         ->assertOk()

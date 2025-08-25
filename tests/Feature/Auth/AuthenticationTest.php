@@ -2,13 +2,17 @@
 
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
-use App\Organization\Actions\CreateOrganization;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
 use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+});
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -17,10 +21,8 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
     $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
+        ->set('email', $this->ray->email)
         ->set('password', 'password')
         ->call('login');
 
@@ -32,12 +34,10 @@ test('users can authenticate using the login screen', function () {
 });
 
 test('multi-organization users are prompted to select a organization after login', function () {
-    $user = User::factory()->create();
-
-    CreateOrganization::handle('Another Organization', $user);
+    $this->createOrganization(name: 'Ghostbusters', owner: $this->ray);
 
     Livewire::test(Login::class)
-        ->set('email', $user->email)
+        ->set('email', $this->ray->email)
         ->set('password', 'password')
         ->call('login');
 
@@ -55,7 +55,8 @@ test('multi-organization users are prompted to select a organization after two f
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    CreateOrganization::handle('Another Organization', $user);
+    $firstOrg = $this->createOrganization(name: 'First Organization', owner: $user);
+    $secondOrg = $this->createOrganization(name: 'Another Organization', owner: $user);
 
     Livewire::test(Login::class)
         ->set('email', $user->email)

@@ -3,7 +3,6 @@
 namespace App\Account\Actions;
 
 use App\Account\Models\User;
-use App\Organization\Actions\CreatePersonalOrganization;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 
@@ -18,8 +17,6 @@ class RegisterUser
         $user = User::create($data);
 
         event(new Registered($user));
-
-        app(CreatePersonalOrganization::class)->handle($user);
 
         return $user;
     }

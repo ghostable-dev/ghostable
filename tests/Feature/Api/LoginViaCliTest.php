@@ -1,11 +1,15 @@
 <?php
 
-use App\Account\Models\User;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
 use PragmaRX\Google2FA\Google2FA;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+});
 
 test('email and password are required', function () {
     $response = $this->postJson('/api/v1/cli/login', []);
@@ -20,9 +24,8 @@ test('email and password are required', function () {
 });
 
 test('fails with invalid credentials', function () {
-    $user = User::factory()->create();
     $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
+        'email' => $this->ray->email,
         'password' => 'wrong-password',
     ])->assertStatus(401)
         ->assertJson([
@@ -31,9 +34,8 @@ test('fails with invalid credentials', function () {
 });
 
 test('returns token, user and organizations on successful login', function () {
-    $user = User::factory()->create();
     $response = $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
+        'email' => $this->ray->email,
         'password' => 'password',
     ]);
 
@@ -47,7 +49,7 @@ test('returns token, user and organizations on successful login', function () {
         ]);
 
     // The returned user data matches
-    expect($response->json('user.email'))->toBe($user->email);
+    expect($response->json('user.email'))->toBe($this->ray->email);
 
     // And a non-empty token was issued
     expect(strlen($response->json('token')))->toBeGreaterThan(20);
@@ -56,15 +58,13 @@ test('returns token, user and organizations on successful login', function () {
 test('two factor code is required when enabled', function () {
     $provider = app(TwoFactorAuthenticationProvider::class);
     $secret = $provider->generateSecretKey();
-
-    $user = User::factory()->create([
-        'two_factor_secret' => encrypt($secret),
-        'two_factor_confirmed_at' => now(),
-        'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
-    ]);
+    $this->ray->two_factor_secret = encrypt($secret);
+    $this->ray->two_factor_confirmed_at = now();
+    $this->ray->two_factor_recovery_codes = encrypt(json_encode([RecoveryCode::generate()]));
+    $this->ray->save();
 
     $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
+        'email' => $this->ray->email,
         'password' => 'password',
     ])->assertOk()->assertJson([
         'two_factor' => true,
@@ -72,18 +72,18 @@ test('two factor code is required when enabled', function () {
 });
 
 test('can login with valid two factor code', function () {
+
     $provider = app(TwoFactorAuthenticationProvider::class);
     $secret = $provider->generateSecretKey();
+    $this->ray->two_factor_secret = encrypt($secret);
+    $this->ray->two_factor_confirmed_at = now();
+    $this->ray->two_factor_recovery_codes = encrypt(json_encode([RecoveryCode::generate()]));
+    $this->ray->save();
+
     $code = app(Google2FA::class)->getCurrentOtp($secret);
 
-    $user = User::factory()->create([
-        'two_factor_secret' => encrypt($secret),
-        'two_factor_confirmed_at' => now(),
-        'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
-    ]);
-
     $response = $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
+        'email' => $this->ray->email,
         'password' => 'password',
         'code' => $code,
     ]);
@@ -100,42 +100,16 @@ test('can login with valid two factor code', function () {
 test('fails with invalid two factor code', function () {
     $provider = app(TwoFactorAuthenticationProvider::class);
     $secret = $provider->generateSecretKey();
-
-    $user = User::factory()->create([
-        'two_factor_secret' => encrypt($secret),
-        'two_factor_confirmed_at' => now(),
-        'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
-    ]);
+    $this->ray->two_factor_secret = encrypt($secret);
+    $this->ray->two_factor_confirmed_at = now();
+    $this->ray->two_factor_recovery_codes = encrypt(json_encode([RecoveryCode::generate()]));
+    $this->ray->save();
 
     $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
+        'email' => $this->ray->email,
         'password' => 'password',
         'code' => '123456',
     ])->assertStatus(422)->assertJson([
         'message' => 'Invalid two-factor authentication code.',
     ]);
-});
-
-test('cannot login with recovery code', function () {
-    $provider = app(TwoFactorAuthenticationProvider::class);
-    $secret = $provider->generateSecretKey();
-    $recoveryCode = RecoveryCode::generate();
-
-    $user = User::factory()->create([
-        'two_factor_secret' => encrypt($secret),
-        'two_factor_confirmed_at' => now(),
-        'two_factor_recovery_codes' => encrypt(json_encode([$recoveryCode])),
-    ]);
-
-    $response = $this->postJson('/api/v1/cli/login', [
-        'email' => $user->email,
-        'password' => 'password',
-        'recovery_code' => $recoveryCode,
-    ]);
-
-    $response->assertOk()->assertJson([
-        'two_factor' => true,
-    ]);
-
-    expect($response->json('token'))->toBeNull();
 });

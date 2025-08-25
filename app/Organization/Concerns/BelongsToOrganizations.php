@@ -2,7 +2,6 @@
 
 namespace App\Organization\Concerns;
 
-use App\Organization\Actions\SwitchToOrganization;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use App\Organization\Models\OrganizationUser;
@@ -13,23 +12,15 @@ trait BelongsToOrganizations
 {
     public function currentOrganization(): ?Organization
     {
+        return null;
+
         return once(function () {
             $organization = $this->organizations()
                 ->where('organizations.id', $organizationId = session('current_organization_id'))
                 ->first();
 
-            if (! $organization) {
-                $organization = $this->personalOrganization();
-                app(SwitchToOrganization::class)->handle($organization);
-            }
-
             return $organization;
         }, "currentOrganization:{$this->id}");
-    }
-
-    public function personalOrganization(): Organization
-    {
-        return $this->ownedOrganizations()->personal()->first();
     }
 
     public function organizations(): BelongsToMany

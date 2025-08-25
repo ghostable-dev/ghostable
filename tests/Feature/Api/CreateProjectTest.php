@@ -31,7 +31,7 @@ test('persists a new project record and returns JSON shape', function () {
                 'updated_at',
             ],
         ]);
-    
+
     $project = $this->organization->fresh()->projects()->where($payload)->first();
     $this->assertNotNull($project);
 });
