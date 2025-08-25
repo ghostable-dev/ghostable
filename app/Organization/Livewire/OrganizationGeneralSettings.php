@@ -40,6 +40,18 @@ class OrganizationGeneralSettings extends Component
         return Auth::user()->currentOrganization();
     }
 
+    /**
+     * Permanently delete the organization.
+     */
+    public function deleteOrganization(): void
+    {
+        $this->authorize('manageSettings', $this->organization);
+
+        $this->organization->delete();
+
+        $this->redirect(route('dashboard'));
+    }
+
     public function render()
     {
         return view('organization.organization-general-settings');

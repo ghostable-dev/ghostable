@@ -22,7 +22,7 @@
             
             <flux:navbar class="-mb-px">
                 <flux:breadcrumbs>
-                    @if(auth()->user()->isVerified())
+                    @if(auth()->user()->isVerified() && auth()->user()->organizations->count())
                         <flux:breadcrumbs.item separator="slash">
                             <livewire:organization.livewire.organization-dropdown/>
                         </flux:breadcrumbs.item>

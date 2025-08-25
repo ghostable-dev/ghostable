@@ -12,14 +12,16 @@ trait BelongsToOrganizations
 {
     public function currentOrganization(): ?Organization
     {
-        return null;
-
         return once(function () {
-            $organization = $this->organizations()
-                ->where('organizations.id', $organizationId = session('current_organization_id'))
-                ->first();
+            $organization = null;
 
-            return $organization;
+            if ($organizationId = session('current_organization_id')) {
+                $organization = $this->organizations()
+                    ->where('organizations.id', $organizationId)
+                    ->first();
+            }
+
+            return $organization ?: $this->organizations()->first();
         }, "currentOrganization:{$this->id}");
     }
 
