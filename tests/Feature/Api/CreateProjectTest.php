@@ -1,14 +1,14 @@
 <?php
 
-use App\Team\Enums\TeamRole;
+use App\Organization\Enums\OrganizationRole;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
-    $this->endpoint = "/api/v1/teams/{$this->team->id}/projects";
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+    $this->endpoint = "/api/v1/organizations/{$this->organization->id}/projects";
 });
 
 test('unauthenticated users cannot create projects', function () {
@@ -25,13 +25,14 @@ test('persists a new project record and returns JSON shape', function () {
                 'id',
                 'name',
                 'slug',
-                'team_id',
+                'organization_id',
                 'environments',
                 'created_at',
                 'updated_at',
             ],
         ]);
-    $project = $this->team->fresh()->projects()->where($payload)->first();
+    
+    $project = $this->organization->fresh()->projects()->where($payload)->first();
     $this->assertNotNull($project);
 });
 
@@ -47,7 +48,7 @@ describe('authorization', function () {
 
     test('forbids members without permission from creating', function () {
         $peter = $this->createUser(name: 'Peter', email: 'perter@ghostbusters.com');
-        $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::DEVELOPER_READ_ONLY);
+        $peter->organizationMembership()->assignToOrganization(organization: $this->organization, role: OrganizationRole::DEVELOPER_READ_ONLY);
         Sanctum::actingAs($peter);
         $this->postJson($this->endpoint, ['name' => 'Website'])->assertForbidden();
     });

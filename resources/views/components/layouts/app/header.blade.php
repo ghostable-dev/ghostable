@@ -24,7 +24,7 @@
                 <flux:breadcrumbs>
                     @if(auth()->user()->isVerified())
                         <flux:breadcrumbs.item separator="slash">
-                            <livewire:team.livewire.team-dropdown/>
+                            <livewire:organization.livewire.organization-dropdown/>
                         </flux:breadcrumbs.item>
                     @endif
                     {{ $breadcrumbs ?? '' }}

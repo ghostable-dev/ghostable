@@ -6,10 +6,10 @@ namespace App\Api\Http\Controllers\Secret;
 
 use App\Api\Resources\Secret\SecretResource;
 use App\Core\Http\Controllers\Controller;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use App\Secret\Actions\CreateSecret as CreateSecretAction;
 use App\Secret\Enums\SecretType;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 final class CreateEnvironmentSecret extends Controller
@@ -18,7 +18,7 @@ final class CreateEnvironmentSecret extends Controller
     {
         $environment = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$environment, OrganizationPermission::EditSecrets]);
 
         $validated = request()->validate([
             'name' => 'required|string|max:255',

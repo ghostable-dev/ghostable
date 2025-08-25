@@ -7,8 +7,8 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ray\'s Occult Books', owner: $this->user);
-    $project = $this->createProject(name: 'Website', team: $team);
+    $organization = $this->createOrganization(name: 'Ray\'s Occult Books', owner: $this->user);
+    $project = $this->createProject(name: 'Website', organization: $organization);
     $this->environment = $this->createEnvironment(name: 'Production', type: EnvironmentType::PRODUCTION, project: $project);
     $this->endpoint = '/api/v1/ci/deploy';
 });

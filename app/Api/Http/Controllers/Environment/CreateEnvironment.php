@@ -9,15 +9,15 @@ use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\CreateEnv;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 final class CreateEnvironment extends Controller
 {
     public function __invoke(Project $project): JsonResource
     {
-        $this->authorize('perform', [$project, TeamPermission::CreateEnvironments]);
+        $this->authorize('perform', [$project, OrganizationPermission::CreateEnvironments]);
 
         $validated = request()->validate(
             EnvironmentRules::createRules($project),

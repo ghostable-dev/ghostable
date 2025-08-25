@@ -39,7 +39,7 @@
                 <flux:icon.heart variant="micro" class="inline-flex"/>
                 by
                 <flux:link variant="ghost" href="{{ url('') }}">
-                  the Ghostable team
+                  the Ghostable organization
                 </flux:link>
             </flux:subheading>
 

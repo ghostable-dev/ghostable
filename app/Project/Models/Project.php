@@ -3,13 +3,13 @@
 namespace App\Project\Models;
 
 use App\Environment\Models\Environment;
+use App\Organization\Concerns\HasPermissionOverrides;
+use App\Organization\Contracts\SupportsOverrides;
+use App\Organization\Models\Organization;
+use App\Organization\Resolvers\ResolveOrganization;
 use App\Project\Entities\ProjectNotificationsData;
 use App\Project\Events\ProjectCreated;
 use App\Project\Events\ProjectDeleted;
-use App\Team\Concerns\HasPermissionOverrides;
-use App\Team\Contracts\SupportsOverrides;
-use App\Team\Models\Team;
-use App\Team\Resolvers\ResolveTeam;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $is_restricted
  * @property string $name
  * @property string|null $description
- * @property string $team_id
+ * @property string $organization_id
  * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -34,9 +34,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $activities_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $environments
  * @property-read int|null $environments_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
- * @property-read Team $team
+ * @property-read Organization $organization
  *
  * @method static \Database\Factories\ProjectFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project newModelQuery()
@@ -50,7 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereIsRestricted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereNotifications($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereTeamId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereOrganizationId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Project withoutTrashed()
@@ -86,9 +86,9 @@ class Project extends Model implements SupportsOverrides
         return ProjectFactory::new();
     }
 
-    public function team(): BelongsTo
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'team_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
     public function environments(): HasMany
@@ -123,8 +123,8 @@ class Project extends Model implements SupportsOverrides
             ->firstOrFail();
     }
 
-    public function owningTeam(): Team
+    public function owningOrganization(): Organization
     {
-        return ResolveTeam::onceWithContext($this->team_id);
+        return ResolveOrganization::onceWithContext($this->organization_id);
     }
 }

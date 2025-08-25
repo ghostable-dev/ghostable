@@ -4,7 +4,7 @@ namespace App\Billing\Entities;
 
 use App\Account\Models\User;
 use App\Core\Helpers\ArrayExtractor;
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Spatie\LaravelData\Data;
 use Stripe\StripeClient;
 
@@ -21,10 +21,10 @@ class StripePayload extends Data
         $this->object = $data['data']['object'] ?? [];
     }
 
-    public function teamFromStripeId(): ?Team
+    public function organizationFromStripeId(): ?Organization
     {
         if (isset($this->object['customer'])) {
-            return Team::where('stripe_id', $this->object['customer'])->first();
+            return Organization::where('stripe_id', $this->object['customer'])->first();
         }
 
         return null;

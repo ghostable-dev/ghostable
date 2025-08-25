@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('team_permission_overrides', function (Blueprint $table) {
+        Schema::create('organization_permission_overrides', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
             $table->uuidMorphs('target');
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team_permission_overrides');
+        Schema::dropIfExists('organization_permission_overrides');
     }
 };

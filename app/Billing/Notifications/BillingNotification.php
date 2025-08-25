@@ -2,7 +2,7 @@
 
 namespace App\Billing\Notifications;
 
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -12,7 +12,7 @@ abstract class BillingNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        protected Team $team
+        protected Organization $organization
     ) {}
 
     public function via(object $notifiable): array
@@ -23,7 +23,7 @@ abstract class BillingNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'team_id' => $this->team->id,
+            'organization_id' => $this->organization->id,
         ];
     }
 }

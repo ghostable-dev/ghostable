@@ -2,9 +2,9 @@
 
 namespace App\Project\Livewire;
 
+use App\Organization\Models\Organization;
 use App\Project\Actions\CreateProject;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -17,10 +17,10 @@ class ProjectCreateModal extends Component
 
     public function create()
     {
-        $this->authorize('create', [Project::class, $this->team]);
+        $this->authorize('create', [Project::class, $this->organization]);
 
         try {
-            app(CreateProject::class)->handle(name: $this->name, team: $this->team);
+            app(CreateProject::class)->handle(name: $this->name, organization: $this->organization);
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('project_limit')) {
                 Flux::modal('upgrade-project-limit')->show();
@@ -40,9 +40,9 @@ class ProjectCreateModal extends Component
     }
 
     #[Computed(persist: true)]
-    public function team(): Team
+    public function organization(): Organization
     {
-        return Auth::user()->currentTeam();
+        return Auth::user()->currentOrganization();
     }
 
     public function render()
@@ -70,7 +70,7 @@ class ProjectCreateModal extends Component
                     <div class="space-y-6">
                         <div>
                             <flux:heading size="lg">Upgrade Required</flux:heading>
-                            <flux:text class="mt-2">Project limit reached for this team. Upgrade to create more projects.</flux:text>
+                            <flux:text class="mt-2">Project limit reached for this organization. Upgrade to create more projects.</flux:text>
                         </div>
                         <div class="flex justify-end">
                             <flux:button variant="primary">Upgrade Plan</flux:button>

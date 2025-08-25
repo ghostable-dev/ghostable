@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('team_invites', function (Blueprint $table) {
+        Schema::create('organization_invites', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('status', 30)->index();
-            $table->foreignUuid('team_id')->nullable();
+            $table->foreignUuid('organization_id')->nullable();
             $table->foreignUuid('user_id')->nullable();
             $table->string('email');
             $table->string('role', 20)->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('team_invites');
+        Schema::dropIfExists('organization_invites');
     }
 };

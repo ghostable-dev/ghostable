@@ -9,7 +9,7 @@ use App\Environment\Models\Environment;
 use App\Environment\Resolvers\EnvironmentAncestryResolver;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Rules\EnvironmentRules;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -196,7 +196,7 @@ class EnvironmentGeneralSettings extends Component
     {
         $project = $this->environment->project;
 
-        $this->authorize('perform', [$project, TeamPermission::DeleteEnvironments]);
+        $this->authorize('perform', [$project, OrganizationPermission::DeleteEnvironments]);
 
         $this->environment->delete();
 

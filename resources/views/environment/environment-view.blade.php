@@ -25,7 +25,7 @@
     </div>
     
     {{-- <flux:avatar.group class="mt-6">
-        @foreach($this->environment->project->team->users as $user)
+        @foreach($this->environment->project->organization->users as $user)
             <flux:avatar circle size="xs" :initials="$user->initials()" />
         @endforeach
     </flux:avatar.group> --}}
@@ -77,8 +77,8 @@
         </flux:tab.panel> --}}
         
         {{-- <flux:tab.panel name="access">
-            @if(!$this->environment->owningTeam()->isPersonal())
-                @can('manageAccessControls', $this->environment->owningTeam())
+            @if(!$this->environment->owningOrganization()->isPersonal())
+                @can('manageAccessControls', $this->environment->owningOrganization())
                     <div class="space-y-6">
                         <livewire:environment.livewire.environment-access-token-manager 
                             :environment="$this->environment"/>
@@ -89,7 +89,7 @@
                     <x-access-restricted/>
                 @endcan
             @else
-                <x-non-personal-team-restricted/>
+                <x-non-personal-organization-restricted/>
             @endif
         </flux:tab.panel> --}}
 
@@ -98,15 +98,15 @@
         </flux:tab.panel> --}}
 
         {{-- <flux:tab.panel name="activity">
-            @if(!$this->environment->owningTeam()->isPersonal())
-                @can('viewAuditLogs', $this->environment->owningTeam())
+            @if(!$this->environment->owningOrganization()->isPersonal())
+                @can('viewAuditLogs', $this->environment->owningOrganization())
                     <livewire:environment.livewire.environment-activity 
                         :environment="$this->environment"/>
                 @else
                     <x-access-restricted/>
                 @endcan
             @else
-                <x-non-personal-team-restricted/>
+                <x-non-personal-organization-restricted/>
             @endif
         </flux:tab.panel> --}}
         

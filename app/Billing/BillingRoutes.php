@@ -16,9 +16,9 @@ class BillingRoutes
         Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])
             ->name('webhook');
 
-        Route::prefix('/team/{team}/billing')
-            ->name('team.billing.')
-            ->middleware(['auth', 'verified', 'can:manageBilling,team'])
+        Route::prefix('/organization/{organization}/billing')
+            ->name('organization.billing.')
+            ->middleware(['auth', 'verified', 'can:manageBilling,organization'])
             ->group(function () {
 
                 // Professional checkout

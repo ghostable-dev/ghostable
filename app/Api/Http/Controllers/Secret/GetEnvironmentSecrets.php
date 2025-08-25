@@ -6,8 +6,8 @@ namespace App\Api\Http\Controllers\Secret;
 
 use App\Api\Resources\Secret\SecretSummaryResource;
 use App\Core\Http\Controllers\Controller;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class GetEnvironmentSecrets extends Controller
@@ -19,7 +19,7 @@ final class GetEnvironmentSecrets extends Controller
     {
         $environment = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$environment, TeamPermission::ViewSecrets]);
+        $this->authorize('perform', [$environment, OrganizationPermission::ViewSecrets]);
 
         return SecretSummaryResource::collection(
             $environment->secrets()->get()

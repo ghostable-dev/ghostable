@@ -8,8 +8,8 @@ use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Rules\ValidEnvFileFormat;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -26,7 +26,7 @@ final class PullEnvironment extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$env, TeamPermission::ViewVariables]);
+        $this->authorize('perform', [$env, OrganizationPermission::ViewVariables]);
 
         $validated = $request->validate([
             'format' => ['nullable', new ValidEnvFileFormat],

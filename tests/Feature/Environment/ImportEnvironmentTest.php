@@ -10,8 +10,8 @@ uses(RefreshDatabase::class);
 
 it('imports environment file and logs activity', function () {
     $user = $this->createUser(name: 'Egon', email: 'egon@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ghostbusters', owner: $user);
-    $project = $this->createProject(name: 'Website', team: $team);
+    $organization = $this->createOrganization(name: 'Ghostbusters', owner: $user);
+    $project = $this->createProject(name: 'Website', organization: $organization);
     $env = $this->createEnvironment(name: 'Development', type: EnvironmentType::DEVELOPMENT, project: $project);
 
     $this->actingAs($user);

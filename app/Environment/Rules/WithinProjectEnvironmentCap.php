@@ -12,10 +12,11 @@ class WithinProjectEnvironmentCap implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $cap = $this->project->team->limits->environments_per_project;
+        
+        // $cap = $this->project->organization->limits->environments_per_project;
 
-        if ($cap !== null && $this->project->environments()->count() >= $cap) {
-            $fail('Environment limit reached for this project.');
-        }
+        // if ($cap !== null && $this->project->environments()->count() >= $cap) {
+        //     $fail('Environment limit reached for this project.');
+        // }
     }
 }

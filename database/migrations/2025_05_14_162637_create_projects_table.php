@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name', 100);
             $table->string('description', 250)->nullable();
-            $table->foreignUuid('team_id')->constrained('teams')->cascadeOnDelete();
+            $table->foreignUuid('organization_id')->constrained('organizations')->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

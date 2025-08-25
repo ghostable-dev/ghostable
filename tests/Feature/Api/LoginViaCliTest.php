@@ -30,7 +30,7 @@ test('fails with invalid credentials', function () {
         ]);
 });
 
-test('returns token, user and teams on successful login', function () {
+test('returns token, user and organizations on successful login', function () {
     $user = User::factory()->create();
     $response = $this->postJson('/api/v1/cli/login', [
         'email' => $user->email,
@@ -41,7 +41,7 @@ test('returns token, user and teams on successful login', function () {
         ->assertJsonStructure([
             'token',
             'user' => ['id', 'name', 'email'],
-            'teams' => [
+            'organizations' => [
                 ['id', 'name'],
             ],
         ]);
@@ -91,7 +91,7 @@ test('can login with valid two factor code', function () {
     $response->assertOk()->assertJsonStructure([
         'token',
         'user' => ['id', 'name', 'email'],
-        'teams' => [
+        'organizations' => [
             ['id', 'name'],
         ],
     ]);

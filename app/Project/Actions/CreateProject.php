@@ -4,23 +4,23 @@ namespace App\Project\Actions;
 
 use App\Environment\Actions\CreateEnv;
 use App\Environment\Enums\EnvironmentType;
+use App\Organization\Models\Organization;
+use App\Organization\Rules\WithinOrganizationProjectCap;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
-use App\Team\Rules\WithinTeamProjectCap;
 use Illuminate\Support\Facades\Validator;
 
 class CreateProject
 {
-    public static function handle(string $name, Team $team, bool $populate = true): Project
+    public static function handle(string $name, Organization $organization, bool $populate = true): Project
     {
         Validator::make(
             ['project_limit' => null],
-            ['project_limit' => [new WithinTeamProjectCap($team)]],
+            ['project_limit' => [new WithinOrganizationProjectCap($organization)]],
         )->validate();
 
         $project = new Project;
         $project->name = $name;
-        $project->team()->associate($team);
+        $project->organization()->associate($organization);
         $project->save();
 
         if ($populate) {

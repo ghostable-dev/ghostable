@@ -1,8 +1,8 @@
 <x-layouts.environment :environment="$this->environment">
     <div>
         
-        @if($this->environment->owningTeam()->features->audits)
-            @can('viewAuditLogs', $this->environment->owningTeam())
+        @if($this->environment->owningOrganization()->features->audits)
+            @can('viewAuditLogs', $this->environment->owningOrganization())
                 <x-section>
                     <x-slot:title>Activity History</x-slot:title>
                     <x-slot:subheading>
@@ -52,7 +52,7 @@
                 <x-access-restricted/>
             @endcan
             @else
-                <x-non-personal-team-restricted/>
+                <x-non-personal-organization-restricted/>
             @endif
         
     </div>

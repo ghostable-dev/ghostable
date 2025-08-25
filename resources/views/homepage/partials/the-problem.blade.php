@@ -10,7 +10,7 @@
         Everything you need to manage .env files—with confidence.
     </flux:heading>
     <flux:subheading size="xl">
-        From secure sharing to real-time validation, Ghostable gives your Laravel team superpowers.
+        From secure sharing to real-time validation, Ghostable gives your Laravel organization superpowers.
     </flux:subheading>
     <div class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
         <flux:card 
@@ -20,7 +20,7 @@
             x-on:click="tab = 'sharing'">
             <flux:icon.lock-closed variant="solid"/>
             <flux:heading level="3">Secure .env Sharing</flux:heading>
-            <flux:subheading>Easily and safely share environment files across teams without email, Slack, or Notion.</flux:subheading>
+            <flux:subheading>Easily and safely share environment files across organizations without email, Slack, or Notion.</flux:subheading>
         </flux:card>
         <flux:card 
             class="flex max-w-xl flex-col items-start text-left space-y-4"

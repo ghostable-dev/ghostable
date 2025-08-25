@@ -17,7 +17,7 @@ return [
     ],
 
     /**
-     * Team invites.
+     * Organization invites.
      */
     'invite' => [
         'resend_cooldown_minutes' => env('INVITE_RESEND_COOLDOWN_MINUTES', 5),

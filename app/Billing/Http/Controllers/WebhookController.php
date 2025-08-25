@@ -16,9 +16,9 @@ class WebhookController extends CashierWebhookController
         $response = parent::handleCustomerSubscriptionCreated($payload);
 
         $data = new StripePayload($payload);
-        if (! is_null($team = $data->teamFromStripeId())) {
+        if (! is_null($organization = $data->organizationFromStripeId())) {
             $type = $this->getSubscriptionTypeFromPayload($payload);
-            SubscriptionStarted::dispatch($team, $type, $data);
+            SubscriptionStarted::dispatch($organization, $type, $data);
         } else {
             Log::error('Stripe Webhook Error', [
                 'method' => 'handleCustomerSubscriptionCreated',
@@ -34,9 +34,9 @@ class WebhookController extends CashierWebhookController
         $response = parent::handleCustomerSubscriptionDeleted($payload);
 
         $data = new StripePayload($payload);
-        if (! is_null($team = $data->teamFromStripeId())) {
+        if (! is_null($organization = $data->organizationFromStripeId())) {
             $type = $this->getSubscriptionTypeFromPayload($payload);
-            SubscriptionEnded::dispatch($team, $type, $data);
+            SubscriptionEnded::dispatch($organization, $type, $data);
         } else {
             Log::error('Stripe Webhook Error', [
                 'method' => 'handleCustomerSubscriptionDeleted',
@@ -68,7 +68,7 @@ class WebhookController extends CashierWebhookController
     {
         $data = new StripePayload($payload);
 
-        if (! is_null($team = $data->teamFromStripeId())) {
+        if (! is_null($organization = $data->organizationFromStripeId())) {
 
         } else {
             Log::error('Stripe Webhook Error', [

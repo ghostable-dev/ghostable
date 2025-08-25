@@ -4,28 +4,28 @@ use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('unauthenticated users cannot fetch teams', function () {
-    $this->getJson('/api/v1/teams')
+test('unauthenticated users cannot fetch organizations', function () {
+    $this->getJson('/api/v1/organizations')
         ->assertUnauthorized();
 });
 
-test('returns only teams the user is a member of', function () {
+test('returns only organizations the user is a member of', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
 
     Sanctum::actingAs($ray);
 
-    $response = $this->getJson('/api/v1/teams');
+    $response = $this->getJson('/api/v1/organizations');
     $response->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonFragment(['id' => $ray->personalTeam()->id])
-        ->assertJsonMissing(['id' => $peter->personalTeam()->id]);
+        ->assertJsonFragment(['id' => $ray->personalOrganization()->id])
+        ->assertJsonMissing(['id' => $peter->personalOrganization()->id]);
 });
 
-test('returns teams the user is a member of (regardless of role)', function () {
+test('returns organizations the user is a member of (regardless of role)', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
     $egon = $this->createUser(name: 'Egon', email: 'egon@ghostbusters.com');
-    $bookstore = $this->createTeam(
+    $bookstore = $this->createOrganization(
         name: 'Rays Occult',
         owner: $ray,
         members: [$egon]
@@ -34,20 +34,20 @@ test('returns teams the user is a member of (regardless of role)', function () {
 
     Sanctum::actingAs($egon);
 
-    $response = $this->getJson('/api/v1/teams');
+    $response = $this->getJson('/api/v1/organizations');
     $response->assertOk()
         ->assertJsonCount(2, 'data')
-        ->assertJsonFragment(['id' => $egon->personalTeam()->id])
+        ->assertJsonFragment(['id' => $egon->personalOrganization()->id])
         ->assertJsonFragment(['id' => $bookstore->id]);
 });
 
-test('response uses TeamResource structure', function () {
+test('response uses OrganizationResource structure', function () {
 
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
 
     Sanctum::actingAs($ray);
 
-    $this->getJson('/api/v1/teams')
+    $this->getJson('/api/v1/organizations')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [

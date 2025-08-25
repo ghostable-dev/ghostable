@@ -2,7 +2,7 @@
 
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
-use App\Team\Actions\CreateTeam;
+use App\Organization\Actions\CreateOrganization;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
 use Livewire\Livewire;
@@ -31,20 +31,20 @@ test('users can authenticate using the login screen', function () {
     $this->assertAuthenticated();
 });
 
-test('multi-team users are prompted to select a team after login', function () {
+test('multi-organization users are prompted to select a organization after login', function () {
     $user = User::factory()->create();
 
-    CreateTeam::handle('Another Team', $user);
+    CreateOrganization::handle('Another Organization', $user);
 
     Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login');
 
-    expect(session()->has('show-team-switcher'))->toBeTrue();
+    expect(session()->has('show-organization-switcher'))->toBeTrue();
 });
 
-test('multi-team users are prompted to select a team after two factor login', function () {
+test('multi-organization users are prompted to select a organization after two factor login', function () {
     $provider = app(TwoFactorAuthenticationProvider::class);
     $secret = $provider->generateSecretKey();
     $code = app(Google2FA::class)->getCurrentOtp($secret);
@@ -55,7 +55,7 @@ test('multi-team users are prompted to select a team after two factor login', fu
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    CreateTeam::handle('Another Team', $user);
+    CreateOrganization::handle('Another Organization', $user);
 
     Livewire::test(Login::class)
         ->set('email', $user->email)
@@ -67,7 +67,7 @@ test('multi-team users are prompted to select a team after two factor login', fu
         'code' => $code,
     ])->assertRedirect('/dashboard');
 
-    expect(session()->has('show-team-switcher'))->toBeTrue();
+    expect(session()->has('show-organization-switcher'))->toBeTrue();
     $this->assertAuthenticatedAs($user);
 });
 

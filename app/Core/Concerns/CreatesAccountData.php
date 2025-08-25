@@ -10,11 +10,11 @@ use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Registry\VariableRegistry;
+use App\Organization\Actions\CreateOrganization;
+use App\Organization\Actions\CreateOrganizationInvite;
+use App\Organization\Enums\OrganizationRole;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Actions\CreateTeam;
-use App\Team\Actions\CreateTeamInvite;
-use App\Team\Enums\TeamRole;
-use App\Team\Models\Team;
 
 trait CreatesAccountData
 {
@@ -32,42 +32,42 @@ trait CreatesAccountData
         return $user->fresh();
     }
 
-    protected function createTeam(
+    protected function createOrganization(
         string $name,
         User $owner,
         array $members = []
-    ): Team {
+    ): Organization {
 
-        $team = app(CreateTeam::class)->handle(
+        $organization = app(CreateOrganization::class)->handle(
             name: $name,
             owner: $owner
         );
 
         foreach ($members as $member) {
-            $member->teamMembership()->assignToTeam(team: $team, role: TeamRole::DEVELOPER);
+            $member->organizationMembership()->assignToOrganization(organization: $organization, role: OrganizationRole::DEVELOPER);
         }
 
-        return $team->fresh();
+        return $organization->fresh();
     }
 
     protected function createInvite(
-        Team $team,
+        Organization $organization,
         User $sender,
         string $email,
-        TeamRole $role = TeamRole::DEVELOPER
+        OrganizationRole $role = OrganizationRole::DEVELOPER
     ): void {
-        CreateTeamInvite::handle(
-            team: $team,
+        CreateOrganizationInvite::handle(
+            organization: $organization,
             user: $sender,
             email: $email,
             role: $role
         );
     }
 
-    protected function createProject(string $name, Team $team): Project
+    protected function createProject(string $name, Organization $organization): Project
     {
         return Project::factory()
-            ->forTeam($team)
+            ->forOrganization($organization)
             ->create([
                 'name' => $name,
             ]);

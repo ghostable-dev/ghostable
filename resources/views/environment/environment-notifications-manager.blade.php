@@ -8,8 +8,8 @@
                 </div>
             </x-slot:subheading>
 
-            @php $team = $this->environment->owningTeam(); @endphp
-            @if($team->slack_enabled && $team->slack_webhook_url)
+            @php $organization = $this->environment->owningOrganization(); @endphp
+            @if($organization->slack_enabled && $organization->slack_webhook_url)
                 @include('core.slack-enabled-message')
             @endif
 

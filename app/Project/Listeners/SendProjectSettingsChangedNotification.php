@@ -2,12 +2,12 @@
 
 namespace App\Project\Listeners;
 
-use App\Core\Actions\GetNotifiableTeamUsers;
+use App\Core\Actions\GetNotifiableOrganizationUsers;
 use App\Core\Actions\IsNotificationEnabled;
+use App\Organization\Models\Organization;
 use App\Project\Enums\ProjectNotification;
 use App\Project\Events\ProjectSettingsChanged;
 use App\Project\Notifications\ProjectSettingsChangedNotification;
-use App\Team\Models\Team;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
@@ -15,13 +15,13 @@ class SendProjectSettingsChangedNotification implements ShouldQueue
 {
     public function handle(ProjectSettingsChanged $event): void
     {
-        $team = $event->project->owningTeam();
+        $organization = $event->project->owningOrganization();
 
-        if (! $this->notificationEnabled($team)) {
+        if (! $this->notificationEnabled($organization)) {
             return;
         }
 
-        $recipients = app(GetNotifiableTeamUsers::class)->handle($team);
+        $recipients = app(GetNotifiableOrganizationUsers::class)->handle($organization);
 
         $notification = new ProjectSettingsChangedNotification($event->project);
 
@@ -30,10 +30,10 @@ class SendProjectSettingsChangedNotification implements ShouldQueue
         }
     }
 
-    protected function notificationEnabled(Team $team): bool
+    protected function notificationEnabled(Organization $organization): bool
     {
         return app(IsNotificationEnabled::class)->handle(
-            model: $team,
+            model: $organization,
             key: ProjectNotification::PROJECT_SETTINGS_CHANGED->value
         );
     }

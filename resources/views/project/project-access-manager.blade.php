@@ -5,7 +5,7 @@
         <div class="mb-4">
             <flux:heading size="lg">{{ __('Access Restrictions') }}</flux:heading>
             <flux:subheading>
-                {{ __('When enabled, team members will not be able to access this project unless they are explicitly granted access in Access Control.') }}
+                {{ __('When enabled, organization members will not be able to access this project unless they are explicitly granted access in Access Control.') }}
             </flux:subheading>
         </div>
         <form class="my-6 w-full space-y-6">
@@ -29,11 +29,11 @@
                     </flux:heading>
                     <flux:text class="mt-2">
                         <span x-show="is_restricted">
-                            <p>Team member roles will no longer apply to this project.</p>
+                            <p>Organization member roles will no longer apply to this project.</p>
                             <p>Only explicit permission overrides will grant non-admins access.</p>
                         </span>
                         <span x-show="!is_restricted">
-                            <p>This will re-enable access to the project based on team member roles.</p>
+                            <p>This will re-enable access to the project based on organization member roles.</p>
                             <p>Explicit permission overrides will still apply, but will no longer be required.</p>
                         </span>
                     </flux:text>
@@ -61,7 +61,7 @@
             <div class="mb-4 flex">
                 <div>
                     <flux:heading size="lg">{{ __('Overrides') }}</flux:heading>
-                    <flux:subheading>{{ __('Team members who haven’t joined yet.') }}</flux:subheading>
+                    <flux:subheading>{{ __('Organization members who haven’t joined yet.') }}</flux:subheading>
                 </div>
                 <flux:spacer/>
                 @if($this->overrides->isNotEmpty())
@@ -78,11 +78,11 @@
                 <form wire:submit="createOverride" class="space-y-6">
                     <div>
                         <flux:heading size="lg">Add Permission Override</flux:heading>
-                        <flux:text class="mt-2">Grant specific access to a team member on this project, regardless of their team role. Use this to fine-tune access for non-admin users.</flux:text>
+                        <flux:text class="mt-2">Grant specific access to a organization member on this project, regardless of their organization role. Use this to fine-tune access for non-admin users.</flux:text>
                     </div>
                     <div>
                         <flux:select 
-                            label="Team Member"
+                            label="Organization Member"
                             variant="listbox" 
                             searchable 
                             placeholder="Select member..."

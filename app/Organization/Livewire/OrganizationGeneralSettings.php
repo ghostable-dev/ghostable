@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Organization\Livewire;
+
+use App\Organization\Actions\UpdateOrganizationName;
+use App\Organization\Models\Organization;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+
+class OrganizationGeneralSettings extends Component
+{
+    public string $name;
+
+    public function mount(): void
+    {
+        $this->name = $this->organization->name;
+    }
+
+    public function updateOrganizationName(): void
+    {
+        $this->authorize('manageSettings', $this->organization);
+
+        app(UpdateOrganizationName::class)->handle($this->organization, $this->name);
+
+        $this->organization->refresh();
+
+        $this->dispatch('name-updated', name: $this->name);
+    }
+
+    #[Computed(persist: true)]
+    public function canEditName(): bool
+    {
+        return ! $this->organization->isPersonal();
+    }
+
+    #[Computed()]
+    public function organization(): Organization
+    {
+        return Auth::user()->currentOrganization();
+    }
+
+    public function render()
+    {
+        return view('organization.organization-general-settings');
+    }
+}

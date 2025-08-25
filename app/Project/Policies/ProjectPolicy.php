@@ -3,10 +3,10 @@
 namespace App\Project\Policies;
 
 use App\Account\Models\User;
+use App\Organization\Concerns\EvaluatesPermissionOverrides;
+use App\Organization\Enums\OrganizationPermission;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Concerns\EvaluatesPermissionOverrides;
-use App\Team\Enums\TeamPermission;
-use App\Team\Models\Team;
 
 class ProjectPolicy
 {
@@ -15,22 +15,22 @@ class ProjectPolicy
     /**
      * Determine if the user can view the given project.
      *
-     * Viewing is allowed as long as the user is a member of the team
+     * Viewing is allowed as long as the user is a member of the organization
      * that owns the project, regardless of specific permissions.
      */
     public function view(User $user, Project $project): bool
     {
-        return $user->teamMembership()->belongsToTeam($project->owningTeam());
+        return $user->organizationMembership()->belongsToOrganization($project->owningOrganization());
     }
 
     /**
-     * Determine if the user can create a new project within the given team.
+     * Determine if the user can create a new project within the given organization.
      */
-    public function create(User $user, Team $team): bool
+    public function create(User $user, Organization $organization): bool
     {
-        return $user->teamMembership()->hasTeamPermission(
-            permission: TeamPermission::CreateProjects,
-            team: $team
+        return $user->organizationMembership()->hasOrganizationPermission(
+            permission: OrganizationPermission::CreateProjects,
+            organization: $organization
         );
     }
 
@@ -39,22 +39,22 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return $user->teamMembership()->hasTeamPermission(
-            permission: TeamPermission::DeleteProjects,
-            team: $project->owningTeam()
+        return $user->organizationMembership()->hasOrganizationPermission(
+            permission: OrganizationPermission::DeleteProjects,
+            organization: $project->owningOrganization()
         );
     }
 
     /**
      * General-purpose permission check for a specific action on the project.
      *
-     * This method allows dynamic policy checks using a TeamPermission enum
+     * This method allows dynamic policy checks using a OrganizationPermission enum
      * and delegates to the shared hasPermission logic.
      */
     public function perform(
         User $user,
         Project $project,
-        TeamPermission $permission
+        OrganizationPermission $permission
     ): bool {
         return $this->hasPermission($user, $project, $permission);
     }

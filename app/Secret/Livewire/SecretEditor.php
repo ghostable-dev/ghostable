@@ -2,10 +2,10 @@
 
 namespace App\Secret\Livewire;
 
+use App\Organization\Enums\OrganizationPermission;
 use App\Secret\Actions\UpdateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -31,7 +31,7 @@ class SecretEditor extends Component
     #[On(self::LAUNCH)]
     public function launchEditorModal(Secret $secret): void
     {
-        $this->authorize('perform', [$secret->environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         $this->secretId = $secret->id;
         $this->name = $secret->name;
@@ -58,7 +58,7 @@ class SecretEditor extends Component
 
     public function updateSecret(): void
     {
-        $this->authorize('perform', [$this->secret->environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$this->secret->environment, OrganizationPermission::EditSecrets]);
 
         if ($this->noChangesWereMade) {
             $this->showing = false;
