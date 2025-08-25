@@ -37,7 +37,6 @@ test('returns organization in the correct format', function () {
                 'id',
                 'name',
                 'slug',
-                'is_personal',
                 'created_at',
                 'updated_at',
             ],

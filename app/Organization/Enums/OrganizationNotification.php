@@ -36,7 +36,7 @@ enum OrganizationNotification: string
         return match ($this) {
             self::MEMBERSHIP_ACTIVITY,
             self::ACCESS_CHANGE,
-            self::PROJECT_ACTIVITY => ! $organization->isPersonal(),
+            self::PROJECT_ACTIVITY,
             self::ORGANIZATION_SETTINGS_CHANGED => true,
         };
     }

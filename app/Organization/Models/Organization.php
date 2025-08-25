@@ -29,7 +29,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $stripe_id
  * @property string|null $slug
  * @property string $name
- * @property int $is_personal
  * @property string|null $owner_id
  * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property string|null $slack_webhook_url
@@ -59,7 +58,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static OrganizationBuilder<static>|Organization query()
  * @method static OrganizationBuilder<static>|Organization whereCreatedAt($value)
  * @method static OrganizationBuilder<static>|Organization whereId($value)
- * @method static OrganizationBuilder<static>|Organization whereIsPersonal($value)
  * @method static OrganizationBuilder<static>|Organization whereName($value)
  * @method static OrganizationBuilder<static>|Organization whereNotifications($value)
  * @method static OrganizationBuilder<static>|Organization whereOwnerId($value)
@@ -83,7 +81,6 @@ class Organization extends Model
     protected $fillable = [
         'name',
         'slug',
-        'is_personal',
         'notifications',
         'slack_webhook_url',
         'slack_enabled',
@@ -92,7 +89,6 @@ class Organization extends Model
     ];
 
     protected $attributes = [
-        'is_personal' => true,
         'slack_enabled' => false,
     ];
 
@@ -172,15 +168,6 @@ class Organization extends Model
             'deleted' => 'Deleted organization "'.$this->name.'"',
             default => ucfirst($eventName).' organization "'.$this->name.'"',
         };
-    }
-
-    public function isPersonal(): bool
-    {
-        $cacheKey = "isPersonal:{$this->id}";
-
-        return once(function () {
-            return $this->is_personal;
-        }, $cacheKey);
     }
 
     public function routeNotificationForSlack(): ?string

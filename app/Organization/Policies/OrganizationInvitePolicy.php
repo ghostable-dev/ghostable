@@ -14,10 +14,6 @@ class OrganizationInvitePolicy
      */
     public function create(User $user, Organization $organization): bool
     {
-        if ($organization->is_personal) {
-            return false;
-        }
-
         return $this->manage(user: $user, organization: $organization);
     }
 

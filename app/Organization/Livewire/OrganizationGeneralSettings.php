@@ -31,7 +31,7 @@ class OrganizationGeneralSettings extends Component
     #[Computed(persist: true)]
     public function canEditName(): bool
     {
-        return ! $this->organization->isPersonal();
+        return true;
     }
 
     #[Computed()]

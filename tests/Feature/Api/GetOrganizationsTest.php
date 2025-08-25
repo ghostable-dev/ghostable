@@ -60,7 +60,6 @@ test('response uses OrganizationResource structure', function () {
                     'id',
                     'name',
                     'slug',
-                    'is_personal',
                     'created_at',
                     'updated_at',
                 ],
