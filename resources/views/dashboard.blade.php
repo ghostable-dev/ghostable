@@ -8,7 +8,7 @@
 
         <livewire:organization.livewire.organization-switcher-modal/>
     @else
-        <div class="space-y-6">
+        <div class="space-y-6 text-center">
             <flux:heading size="md">{{ __('No organizations yet') }}</flux:heading>
             <flux:subheading>{{ __('Create an organization to get started.') }}</flux:subheading>
             <flux:modal.trigger name="create-organization">

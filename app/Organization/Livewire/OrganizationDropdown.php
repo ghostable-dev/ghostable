@@ -57,13 +57,9 @@ class OrganizationDropdown extends Component
                                 <flux:menu.item
                                     :href="route('organization.settings.index', $this->currentOrganization)"
                                     wire:navigate>Settings</flux:menu.item>
-                                <flux:modal.trigger name="create-organization">
-                                    <flux:menu.item>
-                                        Create New Organization
-                                    </flux:menu.item>
-                                </flux:modal.trigger>
                             </flux:menu.group>
                             <flux:menu.group heading="Switch Organizations">
+                                
                                 @foreach($this->switchableOrganizations as $organization)
                                     <flux:menu.item 
                                         wire:click="switchToOrganization('{{ $organization->id }}')" 
@@ -71,6 +67,14 @@ class OrganizationDropdown extends Component
                                         {{ $organization->name }}
                                     </flux:menu.item>
                                 @endforeach
+                                
+                            </flux:menu.group>
+                            <flux:menu.group>
+                                <flux:modal.trigger name="create-organization">
+                                    <flux:menu.item icon="plus">
+                                        New
+                                    </flux:menu.item>
+                                </flux:modal.trigger>
                             </flux:menu.group>
                         </flux:menu>
                     </x-slot>

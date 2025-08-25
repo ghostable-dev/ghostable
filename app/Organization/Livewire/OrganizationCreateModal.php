@@ -22,6 +22,8 @@ class OrganizationCreateModal extends Component
 
         Flux::modal('create-organization')->close();
         Flux::toast('New organization has been created.');
+
+        redirect(route('dashboard'));
     }
 
     public function render()
