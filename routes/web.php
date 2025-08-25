@@ -25,4 +25,4 @@ OrganizationRoutes::web();
 EnvironmentRoutes::web();
 ProjectRoutes::web();
 AuthRoutes::web();
-// BillingRoutes::web();
+BillingRoutes::web();

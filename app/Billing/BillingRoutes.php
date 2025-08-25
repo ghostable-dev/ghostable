@@ -2,8 +2,9 @@
 
 namespace App\Billing;
 
-use App\Billing\Http\Controllers\BusinessCheckout;
 use App\Billing\Http\Controllers\EnterpriseCheckout;
+use App\Billing\Http\Controllers\GrowthCheckout;
+use App\Billing\Http\Controllers\StarterCheckout;
 use App\Billing\Http\Controllers\SubscriptionPortal;
 use App\Billing\Http\Controllers\WebhookController;
 use App\Billing\Http\Middleware\HasNoActiveSubscription;
@@ -21,14 +22,19 @@ class BillingRoutes
             ->middleware(['auth', 'verified', 'can:manageBilling,organization'])
             ->group(function () {
 
-                // Professional checkout
-                Route::name('business.checkout')
-                    ->get('/business/checkout', [BusinessCheckout::class, 'checkout'])
+                // Starter checkout
+                Route::name('starter.checkout')
+                    ->get('/starter/checkout', [StarterCheckout::class, 'checkout'])
+                    ->middleware(HasNoActiveSubscription::class);
+
+                // Growth checkout
+                Route::name('growth.checkout')
+                    ->get('/growth/checkout', [GrowthCheckout::class, 'checkout'])
                     ->middleware(HasNoActiveSubscription::class);
 
                 // Enterprise checkout
-                Route::name('enterprise.checkout')
-                    ->get('/enterprise/checkout', [EnterpriseCheckout::class, 'checkout']);
+                // Route::name('enterprise.checkout')
+                //     ->get('/enterprise/checkout', [EnterpriseCheckout::class, 'checkout']);
 
                 // Customer portal
                 Route::get('/portal', SubscriptionPortal::class)->name('portal');

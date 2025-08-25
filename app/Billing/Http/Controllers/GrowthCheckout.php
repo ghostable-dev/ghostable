@@ -2,15 +2,15 @@
 
 namespace App\Billing\Http\Controllers;
 
-class BusinessCheckout extends SubscriptionCheckout
+class GrowthCheckout extends SubscriptionCheckout
 {
     protected function getSubscriptionType(): ?string
     {
-        return config('platform.billing.business.type');
+        return config('platform.billing.growth.type');
     }
 
     protected function getSubscriptionApiId(): ?string
     {
-        return config('platform.billing.business.api_id', null);
+        return config('platform.billing.growth.api_id', null);
     }
 }

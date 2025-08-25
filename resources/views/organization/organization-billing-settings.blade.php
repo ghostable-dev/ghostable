@@ -5,20 +5,8 @@
     <x-layouts.organization-settings>
         @can('manageBilling', $this->organization)
             <div>
-                @if(!$this->organization->plan->isBusiness() && !$this->organization->plan->isEnterprise())
-                    <flux:callout 
-                        heading="Business" 
-                        text="Designed for growing organizations who need to securely manage and share environment settings." 
-                        inline>
-                        <x-slot name="actions" class="@md:h-full m-0!">
-                            <flux:button 
-                                icon:trailing="arrow-right"
-                                variant="primary"
-                                href="{{ route('organization.billing.business.checkout', $this->organization) }}">
-                                $15 / month
-                            </flux:button>
-                        </x-slot>
-                    </flux:callout>
+                @if($this->organization->plan->isFree())
+                    <x-billing.mini-pricing-plan :organization="$this->organization"/>
                 @else
                     @if($this->organization->activeSubscription()->onGracePeriod())
                         <flux:callout icon="exclamation-circle" variant="warning" inline>
