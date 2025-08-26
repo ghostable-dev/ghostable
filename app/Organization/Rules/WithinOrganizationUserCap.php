@@ -20,7 +20,7 @@ class WithinOrganizationUserCap implements ValidationRule
                 $role = $value;
             }
         }
-        
+
         if (is_null($role)) {
             $fail('Invalid user role.');
         }

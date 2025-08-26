@@ -11,17 +11,17 @@ class PostBuilder extends Builder
     {
         return $this->withStatus(PostStatus::DRAFT);
     }
-    
+
     public function published(): Builder
     {
         return $this->withStatus(PostStatus::PUBLISHED);
     }
-    
+
     public function archived(): Builder
     {
         return $this->withStatus(PostStatus::ARCHIVED);
     }
-    
+
     public function withStatus(PostStatus $status): Builder
     {
         return $this->where('status', $status->value);

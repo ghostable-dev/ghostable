@@ -9,16 +9,13 @@ use Illuminate\View\Component;
 
 class RoleSelect extends Component
 {
-    public function __construct()
-    {
-        
-    }
-    
+    public function __construct() {}
+
     public function roles(): array
     {
         return ACLManager::getRoles();
     }
-    
+
     public function render(): View|Closure|string
     {
         return <<<'blade'

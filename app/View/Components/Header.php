@@ -10,25 +10,25 @@ use Illuminate\View\Component;
 class Header extends Component
 {
     use MakesLinks;
-    
+
     public function primaryLinks(): array
     {
         return array_merge($this->accountLinks(), [
             $this->makeLink(url: route('home'), label: 'Jobs'),
             $this->makeLink(url: route('pricing'), label: 'Pricing'),
-            $this->makeLink(url: route('blog'), label: 'Blog')
+            $this->makeLink(url: route('blog'), label: 'Blog'),
         ]);
     }
-    
+
     private function accountLinks(): array
     {
-        if (!auth()->user()?->isOrganization()) {
+        if (! auth()->user()?->isOrganization()) {
             return [];
         }
-        
+
         return [
             $this->makeLink(
-                url: route('account.jobs', auth()->user()->primaryAccount->id), 
+                url: route('account.jobs', auth()->user()->primaryAccount->id),
                 label: 'My Jobs'
             ),
         ];

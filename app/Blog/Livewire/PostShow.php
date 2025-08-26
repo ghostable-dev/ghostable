@@ -8,7 +8,7 @@ use Livewire\Component;
 class PostShow extends Component
 {
     public Post $post;
-    
+
     public function render()
     {
         return view('blog.livewire.post-show')

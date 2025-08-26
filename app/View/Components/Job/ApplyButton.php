@@ -13,8 +13,7 @@ class ApplyButton extends Component
     public function __construct(
         public Job $job,
         public ?Color $color = null
-    ) 
-    {
+    ) {
         if (is_null($color)) {
             $this->color = new Color('#000000');
         }

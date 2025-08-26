@@ -3,9 +3,9 @@
 namespace App\Blog\Markdown;
 
 use League\CommonMark\Extension\CommonMark\Node\Inline\HtmlInline;
-use League\CommonMark\Parser\InlineParserContext;
 use League\CommonMark\Parser\Inline\InlineParserInterface;
 use League\CommonMark\Parser\Inline\InlineParserMatch;
+use League\CommonMark\Parser\InlineParserContext;
 
 class YouTubeEmbedParser implements InlineParserInterface
 {
@@ -20,18 +20,21 @@ class YouTubeEmbedParser implements InlineParserInterface
         $previousState = $cursor->saveState();
         $cursor->advance();
 
-        if (!$cursor->match('/\[youtube\]/')) {
+        if (! $cursor->match('/\[youtube\]/')) {
             $cursor->restoreState($previousState);
+
             return false;
         }
 
-        if (!$cursor->match("/\(/")) {
+        if (! $cursor->match("/\(/")) {
             $cursor->restoreState($previousState);
+
             return false;
         }
-        
+
         if (empty($url = $cursor->match('/^([^)]+)\)/'))) {
             $cursor->restoreState($previousState);
+
             return false;
         }
 
@@ -39,7 +42,7 @@ class YouTubeEmbedParser implements InlineParserInterface
             '<iframe class="w-full" height="400" src="%s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>',
             $url
         );
-        
+
         $inlineContext->getContainer()
             ->appendChild(new HtmlInline($iframeHtml));
 

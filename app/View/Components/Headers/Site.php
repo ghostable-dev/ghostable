@@ -10,25 +10,25 @@ use Illuminate\View\Component;
 class Site extends Component
 {
     use MakesLinks;
-    
+
     public function primaryLinks(): array
     {
         return [
             $this->makeLink(
-                url: route('search'), 
+                url: route('search'),
                 label: 'Jobs',
                 active: $this->isRouteNameCurrent('search')
             ),
             $this->makeLink(
-                url: route('pricing'), 
+                url: route('pricing'),
                 label: 'Pricing',
                 active: $this->isRouteNameCurrent('pricing')
             ),
             $this->makeLink(
-                url: route('blog'), 
+                url: route('blog'),
                 label: 'Blog',
                 active: $this->isRouteNameCurrent('blog')
-            )
+            ),
         ];
     }
 

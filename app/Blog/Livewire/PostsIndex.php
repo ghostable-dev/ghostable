@@ -9,7 +9,7 @@ use Livewire\WithPagination;
 class PostsIndex extends Component
 {
     use WithPagination;
-    
+
     public function render()
     {
         $featured = Post::published()

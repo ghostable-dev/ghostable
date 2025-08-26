@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PostFactory extends Factory
 {
     protected $model = Post::class;
-    
+
     public function definition(): array
     {
         $title = $this->faker->realText(50);
-        
+
         return [
             'title' => $title,
             'slug' => str($title)->slug(),
@@ -38,7 +38,7 @@ class PostFactory extends Factory
             'is_featured' => true,
         ]);
     }
-    
+
     public function archived(): static
     {
         return $this->state(fn (array $attributes) => [

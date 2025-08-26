@@ -12,16 +12,16 @@ use Illuminate\View\Component;
 class OrganizationSettings extends Component
 {
     use MakesLinks;
-    
+
     public function primaryLinks(): array
     {
         if (is_null($account = $this->getAccount())) {
             return [];
         }
-        
+
         return [
             $this->makeLink(
-                url: route('account.organization.overview', $account->id), 
+                url: route('account.organization.overview', $account->id),
                 label: 'Overview',
                 icon: 'icons.building-office',
                 active: $this->isRouteNameCurrent('account.organization.overview')
@@ -34,16 +34,16 @@ class OrganizationSettings extends Component
             ),
         ];
     }
-    
+
     protected function getAccount(): ?Account
     {
         if (auth()->user()->isAccountHolder()) {
             return auth()->user()->primaryAccount;
         }
-        
+
         return AccountSwitcher::get();
     }
-    
+
     public function render(): View|Closure|string
     {
         return view('components.sidebars.account-settings');

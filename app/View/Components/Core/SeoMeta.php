@@ -7,7 +7,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 class SeoMeta extends Component
-{ 
+{
     public function __construct(
         public string $type = 'website',
         public string $title = '',
@@ -15,9 +15,8 @@ class SeoMeta extends Component
         public array $keywords = [],
         public ?string $image = null,
         public string $robots = 'index,follow'
-    )
-    {}
-    
+    ) {}
+
     public function render(): View|Closure|string
     {
         return <<<'blade'
@@ -41,15 +40,15 @@ class SeoMeta extends Component
             <meta name="robots" :content="{{ $robots }}"/>
         blade;
     }
-    
+
     public function requestUrl(): string
     {
         return request()->url();
     }
-    
+
     public function sharingImage(): string
     {
-        return empty($this->image) 
+        return empty($this->image)
             ? asset('/images/ai-job-board-social.jpg')
             : $this->image;
     }

@@ -4,7 +4,6 @@ namespace App\Account\Console\Commands;
 
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
-use App\Blog\Seeders\PostSeeder;
 use Illuminate\Console\Command;
 
 class AppSetup extends Command

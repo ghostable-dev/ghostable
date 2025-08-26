@@ -10,7 +10,7 @@ use Spatie\SchemaOrg\Schema;
 abstract class SchemaGenerator extends Component
 {
     protected BaseType $type;
-    
+
     protected function defaultOrganization(): Organization
     {
         return Schema::organization()
