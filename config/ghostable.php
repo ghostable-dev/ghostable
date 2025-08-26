@@ -5,7 +5,7 @@ return [
         'projects' => 1,
         'environments_per_project' => 4,
     ],
-    // Defaults for organization teams (null means unlimited)
+    // Defaults for organization organizations (null means unlimited)
     'org_defaults' => [
         'projects' => null,
         'environments_per_project' => null,

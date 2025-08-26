@@ -51,7 +51,7 @@ You retain all ownership of your `.env` content and environment configurations.
 
 ## 7. Security
 
-Ghostable encrypts your data in transit and at rest using industry best practices. All communication with the Service is encrypted via SSL/TLS. Environment variables, sensitive data, and backups are encrypted at rest using industry-standard AES-256 encryption. We take all reasonable measures to protect your data both in transit and at rest. However, no system is completely secure. You are responsible for implementing appropriate access controls within your own team or organization.
+Ghostable encrypts your data in transit and at rest using industry best practices. All communication with the Service is encrypted via SSL/TLS. Environment variables, sensitive data, and backups are encrypted at rest using industry-standard AES-256 encryption. We take all reasonable measures to protect your data both in transit and at rest. However, no system is completely secure. You are responsible for implementing appropriate access controls within your own organization or organization.
 
 ---
 

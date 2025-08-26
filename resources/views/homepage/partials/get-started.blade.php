@@ -5,7 +5,7 @@
         Start syncing your .env files today
       </h2>
       <p class="mt-6 text-lg leading-8 text-gray-600">
-        Ghostable makes it easy to keep your environment files secure, validated, and in sync — across teams, devices, and pipelines. Get started in minutes with our CLI and Laravel-first tools.
+        Ghostable makes it easy to keep your environment files secure, validated, and in sync — across organizations, devices, and pipelines. Get started in minutes with our CLI and Laravel-first tools.
       </p>
       <div class="mt-10 flex items-center justify-center gap-x-6">
         <flux:button variant="primary" href="{{ route('register') }}">

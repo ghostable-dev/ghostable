@@ -19,10 +19,10 @@ class SubscriptionEndedNotification extends BillingNotification
         //     ->greeting($notifiable->greeting())
         //     ->line('We’re writing to inform you that we have received your request to cancel your membership with aijobs.com. After the end of your current billing cycle, your account will be downgraded to a Basic Member, and you will no longer be billed.')
         //     ->line('- Your account will be downgraded from a Premium Membership to a Basic Membership')
-        //     ->line('- You will lose access to manage your team')
+        //     ->line('- You will lose access to manage your organization')
         //     ->line('- You will lose access to any currently running or scheduled job ads')
         //     ->line('- You will lose access to your branded career showcase page and custom hosted URL')
-        //     ->line('You can re-activate your Premium Membership any time. If you have any questions or feedback, please don’t hesitate to contact our support team.')
+        //     ->line('You can re-activate your Premium Membership any time. If you have any questions or feedback, please don’t hesitate to contact our support organization.')
         //     ->action('Reactivate Membership', route('account.settings.billing', $this->account))
         //     ->line('Thank you and we hope to see you again very soon!');
     }

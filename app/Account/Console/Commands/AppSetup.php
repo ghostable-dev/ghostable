@@ -47,7 +47,7 @@ class AppSetup extends Command
 
         $tony = $this->createUser(name: 'Tony Lea', email: 'tony@curricula.com');
 
-        $curricula = $this->createTeam(
+        $curricula = $this->createOrganization(
             name: 'Currciula',
             owner: $joe,
             members: [$tony]
@@ -68,7 +68,7 @@ class AppSetup extends Command
         $this->createEnvironment('local-jr', EnvironmentType::LOCAL, $phishing, $local);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
 
-        $this->createInvite(team: $curricula, sender: $joe, email: 'nick@curricula.com');
+        $this->createInvite(organization: $curricula, sender: $joe, email: 'nick@curricula.com');
     }
 
     protected function seedHuntress(): void
@@ -76,7 +76,7 @@ class AppSetup extends Command
         $joe = $this->createUser(name: 'Joe', email: 'joe@huntress.com');
         $jake = $this->createUser(name: 'Jake', email: 'jake@huntress.com');
 
-        $huntress = $this->createTeam(
+        $huntress = $this->createOrganization(
             name: 'Huntress',
             owner: $joe,
             members: [$jake]
@@ -94,6 +94,6 @@ class AppSetup extends Command
         $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
 
-        $this->createInvite(team: $huntress, sender: $joe, email: 'joe@curricula.com');
+        $this->createInvite(organization: $huntress, sender: $joe, email: 'joe@curricula.com');
     }
 }

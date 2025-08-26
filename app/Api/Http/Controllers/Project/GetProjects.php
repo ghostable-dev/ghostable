@@ -6,23 +6,23 @@ namespace App\Api\Http\Controllers\Project;
 
 use App\Api\Resources\Project\ProjectResource;
 use App\Core\Http\Controllers\Controller;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class GetProjects extends Controller
 {
     /**
-     * Display all projects belonging to the given team.
+     * Display all projects belonging to the given organization.
      *
-     * Authorization: Requires 'view' permission on the team.
+     * Authorization: Requires 'view' permission on the organization.
      */
-    public function __invoke(Team $team): AnonymousResourceCollection
+    public function __invoke(Organization $organization): AnonymousResourceCollection
     {
-        $this->authorize('view', $team);
+        $this->authorize('view', $organization);
 
         $projects = Project::query()
-            ->where('team_id', $team->id)
+            ->where('organization_id', $organization->id)
             ->with('environments')
             ->get();
 

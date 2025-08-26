@@ -10,6 +10,11 @@ use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
 use App\Api\Http\Controllers\Environment\PullEnvironment;
 use App\Api\Http\Controllers\Environment\PushEnvironment;
 use App\Api\Http\Controllers\Environment\ValidateEnvironment;
+use App\Api\Http\Controllers\Organization\GetOrganization;
+use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
+use App\Api\Http\Controllers\Organization\GetOrganizations;
+use App\Api\Http\Controllers\Organization\GetOwnedOrganizations;
+use App\Api\Http\Controllers\Organization\InviteOrganizationMember;
 use App\Api\Http\Controllers\Project\CreateProject;
 use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
 use App\Api\Http\Controllers\Project\GetEnvironments;
@@ -19,11 +24,6 @@ use App\Api\Http\Controllers\Secret\CreateEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
 use App\Api\Http\Controllers\Secret\GetSecretTypes;
 use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
-use App\Api\Http\Controllers\Team\GetOwnedTeams;
-use App\Api\Http\Controllers\Team\GetTeam;
-use App\Api\Http\Controllers\Team\GetTeamRoles;
-use App\Api\Http\Controllers\Team\GetTeams;
-use App\Api\Http\Controllers\Team\InviteTeamMember;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,17 +39,17 @@ Route::middleware('api.version:v2')->group(function () {
     Route::post('/cli/login', LoginViaCli::class);
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/team-roles', GetTeamRoles::class);
-        Route::get('/teams', GetTeams::class);
-        Route::get('/owned-teams', GetOwnedTeams::class);
-        Route::get('/teams/{team}', GetTeam::class);
-        Route::post('/teams/{team}/invite', InviteTeamMember::class);
+        Route::get('/organization-roles', GetOrganizationRoles::class);
+        Route::get('/organizations', GetOrganizations::class);
+        Route::get('/owned-organizations', GetOwnedOrganizations::class);
+        Route::get('/organizations/{organization}', GetOrganization::class);
+        Route::post('/organizations/{organization}/invite', InviteOrganizationMember::class);
 
-        Route::get('teams/{team}/projects', GetProjects::class);
+        Route::get('organizations/{organization}/projects', GetProjects::class);
         Route::get('/projects/{project}', GetProject::class);
         Route::get('/projects/{project}/environments', GetEnvironments::class);
         Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
-        Route::post('teams/{team}/projects', CreateProject::class);
+        Route::post('organizations/{organization}/projects', CreateProject::class);
 
         Route::get('/ci/deploy', DeployEnvironment::class);
 

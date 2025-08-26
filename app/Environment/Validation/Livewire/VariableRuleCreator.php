@@ -10,7 +10,7 @@ use App\Environment\Validation\Entities\CreateVariableRuleData;
 use App\Environment\Validation\Enums\EnvironmentVariableRuleType;
 use App\Environment\Validation\Rules\VariableRuleFormRules;
 use App\Environment\Variable\Actions\NormalizeVariableKey;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -128,7 +128,7 @@ class VariableRuleCreator extends EnvironmentComponent
      */
     public function add(): void
     {
-        $this->authorize('perform', [$this->environment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$this->environment, OrganizationPermission::ManageValidationRules]);
 
         $rules = VariableRuleFormRules::createRules($this->environment);
 

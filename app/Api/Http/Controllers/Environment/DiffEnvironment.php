@@ -7,8 +7,8 @@ namespace App\Api\Http\Controllers\Environment;
 use App\Api\Resources\Environment\DiffResultResource;
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\DiffEnvironment as DiffAction;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,7 +25,7 @@ final class DiffEnvironment extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$env, TeamPermission::PushFile]);
+        $this->authorize('perform', [$env, OrganizationPermission::PushFile]);
 
         $vars = request()->input('vars', []);
 

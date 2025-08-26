@@ -3,7 +3,7 @@
 namespace App\Billing\Events;
 
 use App\Billing\Entities\StripePayload;
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,7 +15,7 @@ abstract class StripeEvent
     use SerializesModels;
 
     public function __construct(
-        public Team $team,
+        public Organization $organization,
         public ?StripePayload $data = null
     ) {}
 }

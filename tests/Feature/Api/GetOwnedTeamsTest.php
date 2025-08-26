@@ -1,41 +1,38 @@
 <?php
 
-use App\Account\Models\User;
-use App\Team\Actions\CreateTeam;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('unauthenticated users cannot fetch owned teams', function () {
-    $this->getJson('/api/v1/owned-teams')
+beforeEach(function () {
+    $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+});
+
+test('unauthenticated users cannot fetch owned organizations', function () {
+    $this->getJson('/api/v1/owned-organizations')
         ->assertUnauthorized();
 });
 
-test('returns only teams owned by the user', function () {
+test('returns only organizations owned by the user', function () {
+    $peter = $this->createUser(name: 'Peter', email: 'perter@ghostbusters.com');
+    $ghostbusters = $this->createOrganization(name: 'Ghostbusters', owner: $peter);
 
-    $alice = User::factory()->create();
-    $alicesTeam = CreateTeam::handle('Alice Co.', $alice);
+    Sanctum::actingAs($this->ray, ['*']);
 
-    $bob = User::factory()->create();
-    $bobsTeam = CreateTeam::handle('Bob Co.', $bob);
-
-    Sanctum::actingAs($alice, ['*']);
-
-    $response = $this->getJson('/api/v1/owned-teams');
+    $response = $this->getJson('/api/v1/owned-organizations');
 
     $response->assertOk()
-        ->assertJsonCount(2, 'data')
-        ->assertJsonFragment(['id' => $alicesTeam->id])
-        ->assertJsonMissing(['id' => $bobsTeam->id]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonFragment(['id' => $this->organization->id])
+        ->assertJsonMissing(['id' => $ghostbusters->id]);
 });
 
-test('response uses TeamResource structure', function () {
+test('response uses OrganizationResource structure', function () {
 
-    $alice = User::factory()->create();
+    Sanctum::actingAs($this->ray, ['*']);
 
-    Sanctum::actingAs($alice, ['*']);
-
-    $this->getJson('/api/v1/owned-teams')
+    $this->getJson('/api/v1/owned-organizations')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -43,7 +40,6 @@ test('response uses TeamResource structure', function () {
                     'id',
                     'name',
                     'slug',
-                    'is_personal',
                     'created_at',
                     'updated_at',
                 ],

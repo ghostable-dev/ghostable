@@ -11,10 +11,10 @@ use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentUpdated;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Organization\Concerns\HasPermissionOverrides;
+use App\Organization\Contracts\SupportsOverrides;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Concerns\HasPermissionOverrides;
-use App\Team\Contracts\SupportsOverrides;
-use App\Team\Models\Team;
 use Database\Factories\EnvironmentFactory;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -46,7 +46,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Environment|null $base
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $derived
  * @property-read int|null $derived_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableRule> $rules
@@ -198,11 +198,11 @@ class Environment extends Model implements SupportsOverrides
         };
     }
 
-    public function owningTeam(): Team
+    public function owningOrganization(): Organization
     {
         return once(function () {
-            return $this->project->owningTeam();
-        }, "owningTeam:{$this->id}");
+            return $this->project->owningOrganization();
+        }, "owningOrganization:{$this->id}");
     }
 
     public function findLocalVariableForKey(string $key): ?EnvironmentVariable

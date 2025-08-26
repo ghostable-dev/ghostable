@@ -7,9 +7,9 @@ use App\Environment\Actions\GenerateSuggestedEnvironmentNames;
 use App\Environment\Actions\NormalizeEnvironmentName;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -99,7 +99,7 @@ class ProjectEnvironmentsManager extends Component
      */
     public function createEnvironment(): void
     {
-        $this->authorize('perform', [$this->project, TeamPermission::CreateEnvironments]);
+        $this->authorize('perform', [$this->project, OrganizationPermission::CreateEnvironments]);
 
         $validated = $this->validate(EnvironmentRules::createRules($this->project));
 

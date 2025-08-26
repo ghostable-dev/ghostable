@@ -6,18 +6,22 @@ return [
      * Billing configuration details.
      */
     'billing' => [
-        'business' => [
-            'type' => 'business',
-            'api_id' => env('BUSINESS_SUBSCRIPTION_API_ID'),
+        'starter' => [
+            'type' => 'starter',
+            'api_id' => env('STARTER_SUBSCRIPTION_API_ID'),
+        ],
+        'growth' => [
+            'type' => 'growth',
+            'api_id' => env('GROWTH_SUBSCRIPTION_API_ID'),
         ],
         'enterprise' => [
             'type' => 'enterprise',
-            'api_id' => env('ENT_SUBSCRIPTION_API_ID'),
+            'api_id' => env('ENTERPRISE_SUBSCRIPTION_API_ID'),
         ],
     ],
 
     /**
-     * Team invites.
+     * Organization invites.
      */
     'invite' => [
         'resend_cooldown_minutes' => env('INVITE_RESEND_COOLDOWN_MINUTES', 5),

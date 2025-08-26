@@ -14,7 +14,7 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'team_id' => $this->team_id,
+            'organization_id' => $this->organization_id,
             'environments' => EnvironmentResource::collection($this->whenLoaded('environments')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

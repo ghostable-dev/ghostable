@@ -11,7 +11,7 @@ use App\Environment\Validation\Entities\UpdateVariableRuleData;
 use App\Environment\Validation\Enums\EnvironmentVariableRuleType;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Environment\Validation\Rules\VariableRuleFormRules;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -93,7 +93,7 @@ class VariableRuleEditor extends Component
     {
         $environment = $targetEnvironment ?? $rule->environment;
 
-        $this->authorize('perform', [$environment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$environment, OrganizationPermission::ManageValidationRules]);
 
         $this->ruleId = $rule->id;
         $this->targetEnvironmentId = $environment->id;
@@ -158,7 +158,7 @@ class VariableRuleEditor extends Component
     {
         $this->authorize('perform', [
             $this->targetEnvironment ?? $this->rule->environment,
-            TeamPermission::ManageValidationRules,
+            OrganizationPermission::ManageValidationRules,
         ]);
 
         if ($this->noChangesWereMade()) {

@@ -13,8 +13,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->user);
-    $project = $this->createProject(name: 'Website', team: $this->team);
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->user);
+    $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
 });
 

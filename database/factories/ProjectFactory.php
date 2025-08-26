@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,14 +17,14 @@ class ProjectFactory extends Factory
     {
         return [
             'name' => fake()->unique()->company(),
-            'team_id' => Team::factory(),
+            'organization_id' => Organization::factory(),
         ];
     }
 
-    public function forTeam(Team $team): static
+    public function forOrganization(Organization $organization): static
     {
         return $this->state([
-            'team_id' => $team->id,
+            'organization_id' => $organization->id,
         ]);
     }
 }

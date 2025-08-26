@@ -12,11 +12,11 @@
             </flux:heading>
             <flux:text class="mt-2">
                 <span x-show="is_restricted">
-                    <p>Team member roles will no longer apply to this environment.</p>
+                    <p>Organization member roles will no longer apply to this environment.</p>
                     <p>Only explicit permission overrides will grant non-admins access.</p>
                 </span>
                 <span x-show="!is_restricted">
-                    <p>This will re-enable access to the environment based on team member roles.</p>
+                    <p>This will re-enable access to the environment based on organization member roles.</p>
                     <p>Explicit permission overrides will still apply, but will no longer be required.</p>
                 </span>
             </flux:text>

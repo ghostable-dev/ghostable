@@ -11,8 +11,8 @@ class NotifyAccountOfEndedSubscription extends BillingNotificationListener
     public function handle(SubscriptionEnded $event): void
     {
         Notification::send(
-            $this->notifiables($event->team),
-            new SubscriptionEndedNotification($event->team)
+            $this->notifiables($event->organization),
+            new SubscriptionEndedNotification($event->organization)
         );
     }
 }

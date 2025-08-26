@@ -14,7 +14,7 @@
     <x-slot name="menu">
         <flux:menu>
             <flux:menu.radio.group>
-                @foreach ($project->owningTeam()->projects as $otherProject)
+                @foreach ($project->owningOrganization()->projects as $otherProject)
                     <flux:menu.radio
                         :checked="($project->id === $otherProject->id)"
                         :value="$otherProject->id"

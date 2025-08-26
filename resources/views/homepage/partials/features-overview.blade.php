@@ -22,7 +22,7 @@ $features = [
     ],
     [
         'title' => 'Precision Sharing',
-        'description' => 'Fine-grained team permissions ensure controlled access without confusion.',
+        'description' => 'Fine-grained organization permissions ensure controlled access without confusion.',
         'icon' => 'users',
     ],
     [

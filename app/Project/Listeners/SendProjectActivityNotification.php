@@ -2,15 +2,15 @@
 
 namespace App\Project\Listeners;
 
-use App\Core\Actions\GetNotifiableTeamUsers;
+use App\Core\Actions\GetNotifiableOrganizationUsers;
 use App\Core\Actions\IsNotificationEnabled;
+use App\Organization\Enums\OrganizationNotification;
+use App\Organization\Models\Organization;
 use App\Project\Events\ProjectCreated;
 use App\Project\Events\ProjectDeleted;
 use App\Project\Notifications\ProjectCreatedNotification;
 use App\Project\Notifications\ProjectDeletedNotification;
 use App\Project\Notifications\ProjectNotification;
-use App\Team\Enums\TeamNotification;
-use App\Team\Models\Team;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
@@ -19,13 +19,13 @@ class SendProjectActivityNotification implements ShouldQueue
 {
     public function handle(ProjectCreated|ProjectDeleted $event): void
     {
-        $team = $event->project->owningTeam();
+        $organization = $event->project->owningOrganization();
 
-        if (! $this->notificationEnabled($team)) {
+        if (! $this->notificationEnabled($organization)) {
             return;
         }
 
-        $recipients = app(GetNotifiableTeamUsers::class)->handle($team);
+        $recipients = app(GetNotifiableOrganizationUsers::class)->handle($organization);
 
         $notification = $this->getNotification($event);
 
@@ -34,11 +34,11 @@ class SendProjectActivityNotification implements ShouldQueue
         }
     }
 
-    protected function notificationEnabled(Team $team): bool
+    protected function notificationEnabled(Organization $organization): bool
     {
         return app(IsNotificationEnabled::class)->handle(
-            model: $team,
-            key: TeamNotification::PROJECT_ACTIVITY->value
+            model: $organization,
+            key: OrganizationNotification::PROJECT_ACTIVITY->value
         );
     }
 

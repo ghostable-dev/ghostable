@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
+        Schema::table('organizations', function (Blueprint $table) {
             $table->string('slack_webhook_url')->nullable()->after('notifications');
             $table->boolean('slack_enabled')->default(false)->after('slack_webhook_url');
         });
@@ -16,7 +16,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
+        Schema::table('organizations', function (Blueprint $table) {
             $table->dropColumn('slack_enabled');
             $table->dropColumn('slack_webhook_url');
         });

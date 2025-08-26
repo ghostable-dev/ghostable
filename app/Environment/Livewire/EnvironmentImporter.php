@@ -4,7 +4,7 @@ namespace App\Environment\Livewire;
 
 use App\Environment\Actions\ImportEnvironment;
 use App\Environment\Enums\PushMode;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -48,7 +48,7 @@ class EnvironmentImporter extends EnvironmentComponent
      */
     public function import(): void
     {
-        $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$this->environment, OrganizationPermission::EditVariables]);
 
         if (blank($this->input)) {
             return;

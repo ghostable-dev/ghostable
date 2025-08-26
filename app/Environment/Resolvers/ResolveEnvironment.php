@@ -14,8 +14,8 @@ class ResolveEnvironment
                 'derived',
                 'variables',
                 'project.environments',
-                'project.team',
-                'project.team.projects',
+                'project.organization',
+                'project.organization.projects',
             ])->findOrFail($envId);
         }, "environment:withContext:{$envId}");
     }

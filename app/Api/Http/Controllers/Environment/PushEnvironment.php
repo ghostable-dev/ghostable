@@ -7,8 +7,8 @@ namespace App\Api\Http\Controllers\Environment;
 use App\Api\Resources\Environment\PushResultResource;
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\PushAndValidateEnvironment;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Validation\ValidationException;
@@ -29,7 +29,7 @@ final class PushEnvironment extends Controller
     {
         $env = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$env, TeamPermission::PushFile]);
+        $this->authorize('perform', [$env, OrganizationPermission::PushFile]);
 
         try {
             $vars = request()->input('vars', []);

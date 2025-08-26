@@ -44,7 +44,7 @@ final class LoginViaCli extends Controller
         return response()->json([
             'token' => $user->createToken('ghostable-cli')->plainTextToken,
             'user' => $user->only(['id', 'name', 'email']),
-            'teams' => $user->teams()->select('teams.id', 'teams.name')->get(),
+            'organizations' => $user->organizations()->select('organizations.id', 'organizations.name')->get(),
         ]);
     }
 }

@@ -7,7 +7,7 @@ use App\Environment\Models\Environment;
 use App\Environment\Validation\Actions\ReinstateInheritedVariableRule;
 use App\Environment\Validation\Actions\ReinstateOverrideVariableRule;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -30,7 +30,7 @@ class VariableRuleReinstater extends Component
     {
         $environment = $targetEnvironment ?? $rule->environment;
 
-        $this->authorize('perform', [$environment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$environment, OrganizationPermission::ManageValidationRules]);
 
         $this->ruleId = $rule->id;
         $this->targetEnvironmentId = $environment->id;
@@ -61,7 +61,7 @@ class VariableRuleReinstater extends Component
 
     public function reinstateRule(): void
     {
-        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$this->targetEnvironment, OrganizationPermission::ManageValidationRules]);
 
         if ($this->isOverride) {
             resolve(ReinstateOverrideVariableRule::class)->handle(

@@ -5,9 +5,10 @@ namespace App\Environment\Livewire;
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
-use App\Team\Actions\CreatePermissionOverride;
-use App\Team\Enums\TeamPermission;
-use App\Team\Models\TeamPermissionOverride;
+use App\Organization\Actions\CreatePermissionOverride;
+use App\Organization\Enums\OrganizationPermission;
+use App\Organization\Enums\OrganizationRole;
+use App\Organization\Models\OrganizationPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -24,12 +25,12 @@ class EnvironmentAccessManager extends Component
      * Indicates whether access to the current environment is restricted to
      * explicitly assigned permission overrides.
      *
-     * When true, default team roles are ignored for non-admins.
+     * When true, default organization roles are ignored for non-admins.
      */
     public bool $is_restricted;
 
     /**
-     * The ID of the team member currently selected for assigning
+     * The ID of the organization member currently selected for assigning
      * permission overrides on the project.
      *
      * Used to scope override actions to a specific user.
@@ -39,7 +40,7 @@ class EnvironmentAccessManager extends Component
     /**
      * The permission being granted in the current override action.
      */
-    public TeamPermission $permission;
+    public OrganizationPermission $permission;
 
     /**
      * The ID of the permission override currently selected for removal.
@@ -50,7 +51,7 @@ class EnvironmentAccessManager extends Component
 
     public function mount(Environment $environment): void
     {
-        // $this->authorize('manageAccessControls', $environment->project->team);
+        // $this->authorize('manageAccessControls', $environment->project->organization);
 
         $this->environmentId = $environment->id;
 
@@ -88,7 +89,7 @@ class EnvironmentAccessManager extends Component
      */
     public function updateIsRestricted(): void
     {
-        $this->authorize('manageAccessControls', $this->environment->project->team);
+        $this->authorize('manageAccessControls', $this->environment->project->organization);
 
         $this->environment->update(['is_restricted' => $this->is_restricted]);
 
@@ -100,9 +101,9 @@ class EnvironmentAccessManager extends Component
      * Get a paginated list of permission overrides for the current environment.
      *
      * This includes all custom permission assignments that override default
-     * team roles for non-admin users on this environment.
+     * organization roles for non-admin users on this environment.
      *
-     * @return LengthAwarePaginator<TeamPermissionOverride>
+     * @return LengthAwarePaginator<OrganizationPermissionOverride>
      */
     #[Computed]
     public function overrides(): LengthAwarePaginator
@@ -111,7 +112,7 @@ class EnvironmentAccessManager extends Component
     }
 
     /**
-     * Get the list of team members eligible for permission overrides
+     * Get the list of organization members eligible for permission overrides
      * on the current environment, excluding admins.
      *
      * @return Collection<User>
@@ -119,51 +120,55 @@ class EnvironmentAccessManager extends Component
     #[Computed(persist: true)]
     public function members(): Collection
     {
-        return $this->environment->project->team->users
+        return $this->environment->project->organization->users
             ->reject(function (User $user) {
-                return $user->isTeamAdmin($this->environment->project->team);
+                $org = $this->environment->project->organization;
+
+                return $user->isOrganizationAdmin($org)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::BILLING_ONLY)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::AUDITOR);
             });
     }
 
     /**
-     * Get the list of team permissions that can still be assigned
+     * Get the list of organization permissions that can still be assigned
      * to the selected overriding member for the current environment.
      * This excludes any permissions that have already been overridden.
      *
      * If no overriding user is selected, returns the full
      * set of environment-level override permissions.
      *
-     * @return array<TeamPermission>
+     * @return array<OrganizationPermission>
      */
     #[Computed]
     public function assignablePermissions(): array
     {
         if (! $this->userId) {
-            return TeamPermission::environmentOverrides();
+            return OrganizationPermission::environmentOverrides();
         }
 
         $assigned = $this->environment->permissionOverrides()
             ->forUser($this->overridingMember)
             ->pluck('permission');
 
-        return collect(TeamPermission::environmentOverrides())
+        return collect(OrganizationPermission::environmentOverrides())
             ->reject(fn ($permission) => $assigned->contains($permission))
             ->values()
             ->all();
     }
 
     /**
-     * Get the user on the current environment’s team whose
+     * Get the user on the current environment’s organization whose
      * permissions are being overridden.
      *
      * This is resolved from the selected 'userId'
      * and scoped to ensure the user is a member of the
-     * environment’s associated team.
+     * environment’s associated organization.
      */
     #[Computed]
     public function overridingMember(): User
     {
-        return $this->environment->project->team->users()
+        return $this->environment->project->organization->users()
             ->where('user_id', $this->userId)
             ->first();
     }
@@ -177,7 +182,7 @@ class EnvironmentAccessManager extends Component
      */
     public function createOverride(): void
     {
-        $this->authorize('manageAccessControls', $this->environment->project->team);
+        $this->authorize('manageAccessControls', $this->environment->project->organization);
 
         app(CreatePermissionOverride::class)->handle(
             user: $this->overridingMember,
@@ -195,13 +200,13 @@ class EnvironmentAccessManager extends Component
      * Begin the override removal process by storing the override ID
      * and showing the confirmation modal.
      */
-    public function confirmOverrideRemoval(TeamPermissionOverride $override): void
+    public function confirmOverrideRemoval(OrganizationPermissionOverride $override): void
     {
         $this->overrideToRemoveId = $override->id;
 
-        $team = $this->overrideToRemove->target->project->team;
+        $organization = $this->overrideToRemove->target->project->organization;
 
-        $this->authorize('manageAccessControls', $team);
+        $this->authorize('manageAccessControls', $organization);
 
         Flux::modal('confirm-override-removal')->show();
     }
@@ -212,9 +217,9 @@ class EnvironmentAccessManager extends Component
      * Returns the override based on the stored ID, or null if not set.
      */
     #[Computed]
-    public function overrideToRemove(): ?TeamPermissionOverride
+    public function overrideToRemove(): ?OrganizationPermissionOverride
     {
-        return TeamPermissionOverride::find($this->overrideToRemoveId);
+        return OrganizationPermissionOverride::find($this->overrideToRemoveId);
     }
 
     /**
@@ -224,9 +229,9 @@ class EnvironmentAccessManager extends Component
      */
     public function removeOverride(): void
     {
-        $team = $this->overrideToRemove->target->project->team;
+        $organization = $this->overrideToRemove->target->project->organization;
 
-        $this->authorize('manageAccessControls', $team);
+        $this->authorize('manageAccessControls', $organization);
 
         $this->overrideToRemove->delete();
 

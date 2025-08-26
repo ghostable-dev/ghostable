@@ -11,6 +11,6 @@ class ProjectDeletedNotification extends ProjectNotification
 
     protected function messageLine(): string
     {
-        return "The project named \"{$this->project->name}\" has been deleted from the \"{$this->project->team->name}\" team.";
+        return "The project named \"{$this->project->name}\" has been deleted from the \"{$this->project->organization->name}\" organization.";
     }
 }

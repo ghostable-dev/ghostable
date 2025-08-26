@@ -6,11 +6,11 @@ namespace App\Api\Http\Controllers\Secret;
 
 use App\Api\Resources\Secret\SecretResource;
 use App\Core\Http\Controllers\Controller;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use App\Secret\Actions\UpdateSecret as UpdateSecretAction;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 final class UpdateEnvironmentSecret extends Controller
@@ -19,7 +19,7 @@ final class UpdateEnvironmentSecret extends Controller
     {
         $environment = $project->environmentOrFail($name);
 
-        $this->authorize('perform', [$environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$environment, OrganizationPermission::EditSecrets]);
 
         abort_unless($secret->environment_id === $environment->id, 404);
 

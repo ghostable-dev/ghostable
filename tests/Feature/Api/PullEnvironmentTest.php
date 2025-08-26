@@ -11,8 +11,8 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
-    $project = $this->createProject(name: 'Website', team: $this->team);
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+    $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
     $this->env->file_format = EnvFileFormat::GROUPED;
     $this->env->save();

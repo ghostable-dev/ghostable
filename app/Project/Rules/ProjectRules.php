@@ -2,12 +2,12 @@
 
 namespace App\Project\Rules;
 
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
 
 class ProjectRules
 {
-    public static function createRules(Team $team): array
+    public static function createRules(Organization $organization): array
     {
         return [
             'name' => self::nameRules(),

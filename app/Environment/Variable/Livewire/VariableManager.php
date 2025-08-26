@@ -12,7 +12,7 @@ use App\Environment\Validation\Actions\ValidateEnvironment;
 use App\Environment\Variable\Actions\LogVariableRevealed;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Versioning\Livewire\VersionManager;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +46,7 @@ class VariableManager extends Component
 
     public function mount(Environment $environment): void
     {
-        $this->authorize('perform', [$environment, TeamPermission::ViewVariables]);
+        $this->authorize('perform', [$environment, OrganizationPermission::ViewVariables]);
 
         $this->environmentId = $environment->id;
 
@@ -88,7 +88,7 @@ class VariableManager extends Component
     #[Computed(persist: true)]
     public function canEditVariables(): bool
     {
-        return Gate::allows('perform', [$this->environment, TeamPermission::EditVariables]);
+        return Gate::allows('perform', [$this->environment, OrganizationPermission::EditVariables]);
     }
 
     /**
@@ -234,7 +234,7 @@ class VariableManager extends Component
 
     public function toggleSecret(EnvironmentVariable $var): void
     {
-        $this->authorize('perform', [$var->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$var->environment, OrganizationPermission::EditVariables]);
 
         $isNowVisible = ! ($this->showing[$var->id] ?? false);
 

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('team_id')
-                ->constrained('teams')
+            $table->foreignUuid('organization_id')
+                ->constrained('organizations')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->string('type');
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamp('ends_at')->nullable();
             $table->timestamps();
 
-            $table->index(['team_id', 'stripe_status']);
+            $table->index(['organization_id', 'stripe_status']);
         });
     }
 

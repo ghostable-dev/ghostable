@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('detects added, updated, and removed variables', function () {
-    $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
+    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $env = $this->createEnvironment('Env', EnvironmentType::DEVELOPMENT, $project);
 
     app(CreateVariable::class)->handle(new CreateVariableData(

@@ -55,14 +55,14 @@
         </flux:subheading>
       </div>
 
-      {{-- Team Enforcement --}}
+      {{-- Organization Enforcement --}}
       <div class="flex flex-col space-y-4">
         <flux:icon.shield-exclamation class="text-brand" variant="solid"/>
         <flux:heading class="font-semibold" level="3" size="lg">
-          Team Enforcement
+          Organization Enforcement
         </flux:heading>
         <flux:subheading>
-          Enforce consistent config rules across teams, environments, and pipelines.
+          Enforce consistent config rules across organizations, environments, and pipelines.
         </flux:subheading>
       </div>
     </div>
