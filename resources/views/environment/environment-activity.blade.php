@@ -52,7 +52,7 @@
                 <x-access-restricted/>
             @endcan
             @else
-                {{-- <x-non-personal-organization-restricted/> --}}
+                <x-paid-plan-required/>
             @endif
         
     </div>
