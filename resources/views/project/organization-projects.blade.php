@@ -19,7 +19,7 @@
                 <li class="col-span-1" wire:key="project-{{ $project->id }}">
                     <flux:callout icon="circle-stack" class="h-full min-h-[180px] flex flex-col">
                         <flux:callout.heading>
-                            <flux:link href="{{ route('projects.view', $project) }}">{{ $project->name }}</flux:link>
+                            <flux:link href="{{ route('project.environments', $project) }}">{{ $project->name }}</flux:link>
                         </flux:callout.heading>
                         <flux:callout.text>
                             Select an environment from below.

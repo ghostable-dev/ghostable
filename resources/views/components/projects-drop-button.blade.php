@@ -1,7 +1,7 @@
 @props(['project'])
 
 <x-drop-button 
-    href="{{ route('projects.view', $project) }}"
+    href="{{ route('project.environments', $project) }}"
     x-data="{ selected: '{{ $project->id }}' }" 
     x-init="$watch('selected', id => {
         if (id !== '{{ $project->id }}') {

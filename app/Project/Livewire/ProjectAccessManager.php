@@ -51,8 +51,6 @@ class ProjectAccessManager extends Component
 
     public function mount(Project $project): void
     {
-        $this->authorize('manageAccessControls', $project->owningOrganization());
-
         $this->projectId = $project->id;
         $this->is_restricted = $project->is_restricted;
     }

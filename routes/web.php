@@ -14,7 +14,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/pricing', function () {
-    return view('pricing-temp');
+    return view('pricing');
 })->name('pricing');
 
 Route::view('dashboard', 'dashboard')
