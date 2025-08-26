@@ -200,7 +200,7 @@ class EnvironmentGeneralSettings extends Component
 
         $this->environment->delete();
 
-        $this->redirect(route('projects.view', $project));
+        $this->redirect(route('project.environments', $project));
     }
 
     public function render()
