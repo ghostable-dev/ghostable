@@ -34,7 +34,7 @@
             {{-- Delete project callout --}}
             @can('delete', $this->project)
             <flux:separator variant="subtle" />
-            <div class="pt-6">
+            <div>
                 <flux:callout icon="trash" color="red" inline>
                     <flux:callout.heading>Danger Zone</flux:callout.heading>
                     <flux:callout.text>
