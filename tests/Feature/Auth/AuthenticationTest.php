@@ -33,6 +33,15 @@ test('users can authenticate using the login screen', function () {
     $this->assertAuthenticated();
 });
 
+test('single-organization users are not prompted to select a organization after login', function () {
+    Livewire::test(Login::class)
+        ->set('email', $this->ray->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    expect(session()->has('show-organization-switcher'))->toBeFalse();
+});
+
 test('multi-organization users are prompted to select a organization after login', function () {
     $this->createOrganization(name: 'Ghostbusters', owner: $this->ray);
 
