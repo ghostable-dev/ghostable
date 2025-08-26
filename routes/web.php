@@ -3,6 +3,7 @@
 use App\Account\AccountRoutes;
 use App\Auth\AuthRoutes;
 use App\Billing\BillingRoutes;
+use App\Blog\BlogRoutes;
 use App\Environment\EnvironmentRoutes;
 use App\Organization\OrganizationRoutes;
 use App\Project\ProjectRoutes;
@@ -26,3 +27,4 @@ EnvironmentRoutes::web();
 ProjectRoutes::web();
 AuthRoutes::web();
 BillingRoutes::web();
+BlogRoutes::web();
