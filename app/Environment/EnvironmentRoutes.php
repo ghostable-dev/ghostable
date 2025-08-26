@@ -19,10 +19,8 @@ class EnvironmentRoutes
             ->prefix('environments/{environment}/')
             ->name('environment.')
             ->group(function () {
-                // Route::redirect('/', '/variables')->name('view');
                 Route::get('variables', VariableManager::class)->name('variables');
                 Route::get('secrets', SecretsManager::class)->name('secrets');
-                // Route::get('validation', ValidationManager::class)->name('validation');
                 Route::get('activity', EnvironmentActivity::class)->name('activity');
 
                 Route::prefix('settings/')

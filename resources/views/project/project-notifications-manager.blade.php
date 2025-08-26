@@ -1,4 +1,4 @@
-<section class="space-y-6">
+<x-layouts.project-settings :project="$this->project">
     @php $organization = $this->project->owningOrganization(); @endphp
     @if($organization->slack_enabled && $organization->slack_webhook_url)
         @include('core.slack-enabled-message')
@@ -23,4 +23,4 @@
             @endforeach
         </flux:table.rows>
     </flux:table>
-</section>
+</x-layouts.project-settings>
