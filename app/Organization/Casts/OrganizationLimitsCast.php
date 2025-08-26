@@ -16,13 +16,13 @@ class OrganizationLimitsCast implements CastsAttributes
 {
     public function get(Model $model, string $key, mixed $value, array $attributes): OrganizationLimits
     {
-        if($model->isStarter()) {
+        if ($model->isStarter()) {
             return StarterOrganizationLimits::from(
                 json_decode($value ?? '', true) ?? []
             );
         }
 
-        if($model->isGrowth()) {
+        if ($model->isGrowth()) {
             return GrowthOrganizationLimits::from(
                 json_decode($value ?? '', true) ?? []
             );
@@ -45,7 +45,7 @@ class OrganizationLimitsCast implements CastsAttributes
         if (! $value instanceof OrganizationLimits) {
             throw new InvalidArgumentException('The given value is not a CustomSettings instance.');
         }
- 
+
         return $value->toJson();
     }
 }

@@ -32,7 +32,7 @@ it('returns starter features for starter plans', function () {
     $organization->shouldReceive('isStarter')->andReturnTrue();
     $organization->shouldReceive('isGrowth')->andReturnFalse();
 
-    $cast = new OrganizationFeaturesCast();
+    $cast = new OrganizationFeaturesCast;
     $features = $cast->get($organization, 'features', null, []);
 
     expect($features)

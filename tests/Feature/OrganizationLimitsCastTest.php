@@ -32,7 +32,7 @@ it('returns starter limits for starter plans', function () {
     $organization->shouldReceive('isStarter')->andReturnTrue();
     $organization->shouldReceive('isGrowth')->andReturnFalse();
 
-    $cast = new OrganizationLimitsCast();
+    $cast = new OrganizationLimitsCast;
     $limits = $cast->get($organization, 'limits', null, []);
 
     expect($limits)

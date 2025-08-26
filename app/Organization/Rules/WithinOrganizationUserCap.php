@@ -13,10 +13,16 @@ class WithinOrganizationUserCap implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $role = OrganizationRole::tryFrom($value);
-
-        if (! $role) {
-            return;
+        if (is_string($value)) {
+            $role = OrganizationRole::tryFrom($value);
+        } else {
+            if ($value instanceof OrganizationRole) {
+                $role = $value;
+            }
+        }
+        
+        if (is_null($role)) {
+            $fail('Invalid user role.');
         }
 
         // Billing and auditor roles do not count toward user limits
@@ -45,4 +51,3 @@ class WithinOrganizationUserCap implements ValidationRule
         }
     }
 }
-
