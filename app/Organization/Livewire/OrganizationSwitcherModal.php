@@ -15,7 +15,8 @@ class OrganizationSwitcherModal extends Component
 
     public function mount(): void
     {
-        $this->showing = session()->pull('show-organization-switcher', false);
+        $this->showing = session()->pull('show-organization-switcher', false)
+            && Auth::user()->organizations()->count() > 1;
     }
 
     #[Computed]
