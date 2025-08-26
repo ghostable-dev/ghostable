@@ -6,6 +6,8 @@ use App\Organization\Concerns\BelongsToOrganizations;
 use App\Organization\Models\OrganizationInvite;
 use App\Organization\Services\OrganizationMembership;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -70,7 +72,7 @@ use Laravel\Sanctum\HasApiTokens;
  *
  * @mixin \Eloquent
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use BelongsToOrganizations;
     use HasApiTokens;
@@ -118,6 +120,11 @@ class User extends Authenticatable implements MustVerifyEmail
             // 'two_factor_secret' => 'encrypted',
             // 'two_factor_recovery_codes' => 'encrypted:array',
         ];
+    }
+    
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return in_array($this->email, ['rucci.joe@gmail.com', 'joe@curricula.com']);
     }
 
     public static function newFactory(): UserFactory
