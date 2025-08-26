@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Secret\Versioning\Casts;
 
 use App\Core\Casts\EncryptedString;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Secret\Versioning\Models\SecretVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Encryption\Encrypter;
@@ -19,7 +20,7 @@ class EncryptedSecretVersionValue extends EncryptedString
             throw new InvalidArgumentException('EncryptedSecretVersionValue cast expects SecretVersion model.');
         }
 
-        $environment = $model->secret?->environment;
+        $environment = ResolveEnvironment::onceWithContext($model->secret?->environment_id);
 
         if (! $environment) {
             throw new LogicException('Environment is missing; cannot resolve encrypter().');

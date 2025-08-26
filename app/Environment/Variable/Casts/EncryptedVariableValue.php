@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Environment\Variable\Casts;
 
 use App\Core\Casts\EncryptedString;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Encryption\Encrypter;
@@ -19,7 +20,7 @@ class EncryptedVariableValue extends EncryptedString
             throw new InvalidArgumentException('EncryptedVariableValue cast expects EnvironmentVariable model.');
         }
 
-        $environment = $model->environment;
+        $environment = ResolveEnvironment::onceWithContext($model->environment_id);
 
         if (! $environment) {
             throw new LogicException('Environment is missing; cannot resolve encrypter().');
