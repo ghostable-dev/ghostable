@@ -2,17 +2,15 @@
 
 namespace App\Organization\Entities;
 
-final class OrgOrganizationFeatures extends OrganizationFeatures
+final class StarterOrganizationFeatures extends OrganizationFeatures
 {
     public static function defaults(): static
     {
-        $config = config('ghostable.org_features');
-
         return new self(
-            audits: $config['audits'],
-            integrations: $config['integrations'],
-            advanced_permissions: $config['advanced_permissions'],
-            kind: 'org',
+            audits: true,
+            integrations: true,
+            advanced_permissions: true,
+            kind: 'starter',
         );
     }
 
@@ -25,7 +23,7 @@ final class OrgOrganizationFeatures extends OrganizationFeatures
             audits: $data['audits'] ?? $defaults->audits,
             integrations: $data['integrations'] ?? $defaults->integrations,
             advanced_permissions: $data['advanced_permissions'] ?? $defaults->advanced_permissions,
-            kind: 'org',
+            kind: 'starter',
         );
     }
 }
