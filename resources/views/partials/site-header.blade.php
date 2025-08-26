@@ -15,11 +15,11 @@
                 class="!text-white">
                 Pricing
             </flux:navbar.item>
-            <flux:navbar.item
+            {{-- <flux:navbar.item
                 href="/blog"
                 class="!text-white">
                 Blog
-            </flux:navbar.item>
+            </flux:navbar.item> --}}
             <flux:navbar.item
                 href="https://docs.ghostable.dev"
                 target="_blank"

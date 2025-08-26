@@ -4,7 +4,7 @@
         <flux:navlist variant="sidebar">
             @foreach([
                 ['route' => 'organization.settings.general', 'label' => 'General'],
-                ['route' => 'organization.settings.billing', 'label' => 'Billing'],
+                //['route' => 'organization.settings.billing', 'label' => 'Billing'],
                 ['route' => 'organization.settings.members', 'label' => 'Members'],
                 ['route' => 'organization.settings.notifications', 'label' => 'Notifications'],
             ] as $item)

@@ -1,105 +1,84 @@
 <x-layouts.guest title="Ghostable - Pricing">
-    
+
     @include('partials.site-header')
     
-    <div class="bg-white py-24 sm:py-32">
-  <div class="mx-auto max-w-4xl px-6 text-center lg:px-8">
-    <h1 class="text-5xl font-semibold tracking-tight text-gray-900 sm:text-6xl">Pricing that Grows with Your Organization</h1>
-    <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-600 sm:text-xl">Start free for personal use, upgrade as you grow—only pay for the seats and features you need.</p>
-  </div>
+    {{-- @section('title', 'Ghostable Blog') --}}
 
-  <div class="mt-16 relative mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="grid grid-cols-1 gap-10 lg:grid-cols-3">
-      
-      <!-- Free Personal Plan -->
-      <div class="-m-2 grid grid-cols-1 rounded-4xl shadow-lg ring-1 ring-black/5">
-        <div class="grid grid-cols-1 rounded-4xl p-2 bg-white shadow-md">
-          <div class="rounded-3xl p-10 pb-9 bg-white shadow-xl ring-1 ring-black/5">
-            <h2 class="text-sm font-semibold text-brand">Free Personal <span class="sr-only">plan</span></h2>
-            <p class="mt-2 text-sm text-gray-600">Perfect for one project or hobby apps.</p>
+    @push('meta')
+    <x-core.seo-meta
+        title="Ghostable Blog"
+        description="Product updates, best practices, and tips for managing environment variables with Ghostable."
+        :keywords="['ghostable', 'environment variables', 'best practices']"/>
+    @endpush
 
-            <div class="mt-8 flex items-center gap-4">
-              <div class="text-5xl font-semibold text-gray-900">Free</div>
-              <div class="text-sm text-gray-600">
-                <p>Personal use</p>
-              </div>
+    <div class="px-6 lg:px-8 py-16 bg-white">
+        <div class="mx-auto lg:max-w-7xl space-y-10">
+            <div>
+                <h1 class="text-4xl font-medium tracking-tighter text-gray-950 sm:text-6xl text-pretty">
+                    Plans that scale with your team size.
+                </h1>
+                <p class="mt-6 max-w-2xl text-2xl font-medium text-gray-500">Every team deserves safe, reliable environments. Ghostable gives you validation, versioning, and secret sharing out of the box — with fair pricing that scales as you do.</p>
             </div>
-
-            <div class="mt-8">
-                <flux:button href="#" variant="primary">Get started</flux:button>
+            <div class="mt-20 flow-root">
+                    <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
+                        <x-billing.plan-card 
+                            name="Starter" 
+                            alt-price="Free"
+                            description="Everything you need to get started."
+                            pl=""
+                            :features="[
+                                'Up to 2 Users',
+                                'Up to 5,000 API Operations',
+                                'Unlimted Projects',
+                                'Unlimted Environments',
+                                'CLI Access',
+                                'CI/CD Workflows',
+                                'Secrets Management',
+                                'Environment Validation',
+                                'Version Tracking'
+                            ]"/>
+                        <x-billing.plan-card 
+                            name="Growth" 
+                            price="15" 
+                            featured
+                            description="Everything you need to get started"
+                            :features="[
+                                'Up to 5 Users',
+                                'Up to 25,000 API Operations',
+                                'Everything from Starter',
+                                'Advanced User Permissions',
+                                '30 Day Audit History'
+                            ]"/>
+                        <x-billing.plan-card 
+                            name="Business" 
+                            price="50"
+                            pr=""
+                            description="Predictable pricing for scaling SaaS teams with CI/CD"
+                            :features="[
+                                'Up to 10 Users',
+                                'Up to 60,000 API Operations',
+                                'Everything from Growth',
+                                '60 Day Audit History',
+                                'SOC2 Integrations'
+                            ]"/>
+                    </div>
+                </div>  
+                
+            <div>
+                <article class="relative flex flex-col rounded-3xl bg-white p-2 shadow-md ring-1 shadow-black/5 ring-black/5">
+                    <div class="w-full rounded-2xl bg-zinc-50">
+                        <div class="flex !p-10" inline>
+                            <flux:heading size="lg">Looking for Enterprise?</flux:heading>
+                            <flux:subheading size="lg">
+                                Do you have special requirements that don't fit one of our plans? Contact us and we'll work something out.
+                            </flux:subheading>
+                            <flux:button variant="primary">Contact Sales</flux:button>
+                        </div>
+                    </div>
+                </article>
+                
             </div>
-
-            <ul class="mt-8 space-y-3 text-sm text-gray-600">
-              <li>✓ 1 user (no invites)</li>
-              <li>✓ Up to 1 project, 2 environments</li>
-              <li>✓ Basic validation</li>
-              <li>✓ 1 read-only API token</li>
-              <li>✓ Community support</li>
-            </ul>
-          </div>
         </div>
-      </div>
-
-      <!-- Solo Pro Plan -->
-      <div class="-m-2 grid grid-cols-1 rounded-4xl shadow-lg ring-1 ring-black/5">
-        <div class="grid grid-cols-1 rounded-4xl p-2 bg-white shadow-md">
-          <div class="rounded-3xl p-10 pb-9 bg-white shadow-xl ring-1 ring-black/5">
-            <h2 class="text-sm font-semibold text-brand">Solo Pro <span class="sr-only">plan</span></h2>
-            <p class="mt-2 text-sm text-gray-600">For power users with multiple personal projects.</p>
-
-            <div class="mt-8 flex items-center gap-4">
-              <div class="text-5xl font-semibold text-gray-900">$5</div>
-              <div class="text-sm text-gray-600">
-                <p>per month</p>
-                <p>1 user</p>
-              </div>
-            </div>
-
-            <div class="mt-8">
-              <flux:button href="#" variant="primary">Get started</flux:button>
-            </div>
-
-            <ul class="mt-8 space-y-3 text-sm text-gray-600">
-              <li>✓ Unlimited projects & environments</li>
-              <li>✓ Advanced validation rules</li>
-              <li>✓ Read & write API tokens</li>
-              <li>✓ Priority email support</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Organization Plan -->
-      <div class="-m-2 grid grid-cols-1 rounded-4xl shadow-lg ring-1 ring-black/5">
-        <div class="grid grid-cols-1 rounded-4xl p-2 bg-white shadow-md">
-          <div class="rounded-3xl p-10 pb-9 bg-white shadow-xl ring-1 ring-black/5">
-            <h2 class="text-sm font-semibold text-brand">Organization <span class="sr-only">plan</span></h2>
-            <p class="mt-2 text-sm text-gray-600">Collaborate securely—scaled for small organizations.</p>
-
-            <div class="mt-8 flex items-center gap-4">
-              <div class="text-5xl font-semibold text-gray-900">$5<span class="text-base">/user</span></div>
-              <div class="text-sm text-gray-600">
-                <p>per month</p>
-              </div>
-            </div>
-
-            <div class="mt-8">
-                <flux:button href="#" variant="primary">Get started</flux:button>
-            </div>
-
-            <ul class="mt-8 space-y-3 text-sm text-gray-600">
-              <li>✓ Multi-user invites & RBAC</li>
-              <li>✓ Up to 5 projects (unlimited envs)</li>
-              <li>✓ Full validation & audit logs</li>
-              <li>✓ Multiple API tokens</li>
-              <li>✓ Email & chat support</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
-</div>
-    
+
 </x-layouts.guest>

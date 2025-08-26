@@ -24,9 +24,15 @@
     @endif
     <div class="mt-6">
         @if($featured)
-            <flux:button class="w-full" variant="primary">Most Popular</flux:button>
+            <flux:button disabled class="w-full" variant="primary">
+                {{-- Most Popular --}}
+                Coming Soon
+            </flux:button>
         @else
-            <flux:button class="w-full" variant="filled">Get Started</flux:button>
+            <flux:button disabled class="w-full" variant="filled">
+                {{-- Get Started --}}
+                Coming Soon
+            </flux:button>
         @endif
     </div>
     @if($description)
