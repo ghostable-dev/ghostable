@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Nightwatch\Http\Middleware\Sample;
 
 final class ApiServiceProvider extends ServiceProvider
 {
@@ -31,11 +32,11 @@ final class ApiServiceProvider extends ServiceProvider
         });
 
         Route::prefix('api/v1')
-            ->middleware('api')
+            ->middleware(['api', Sample::rate(1.0)])
             ->group(__DIR__.'/../Routes/v1.php');
 
         Route::prefix('api/v2')
-            ->middleware('api')
+            ->middleware(['api', Sample::rate(1.0)])
             ->group(__DIR__.'/../Routes/v2.php');
 
         ApiExceptionMap::register();
