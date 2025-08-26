@@ -7,9 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Carbon;
 
 class FoldUsageCounters implements ShouldQueue
 {
@@ -26,6 +26,7 @@ class FoldUsageCounters implements ShouldQueue
 
             if (count($parts) !== 5) {
                 $redis->del($key);
+
                 continue;
             }
 
@@ -35,6 +36,7 @@ class FoldUsageCounters implements ShouldQueue
                 $minute = Carbon::createFromFormat('YmdHi', $timestamp, 'UTC');
             } catch (\Exception $e) {
                 $redis->del($key);
+
                 continue;
             }
 
@@ -46,14 +48,14 @@ class FoldUsageCounters implements ShouldQueue
                 'endpoint' => $endpoint,
                 'hour' => $hour,
                 'count' => $count,
-            ], ['token', 'endpoint', 'hour'], ['count' => DB::raw('usage_hourly.count + ' . $count)]);
+            ], ['token', 'endpoint', 'hour'], ['count' => DB::raw('usage_hourly.count + '.$count)]);
 
             DB::table('usage_daily')->upsert([
                 'token' => $token,
                 'endpoint' => $endpoint,
                 'date' => $day,
                 'count' => $count,
-            ], ['token', 'endpoint', 'date'], ['count' => DB::raw('usage_daily.count + ' . $count)]);
+            ], ['token', 'endpoint', 'date'], ['count' => DB::raw('usage_daily.count + '.$count)]);
 
             $redis->del($key);
         }

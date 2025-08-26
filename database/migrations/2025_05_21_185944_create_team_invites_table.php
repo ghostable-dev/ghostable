@@ -17,9 +17,8 @@ return new class extends Migration
             $table->string('role', 20)->nullable();
             $table->json('permissions')->nullable();
             $table->timestamp('sent_at')->nullable();
-            $table->softDeletes();
             $table->timestamps();
-
+            $table->softDeletes();
             $table->unique(['email', 'deleted_at']);
         });
     }

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('key');
             $table->text('value');
             $table->boolean('is_commented')->default(false);
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

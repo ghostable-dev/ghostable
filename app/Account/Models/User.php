@@ -121,7 +121,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             // 'two_factor_recovery_codes' => 'encrypted:array',
         ];
     }
-    
+
     public function canAccessPanel(Panel $panel): bool
     {
         return in_array($this->email, ['rucci.joe@gmail.com', 'joe@curricula.com']);
