@@ -13,7 +13,7 @@ class DrataServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Activity::created(function (Activity $activity) {
-            //SendAuditEvent::dispatch($activity->id);
+            // SendAuditEvent::dispatch($activity->id);
         });
     }
 }
