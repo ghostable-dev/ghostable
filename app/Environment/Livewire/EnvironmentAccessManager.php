@@ -7,6 +7,7 @@ use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Organization\Actions\CreatePermissionOverride;
 use App\Organization\Enums\OrganizationPermission;
+use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\OrganizationPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -121,7 +122,11 @@ class EnvironmentAccessManager extends Component
     {
         return $this->environment->project->organization->users
             ->reject(function (User $user) {
-                return $user->isOrganizationAdmin($this->environment->project->organization);
+                $org = $this->environment->project->organization;
+
+                return $user->isOrganizationAdmin($org)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::BILLING_ONLY)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::AUDITOR);
             });
     }
 

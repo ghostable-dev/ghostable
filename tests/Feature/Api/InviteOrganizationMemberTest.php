@@ -89,3 +89,52 @@ test('organization admin can invite a user by email', function () {
 
     Notification::assertSentTo($invite, OrganizationInviteNotification::class);
 });
+
+test('cannot invite beyond plan user limit excluding billing and auditor roles', function () {
+    $owner = $this->createUser('Owner', 'owner@example.com');
+    $member = $this->createUser('Member', 'member@example.com');
+    $organization = $this->createOrganization('Ghostbusters', $owner);
+    $member->organizationMembership()->assignToOrganization($organization, OrganizationRole::DEVELOPER);
+
+    Sanctum::actingAs($owner);
+
+    $this->postJson("/api/v1/organizations/{$organization->id}/invite", [
+        'email' => 'extra@example.com',
+        'role' => OrganizationRole::DEVELOPER->value,
+    ])
+        ->assertStatus(422)
+        ->assertJsonPath('error.fields.role.0', 'User limit reached for this organization.');
+});
+
+test('billing or auditor invites are allowed even when limit reached', function () {
+    $owner = $this->createUser('Owner', 'owner2@example.com');
+    $member = $this->createUser('Member', 'member2@example.com');
+    $organization = $this->createOrganization('Spirits Inc', $owner);
+    $member->organizationMembership()->assignToOrganization($organization, OrganizationRole::DEVELOPER);
+
+    Sanctum::actingAs($owner);
+
+    $this->postJson("/api/v1/organizations/{$organization->id}/invite", [
+        'email' => 'bill@example.com',
+        'role' => OrganizationRole::BILLING_ONLY->value,
+    ])->assertStatus(200);
+
+    $this->postJson("/api/v1/organizations/{$organization->id}/invite", [
+        'email' => 'auditor@example.com',
+        'role' => OrganizationRole::AUDITOR->value,
+    ])->assertStatus(200);
+});
+
+test('existing billing members do not count toward user limit', function () {
+    $owner = $this->createUser('Owner', 'owner3@example.com');
+    $billing = $this->createUser('Bill', 'bill@example.com');
+    $organization = $this->createOrganization('Haunted Org', $owner);
+    $billing->organizationMembership()->assignToOrganization($organization, OrganizationRole::BILLING_ONLY);
+
+    Sanctum::actingAs($owner);
+
+    $this->postJson("/api/v1/organizations/{$organization->id}/invite", [
+        'email' => 'dev@example.com',
+        'role' => OrganizationRole::DEVELOPER->value,
+    ])->assertStatus(200);
+});

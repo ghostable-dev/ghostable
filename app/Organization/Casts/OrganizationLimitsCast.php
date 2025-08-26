@@ -17,18 +17,18 @@ class OrganizationLimitsCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): OrganizationLimits
     {
         if($model->isStarter()) {
-            return new StarterOrganizationLimits(
+            return StarterOrganizationLimits::from(
                 json_decode($value ?? '', true) ?? []
             );
         }
-        
+
         if($model->isGrowth()) {
-            return new GrowthOrganizationLimits(
+            return GrowthOrganizationLimits::from(
                 json_decode($value ?? '', true) ?? []
             );
         }
-        
-        return new FreeOrganizationLimits(
+
+        return FreeOrganizationLimits::from(
             json_decode($value ?? '', true) ?? []
         );
     }

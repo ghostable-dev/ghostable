@@ -18,6 +18,7 @@ class OrganizationInviteRules
             'role' => [
                 'required',
                 new ValidOrganizationRole,
+                new WithinOrganizationUserCap($organization),
             ],
         ];
     }

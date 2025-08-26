@@ -5,6 +5,7 @@ namespace App\Project\Livewire;
 use App\Account\Models\User;
 use App\Organization\Actions\CreatePermissionOverride;
 use App\Organization\Enums\OrganizationPermission;
+use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\OrganizationPermissionOverride;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
@@ -115,7 +116,11 @@ class ProjectAccessManager extends Component
     {
         return $this->project->owningOrganization()->users
             ->reject(function (User $user) {
-                return $user->isOrganizationAdmin($this->project->owningOrganization());
+                $org = $this->project->owningOrganization();
+
+                return $user->isOrganizationAdmin($org)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::BILLING_ONLY)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::AUDITOR);
             });
     }
 
