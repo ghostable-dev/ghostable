@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Api\Http\Middleware;
 
+use App\Organization\Models\Organization;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 final class TrackUsage
@@ -28,13 +29,7 @@ final class TrackUsage
             return $next($request);
         }
 
-        $organization = null;
-
-        if (method_exists($user, 'owningOrganization')) {
-            $organization = $user->owningOrganization();
-        } elseif (method_exists($user, 'currentOrganization')) {
-            $organization = $user->currentOrganization();
-        }
+        $organization = $this->resolveOrganizationFromRequest($request);
 
         if (! $organization) {
             return $next($request);
@@ -46,30 +41,22 @@ final class TrackUsage
             return $next($request);
         }
 
+        $store = Cache::store();
+
         $now = Carbon::now();
         $keyPrefix = sprintf('org:%s:token:%s:ops:', $organization->id, $token->id);
         $currentKey = $keyPrefix.$now->format('YmdHi');
 
-        Redis::incr($currentKey);
-        Redis::expire($currentKey, $this->windowMinutes * 60);
+        $store->add($currentKey, 0, now()->addMinutes($this->windowMinutes));
+        $store->increment($currentKey);
 
         $keys = [];
         for ($i = 0; $i < $this->windowMinutes; $i++) {
             $keys[] = $keyPrefix.$now->copy()->subMinutes($i)->format('YmdHi');
         }
 
-        $lua = <<<'LUA'
-            local sum = 0
-            for _, key in ipairs(KEYS) do
-                local v = redis.call('get', key)
-                if v then
-                    sum = sum + tonumber(v)
-                end
-            end
-            return sum
-        LUA;
-
-        $count = Redis::eval($lua, count($keys), ...$keys);
+        $values = $store->many($keys);
+        $count = array_sum(array_map('intval', $values));
 
         if ($count > $limit) {
             return response()->json([
@@ -78,5 +65,26 @@ final class TrackUsage
         }
 
         return $next($request);
+    }
+
+    private function resolveOrganizationFromRequest(Request $request): ?Organization
+    {
+        $route = $request->route();
+
+        if (! $route) {
+            return null;
+        }
+
+        foreach ($route->parameters() as $parameter) {
+            if ($parameter instanceof Organization) {
+                return $parameter;
+            }
+
+            if (is_object($parameter) && method_exists($parameter, 'owningOrganization')) {
+                return $parameter->owningOrganization();
+            }
+        }
+
+        return null;
     }
 }
