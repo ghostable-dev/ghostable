@@ -97,7 +97,7 @@ class Organization extends Model
         'slack_enabled' => 'boolean',
         'slack_webhook_url' => 'string',
         'limits' => OrganizationLimitsCast::class,
-        // 'features' => OrganizationFeaturesCast::class,
+        'features' => OrganizationFeaturesCast::class,
     ];
 
     public static function newFactory(): OrganizationFactory
