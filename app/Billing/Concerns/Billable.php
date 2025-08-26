@@ -2,7 +2,6 @@
 
 namespace App\Billing\Concerns;
 
-use App\Billing\BillingServiceProvider;
 use App\Billing\Enums\Plan;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Laravel\Cashier\Billable as CashierBillable;
@@ -15,36 +14,39 @@ trait Billable
     protected function plan(): Attribute
     {
         return Attribute::make(
-            get: function () {
-                if ($this->subscribed(type: BillingServiceProvider::ENTERPRISE)) {
-                    return Plan::ENTERPRISE;
-                } elseif ($this->subscribed(type: BillingServiceProvider::BUSINESS)) {
-                    return Plan::BUSINESS;
-                } else {
-                    return Plan::PERSONAL;
-                }
-            }
+            get: fn () => collect([Plan::ENTERPRISE, Plan::GROWTH, Plan::STARTER])
+                ->first(fn ($p) => $this->subscribed(type: $p))
+                ?? Plan::FREE
         );
     }
 
     public function isEnterprise(): bool
     {
-        return $this->subscribed(BillingServiceProvider::ENTERPRISE);
+        return $this->subscribed(Plan::ENTERPRISE);
     }
 
-    public function isBusiness(): bool
+    public function isGrowth(): bool
     {
-        return $this->subscribed(BillingServiceProvider::BUSINESS);
+        return $this->subscribed(Plan::GROWTH);
+    }
+
+    public function isStarter(): bool
+    {
+        return $this->subscribed(Plan::STARTER);
     }
 
     public function activeSubscription(): ?Subscription
     {
         if ($this->isEnterprise()) {
-            return $this->subscription(BillingServiceProvider::ENTERPRISE);
+            return $this->subscription(Plan::ENTERPRISE);
         }
 
-        if ($this->isBusiness()) {
-            return $this->subscription(BillingServiceProvider::BUSINESS);
+        if ($this->isGrowth()) {
+            return $this->subscription(Plan::GROWTH);
+        }
+
+        if ($this->isStarter()) {
+            return $this->subscription(Plan::STARTER);
         }
 
         return null;

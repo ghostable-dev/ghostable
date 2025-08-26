@@ -19,8 +19,8 @@ return new class extends Migration
             $table->text('value_encrypted');
             $table->json('metadata')->nullable();
             $table->foreignUuid('created_by_id')->constrained('users')->cascadeOnDelete();
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

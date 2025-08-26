@@ -11,8 +11,8 @@ uses(RefreshDatabase::class);
 
 test('updates an environment secret and returns json structure', function () {
     $user = $this->createUser(name: 'Egon', email: 'egon@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ghostbusters', owner: $user);
-    $project = $this->createProject(name: 'Proton Pack', team: $team);
+    $organization = $this->createOrganization(name: 'Ghostbusters', owner: $user);
+    $project = $this->createProject(name: 'Proton Pack', organization: $organization);
     $environment = $this->createEnvironment(
         name: 'staging',
         type: EnvironmentType::STAGING,
@@ -59,8 +59,8 @@ test('updates an environment secret and returns json structure', function () {
 
 test('updating an environment secret logs activity', function () {
     $user = $this->createUser(name: 'Egon', email: 'egon@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ghostbusters', owner: $user);
-    $project = $this->createProject(name: 'Proton Pack', team: $team);
+    $organization = $this->createOrganization(name: 'Ghostbusters', owner: $user);
+    $project = $this->createProject(name: 'Proton Pack', organization: $organization);
     $environment = $this->createEnvironment(
         name: 'staging',
         type: EnvironmentType::STAGING,

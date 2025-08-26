@@ -1,6 +1,6 @@
 <section class="space-y-6">
-    @php $team = $this->project->owningTeam(); @endphp
-    @if($team->slack_enabled && $team->slack_webhook_url)
+    @php $organization = $this->project->owningOrganization(); @endphp
+    @if($organization->slack_enabled && $organization->slack_webhook_url)
         @include('core.slack-enabled-message')
     @endif
     <flux:table>

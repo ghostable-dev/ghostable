@@ -8,7 +8,7 @@ use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Resolvers\ResolveVariable;
 use App\Environment\Versioning\Actions\RestoreVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -98,7 +98,7 @@ class VersionManager extends Component
      */
     public function restoreToVersion(EnvironmentVariableVersion $version): void
     {
-        $this->authorize('perform', [$version->variable->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$version->variable->environment, OrganizationPermission::EditVariables]);
 
         app(RestoreVariableVersion::class)->handle(
             version: $version,
@@ -125,7 +125,7 @@ class VersionManager extends Component
      */
     public function toggleSecret(EnvironmentVariableVersion $version): void
     {
-        $this->authorize('perform', [$version->variable->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$version->variable->environment, OrganizationPermission::EditVariables]);
 
         $isNowVisible = ! ($this->showingValues[$version->id] ?? false);
 

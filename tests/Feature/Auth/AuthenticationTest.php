@@ -2,13 +2,17 @@
 
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
-use App\Team\Actions\CreateTeam;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
 use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+});
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -17,10 +21,8 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
     $response = Livewire::test(Login::class)
-        ->set('email', $user->email)
+        ->set('email', $this->ray->email)
         ->set('password', 'password')
         ->call('login');
 
@@ -31,20 +33,27 @@ test('users can authenticate using the login screen', function () {
     $this->assertAuthenticated();
 });
 
-test('multi-team users are prompted to select a team after login', function () {
-    $user = User::factory()->create();
-
-    CreateTeam::handle('Another Team', $user);
-
+test('single-organization users are not prompted to select a organization after login', function () {
     Livewire::test(Login::class)
-        ->set('email', $user->email)
+        ->set('email', $this->ray->email)
         ->set('password', 'password')
         ->call('login');
 
-    expect(session()->has('show-team-switcher'))->toBeTrue();
+    expect(session()->has('show-organization-switcher'))->toBeFalse();
 });
 
-test('multi-team users are prompted to select a team after two factor login', function () {
+test('multi-organization users are prompted to select a organization after login', function () {
+    $this->createOrganization(name: 'Ghostbusters', owner: $this->ray);
+
+    Livewire::test(Login::class)
+        ->set('email', $this->ray->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    expect(session()->has('show-organization-switcher'))->toBeTrue();
+});
+
+test('multi-organization users are prompted to select a organization after two factor login', function () {
     $provider = app(TwoFactorAuthenticationProvider::class);
     $secret = $provider->generateSecretKey();
     $code = app(Google2FA::class)->getCurrentOtp($secret);
@@ -55,7 +64,8 @@ test('multi-team users are prompted to select a team after two factor login', fu
         'two_factor_recovery_codes' => encrypt(json_encode([RecoveryCode::generate()])),
     ]);
 
-    CreateTeam::handle('Another Team', $user);
+    $firstOrg = $this->createOrganization(name: 'First Organization', owner: $user);
+    $secondOrg = $this->createOrganization(name: 'Another Organization', owner: $user);
 
     Livewire::test(Login::class)
         ->set('email', $user->email)
@@ -67,7 +77,7 @@ test('multi-team users are prompted to select a team after two factor login', fu
         'code' => $code,
     ])->assertRedirect('/dashboard');
 
-    expect(session()->has('show-team-switcher'))->toBeTrue();
+    expect(session()->has('show-organization-switcher'))->toBeTrue();
     $this->assertAuthenticatedAs($user);
 });
 

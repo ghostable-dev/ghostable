@@ -3,11 +3,12 @@
 namespace App\Project\Livewire;
 
 use App\Account\Models\User;
+use App\Organization\Actions\CreatePermissionOverride;
+use App\Organization\Enums\OrganizationPermission;
+use App\Organization\Enums\OrganizationRole;
+use App\Organization\Models\OrganizationPermissionOverride;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
-use App\Team\Actions\CreatePermissionOverride;
-use App\Team\Enums\TeamPermission;
-use App\Team\Models\TeamPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -24,12 +25,12 @@ class ProjectAccessManager extends Component
      * Indicates whether access to the current project is restricted to
      * explicitly assigned permission overrides.
      *
-     * When true, default team roles are ignored for non-admins.
+     * When true, default organization roles are ignored for non-admins.
      */
     public bool $is_restricted;
 
     /**
-     * The ID of the team member currently selected for assigning
+     * The ID of the organization member currently selected for assigning
      * permission overrides on the project.
      *
      * Used to scope override actions to a specific user.
@@ -39,7 +40,7 @@ class ProjectAccessManager extends Component
     /**
      * The permission being granted in the current override action.
      */
-    public TeamPermission $permission;
+    public OrganizationPermission $permission;
 
     /**
      * The ID of the permission override currently selected for removal.
@@ -50,7 +51,7 @@ class ProjectAccessManager extends Component
 
     public function mount(Project $project): void
     {
-        $this->authorize('manageAccessControls', $project->owningTeam());
+        $this->authorize('manageAccessControls', $project->owningOrganization());
 
         $this->projectId = $project->id;
         $this->is_restricted = $project->is_restricted;
@@ -82,7 +83,7 @@ class ProjectAccessManager extends Component
      */
     public function updateIsRestricted(): void
     {
-        $this->authorize('manageAccessControls', $this->project->team);
+        $this->authorize('manageAccessControls', $this->project->organization);
 
         $this->project->update(['is_restricted' => $this->is_restricted]);
 
@@ -94,9 +95,9 @@ class ProjectAccessManager extends Component
      * Get a paginated list of permission overrides for the current project.
      *
      * This includes all custom permission assignments that override default
-     * team roles for non-admin users on this project.
+     * organization roles for non-admin users on this project.
      *
-     * @return LengthAwarePaginator<TeamPermissionOverride>
+     * @return LengthAwarePaginator<OrganizationPermissionOverride>
      */
     #[Computed]
     public function overrides(): LengthAwarePaginator
@@ -105,7 +106,7 @@ class ProjectAccessManager extends Component
     }
 
     /**
-     * Get the list of team members eligible for permission overrides
+     * Get the list of organization members eligible for permission overrides
      * on the current project, excluding admins.
      *
      * @return Collection<User>
@@ -113,51 +114,55 @@ class ProjectAccessManager extends Component
     #[Computed(persist: true)]
     public function members(): Collection
     {
-        return $this->project->owningTeam()->users
+        return $this->project->owningOrganization()->users
             ->reject(function (User $user) {
-                return $user->isTeamAdmin($this->project->owningTeam());
+                $org = $this->project->owningOrganization();
+
+                return $user->isOrganizationAdmin($org)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::BILLING_ONLY)
+                    || $user->organizationMembership()->hasOrganizationRole($org, OrganizationRole::AUDITOR);
             });
     }
 
     /**
-     * Get the list of team permissions that can still be assigned
+     * Get the list of organization permissions that can still be assigned
      * to the selected overriding member for the current project.
      * This excludes any permissions that have already been overridden.
      *
      * If no overriding user is selected, returns the full
      * set of project-level override permissions.
      *
-     * @return array<TeamPermission>
+     * @return array<OrganizationPermission>
      */
     #[Computed]
     public function assignablePermissions(): array
     {
         if (! $this->userId) {
-            return TeamPermission::projectOverrides();
+            return OrganizationPermission::projectOverrides();
         }
 
         $assigned = $this->project->permissionOverrides()
             ->forUser($this->overridingMember)
             ->pluck('permission');
 
-        return collect(TeamPermission::projectOverrides())
+        return collect(OrganizationPermission::projectOverrides())
             ->reject(fn ($permission) => $assigned->contains($permission))
             ->values()
             ->all();
     }
 
     /**
-     * Get the user on the current project’s team whose
+     * Get the user on the current project’s organization whose
      * permissions are being overridden.
      *
      * This is resolved from the selected 'userId'
      * and scoped to ensure the user is a member of the
-     * project’s associated team.
+     * project’s associated organization.
      */
     #[Computed]
     public function overridingMember(): User
     {
-        return $this->project->owningTeam()->users()
+        return $this->project->owningOrganization()->users()
             ->where('user_id', $this->userId)
             ->first();
     }
@@ -175,7 +180,7 @@ class ProjectAccessManager extends Component
      */
     public function createOverride(): void
     {
-        $this->authorize('manageAccessControls', $this->project->team);
+        $this->authorize('manageAccessControls', $this->project->organization);
 
         app(CreatePermissionOverride::class)->handle(
             user: $this->overridingMember,
@@ -194,13 +199,13 @@ class ProjectAccessManager extends Component
      * and showing the confirmation modal.
      *
      * This method checks that the authenticated user has admin access
-     * to the override’s associated team before proceeding.
+     * to the override’s associated organization before proceeding.
      */
-    public function confirmOverrideRemoval(TeamPermissionOverride $override): void
+    public function confirmOverrideRemoval(OrganizationPermissionOverride $override): void
     {
         $this->overrideToRemoveId = $override->id;
 
-        $this->authorize('manageAccessControls', $this->overrideToRemove->target->team);
+        $this->authorize('manageAccessControls', $this->overrideToRemove->target->organization);
 
         Flux::modal('confirm-override-removal')->show();
     }
@@ -211,20 +216,20 @@ class ProjectAccessManager extends Component
      * Returns the override based on the stored ID, or null if not set.
      */
     #[Computed]
-    public function overrideToRemove(): ?TeamPermissionOverride
+    public function overrideToRemove(): ?OrganizationPermissionOverride
     {
-        return TeamPermissionOverride::find($this->overrideToRemoveId);
+        return OrganizationPermissionOverride::find($this->overrideToRemoveId);
     }
 
     /**
      * Permanently delete the selected permission override.
      *
-     * Authorization is checked against the associated team of the override’s target.
+     * Authorization is checked against the associated organization of the override’s target.
      * After deletion, the confirmation modal is closed.
      */
     public function removeOverride(): void
     {
-        $this->authorize('manageAccessControls', $this->overrideToRemove->target->team);
+        $this->authorize('manageAccessControls', $this->overrideToRemove->target->organization);
 
         $this->overrideToRemove->delete();
 

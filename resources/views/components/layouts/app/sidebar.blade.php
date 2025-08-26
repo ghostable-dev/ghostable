@@ -12,7 +12,7 @@
             </a>
             
             @if(auth()->user()->isVerified())
-                <livewire:team.livewire.team-dropdown/>
+                <livewire:organization.livewire.organization-dropdown/>
             @endif
 
             <flux:navlist variant="outline">

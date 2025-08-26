@@ -6,7 +6,7 @@ use App\Environment\Actions\LogEnvironmentDownloaded;
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Models\Environment;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -52,7 +52,7 @@ class EnvironmentDownloader extends EnvironmentComponent
 
     public function download()
     {
-        $this->authorize('perform', [$this->environment, TeamPermission::ViewVariables]);
+        $this->authorize('perform', [$this->environment, OrganizationPermission::ViewVariables]);
 
         $content = RenderEnvFile::handle(env: $this->environment, format: $this->fileFormat);
 

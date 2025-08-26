@@ -3,7 +3,7 @@
 namespace App\Auth;
 
 use App\Auth\Models\PersonalAccessToken;
-use App\Auth\Responses\TeamAwareTwoFactorLoginResponse;
+use App\Auth\Responses\OrganizationAwareTwoFactorLoginResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -42,7 +42,7 @@ class AuthServiceProdivder extends ServiceProvider
 
         $this->app->singleton(
             TwoFactorLoginResponse::class,
-            TeamAwareTwoFactorLoginResponse::class
+            OrganizationAwareTwoFactorLoginResponse::class
         );
     }
 }

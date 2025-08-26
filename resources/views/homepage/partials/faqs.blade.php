@@ -9,9 +9,9 @@
         </flux:accordion.item>
 
         <flux:accordion.item>
-            <flux:accordion.heading>How do I share environment files with my team?</flux:accordion.heading>
+            <flux:accordion.heading>How do I share environment files with my organization?</flux:accordion.heading>
             <flux:accordion.content>
-                Ghostable lets you push environment files to your team or organization using our CLI. Teammates can pull the latest version based on their project permissions—no email, Slack threads, or Notion links required.
+                Ghostable lets you push environment files to your organization or organization using our CLI. Organizationmates can pull the latest version based on their project permissions—no email, Slack threads, or Notion links required.
             </flux:accordion.content>
         </flux:accordion.item>
 
@@ -25,7 +25,7 @@
         <flux:accordion.item>
             <flux:accordion.heading>Can I enforce rules across all environments?</flux:accordion.heading>
             <flux:accordion.content>
-                Yes. You can define rules at the team or project level and apply them across all linked environments. Ghostable ensures consistency for staging, production, and beyond.
+                Yes. You can define rules at the organization or project level and apply them across all linked environments. Ghostable ensures consistency for staging, production, and beyond.
             </flux:accordion.content>
         </flux:accordion.item>
 
@@ -39,7 +39,7 @@
         <flux:accordion.item>
             <flux:accordion.heading>How is access managed?</flux:accordion.heading>
             <flux:accordion.content>
-                Access is scoped by team and project roles. You control who can read, write, or validate environments using fine-grained permissions for each collaborator.
+                Access is scoped by organization and project roles. You control who can read, write, or validate environments using fine-grained permissions for each collaborator.
             </flux:accordion.content>
           </flux:accordion.item>
 

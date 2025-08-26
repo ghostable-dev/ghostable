@@ -11,6 +11,6 @@ class ProjectCreatedNotification extends ProjectNotification
 
     protected function messageLine(): string
     {
-        return "New project named \"{$this->project->name}\" created in the \"{$this->project->team->name}\" team.";
+        return "New project named \"{$this->project->name}\" created in the \"{$this->project->organization->name}\" organization.";
     }
 }

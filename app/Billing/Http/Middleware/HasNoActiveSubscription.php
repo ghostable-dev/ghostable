@@ -10,8 +10,8 @@ class HasNoActiveSubscription
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->team->subscribed()) {
-            return redirect()->route('team.settings.billing', $request->team);
+        if ($request->organization->subscribed()) {
+            return redirect()->route('organization.settings.billing', $request->organization);
         }
 
         return $next($request);

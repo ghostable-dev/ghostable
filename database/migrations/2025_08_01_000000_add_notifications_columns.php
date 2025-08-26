@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
+        Schema::table('organizations', function (Blueprint $table) {
             $table->json('notifications')->nullable()->after('owner_id');
         });
         Schema::table('projects', function (Blueprint $table) {
-            $table->json('notifications')->nullable()->after('team_id');
+            $table->json('notifications')->nullable()->after('organization_id');
         });
         Schema::table('environments', function (Blueprint $table) {
             $table->json('notifications')->nullable()->after('file_format');
@@ -24,7 +24,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
+        Schema::table('organizations', function (Blueprint $table) {
             $table->dropColumn('notifications');
         });
         Schema::table('projects', function (Blueprint $table) {

@@ -11,8 +11,8 @@ class NotifyAccountOfStartedSubscription extends BillingNotificationListener
     public function handle(SubscriptionStarted $event): void
     {
         Notification::send(
-            $this->notifiables($event->team),
-            new SubscriptionStartedNotification($event->team)
+            $this->notifiables($event->organization),
+            new SubscriptionStartedNotification($event->organization)
         );
     }
 }

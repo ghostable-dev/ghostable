@@ -11,29 +11,29 @@ paths:
     post:
       summary: Login via CLI
       responses: {}
-  /team-roles:
+  /organization-roles:
     get:
-      summary: Get team roles
+      summary: Get organization roles
       responses: {}
-  /teams:
+  /organizations:
     get:
-      summary: List teams
+      summary: List organizations
       responses: {}
-  /owned-teams:
+  /owned-organizations:
     get:
-      summary: List owned teams
+      summary: List owned organizations
       responses: {}
-  /teams/{team}:
+  /organizations/{organization}:
     get:
-      summary: Get team
+      summary: Get organization
       responses: {}
-  /teams/{team}/invite:
+  /organizations/{organization}/invite:
     post:
-      summary: Invite team member
+      summary: Invite organization member
       responses: {}
-  /teams/{team}/projects:
+  /organizations/{organization}/projects:
     get:
-      summary: List team projects
+      summary: List organization projects
       responses: {}
     post:
       summary: Create project

@@ -2,7 +2,7 @@
     @foreach($this->pendingInvites as $invite)
         <flux:callout icon="users" variant="ghost" inline>
             <flux:callout.heading>
-                Invitation to join <flux:text color="blue">{{ $invite->team->name }}</flux:text> from {{ $invite->user->email }} ({{ $invite->created_at->timezone(timezone())->diffForHumans() }})
+                Invitation to join <flux:text color="blue">{{ $invite->organization->name }}</flux:text> from {{ $invite->user->email }} ({{ $invite->created_at->timezone(timezone())->diffForHumans() }})
             </flux:callout.heading>
             <x-slot name="actions">
                 <flux:button wire:click="accept('{{ $invite->id }}')">Accept</flux:button>

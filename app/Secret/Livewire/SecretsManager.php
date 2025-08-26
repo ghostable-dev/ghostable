@@ -4,11 +4,11 @@ namespace App\Secret\Livewire;
 
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
+use App\Organization\Enums\OrganizationPermission;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Actions\DeleteSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -56,7 +56,7 @@ class SecretsManager extends Component
     #[Computed(persist: true)]
     public function canEditSecrets(): bool
     {
-        return Gate::allows('perform', [$this->environment, TeamPermission::EditSecrets]);
+        return Gate::allows('perform', [$this->environment, OrganizationPermission::EditSecrets]);
     }
 
     #[Computed]
@@ -115,7 +115,7 @@ class SecretsManager extends Component
     {
         $this->secretToRemoveId = $secret->id;
 
-        $this->authorize('perform', [$secret->environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         Flux::modal('confirm-secret-removal')->show();
     }
@@ -129,7 +129,7 @@ class SecretsManager extends Component
     public function removeSecret(): void
     {
         $secret = $this->secretToRemove;
-        $this->authorize('perform', [$secret->environment, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         app(DeleteSecret::class)->handle(
             secret: $secret,

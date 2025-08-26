@@ -5,7 +5,7 @@ namespace App\Environment\Validation\Livewire;
 use App\Environment\Livewire\EnvironmentComponent;
 use App\Environment\Validation\Actions\ResolveEnvironmentVariableRules;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -75,7 +75,7 @@ class ValidationManager extends EnvironmentComponent
     #[Computed(persist: true)]
     public function canEditVariables(): bool
     {
-        return Gate::allows('perform', [$this->environment, TeamPermission::EditVariables]);
+        return Gate::allows('perform', [$this->environment, OrganizationPermission::EditVariables]);
     }
 
     /**

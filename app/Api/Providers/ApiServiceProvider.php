@@ -7,6 +7,7 @@ namespace App\Api\Providers;
 use App\Api\Http\Exception\ApiExceptionMap;
 use App\Api\Http\Middleware\AddApiControlHeaders;
 use App\Api\Http\Middleware\ApplyApiVersion;
+use App\Api\Http\Middleware\TrackUsage;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -20,6 +21,7 @@ final class ApiServiceProvider extends ServiceProvider
         $router = $this->app['router'];
 
         $router->aliasMiddleware('api.version', ApplyApiVersion::class);
+        $router->pushMiddlewareToGroup('api', TrackUsage::class);
         $router->pushMiddlewareToGroup('api', AddApiControlHeaders::class);
 
         RateLimiter::for('api', function (Request $request) {

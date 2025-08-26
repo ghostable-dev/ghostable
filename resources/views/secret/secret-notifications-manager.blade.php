@@ -1,5 +1,5 @@
 <section class="space-y-6">
-    @if($this->team && $this->team->slack_enabled && $this->team->slack_webhook_url)
+    @if($this->organization && $this->organization->slack_enabled && $this->organization->slack_webhook_url)
         @include('core.slack-enabled-message')
     @endif
     <flux:table>

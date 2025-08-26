@@ -1,26 +1,23 @@
 <x-layouts.app :title="__('Dashboard')">
-    
+
     {{-- Pending Invites --}}
     <livewire:account.livewire.pending-invites/>
 
-    <livewire:project.livewire.team-projects/>
+    @if(auth()->user()->organizations->count())
+        <livewire:project.livewire.organization-projects/>
 
-    <livewire:team.livewire.team-switcher-modal/>
-    
-    {{-- <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
+        <livewire:organization.livewire.organization-switcher-modal/>
+    @else
+        <div class="space-y-6 text-center">
+            <flux:heading size="md">{{ __('No organizations yet') }}</flux:heading>
+            <flux:subheading>{{ __('Create an organization to get started.') }}</flux:subheading>
+            <flux:modal.trigger name="create-organization">
+                <flux:button variant="primary">{{ __('Create Organization') }}</flux:button>
+            </flux:modal.trigger>
         </div>
-        <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-        </div>
-    </div> --}}
+
+        <livewire:organization.livewire.organization-create-modal/>
+    @endif
+
 </x-layouts.app>
+

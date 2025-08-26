@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('reinstates suppressed inherited variable when re-added', function () {
-    $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
+    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
     app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $base,
@@ -32,7 +32,7 @@ it('reinstates suppressed inherited variable when re-added', function () {
 });
 
 it('suppresses inherited variable when removed with replace mode', function () {
-    $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
+    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
     app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $base,
@@ -48,7 +48,7 @@ it('suppresses inherited variable when removed with replace mode', function () {
 });
 
 it('does not suppress inherited variable when missing in additive mode', function () {
-    $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
+    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
     app(CreateVariable::class)->handle(new CreateVariableData(
         environment: $base,
@@ -64,7 +64,7 @@ it('does not suppress inherited variable when missing in additive mode', functio
 });
 
 it('normalizes variable keys when pushing', function () {
-    $project = $this->createProject('proj', $this->createTeam('team', $this->createUser('u', 'u@example.com')));
+    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $env = $this->createEnvironment('Env', EnvironmentType::DEVELOPMENT, $project);
 
     app(PushEnvironment::class)->handle($env, ['fooBar=baz'], new PushEnvironmentStrategy);

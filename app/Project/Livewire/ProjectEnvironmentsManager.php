@@ -7,11 +7,12 @@ use App\Environment\Actions\GenerateSuggestedEnvironmentNames;
 use App\Environment\Actions\NormalizeEnvironmentName;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Rules\EnvironmentRules;
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -98,19 +99,29 @@ class ProjectEnvironmentsManager extends Component
      */
     public function createEnvironment(): void
     {
-        $this->authorize('perform', [$this->project, TeamPermission::CreateEnvironments]);
+        $this->authorize('perform', [$this->project, OrganizationPermission::CreateEnvironments]);
 
         $validated = $this->validate(EnvironmentRules::createRules($this->project));
 
         $validated['base_id'] = $validated['base_id'] ?: null;
         $base = $this->project->environments()->where('id', $validated['base_id'])->first();
 
-        app(CreateEnv::class)->handle(
-            name: $this->name,
-            type: $this->type,
-            project: $this->project,
-            base: $base
-        );
+        try {
+            app(CreateEnv::class)->handle(
+                name: $this->name,
+                type: $this->type,
+                project: $this->project,
+                base: $base
+            );
+        } catch (ValidationException $e) {
+            if ($e->validator->errors()->has('environment_limit')) {
+                Flux::modal('upgrade-environment-limit')->show();
+
+                return;
+            }
+
+            throw $e;
+        }
 
         $this->reset('type', 'name');
 

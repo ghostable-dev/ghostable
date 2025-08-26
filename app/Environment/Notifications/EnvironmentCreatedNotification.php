@@ -11,6 +11,6 @@ class EnvironmentCreatedNotification extends EnvironmentNotification
 
     protected function messageLine(): string
     {
-        return "New environment named \"{$this->environment->name}\" created in the \"{$this->environment->project->name}\" project of the \"{$this->forTeam()->name}\" team.";
+        return "New environment named \"{$this->environment->name}\" created in the \"{$this->environment->project->name}\" project of the \"{$this->forOrganization()->name}\" organization.";
     }
 }
