@@ -2,11 +2,11 @@
 
 namespace App\Organization\Livewire;
 
-use App\Organization\Actions\CreateOrganizationInvite;
+use App\Organization\Actions\CreateInvite;
 use App\Organization\Enums\OrganizationRole;
+use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
-use App\Organization\Models\OrganizationInvite;
-use App\Organization\Rules\OrganizationInviteRules;
+use App\Organization\Rules\InviteRules;
 use Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class OrganizationInvitesManager extends Component
+class InvitesManager extends Component
 {
     /**
      * Email address of member to invite.
@@ -61,7 +61,7 @@ class OrganizationInvitesManager extends Component
      * It checks whether the invite was already sent recently to avoid spamming.
      * If allowed, it triggers the send logic and notifies the user accordingly.
      */
-    public function resendInvite(OrganizationInvite $invite): void
+    public function resendInvite(Invite $invite): void
     {
         $this->authorize('resend', $invite);
 
@@ -86,7 +86,7 @@ class OrganizationInvitesManager extends Component
      * It stores the invite's ID in a locked property and opens the confirmation modal.
      * Authorization ensures only permitted users can delete organization members.
      */
-    public function confirmDeleteInvite(OrganizationInvite $invite): void
+    public function confirmDeleteInvite(Invite $invite): void
     {
         $this->authorize('delete', $invite);
 
@@ -98,15 +98,15 @@ class OrganizationInvitesManager extends Component
     /**
      * Retrieve the invite marked for deletion.
      *
-     * This computed property finds the OrganizationInvite model corresponding to the locked
+     * This computed property finds the Invite model corresponding to the locked
      * `$inviteToDeleteId` property. It also ensures that the current user is authorized
      * to view/manage this invite. This is used to safely display invite details
      * (e.g. email address in the confirmation modal) without exposing unauthorized data.
      */
     #[Computed]
-    public function inviteToBeDeleted(): ?OrganizationInvite
+    public function inviteToBeDeleted(): ?Invite
     {
-        if ($invite = OrganizationInvite::find($this->inviteToDeleteId ?? null)) {
+        if ($invite = Invite::find($this->inviteToDeleteId ?? null)) {
             $this->authorize('delete', $invite);
 
             return $invite;
@@ -142,21 +142,21 @@ class OrganizationInvitesManager extends Component
      * - Authorizes the current user to create an invite for the given organization.
      * - Normalizes the email to lowercase.
      * - Validates the invite input using defined organization invite rules.
-     * - Dispatches the invite creation via the CreateOrganizationInvite action.
+     * - Dispatches the invite creation via the CreateInvite action.
      * - Closes the invite modal and resets relevant form fields.
      * - Triggers a success toast notification.
      */
     public function sendInvite(): void
     {
-        $this->authorize('create', [OrganizationInvite::class, $this->organization]);
+        $this->authorize('create', [Invite::class, $this->organization]);
 
         $this->email = strtolower($this->email);
 
         $validated = $this->validate(
-            OrganizationInviteRules::createRules($this->organization)
+            InviteRules::createRules($this->organization)
         );
 
-        CreateOrganizationInvite::handle(
+        CreateInvite::handle(
             organization: $this->organization,
             user: Auth::user(),
             email: $validated['email'],
@@ -172,6 +172,6 @@ class OrganizationInvitesManager extends Component
 
     public function render()
     {
-        return view('organization.organization-invites-manager');
+        return view('organization.invites-manager');
     }
 }

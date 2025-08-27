@@ -2,7 +2,7 @@
 
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Events\InviteCreated;
-use App\Organization\Notifications\OrganizationInviteNotification;
+use App\Organization\Notifications\InviteNotification;
 use Illuminate\Support\Facades\Event;
 use Laravel\Sanctum\Sanctum;
 
@@ -87,7 +87,7 @@ test('organization admin can invite a user by email', function () {
 
     Event::assertDispatched(InviteCreated::class, fn ($event) => $event->invite->id === $invite->id);
 
-    Notification::assertSentTo($invite, OrganizationInviteNotification::class);
+    Notification::assertSentTo($invite, InviteNotification::class);
 });
 
 test('cannot invite beyond plan user limit excluding billing and auditor roles', function () {

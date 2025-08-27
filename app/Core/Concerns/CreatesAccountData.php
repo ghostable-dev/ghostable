@@ -10,11 +10,14 @@ use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Registry\VariableRegistry;
+use App\Organization\Actions\CreateInvite;
 use App\Organization\Actions\CreateOrganization;
-use App\Organization\Actions\CreateOrganizationInvite;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
+use App\Secret\Actions\CreateSecret;
+use App\Secret\Enums\SecretType;
+use Illuminate\Support\Str;
 
 trait CreatesAccountData
 {
@@ -56,7 +59,7 @@ trait CreatesAccountData
         string $email,
         OrganizationRole $role = OrganizationRole::DEVELOPER
     ): void {
-        CreateOrganizationInvite::handle(
+        CreateInvite::handle(
             organization: $organization,
             user: $sender,
             email: $email,
@@ -107,6 +110,23 @@ trait CreatesAccountData
             );
 
             resolve(CreateVariable::class)->handle($data);
+        }
+    }
+
+    protected function createSecrets(
+        Environment $env,
+        User $createdBy,
+        int $amount = 5
+    ): void {
+        for ($i = 0; $i < $amount; $i++) {
+            app(CreateSecret::class)->handle(
+                environment: $env,
+                name: 'secret_'.Str::random(8),
+                type: collect(SecretType::cases())->random(),
+                value: Str::random(32),
+                metadata: null,
+                createdBy: $createdBy,
+            );
         }
     }
 }

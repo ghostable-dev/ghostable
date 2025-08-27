@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\DB;
 
-class UniqueOrganizationInvite implements ValidationRule
+class UniqueInvite implements ValidationRule
 {
     public function __construct(protected Organization $organization) {}
 

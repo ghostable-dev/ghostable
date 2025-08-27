@@ -1,5 +1,6 @@
 <?php
 
+use App\Api\Jobs\FoldUsageCounters;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->job(\App\Usage\Jobs\FoldUsageCounters::class)->everyTenMinutes();
+        $schedule->job(FoldUsageCounters::class)->everyTenMinutes();
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
