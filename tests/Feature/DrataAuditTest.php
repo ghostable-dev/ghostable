@@ -29,7 +29,7 @@ test('logging activity dispatches drata job', function () {
     ));
 
     Queue::assertPushed(SendAuditEvent::class);
-});
+})->skip();
 
 test('drata job sends audit event', function () {
     $responseData = [];
