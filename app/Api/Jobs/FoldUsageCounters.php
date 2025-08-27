@@ -25,6 +25,9 @@ class FoldUsageCounters implements ShouldQueue
         private readonly bool $rollupResources = true,
     ) {}
 
+    /**
+     * Fold usage counters from cache into persistent storage.
+     */
     public function handle(): void
     {
         $store = Cache::store();
@@ -44,7 +47,7 @@ class FoldUsageCounters implements ShouldQueue
     }
 
     /**
-     * @return array<int,string>
+     * Determine the recent bucket timestamps to process.
      */
     private function recentBuckets(): array
     {
@@ -57,6 +60,9 @@ class FoldUsageCounters implements ShouldQueue
         return $buckets;
     }
 
+    /**
+     * Fold a Redis bucket of usage counters.
+     */
     private function foldRedisBucket(string $bucket, $redis): void
     {
         $indexKey = UsageCacheKey::index($bucket);
@@ -74,7 +80,11 @@ class FoldUsageCounters implements ShouldQueue
 
         DB::transaction(function () use ($keys, $results, $indexKey, $redis) {
             for ($i = 0; $i < count($keys); $i++) {
-                $this->foldRedisKey($keys[$i], (int) $results[$i * 2], $results[$i * 2 + 1] ?? []);
+                $this->foldRedisKey(
+                    key: $keys[$i],
+                    total: (int) $results[$i * 2],
+                    byRes: $results[$i * 2 + 1] ?? [],
+                );
             }
 
             $del = [$indexKey];
@@ -87,7 +97,7 @@ class FoldUsageCounters implements ShouldQueue
     }
 
     /**
-     * @param  array<string,string>  $byRes
+     * Fold a single Redis aggregate key and its resource breakdown.
      */
     private function foldRedisKey(string $key, int $total, array $byRes): void
     {
@@ -103,19 +113,31 @@ class FoldUsageCounters implements ShouldQueue
 
         $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
 
-        resolve(UpsertApiUsageHourly::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $total);
+        resolve(UpsertApiUsageHourly::class)->handle(
+            organizationId: $orgId,
+            tokenId: $tokenId,
+            method: $method,
+            endpoint: $data->endpoint,
+            hour: $data->hourUtc,
+            count: $total,
+        );
 
-        resolve(UpsertApiUsageDaily::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $total);
+        resolve(UpsertApiUsageDaily::class)->handle(
+            organizationId: $orgId,
+            tokenId: $tokenId,
+            method: $method,
+            endpoint: $data->endpoint,
+            day: $data->dayUtc,
+            count: $total,
+        );
 
         if (! $this->rollupResources || empty($byRes)) {
             return;
         }
 
-        foreach ($byRes as $field => $cntStr) {
-            $cnt = (int) $cntStr;
-            if ($cnt <= 0) {
+        foreach ($byRes as $field => $countString) {
+            $count = (int) $countString;
+            if ($count <= 0) {
                 continue;
             }
 
@@ -126,14 +148,33 @@ class FoldUsageCounters implements ShouldQueue
 
             $rtypeLimited = Str::limit($rtype, 50, '');
 
-            resolve(UpsertApiUsageHourly::class)
-                ->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $cnt, $rtypeLimited, (string) $rid);
+            resolve(UpsertApiUsageHourly::class)->handle(
+                organizationId: $orgId,
+                tokenId: $tokenId,
+                method: $method,
+                endpoint: $data->endpoint,
+                hour: $data->hourUtc,
+                count: $count,
+                resourceType: $rtypeLimited,
+                resourceId: (string) $rid,
+            );
 
-            resolve(UpsertApiUsageDaily::class)
-                ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt, $rtypeLimited, (string) $rid);
+            resolve(UpsertApiUsageDaily::class)->handle(
+                organizationId: $orgId,
+                tokenId: $tokenId,
+                method: $method,
+                endpoint: $data->endpoint,
+                day: $data->dayUtc,
+                count: $count,
+                resourceType: $rtypeLimited,
+                resourceId: (string) $rid,
+            );
         }
     }
 
+    /**
+     * Fold a portable cache bucket of usage counters.
+     */
     private function foldPortableBucket(string $bucket, $store): void
     {
         $indexKey = UsageCacheKey::index($bucket);
@@ -150,9 +191,9 @@ class FoldUsageCounters implements ShouldQueue
                 }
 
                 if (UsageCacheKey::isResourceKey($k)) {
-                    $this->foldPortableResourceKey($k, (int) $val);
+                    $this->foldPortableResourceKey(key: $k, count: (int) $val);
                 } else {
-                    $this->foldPortableAggregateKey($k, count: (int) $val);
+                    $this->foldPortableAggregateKey(key: $k, count: (int) $val);
                 }
 
                 $store->forget($k);
@@ -162,7 +203,10 @@ class FoldUsageCounters implements ShouldQueue
         });
     }
 
-    private function foldPortableResourceKey(string $key, int $cnt): void
+    /**
+     * Fold a portable resource-specific usage key.
+     */
+    private function foldPortableResourceKey(string $key, int $count): void
     {
         $parts = UsageCacheKey::parseResource($key);
         if ($parts === null) {
@@ -179,13 +223,32 @@ class FoldUsageCounters implements ShouldQueue
         $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
         $rtypeLimited = Str::limit($rtype, 50, '');
 
-        resolve(UpsertApiUsageHourly::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $cnt, $rtypeLimited, (string) $rid);
+        resolve(UpsertApiUsageHourly::class)->handle(
+            organizationId: $orgId,
+            tokenId: $tokenId,
+            method: $method,
+            endpoint: $data->endpoint,
+            hour: $data->hourUtc,
+            count: $count,
+            resourceType: $rtypeLimited,
+            resourceId: (string) $rid,
+        );
 
-        resolve(UpsertApiUsageDaily::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt, $rtypeLimited, (string) $rid);
+        resolve(UpsertApiUsageDaily::class)->handle(
+            organizationId: $orgId,
+            tokenId: $tokenId,
+            method: $method,
+            endpoint: $data->endpoint,
+            day: $data->dayUtc,
+            count: $count,
+            resourceType: $rtypeLimited,
+            resourceId: (string) $rid,
+        );
     }
 
+    /**
+     * Fold a portable aggregate usage key.
+     */
     private function foldPortableAggregateKey(string $key, int $count): void
     {
         if (($parts = UsageCacheKey::parseAggregate($key)) === null) {
@@ -194,12 +257,13 @@ class FoldUsageCounters implements ShouldQueue
 
         $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 
-        resolve(UpsertApiUsageHourly::class)->handle(organizationId: $parts->orgId,
+        resolve(UpsertApiUsageHourly::class)->handle(
+            organizationId: $parts->orgId,
             tokenId: $parts->tokenId,
             method: $parts->method,
             endpoint: $data->endpoint,
             hour: $data->hourUtc,
-            count: $count
+            count: $count,
         );
 
         resolve(UpsertApiUsageDaily::class)->handle(
@@ -208,7 +272,7 @@ class FoldUsageCounters implements ShouldQueue
             method: $parts->method,
             endpoint: $data->endpoint,
             day: $data->dayUtc,
-            count: $count
+            count: $count,
         );
     }
 }
