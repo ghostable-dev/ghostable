@@ -101,31 +101,26 @@ class FoldUsageCounters implements ShouldQueue
      */
     private function foldRedisKey(string $key, int $total, array $byRes): void
     {
-        $parts = UsageCacheKey::parseAggregate($key);
-        if ($parts === null || $total <= 0) {
+        if (($parts = UsageCacheKey::parseAggregate($key)) === null
+            || $total <= 0) {
             return;
         }
-        $bucketStr = $parts->bucket;
-        $orgId = $parts->orgId;
-        $tokenId = $parts->tokenId;
-        $method = $parts->method;
-        $endpoint = $parts->endpoint;
 
-        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+        $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 
         resolve(UpsertApiUsageHourly::class)->handle(
-            organizationId: $orgId,
-            tokenId: $tokenId,
-            method: $method,
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
             endpoint: $data->endpoint,
             hour: $data->hourUtc,
             count: $total,
         );
 
         resolve(UpsertApiUsageDaily::class)->handle(
-            organizationId: $orgId,
-            tokenId: $tokenId,
-            method: $method,
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
             endpoint: $data->endpoint,
             day: $data->dayUtc,
             count: $total,
@@ -149,9 +144,9 @@ class FoldUsageCounters implements ShouldQueue
             $rtypeLimited = Str::limit($rtype, 50, '');
 
             resolve(UpsertApiUsageHourly::class)->handle(
-                organizationId: $orgId,
-                tokenId: $tokenId,
-                method: $method,
+                organizationId: $parts->orgId,
+                tokenId: $parts->tokenId,
+                method: $parts->method,
                 endpoint: $data->endpoint,
                 hour: $data->hourUtc,
                 count: $count,
@@ -160,9 +155,9 @@ class FoldUsageCounters implements ShouldQueue
             );
 
             resolve(UpsertApiUsageDaily::class)->handle(
-                organizationId: $orgId,
-                tokenId: $tokenId,
-                method: $method,
+                organizationId: $parts->orgId,
+                tokenId: $parts->tokenId,
+                method: $parts->method,
                 endpoint: $data->endpoint,
                 day: $data->dayUtc,
                 count: $count,
@@ -208,41 +203,33 @@ class FoldUsageCounters implements ShouldQueue
      */
     private function foldPortableResourceKey(string $key, int $count): void
     {
-        $parts = UsageCacheKey::parseResource($key);
-        if ($parts === null) {
+        if (($parts = UsageCacheKey::parseResource($key)) === null) {
             return;
         }
-        $bucketStr = $parts->bucket;
-        $orgId = $parts->orgId;
-        $tokenId = $parts->tokenId;
-        $method = $parts->method;
-        $endpoint = $parts->endpoint;
-        $rtype = $parts->resourceType;
-        $rid = $parts->resourceId;
 
-        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
-        $rtypeLimited = Str::limit($rtype, 50, '');
+        $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
+        $resourceTypeLimited = Str::limit(value: $parts->resourceType, limit: 50, end: '');
 
         resolve(UpsertApiUsageHourly::class)->handle(
-            organizationId: $orgId,
-            tokenId: $tokenId,
-            method: $method,
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
             endpoint: $data->endpoint,
             hour: $data->hourUtc,
             count: $count,
-            resourceType: $rtypeLimited,
-            resourceId: (string) $rid,
+            resourceType: $resourceTypeLimited,
+            resourceId: (string) $parts->resourceId,
         );
 
         resolve(UpsertApiUsageDaily::class)->handle(
-            organizationId: $orgId,
-            tokenId: $tokenId,
-            method: $method,
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
             endpoint: $data->endpoint,
             day: $data->dayUtc,
             count: $count,
-            resourceType: $rtypeLimited,
-            resourceId: (string) $rid,
+            resourceType: $resourceTypeLimited,
+            resourceId: (string) $parts->resourceId,
         );
     }
 
