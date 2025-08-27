@@ -10,9 +10,13 @@ use App\Api\Entities\UsageCacheResourceData;
 final class UsageCacheKey
 {
     public const PREFIX = 'usage';
+
     public const PERIOD = 'minute';
-    public const INDEX_PREFIX = self::PREFIX . ':index';
+
+    public const INDEX_PREFIX = self::PREFIX.':index';
+
     public const RESOURCE_SEGMENT = 'res';
+
     public const BYRES_SUFFIX = ':byres';
 
     public static function counter(
@@ -24,7 +28,7 @@ final class UsageCacheKey
     ): string {
         return sprintf(
             '%s:%s:%s:%s:%s:%s',
-            self::PREFIX . ':' . self::PERIOD,
+            self::PREFIX.':'.self::PERIOD,
             $bucket,
             $orgId,
             $tokenId,
@@ -40,7 +44,7 @@ final class UsageCacheKey
 
     public static function byResource(string $counterKey): string
     {
-        return $counterKey . self::BYRES_SUFFIX;
+        return $counterKey.self::BYRES_SUFFIX;
     }
 
     public static function resourceKeyFromCounter(
@@ -59,7 +63,7 @@ final class UsageCacheKey
 
     public static function isResourceKey(string $key): bool
     {
-        return str_contains($key, ':' . self::RESOURCE_SEGMENT . ':');
+        return str_contains($key, ':'.self::RESOURCE_SEGMENT.':');
     }
 
     public static function parseAggregate(string $key): ?UsageCacheAggregateData
@@ -77,6 +81,7 @@ final class UsageCacheKey
     public static function parseResource(string $key): ?UsageCacheResourceData
     {
         $parts = explode(':', $key, 11);
+
         if (
             count($parts) < 10
             || $parts[0] !== self::PREFIX

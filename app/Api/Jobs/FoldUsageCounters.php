@@ -5,6 +5,7 @@ namespace App\Api\Jobs;
 use App\Api\Actions\UpsertApiUsageDaily;
 use App\Api\Actions\UpsertApiUsageHourly;
 use App\Api\Entities\UsageBucketData;
+use App\Api\Helpers\UsageCacheKey;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,7 +15,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Api\Helpers\UsageCacheKey;
 
 class FoldUsageCounters implements ShouldQueue
 {
@@ -152,7 +152,7 @@ class FoldUsageCounters implements ShouldQueue
                 if (UsageCacheKey::isResourceKey($k)) {
                     $this->foldPortableResourceKey($k, (int) $val);
                 } else {
-                    $this->foldPortableAggregateKey($k, (int) $val);
+                    $this->foldPortableAggregateKey($k, count: (int) $val);
                 }
 
                 $store->forget($k);
@@ -186,24 +186,29 @@ class FoldUsageCounters implements ShouldQueue
             ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt, $rtypeLimited, (string) $rid);
     }
 
-    private function foldPortableAggregateKey(string $key, int $cnt): void
+    private function foldPortableAggregateKey(string $key, int $count): void
     {
-        $parts = UsageCacheKey::parseAggregate($key);
-        if ($parts === null) {
+        if (($parts = UsageCacheKey::parseAggregate($key)) === null) {
             return;
         }
-        $bucketStr = $parts->bucket;
-        $orgId = $parts->orgId;
-        $tokenId = $parts->tokenId;
-        $method = $parts->method;
-        $endpoint = $parts->endpoint;
 
-        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+        $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 
-        resolve(UpsertApiUsageHourly::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $cnt);
+        resolve(UpsertApiUsageHourly::class)->handle(organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
+            endpoint: $data->endpoint,
+            hour: $data->hourUtc,
+            count: $count
+        );
 
-        resolve(UpsertApiUsageDaily::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt);
+        resolve(UpsertApiUsageDaily::class)->handle(
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
+            endpoint: $data->endpoint,
+            day: $data->dayUtc,
+            count: $count
+        );
     }
 }

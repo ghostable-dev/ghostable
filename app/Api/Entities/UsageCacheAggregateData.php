@@ -14,4 +14,3 @@ class UsageCacheAggregateData extends Data
         public string $endpoint,
     ) {}
 }
-
