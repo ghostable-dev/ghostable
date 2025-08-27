@@ -11,6 +11,7 @@ use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
 use App\Organization\Casts\OrganizationLimitsCast;
 use App\Organization\Entities\OrganizationNotificationsData;
+use App\Organization\Models\Invite;
 use App\Project\Models\Project;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -38,7 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationInvite> $invites
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Invite> $invites
  * @property-read int|null $invites_count
  * @property-read int|null $notifications_count
  * @property-read User|null $owner
@@ -144,7 +145,7 @@ class Organization extends Model
 
     public function invites(): HasMany
     {
-        return $this->hasMany(OrganizationInvite::class);
+        return $this->hasMany(Invite::class);
     }
 
     public function projects(): HasMany

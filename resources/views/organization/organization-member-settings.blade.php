@@ -6,7 +6,7 @@
         
         <livewire:organization.livewire.organization-members-manager/>
         
-        <livewire:organization.livewire.organization-invites-manager/>
+        <livewire:organization.livewire.invites-manager/>
         
     </x-layouts.organization-settings>
 </section>
