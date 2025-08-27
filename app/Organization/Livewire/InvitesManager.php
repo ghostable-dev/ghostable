@@ -4,8 +4,8 @@ namespace App\Organization\Livewire;
 
 use App\Organization\Actions\CreateInvite;
 use App\Organization\Enums\OrganizationRole;
-use App\Organization\Models\Organization;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
 use App\Organization\Rules\InviteRules;
 use Flux;
 use Illuminate\Support\Collection;

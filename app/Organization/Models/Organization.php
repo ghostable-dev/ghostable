@@ -11,7 +11,6 @@ use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
 use App\Organization\Casts\OrganizationLimitsCast;
 use App\Organization\Entities\OrganizationNotificationsData;
-use App\Organization\Models\Invite;
 use App\Project\Models\Project;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Contracts\Database\Eloquent\Builder;

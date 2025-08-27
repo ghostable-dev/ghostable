@@ -19,7 +19,7 @@ class EncryptedVariableVersionValue extends EncryptedString
         if (! $model instanceof EnvironmentVariableVersion) {
             throw new InvalidArgumentException('EncryptedVariableVersionValue cast expects EnvironmentVariableVersion model.');
         }
-        
+
         $environment = ResolveEnvironment::onceWithContext($model->variable?->environment_id);
 
         if (! $environment) {

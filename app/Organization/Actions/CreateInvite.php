@@ -4,8 +4,8 @@ namespace App\Organization\Actions;
 
 use App\Account\Models\User;
 use App\Organization\Enums\OrganizationRole;
-use App\Organization\Models\Organization;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
 
 class CreateInvite
 {

@@ -2,8 +2,8 @@
 
 namespace App\Organization\Notifications;
 
-use App\Organization\Models\Organization;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
 
 class MemberJoinedNotification extends MembershipActivityNotification
 {

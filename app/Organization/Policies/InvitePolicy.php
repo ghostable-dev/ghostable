@@ -4,8 +4,8 @@ namespace App\Organization\Policies;
 
 use App\Account\Models\User;
 use App\Organization\Enums\OrganizationPermission;
-use App\Organization\Models\Organization;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
 
 class InvitePolicy
 {

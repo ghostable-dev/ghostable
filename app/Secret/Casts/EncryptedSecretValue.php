@@ -19,7 +19,7 @@ class EncryptedSecretValue extends EncryptedString
         if (! $model instanceof Secret) {
             throw new InvalidArgumentException('EncryptedSecretValue cast expects Secret model.');
         }
-        
+
         $environment = ResolveEnvironment::onceWithContext($model->environment_id);
 
         if (! $environment) {

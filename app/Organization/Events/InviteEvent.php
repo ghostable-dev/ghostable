@@ -2,8 +2,8 @@
 
 namespace App\Organization\Events;
 
-use App\Organization\Models\Organization;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
