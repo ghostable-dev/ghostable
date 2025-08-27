@@ -11,6 +11,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 final class TrackUsage
@@ -25,6 +26,8 @@ final class TrackUsage
     {
         $user = $request->user();
         $token = $user?->currentAccessToken();
+        
+        Log::info('touched track-usage');
 
         // No auth/no token: nothing to meter.
         if (! $user || ! $token?->id) {
@@ -66,6 +69,8 @@ final class TrackUsage
         $endpoint = $request->route()?->getName()
             ?? $request->route()?->uri()
             ?? $request->path();
+            
+        Log::info($endpoint);
 
         [$resourceType, $resourceId] = $this->extractResource($request);
 
