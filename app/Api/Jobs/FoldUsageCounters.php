@@ -2,6 +2,9 @@
 
 namespace App\Api\Jobs;
 
+use App\Api\Actions\UpsertApiUsageDaily;
+use App\Api\Actions\UpsertApiUsageHourly;
+use App\Api\Entities\UsageBucketData;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +29,9 @@ class FoldUsageCounters implements ShouldQueue
         $store = Cache::store();
         $redis = method_exists($store->getStore(), 'connection') ? $store->getStore()->connection() : null;
 
+        $upsertHourly = app(UpsertApiUsageHourly::class);
+        $upsertDaily = app(UpsertApiUsageDaily::class);
+
         $now = Carbon::now('UTC')->startOfMinute();
         $buckets = [];
         for ($i = 1; $i <= $this->lookbackMinutes; $i++) {
@@ -49,7 +55,7 @@ class FoldUsageCounters implements ShouldQueue
                     }
                 });
 
-                DB::transaction(function () use ($keys, $results, $indexKey, $redis) {
+                DB::transaction(function () use ($keys, $results, $indexKey, $redis, $upsertHourly, $upsertDaily) {
                     for ($i = 0; $i < count($keys); $i++) {
                         $key = $keys[$i];
                         $total = (int) $results[$i * 2];
@@ -67,41 +73,11 @@ class FoldUsageCounters implements ShouldQueue
                             continue;
                         }
 
-                        $endpoint = Str::limit($endpoint, 191, '');
-                        $minuteUtc = Carbon::createFromFormat('Ymd\THi', $bucketStr, 'UTC')->startOfMinute();
-                        $hourUtc = $minuteUtc->copy()->startOfHour();
-                        $dayUtc = $minuteUtc->copy()->startOfDay();
+                        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
 
                         // ---- aggregate rows (resource_type/id = NULL) ----
-                        DB::table('api_usage_hourly')->upsert(
-                            [
-                                'organization_id' => $orgId,
-                                'token_id' => $tokenId,
-                                'method' => $method,
-                                'endpoint' => $endpoint,
-                                'resource_type' => null,
-                                'resource_id' => null,
-                                'hour' => $hourUtc,
-                                'count' => $total,
-                            ],
-                            ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'hour'],
-                            ['count' => DB::raw('api_usage_hourly.count + '.$total)]
-                        );
-
-                        DB::table('api_usage_daily')->upsert(
-                            [
-                                'organization_id' => $orgId,
-                                'token_id' => $tokenId,
-                                'method' => $method,
-                                'endpoint' => $endpoint,
-                                'resource_type' => null,
-                                'resource_id' => null,
-                                'date' => $dayUtc,
-                                'count' => $total,
-                            ],
-                            ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
-                            ['count' => DB::raw('api_usage_daily.count + '.$total)]
-                        );
+                        $upsertHourly->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $total);
+                        $upsertDaily->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $total);
 
                         // ---- per-resource rows (same tables) ----
                         if ($this->rollupResources && ! empty($byRes)) {
@@ -117,34 +93,28 @@ class FoldUsageCounters implements ShouldQueue
                                     continue;
                                 }
 
-                                DB::table('api_usage_hourly')->upsert(
-                                    [
-                                        'organization_id' => $orgId,
-                                        'token_id' => $tokenId,
-                                        'method' => $method,
-                                        'endpoint' => $endpoint,
-                                        'resource_type' => Str::limit($rtype, 50, ''),
-                                        'resource_id' => (string) $rid,
-                                        'hour' => $hourUtc,
-                                        'count' => $cnt,
-                                    ],
-                                    ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'hour'],
-                                    ['count' => DB::raw('api_usage_hourly.count + '.$cnt)]
+                                $rtypeLimited = Str::limit($rtype, 50, '');
+
+                                $upsertHourly->handle(
+                                    $orgId,
+                                    $tokenId,
+                                    $method,
+                                    $data->endpoint,
+                                    $data->hourUtc,
+                                    $cnt,
+                                    $rtypeLimited,
+                                    (string) $rid,
                                 );
 
-                                DB::table('api_usage_daily')->upsert(
-                                    [
-                                        'organization_id' => $orgId,
-                                        'token_id' => $tokenId,
-                                        'method' => $method,
-                                        'endpoint' => $endpoint,
-                                        'resource_type' => Str::limit($rtype, 50, ''),
-                                        'resource_id' => (string) $rid,
-                                        'date' => $dayUtc,
-                                        'count' => $cnt,
-                                    ],
-                                    ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
-                                    ['count' => DB::raw('api_usage_daily.count + '.$cnt)]
+                                $upsertDaily->handle(
+                                    $orgId,
+                                    $tokenId,
+                                    $method,
+                                    $data->endpoint,
+                                    $data->dayUtc,
+                                    $cnt,
+                                    $rtypeLimited,
+                                    (string) $rid,
                                 );
                             }
                         }
@@ -168,7 +138,7 @@ class FoldUsageCounters implements ShouldQueue
                 continue;
             }
 
-            DB::transaction(function () use ($keys, $store, $indexKey) {
+            DB::transaction(function () use ($keys, $store, $indexKey, $upsertHourly, $upsertDaily) {
                 foreach ($keys as $k) {
                     $val = $store->get($k);
                     if ($val === null) {
@@ -185,39 +155,29 @@ class FoldUsageCounters implements ShouldQueue
                         }
                         [, , $bucketStr, $orgId, $tokenId, $method, $endpoint, , $rtype, $rid] = $parts;
 
-                        $endpoint = Str::limit($endpoint, 191, '');
-                        $minuteUtc = Carbon::createFromFormat('Ymd\THi', $bucketStr, 'UTC')->startOfMinute();
-                        $hourUtc = $minuteUtc->copy()->startOfHour();
-                        $dayUtc = $minuteUtc->copy()->startOfDay();
+                        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+                        $rtypeLimited = Str::limit($rtype, 50, '');
 
-                        DB::table('api_usage_hourly')->upsert(
-                            [
-                                'organization_id' => $orgId,
-                                'token_id' => $tokenId,
-                                'method' => $method,
-                                'endpoint' => $endpoint,
-                                'resource_type' => Str::limit($rtype, 50, ''),
-                                'resource_id' => (string) $rid,
-                                'hour' => $hourUtc,
-                                'count' => (int) $val,
-                            ],
-                            ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'hour'],
-                            ['count' => DB::raw('api_usage_hourly.count + '.(int) $val)]
+                        $upsertHourly->handle(
+                            $orgId,
+                            $tokenId,
+                            $method,
+                            $data->endpoint,
+                            $data->hourUtc,
+                            (int) $val,
+                            $rtypeLimited,
+                            (string) $rid,
                         );
 
-                        DB::table('api_usage_daily')->upsert(
-                            [
-                                'organization_id' => $orgId,
-                                'token_id' => $tokenId,
-                                'method' => $method,
-                                'endpoint' => $endpoint,
-                                'resource_type' => Str::limit($rtype, 50, ''),
-                                'resource_id' => (string) $rid,
-                                'date' => $dayUtc,
-                                'count' => (int) $val,
-                            ],
-                            ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
-                            ['count' => DB::raw('api_usage_daily.count + '.(int) $val)]
+                        $upsertDaily->handle(
+                            $orgId,
+                            $tokenId,
+                            $method,
+                            $data->endpoint,
+                            $data->dayUtc,
+                            (int) $val,
+                            $rtypeLimited,
+                            (string) $rid,
                         );
 
                         $store->forget($k);
@@ -232,39 +192,24 @@ class FoldUsageCounters implements ShouldQueue
                     }
                     [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
 
-                    $endpoint = Str::limit($endpoint, 191, '');
-                    $minuteUtc = Carbon::createFromFormat('Ymd\THi', $bucketStr, 'UTC')->startOfMinute();
-                    $hourUtc = $minuteUtc->copy()->startOfHour();
-                    $dayUtc = $minuteUtc->copy()->startOfDay();
+                    $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
 
-                    DB::table('api_usage_hourly')->upsert(
-                        [
-                            'organization_id' => $orgId,
-                            'token_id' => $tokenId,
-                            'method' => $method,
-                            'endpoint' => $endpoint,
-                            'resource_type' => null,
-                            'resource_id' => null,
-                            'hour' => $hourUtc,
-                            'count' => (int) $val,
-                        ],
-                        ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'hour'],
-                        ['count' => DB::raw('api_usage_hourly.count + '.(int) $val)]
+                    $upsertHourly->handle(
+                        $orgId,
+                        $tokenId,
+                        $method,
+                        $data->endpoint,
+                        $data->hourUtc,
+                        (int) $val,
                     );
 
-                    DB::table('api_usage_daily')->upsert(
-                        [
-                            'organization_id' => $orgId,
-                            'token_id' => $tokenId,
-                            'method' => $method,
-                            'endpoint' => $endpoint,
-                            'resource_type' => null,
-                            'resource_id' => null,
-                            'date' => $dayUtc,
-                            'count' => (int) $val,
-                        ],
-                        ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
-                        ['count' => DB::raw('api_usage_daily.count + '.(int) $val)]
+                    $upsertDaily->handle(
+                        $orgId,
+                        $tokenId,
+                        $method,
+                        $data->endpoint,
+                        $data->dayUtc,
+                        (int) $val,
                     );
 
                     $store->forget($k);
