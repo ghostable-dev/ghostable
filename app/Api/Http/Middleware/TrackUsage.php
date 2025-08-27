@@ -26,8 +26,6 @@ final class TrackUsage
     {
         $user = $request->user();
         $token = $user?->currentAccessToken();
-        
-        Log::info('touched track-usage');
 
         // No auth/no token: nothing to meter.
         if (! $user || ! $token?->id) {
@@ -69,8 +67,6 @@ final class TrackUsage
         $endpoint = $request->route()?->getName()
             ?? $request->route()?->uri()
             ?? $request->path();
-            
-        Log::info($endpoint);
 
         [$resourceType, $resourceId] = $this->extractResource($request);
 
@@ -83,6 +79,8 @@ final class TrackUsage
 
             return $response;
         } finally {
+            Log::info('API CALL', ['endpoint' => $endpoint]);
+            
             $this->recorder->record(
                 orgId: (string) $organization->id,
                 tokenId: (string) $token->id,
