@@ -26,7 +26,7 @@ final class TrackUsage
     {
         $user = $request->user();
         $token = $user?->currentAccessToken();
-        
+
         Log::info('touched track-usage');
 
         // No auth/no token: nothing to meter.
@@ -69,7 +69,7 @@ final class TrackUsage
         $endpoint = $request->route()?->getName()
             ?? $request->route()?->uri()
             ?? $request->path();
-            
+
         Log::info($endpoint);
 
         [$resourceType, $resourceId] = $this->extractResource($request);
