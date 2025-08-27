@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Http\Middleware;
 
 use App\Organization\Models\Organization;
+use App\Usage\UsageRecorder;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,7 @@ final class TrackUsage
      * Create a new middleware instance.
      */
     public function __construct(
+        private UsageRecorder $recorder,
         private readonly int $windowMinutes = 60,
     ) {}
 
@@ -25,7 +27,7 @@ final class TrackUsage
         $user = $request->user();
         $token = $user?->currentAccessToken();
 
-        if (! $user || ! $token) {
+        if (! $user || ! $token || ! $token->id) {
             return $next($request);
         }
 
@@ -49,6 +51,9 @@ final class TrackUsage
 
         $store->add($currentKey, 0, now()->addMinutes($this->windowMinutes));
         $store->increment($currentKey);
+
+        // Record request usage for later aggregation
+        $this->recorder->record((string) $token->id, $request->path());
 
         $keys = [];
         for ($i = 0; $i < $this->windowMinutes; $i++) {

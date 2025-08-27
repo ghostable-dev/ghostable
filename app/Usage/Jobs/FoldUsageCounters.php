@@ -8,8 +8,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 
 class FoldUsageCounters implements ShouldQueue
 {
@@ -17,15 +17,15 @@ class FoldUsageCounters implements ShouldQueue
 
     public function handle(): void
     {
-        $redis = Redis::connection();
-        $keys = $redis->keys('usage:minute:*');
+        $store = Cache::store();
+        $keys = $store->pull('usage:keys') ?? [];
 
         foreach ($keys as $key) {
-            $count = (int) $redis->get($key);
+            $count = (int) $store->get($key);
             $parts = explode(':', $key);
 
             if (count($parts) !== 5) {
-                $redis->del($key);
+                $store->forget($key);
 
                 continue;
             }
@@ -35,7 +35,7 @@ class FoldUsageCounters implements ShouldQueue
             try {
                 $minute = Carbon::createFromFormat('YmdHi', $timestamp, 'UTC');
             } catch (\Exception $e) {
-                $redis->del($key);
+                $store->forget($key);
 
                 continue;
             }
@@ -57,7 +57,7 @@ class FoldUsageCounters implements ShouldQueue
                 'count' => $count,
             ], ['token', 'endpoint', 'date'], ['count' => DB::raw('usage_daily.count + '.$count)]);
 
-            $redis->del($key);
+            $store->forget($key);
         }
     }
 }
