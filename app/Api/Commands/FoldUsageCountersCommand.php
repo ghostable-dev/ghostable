@@ -2,8 +2,8 @@
 
 namespace App\Api\Commands;
 
-use Illuminate\Console\Command;
 use App\Api\Jobs\FoldUsageCounters;
+use Illuminate\Console\Command;
 
 class FoldUsageCountersCommand extends Command
 {
