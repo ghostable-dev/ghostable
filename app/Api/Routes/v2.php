@@ -24,6 +24,7 @@ use App\Api\Http\Controllers\Secret\CreateEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
 use App\Api\Http\Controllers\Secret\GetSecretTypes;
 use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
+use App\Api\Http\Middleware\TrackUsage;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,30 +46,32 @@ Route::middleware('api.version:v2')->group(function () {
         Route::get('/organizations/{organization}', GetOrganization::class);
         Route::post('/organizations/{organization}/invite', InviteMember::class);
 
-        Route::get('organizations/{organization}/projects', GetProjects::class);
-        Route::get('/projects/{project}', GetProject::class);
-        Route::get('/projects/{project}/environments', GetEnvironments::class);
+        Route::middleware(TrackUsage::class)->group(function () {
+
+            Route::get('/ci/deploy', DeployEnvironment::class);
+
+            Route::get('/organizations/{organization}/projects', GetProjects::class);
+            Route::post('/organizations/{organization}/projects', CreateProject::class);
+            Route::get('/projects/{project}', GetProject::class);
+            Route::get('/projects/{project}/environments', GetEnvironments::class);
+            Route::post('projects/{project}/environments', CreateEnvironment::class);
+
+            Route::prefix('projects/{project}/environments/{name}')
+                ->group(function () {
+                    Route::get('/', GetEnvironment::class);
+                    Route::post('/push', PushEnvironment::class);
+                    Route::post('/diff', DiffEnvironment::class);
+                    Route::get('/pull', PullEnvironment::class);
+                    Route::post('/validate', ValidateEnvironment::class);
+                    Route::get('/secrets', GetEnvironmentSecrets::class);
+                    Route::post('/secrets', CreateEnvironmentSecret::class);
+                    Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
+                });
+        });
+
         Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
-        Route::post('organizations/{organization}/projects', CreateProject::class);
-
-        Route::get('/ci/deploy', DeployEnvironment::class);
-
         Route::get('/environment-types', GetEnvironmentTypes::class);
         Route::get('/environment-formats', GetEnvFileFormats::class);
         Route::get('/secret-types', GetSecretTypes::class);
-
-        Route::post('projects/{project}/environments', CreateEnvironment::class);
-
-        Route::prefix('projects/{project}/environments/{name}')
-            ->group(function () {
-                Route::get('/', GetEnvironment::class);
-                Route::post('/push', PushEnvironment::class);
-                Route::post('/diff', DiffEnvironment::class);
-                Route::get('/pull', PullEnvironment::class);
-                Route::post('/validate', ValidateEnvironment::class);
-                Route::get('/secrets', GetEnvironmentSecrets::class);
-                Route::post('/secrets', CreateEnvironmentSecret::class);
-                Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
-            });
     });
 });
