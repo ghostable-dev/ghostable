@@ -3,7 +3,7 @@
 namespace App\Organization\Events;
 
 use App\Organization\Models\Organization;
-use App\Organization\Models\OrganizationInvite;
+use App\Organization\Models\Invite;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -14,7 +14,7 @@ abstract class InviteEvent
 
     public Organization $organization;
 
-    public function __construct(public OrganizationInvite $invite)
+    public function __construct(public Invite $invite)
     {
         $this->organization = $invite->organization;
     }

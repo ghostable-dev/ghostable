@@ -2,7 +2,7 @@
 
 namespace App\Organization\Enums;
 
-enum OrganizationInviteStatus: string
+enum InviteStatus: string
 {
     case ACCEPTED = 'accepted';
     case EXPIRED = 'expired';

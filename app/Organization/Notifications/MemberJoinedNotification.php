@@ -3,12 +3,12 @@
 namespace App\Organization\Notifications;
 
 use App\Organization\Models\Organization;
-use App\Organization\Models\OrganizationInvite;
+use App\Organization\Models\Invite;
 
 class MemberJoinedNotification extends MembershipActivityNotification
 {
     public function __construct(
-        public OrganizationInvite $invite
+        public Invite $invite
     ) {}
 
     public function forOrganization(): Organization

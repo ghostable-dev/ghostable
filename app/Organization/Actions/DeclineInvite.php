@@ -2,11 +2,11 @@
 
 namespace App\Organization\Actions;
 
-use App\Organization\Models\OrganizationInvite;
+use App\Organization\Models\Invite;
 
 class DeclineInvite
 {
-    public function handle(OrganizationInvite $invite): void
+    public function handle(Invite $invite): void
     {
         $invite->delete();
     }

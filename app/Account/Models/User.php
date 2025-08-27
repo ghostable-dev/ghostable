@@ -3,7 +3,7 @@
 namespace App\Account\Models;
 
 use App\Organization\Concerns\BelongsToOrganizations;
-use App\Organization\Models\OrganizationInvite;
+use App\Organization\Models\Invite;
 use App\Organization\Services\OrganizationMembership;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -139,7 +139,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function pendingInvites(): Collection
     {
-        return OrganizationInvite::where('email', $this->email)->pending()->get();
+        return Invite::where('email', $this->email)->pending()->get();
     }
 
     public function isVerified(): bool

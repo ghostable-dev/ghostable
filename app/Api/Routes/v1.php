@@ -14,7 +14,7 @@ use App\Api\Http\Controllers\Organization\GetOrganization;
 use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
 use App\Api\Http\Controllers\Organization\GetOrganizations;
 use App\Api\Http\Controllers\Organization\GetOwnedOrganizations;
-use App\Api\Http\Controllers\Organization\InviteOrganizationMember;
+use App\Api\Http\Controllers\Organization\InviteMember;
 use App\Api\Http\Controllers\Project\CreateProject;
 use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
 use App\Api\Http\Controllers\Project\GetEnvironments;
@@ -43,7 +43,7 @@ Route::middleware('api.version:v1')->group(function () {
         Route::get('/organizations', GetOrganizations::class);
         Route::get('/owned-organizations', GetOwnedOrganizations::class);
         Route::get('/organizations/{organization}', GetOrganization::class);
-        Route::post('/organizations/{organization}/invite', InviteOrganizationMember::class);
+        Route::post('/organizations/{organization}/invite', InviteMember::class);
 
         Route::get('organizations/{organization}/projects', GetProjects::class);
         Route::get('/projects/{project}', GetProject::class);

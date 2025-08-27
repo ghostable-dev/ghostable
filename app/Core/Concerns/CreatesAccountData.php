@@ -11,7 +11,7 @@ use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Organization\Actions\CreateOrganization;
-use App\Organization\Actions\CreateOrganizationInvite;
+use App\Organization\Actions\CreateInvite;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
@@ -56,7 +56,7 @@ trait CreatesAccountData
         string $email,
         OrganizationRole $role = OrganizationRole::DEVELOPER
     ): void {
-        CreateOrganizationInvite::handle(
+        CreateInvite::handle(
             organization: $organization,
             user: $sender,
             email: $email,

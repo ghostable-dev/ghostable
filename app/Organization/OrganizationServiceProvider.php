@@ -11,11 +11,13 @@ use App\Organization\Events\MemberRoleChanged;
 use App\Organization\Events\OrganizationSettingsChanged;
 use App\Organization\Listeners\SendAccessChangeNotification;
 use App\Organization\Listeners\SendMembershipActivityNotification;
-use App\Organization\Listeners\SendOrganizationInvite;
+use App\Organization\Listeners\SendInvite;
 use App\Organization\Listeners\SendOrganizationSettingsChangedNotification;
 use App\Organization\Listeners\UpdateInviteSentTimestamp;
 use App\Organization\Models\Organization;
+use App\Organization\Models\Invite;
 use App\Organization\Policies\OrganizationPolicy;
+use App\Organization\Policies\InvitePolicy;
 use App\Organization\View\Components\OrganizationRoleSelect;
 use Blade;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -32,7 +34,7 @@ class OrganizationServiceProvider extends ServiceProvider
     {
         Relation::enforceMorphMap([
             'organization' => 'App\Organization\Models\Organization',
-            'organization-invite' => 'App\Organization\Models\OrganizationInvite',
+            'invite' => 'App\Organization\Models\Invite',
         ]);
 
         Blade::if('perform', function (mixed $resource, string $permission) {
@@ -47,10 +49,11 @@ class OrganizationServiceProvider extends ServiceProvider
         Blade::component('organization-role-select', OrganizationRoleSelect::class);
 
         Gate::policy(Organization::class, OrganizationPolicy::class);
+        Gate::policy(Invite::class, InvitePolicy::class);
 
         Event::listen(
             InviteCreated::class,
-            SendOrganizationInvite::class
+            SendInvite::class
         );
 
         Event::listen(
