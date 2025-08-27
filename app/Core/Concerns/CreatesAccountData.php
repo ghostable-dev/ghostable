@@ -10,14 +10,14 @@ use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Registry\VariableRegistry;
-use App\Secret\Actions\CreateSecret;
-use App\Secret\Enums\SecretType;
-use Illuminate\Support\Str;
 use App\Organization\Actions\CreateInvite;
 use App\Organization\Actions\CreateOrganization;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
+use App\Secret\Actions\CreateSecret;
+use App\Secret\Enums\SecretType;
+use Illuminate\Support\Str;
 
 trait CreatesAccountData
 {
@@ -121,7 +121,7 @@ trait CreatesAccountData
         for ($i = 0; $i < $amount; $i++) {
             app(CreateSecret::class)->handle(
                 environment: $env,
-                name: 'secret_' . Str::random(8),
+                name: 'secret_'.Str::random(8),
                 type: collect(SecretType::cases())->random(),
                 value: Str::random(32),
                 metadata: null,
