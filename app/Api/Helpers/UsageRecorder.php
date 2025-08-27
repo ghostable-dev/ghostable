@@ -29,11 +29,17 @@ final class UsageRecorder
         $expires = $now->copy()->addSeconds($this->ttlSeconds);
 
         $method = strtoupper($method);
-        $endpoint = Str::of($endpoint)->trim()->replace(' ', '');
+        $endpoint = (string) Str::of($endpoint)->trim()->replace(' ', '');
 
-        $counterKey = sprintf('usage:minute:%s:%s:%s:%s:%s', $bucket, $orgId, $tokenId, $method, $endpoint);
-        $indexKey = "usage:index:{$bucket}";
-        $byResKey = $counterKey.':byres';
+        $counterKey = UsageCacheKey::counter(
+            bucket: $bucket,
+            orgId: $orgId,
+            tokenId: $tokenId,
+            method: $method,
+            endpoint: $endpoint,
+        );
+        $indexKey = UsageCacheKey::index($bucket);
+        $byResKey = UsageCacheKey::byResource($counterKey);
 
         // Try Redis-specific path
         $redis = method_exists($store->getStore(), 'connection') ? $store->getStore()->connection() : null;
@@ -69,7 +75,11 @@ final class UsageRecorder
 
         if ($resourceType !== null && $resourceId !== null) {
             // simulate per-resource using extra counter keys
-            $resKey = $counterKey.":res:{$resourceType}:{$resourceId}";
+            $resKey = UsageCacheKey::resourceKeyFromCounter(
+                counterKey: $counterKey,
+                resourceType: $resourceType,
+                resourceId: $resourceId,
+            );
             $store->add($resKey, 0, $expires);
             $store->increment($resKey);
         }

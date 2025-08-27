@@ -5,6 +5,7 @@ namespace App\Api\Jobs;
 use App\Api\Actions\UpsertApiUsageDaily;
 use App\Api\Actions\UpsertApiUsageHourly;
 use App\Api\Entities\UsageBucketData;
+use App\Api\Helpers\UsageCacheKey;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -58,7 +59,7 @@ class FoldUsageCounters implements ShouldQueue
 
     private function foldRedisBucket(string $bucket, $redis): void
     {
-        $indexKey = "usage:index:{$bucket}";
+        $indexKey = UsageCacheKey::index($bucket);
         $keys = $redis->smembers($indexKey);
         if (empty($keys)) {
             return;
@@ -67,7 +68,7 @@ class FoldUsageCounters implements ShouldQueue
         $results = $redis->pipeline(function ($pipe) use ($keys) {
             foreach ($keys as $k) {
                 $pipe->get($k);
-                $pipe->hgetall($k.':byres');
+                $pipe->hgetall(UsageCacheKey::byResource($k));
             }
         });
 
@@ -79,7 +80,7 @@ class FoldUsageCounters implements ShouldQueue
             $del = [$indexKey];
             foreach ($keys as $k) {
                 $del[] = $k;
-                $del[] = $k.':byres';
+                $del[] = UsageCacheKey::byResource($k);
             }
             $redis->del($del);
         });
@@ -90,11 +91,15 @@ class FoldUsageCounters implements ShouldQueue
      */
     private function foldRedisKey(string $key, int $total, array $byRes): void
     {
-        $parts = explode(':', $key, 7);
-        if (count($parts) !== 7 || $parts[0] !== 'usage' || $parts[1] !== 'minute' || $total <= 0) {
+        $parts = UsageCacheKey::parseAggregate($key);
+        if ($parts === null || $total <= 0) {
             return;
         }
-        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
+        $bucketStr = $parts->bucket;
+        $orgId = $parts->orgId;
+        $tokenId = $parts->tokenId;
+        $method = $parts->method;
+        $endpoint = $parts->endpoint;
 
         $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
 
@@ -131,7 +136,7 @@ class FoldUsageCounters implements ShouldQueue
 
     private function foldPortableBucket(string $bucket, $store): void
     {
-        $indexKey = "usage:index:{$bucket}";
+        $indexKey = UsageCacheKey::index($bucket);
         $keys = $store->get($indexKey, []);
         if (empty($keys)) {
             return;
@@ -144,10 +149,10 @@ class FoldUsageCounters implements ShouldQueue
                     continue;
                 }
 
-                if (str_contains($k, ':res:')) {
+                if (UsageCacheKey::isResourceKey($k)) {
                     $this->foldPortableResourceKey($k, (int) $val);
                 } else {
-                    $this->foldPortableAggregateKey($k, (int) $val);
+                    $this->foldPortableAggregateKey($k, count: (int) $val);
                 }
 
                 $store->forget($k);
@@ -159,11 +164,17 @@ class FoldUsageCounters implements ShouldQueue
 
     private function foldPortableResourceKey(string $key, int $cnt): void
     {
-        $parts = explode(':', $key, 11);
-        if (count($parts) < 10) {
+        $parts = UsageCacheKey::parseResource($key);
+        if ($parts === null) {
             return;
         }
-        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint, , $rtype, $rid] = $parts;
+        $bucketStr = $parts->bucket;
+        $orgId = $parts->orgId;
+        $tokenId = $parts->tokenId;
+        $method = $parts->method;
+        $endpoint = $parts->endpoint;
+        $rtype = $parts->resourceType;
+        $rid = $parts->resourceId;
 
         $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
         $rtypeLimited = Str::limit($rtype, 50, '');
@@ -175,20 +186,29 @@ class FoldUsageCounters implements ShouldQueue
             ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt, $rtypeLimited, (string) $rid);
     }
 
-    private function foldPortableAggregateKey(string $key, int $cnt): void
+    private function foldPortableAggregateKey(string $key, int $count): void
     {
-        $parts = explode(':', $key, 7);
-        if (count($parts) !== 7) {
+        if (($parts = UsageCacheKey::parseAggregate($key)) === null) {
             return;
         }
-        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
 
-        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+        $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 
-        resolve(UpsertApiUsageHourly::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $cnt);
+        resolve(UpsertApiUsageHourly::class)->handle(organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
+            endpoint: $data->endpoint,
+            hour: $data->hourUtc,
+            count: $count
+        );
 
-        resolve(UpsertApiUsageDaily::class)
-            ->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $cnt);
+        resolve(UpsertApiUsageDaily::class)->handle(
+            organizationId: $parts->orgId,
+            tokenId: $parts->tokenId,
+            method: $parts->method,
+            endpoint: $data->endpoint,
+            day: $data->dayUtc,
+            count: $count
+        );
     }
 }
