@@ -29,194 +29,204 @@ class FoldUsageCounters implements ShouldQueue
         $store = Cache::store();
         $redis = method_exists($store->getStore(), 'connection') ? $store->getStore()->connection() : null;
 
-        $upsertHourly = app(UpsertApiUsageHourly::class);
-        $upsertDaily = app(UpsertApiUsageDaily::class);
+        foreach ($this->recentBuckets() as $bucket) {
+            if ($redis) {
+                $this->foldRedisBucket($bucket, $redis);
+                continue;
+            }
 
+            $this->foldPortableBucket($bucket, $store);
+        }
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private function recentBuckets(): array
+    {
         $now = Carbon::now('UTC')->startOfMinute();
         $buckets = [];
         for ($i = 1; $i <= $this->lookbackMinutes; $i++) {
-            $buckets[] = $now->copy()->subMinutes($i)->format('Ymd\THi'); // e.g. 20250827T1445
+            $buckets[] = $now->copy()->subMinutes($i)->format('Ymd\THi');
         }
 
-        foreach ($buckets as $bucket) {
-            $indexKey = "usage:index:{$bucket}";
+        return $buckets;
+    }
 
-            if ($redis) {
-                $keys = $redis->smembers($indexKey);
-                if (empty($keys)) {
+    private function foldRedisBucket(string $bucket, $redis): void
+    {
+        $indexKey = "usage:index:{$bucket}";
+        $keys = $redis->smembers($indexKey);
+        if (empty($keys)) {
+            return;
+        }
+
+        $results = $redis->pipeline(function ($pipe) use ($keys) {
+            foreach ($keys as $k) {
+                $pipe->get($k);
+                $pipe->hgetall($k.':byres');
+            }
+        });
+
+        DB::transaction(function () use ($keys, $results, $indexKey, $redis) {
+            for ($i = 0; $i < count($keys); $i++) {
+                $this->foldRedisKey($keys[$i], (int) $results[$i * 2], $results[$i * 2 + 1] ?? []);
+            }
+
+            $del = [$indexKey];
+            foreach ($keys as $k) {
+                $del[] = $k;
+                $del[] = $k.':byres';
+            }
+            $redis->del($del);
+        });
+    }
+
+    /**
+     * @param array<string,string> $byRes
+     */
+    private function foldRedisKey(string $key, int $total, array $byRes): void
+    {
+        $parts = explode(':', $key, 7);
+        if (count($parts) !== 7 || $parts[0] !== 'usage' || $parts[1] !== 'minute' || $total <= 0) {
+            return;
+        }
+        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
+
+        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+
+        resolve(UpsertApiUsageHourly::class)->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $total);
+        resolve(UpsertApiUsageDaily::class)->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $total);
+
+        if (! $this->rollupResources || empty($byRes)) {
+            return;
+        }
+
+        foreach ($byRes as $field => $cntStr) {
+            $cnt = (int) $cntStr;
+            if ($cnt <= 0) {
+                continue;
+            }
+
+            [$rtype, $rid] = explode(':', $field, 2) + [null, null];
+            if (! $rtype || ! $rid) {
+                continue;
+            }
+
+            $rtypeLimited = Str::limit($rtype, 50, '');
+
+            resolve(UpsertApiUsageHourly::class)->handle(
+                $orgId,
+                $tokenId,
+                $method,
+                $data->endpoint,
+                $data->hourUtc,
+                $cnt,
+                $rtypeLimited,
+                (string) $rid,
+            );
+
+            resolve(UpsertApiUsageDaily::class)->handle(
+                $orgId,
+                $tokenId,
+                $method,
+                $data->endpoint,
+                $data->dayUtc,
+                $cnt,
+                $rtypeLimited,
+                (string) $rid,
+            );
+        }
+    }
+
+    private function foldPortableBucket(string $bucket, $store): void
+    {
+        $indexKey = "usage:index:{$bucket}";
+        $keys = $store->get($indexKey, []);
+        if (empty($keys)) {
+            return;
+        }
+
+        DB::transaction(function () use ($keys, $store, $indexKey) {
+            foreach ($keys as $k) {
+                $val = $store->get($k);
+                if ($val === null) {
                     continue;
                 }
 
-                // GET total + HGETALL resource breakdown for each counter key
-                $results = $redis->pipeline(function ($pipe) use ($keys) {
-                    foreach ($keys as $k) {
-                        $pipe->get($k);
-                        $pipe->hgetall($k.':byres');
-                    }
-                });
-
-                DB::transaction(function () use ($keys, $results, $indexKey, $redis, $upsertHourly, $upsertDaily) {
-                    for ($i = 0; $i < count($keys); $i++) {
-                        $key = $keys[$i];
-                        $total = (int) $results[$i * 2];
-                        /** @var array<string,string> $byRes */
-                        $byRes = $results[$i * 2 + 1] ?? [];
-
-                        // usage:minute:{bucket}:{orgId}:{tokenId}:{method}:{endpoint}
-                        $parts = explode(':', $key, 7);
-                        if (count($parts) !== 7 || $parts[0] !== 'usage' || $parts[1] !== 'minute') {
-                            continue;
-                        }
-                        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
-
-                        if ($total <= 0) {
-                            continue;
-                        }
-
-                        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
-
-                        // ---- aggregate rows (resource_type/id = NULL) ----
-                        $upsertHourly->handle($orgId, $tokenId, $method, $data->endpoint, $data->hourUtc, $total);
-                        $upsertDaily->handle($orgId, $tokenId, $method, $data->endpoint, $data->dayUtc, $total);
-
-                        // ---- per-resource rows (same tables) ----
-                        if ($this->rollupResources && ! empty($byRes)) {
-                            foreach ($byRes as $field => $cntStr) {
-                                $cnt = (int) $cntStr;
-                                if ($cnt <= 0) {
-                                    continue;
-                                }
-
-                                // "{type}:{id}" — id should be a UUID string (36 chars)
-                                [$rtype, $rid] = explode(':', $field, 2) + [null, null];
-                                if (! $rtype || ! $rid) {
-                                    continue;
-                                }
-
-                                $rtypeLimited = Str::limit($rtype, 50, '');
-
-                                $upsertHourly->handle(
-                                    $orgId,
-                                    $tokenId,
-                                    $method,
-                                    $data->endpoint,
-                                    $data->hourUtc,
-                                    $cnt,
-                                    $rtypeLimited,
-                                    (string) $rid,
-                                );
-
-                                $upsertDaily->handle(
-                                    $orgId,
-                                    $tokenId,
-                                    $method,
-                                    $data->endpoint,
-                                    $data->dayUtc,
-                                    $cnt,
-                                    $rtypeLimited,
-                                    (string) $rid,
-                                );
-                            }
-                        }
-                    }
-
-                    // cleanup (optional; TTL also clears)
-                    $del = [$indexKey];
-                    foreach ($keys as $k) {
-                        $del[] = $k;
-                        $del[] = $k.':byres';
-                    }
-                    $redis->del($del);
-                });
-
-                continue;
-            }
-
-            // ---------- Portable fallback (array/file cache) ----------
-            $keys = $store->get($indexKey, []);
-            if (empty($keys)) {
-                continue;
-            }
-
-            DB::transaction(function () use ($keys, $store, $indexKey, $upsertHourly, $upsertDaily) {
-                foreach ($keys as $k) {
-                    $val = $store->get($k);
-                    if ($val === null) {
-                        continue;
-                    }
-
-                    $isResKey = str_contains($k, ':res:');
-
-                    if ($isResKey) {
-                        // usage:minute:{bucket}:{org}:{token}:{method}:{endpoint}:res:{type}:{id}
-                        $parts = explode(':', $k, 11);
-                        if (count($parts) < 10) {
-                            continue;
-                        }
-                        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint, , $rtype, $rid] = $parts;
-
-                        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
-                        $rtypeLimited = Str::limit($rtype, 50, '');
-
-                        $upsertHourly->handle(
-                            $orgId,
-                            $tokenId,
-                            $method,
-                            $data->endpoint,
-                            $data->hourUtc,
-                            (int) $val,
-                            $rtypeLimited,
-                            (string) $rid,
-                        );
-
-                        $upsertDaily->handle(
-                            $orgId,
-                            $tokenId,
-                            $method,
-                            $data->endpoint,
-                            $data->dayUtc,
-                            (int) $val,
-                            $rtypeLimited,
-                            (string) $rid,
-                        );
-
-                        $store->forget($k);
-
-                        continue;
-                    }
-
-                    // main aggregate key
-                    $parts = explode(':', $k, 7);
-                    if (count($parts) !== 7) {
-                        continue;
-                    }
-                    [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
-
-                    $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
-
-                    $upsertHourly->handle(
-                        $orgId,
-                        $tokenId,
-                        $method,
-                        $data->endpoint,
-                        $data->hourUtc,
-                        (int) $val,
-                    );
-
-                    $upsertDaily->handle(
-                        $orgId,
-                        $tokenId,
-                        $method,
-                        $data->endpoint,
-                        $data->dayUtc,
-                        (int) $val,
-                    );
-
-                    $store->forget($k);
+                if (str_contains($k, ':res:')) {
+                    $this->foldPortableResourceKey($k, (int) $val);
+                } else {
+                    $this->foldPortableAggregateKey($k, (int) $val);
                 }
 
-                $store->forget($indexKey);
-            });
+                $store->forget($k);
+            }
+
+            $store->forget($indexKey);
+        });
+    }
+
+    private function foldPortableResourceKey(string $key, int $cnt): void
+    {
+        $parts = explode(':', $key, 11);
+        if (count($parts) < 10) {
+            return;
         }
+        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint, , $rtype, $rid] = $parts;
+
+        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+        $rtypeLimited = Str::limit($rtype, 50, '');
+
+        resolve(UpsertApiUsageHourly::class)->handle(
+            $orgId,
+            $tokenId,
+            $method,
+            $data->endpoint,
+            $data->hourUtc,
+            $cnt,
+            $rtypeLimited,
+            (string) $rid,
+        );
+
+        resolve(UpsertApiUsageDaily::class)->handle(
+            $orgId,
+            $tokenId,
+            $method,
+            $data->endpoint,
+            $data->dayUtc,
+            $cnt,
+            $rtypeLimited,
+            (string) $rid,
+        );
+    }
+
+    private function foldPortableAggregateKey(string $key, int $cnt): void
+    {
+        $parts = explode(':', $key, 7);
+        if (count($parts) !== 7) {
+            return;
+        }
+        [, , $bucketStr, $orgId, $tokenId, $method, $endpoint] = $parts;
+
+        $data = UsageBucketData::fromBucket($bucketStr, $endpoint);
+
+        resolve(UpsertApiUsageHourly::class)->handle(
+            $orgId,
+            $tokenId,
+            $method,
+            $data->endpoint,
+            $data->hourUtc,
+            $cnt,
+        );
+
+        resolve(UpsertApiUsageDaily::class)->handle(
+            $orgId,
+            $tokenId,
+            $method,
+            $data->endpoint,
+            $data->dayUtc,
+            $cnt,
+        );
     }
 }
