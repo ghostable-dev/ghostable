@@ -56,10 +56,13 @@ class AppSetup extends Command
         $primary = $this->createProject('Primary', $curricula);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $primary, $production);
         $this->createVariables(env: $staging, amount: 4, createdBy: $joe);
+        $this->createSecrets(env: $staging, amount: 2, createdBy: $joe);
         $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $primary, $staging);
         $this->createVariables(env: $local, amount: 3, createdBy: $tony);
+        $this->createSecrets(env: $local, amount: 1, createdBy: $tony);
 
         $phishing = $this->createProject('Phishing', $curricula);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $phishing);
@@ -67,6 +70,7 @@ class AppSetup extends Command
         $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
         $this->createEnvironment('local-jr', EnvironmentType::LOCAL, $phishing, $local);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
 
         $this->createInvite(organization: $curricula, sender: $joe, email: 'nick@curricula.com');
     }
@@ -85,14 +89,17 @@ class AppSetup extends Command
         $primary = $this->createProject('Primary', $huntress);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
         $this->createVariables(env: $production, amount: 10, createdBy: $jake);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $jake);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $primary, $production);
         $this->createVariables(env: $staging, amount: 5, createdBy: $jake);
+        $this->createSecrets(env: $staging, amount: 2, createdBy: $jake);
 
         $phishing = $this->createProject('Phishing', $huntress);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $phishing);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $phishing, $production);
         $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
 
         $this->createInvite(organization: $huntress, sender: $joe, email: 'joe@curricula.com');
     }
