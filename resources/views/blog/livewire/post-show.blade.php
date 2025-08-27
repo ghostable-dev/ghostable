@@ -41,7 +41,7 @@
                         <img
                             alt="{{ $post->title }}"
                             class="mb-10 aspect-3/2 w-full rounded-2xl object-cover shadow-xl"
-                            src="{{ route('s3.asset', $post->hero) }}">
+                            src="{{ $post->hero }}">
                     @endif
 
                     @if($post->description)
