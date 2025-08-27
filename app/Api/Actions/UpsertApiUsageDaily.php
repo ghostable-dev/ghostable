@@ -2,8 +2,8 @@
 
 namespace App\Api\Actions;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class UpsertApiUsageDaily
 {

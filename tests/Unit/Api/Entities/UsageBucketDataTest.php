@@ -1,7 +1,6 @@
 <?php
 
 use App\Api\Entities\UsageBucketData;
-use Illuminate\Support\Carbon;
 
 it('builds usage bucket data from bucket and endpoint', function () {
     $bucket = '20250827T1445';
