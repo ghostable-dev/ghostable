@@ -80,7 +80,7 @@ final class TrackUsage
             return $response;
         } finally {
             Log::info('API CALL', ['endpoint' => $endpoint]);
-            
+
             $this->recorder->record(
                 orgId: (string) $organization->id,
                 tokenId: (string) $token->id,
