@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Api\Helpers;
+namespace App\Api\Actions;
 
+use App\Api\Helpers\UsageCacheKey;
+use App\Api\Helpers\UsageDate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-final class UsageRecorder
+final class RecordApiUsage
 {
     public function __construct(private readonly int $ttlSeconds = 900) {}
 
-    public function record(
+    public function handle(
         string $orgId,
         string $tokenId,
         string $method,

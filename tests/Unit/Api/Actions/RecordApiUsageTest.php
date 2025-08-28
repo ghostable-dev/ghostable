@@ -1,8 +1,8 @@
 <?php
 
+use App\Api\Actions\RecordApiUsage;
 use App\Api\Helpers\UsageCacheKey;
 use App\Api\Helpers\UsageDate;
-use App\Api\Helpers\UsageRecorder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -51,7 +51,7 @@ it('indexes counter keys in redis without inserting Array literal', function () 
 
     Cache::shouldReceive('store')->andReturn($store);
 
-    (new UsageRecorder)->record('1', '2', 'get', '/foo');
+    (new RecordApiUsage)->handle('1', '2', 'get', '/foo');
 
     $bucket = UsageDate::formatBucket(UsageDate::now());
     $expectedIndex = UsageCacheKey::index($bucket);

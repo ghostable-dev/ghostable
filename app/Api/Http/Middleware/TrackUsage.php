@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Api\Http\Middleware;
 
+use App\Api\Actions\RecordApiUsage;
 use App\Api\Helpers\OrganizationContextResolver;
-use App\Api\Helpers\UsageRecorder;
 use App\Organization\Models\Organization;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class TrackUsage
 {
     public function __construct(
-        private UsageRecorder $recorder,
+        private RecordApiUsage $recordUsage,
         private OrganizationContextResolver $orgResolver,
         private readonly int $windowMinutes = 60, // fixed window in minutes
     ) {}
@@ -78,7 +78,7 @@ final class TrackUsage
 
             return $response;
         } finally {
-            $this->recorder->record(
+            $this->recordUsage->handle(
                 orgId: (string) $organization->id,
                 tokenId: (string) $token->id,
                 method: $request->getMethod(),
