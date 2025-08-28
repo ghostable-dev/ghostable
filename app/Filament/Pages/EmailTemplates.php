@@ -72,8 +72,8 @@ class EmailTemplates extends Page
     public function user(): User
     {
         return User::factory()->make([
-            'name' => 'Example User',
-            'email' => 'user@example.com',
+            'name' => 'Joe Rucci',
+            'email' => 'rucci.joe@gmail.com',
         ]);
     }
 
