@@ -56,7 +56,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static OrganizationBuilder<static>|Organization newModelQuery()
  * @method static OrganizationBuilder<static>|Organization newQuery()
  * @method static OrganizationBuilder<static>|Organization onGenericTrial()
- * @method static OrganizationBuilder<static>|Organization personal()
  * @method static OrganizationBuilder<static>|Organization query()
  * @method static OrganizationBuilder<static>|Organization whereCreatedAt($value)
  * @method static OrganizationBuilder<static>|Organization whereId($value)
