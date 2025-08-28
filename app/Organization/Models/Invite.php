@@ -106,6 +106,13 @@ class Invite extends Model
 
         InviteSent::dispatch($this);
     }
+    
+    public function greeting(string $greeting = 'Hello'): string
+    {
+        return !empty($this->email)
+            ? sprintf("$greeting %s,", $this->email)
+            : "$greeting,";
+    }
 
     public function sentRecently(): bool
     {
