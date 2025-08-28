@@ -31,6 +31,7 @@ class AccessChangeNotification extends Notification implements SlackNotifiable
     {
         return (new MailMessage)
             ->subject($this->subject())
+            ->greeting($notifiable->greeting())
             ->line($this->messageLine())
             ->line('You are receiving this alert because you are an administrator of this organization.');
     }

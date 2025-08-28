@@ -1,11 +1,11 @@
 <tr>
-<td class="sub align-center" align="center">
-{!! Illuminate\Mail\Markdown::parse($slot) !!}
-{{-- @isset($unsubscribeUrl)
-<br><br>
-<a href="{{ $unsubscribeUrl }}" style="color: #6B7280; font-size: 12px;">
-Unsubscribe from future notifications
-</a>
-@endisset --}}
+<td>
+<table class="footer" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
+<tr>
+<td class="content-cell" align="center">
+{{ Illuminate\Mail\Markdown::parse($slot) }}
+</td>
+</tr>
+</table>
 </td>
 </tr>
