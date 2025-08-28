@@ -16,10 +16,6 @@ return [
             'type' => Plan::SCALE->value,
             'api_id' => env('SCALE_SUBSCRIPTION_API_ID'),
         ],
-        Plan::ENTERPRISE->value => [
-            'type' => Plan::ENTERPRISE->value,
-            'api_id' => env('ENTERPRISE_SUBSCRIPTION_API_ID'),
-        ],
     ],
 
     /**

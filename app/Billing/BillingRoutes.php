@@ -31,11 +31,6 @@ class BillingRoutes
                     ->get('/scale/checkout', [ScaleCheckout::class, 'checkout'])
                     ->middleware(HasNoActiveSubscription::class);
 
-                // Enterprise checkout (disabled)
-                // Route::name('enterprise.checkout')
-                //     ->get('/enterprise/checkout', [EnterpriseCheckout::class, 'checkout'])
-                //     ->middleware(HasNoActiveSubscription::class);
-
                 // Customer portal
                 Route::get('/portal', SubscriptionPortal::class)->name('portal');
 
