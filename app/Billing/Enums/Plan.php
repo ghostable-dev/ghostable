@@ -10,11 +10,11 @@ enum Plan: string
     case STANDARD = 'standard';
     case SCALE = 'scale';
     case ENTERPRISE = 'enterprise';
-    
+
     /**
      * Get an array of plan values => labels.
      *
-     * @param bool $billableOnly Limit to plans with Stripe billing config.
+     * @param  bool  $billableOnly  Limit to plans with Stripe billing config.
      * @return array<string, string>
      */
     public static function selectOptions(bool $billableOnly = false): array
@@ -24,7 +24,7 @@ enum Plan: string
             )->mapWithKeys(fn (self $plan) => [$plan->value => $plan->label()])
             ->toArray();
     }
-    
+
     /**
      * Get all billable plans.
      *
@@ -37,7 +37,7 @@ enum Plan: string
             ->values()
             ->toArray();
     }
-    
+
     /**
      * Get the Plan enum from a Stripe API ID.
      */
@@ -49,7 +49,7 @@ enum Plan: string
             ->map(fn (string $key) => self::tryFrom($key))
             ->first();
     }
-    
+
     /**
      * Get the human-readable label for this plan.
      */
@@ -70,7 +70,7 @@ enum Plan: string
     {
         return config("platform.billing.{$this->value}.api_id");
     }
-    
+
     /**
      * Determine if the plan is billable (exists in Stripe billing config).
      */
@@ -78,7 +78,7 @@ enum Plan: string
     {
         return config("platform.billing.{$this->value}") !== null;
     }
-    
+
     /**
      * Check if plan is Free.
      */
@@ -86,7 +86,7 @@ enum Plan: string
     {
         return $this->is(self::FREE);
     }
-    
+
     /**
      * Check if plan is Standard.
      */
@@ -94,7 +94,7 @@ enum Plan: string
     {
         return $this->is(self::STANDARD);
     }
-    
+
     /**
      * Check if plan is Scale.
      */
@@ -102,7 +102,7 @@ enum Plan: string
     {
         return $this->is(self::SCALE);
     }
-    
+
     /**
      * Check if plan is Enterprise.
      */
@@ -110,7 +110,7 @@ enum Plan: string
     {
         return $this->is(self::ENTERPRISE);
     }
-    
+
     /**
      * Check if this plan matches the given plan.
      */

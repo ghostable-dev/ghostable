@@ -16,13 +16,12 @@ class OrganizationFeatures extends Data
     /**
      * Create an OrganizationFeatures instance based on the given Plan.
      *
-     * @param Plan $plan The billing plan to resolve features for.
-     * @return self
+     * @param  Plan  $plan  The billing plan to resolve features for.
      */
     public static function fromPlan(Plan $plan): self
     {
         return match ($plan) {
-            Plan::FREE => new self(),
+            Plan::FREE => new self,
             Plan::STANDARD => new self(audits: true, integrations: true, advanced_permissions: false),
             Plan::SCALE => new self(audits: true, integrations: true, advanced_permissions: true),
             Plan::ENTERPRISE => new self(audits: true, integrations: true, advanced_permissions: true),
@@ -31,7 +30,7 @@ class OrganizationFeatures extends Data
 
     /**
      * Merge in override values to customize features.
-     * 
+     *
      * @return self A new instance with overrides applied.
      */
     public function withOverrides(array $overrides): self

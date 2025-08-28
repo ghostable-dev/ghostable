@@ -13,7 +13,7 @@ abstract class SubscriptionCheckout extends Controller
     public function checkout(Organization $organization): Checkout
     {
         $plan = $this->getBillablePlan();
-        if (!$plan->isBillable()) {
+        if (! $plan->isBillable()) {
             abort(404);
         }
 

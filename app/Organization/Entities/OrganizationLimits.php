@@ -13,7 +13,7 @@ class OrganizationLimits extends Data
         public readonly ?int $environments_per_project = null,
         public readonly ?int $api_operations = null,
     ) {}
-    
+
     /**
      * Create an OrganizationLimits instance based on the given Plan.
      */
@@ -23,16 +23,16 @@ class OrganizationLimits extends Data
             Plan::FREE => new self(users: 2, projects: null, environments_per_project: null, api_operations: 5000),
             Plan::STANDARD => new self(users: 5, projects: null, environments_per_project: null, api_operations: 25000),
             Plan::SCALE => new self(users: 10, projects: null, environments_per_project: null, api_operations: 60000),
-            Plan::ENTERPRISE => new self(), // unlimited
+            Plan::ENTERPRISE => new self, // unlimited
         };
     }
-    
+
     /**
      * Create a new OrganizationLimits instance with override values applied.
      *
      * Values in the $overrides array will replace the defaults from the current instance
      * if present. This allows partial customization of plan-based limits.
-     * 
+     *
      * @return self A new OrganizationLimits instance with merged values.
      */
     public function withOverrides(array $overrides): self
