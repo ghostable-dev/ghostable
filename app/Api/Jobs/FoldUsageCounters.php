@@ -37,11 +37,6 @@ class FoldUsageCounters implements ShouldQueue
             : null;
 
         foreach ($this->recentBuckets() as $bucket) {
-            Log::info('Folding usage bucket', [
-                'bucket' => $bucket,
-                'store' => $redis ? 'redis' : 'portable',
-            ]);
-
             if ($redis) {
                 $this->foldRedisBucket(bucket: $bucket, redis: $redis);
 
@@ -74,15 +69,8 @@ class FoldUsageCounters implements ShouldQueue
         $indexKey = UsageCacheKey::index($bucket);
         $keys = $redis->smembers($indexKey);
         if (empty($keys)) {
-            Log::info('No usage keys found for Redis bucket', ['bucket' => $bucket]);
-
             return;
         }
-
-        Log::info('Folding Redis bucket', [
-            'bucket' => $bucket,
-            'key_count' => count($keys),
-        ]);
 
         $results = $redis->pipeline(function ($pipe) use ($keys) {
             foreach ($keys as $k) {
@@ -116,16 +104,10 @@ class FoldUsageCounters implements ShouldQueue
     {
         if (($parts = UsageCacheKey::parseAggregate($key)) === null
             || $total <= 0) {
-            Log::info('Skipping Redis key', ['key' => $key, 'total' => $total]);
+            Log::warning('Skipping Redis key', ['key' => $key, 'total' => $total]);
 
             return;
         }
-
-        Log::info('Folding Redis key', [
-            'key' => $key,
-            'total' => $total,
-            'resources' => count($byRes),
-        ]);
 
         $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 
@@ -196,15 +178,8 @@ class FoldUsageCounters implements ShouldQueue
         $indexKey = UsageCacheKey::index($bucket);
         $keys = $store->get($indexKey, []);
         if (empty($keys)) {
-            Log::info('No usage keys found for portable bucket', ['bucket' => $bucket]);
-
             return;
         }
-
-        Log::info('Folding portable bucket', [
-            'bucket' => $bucket,
-            'key_count' => count($keys),
-        ]);
 
         DB::transaction(function () use ($keys, $store, $indexKey) {
             foreach ($keys as $k) {
@@ -232,12 +207,10 @@ class FoldUsageCounters implements ShouldQueue
     private function foldPortableResourceKey(string $key, int $count): void
     {
         if (($parts = UsageCacheKey::parseResource($key)) === null) {
-            Log::info('Skipping portable resource key', ['key' => $key]);
+            Log::warning('Skipping portable resource key', ['key' => $key]);
 
             return;
         }
-
-        Log::info('Folding portable resource key', ['key' => $key, 'count' => $count]);
 
         $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
         $resourceTypeLimited = Str::limit(value: $parts->resourceType, limit: 50, end: '');
@@ -271,12 +244,10 @@ class FoldUsageCounters implements ShouldQueue
     private function foldPortableAggregateKey(string $key, int $count): void
     {
         if (($parts = UsageCacheKey::parseAggregate($key)) === null) {
-            Log::info('Skipping portable aggregate key', ['key' => $key]);
+            Log::warning('Skipping portable aggregate key', ['key' => $key]);
 
             return;
         }
-
-        Log::info('Folding portable aggregate key', ['key' => $key, 'count' => $count]);
 
         $data = UsageBucketData::fromBucket(bucket: $parts->bucket, endpoint: $parts->endpoint);
 

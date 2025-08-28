@@ -11,7 +11,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 final class TrackUsage
@@ -79,8 +78,6 @@ final class TrackUsage
 
             return $response;
         } finally {
-            Log::info('API CALL', ['endpoint' => $endpoint]);
-
             $this->recorder->record(
                 orgId: (string) $organization->id,
                 tokenId: (string) $token->id,
