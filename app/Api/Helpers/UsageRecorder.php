@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Api\Helpers;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -24,8 +23,8 @@ final class UsageRecorder
     ): void {
         Log::info('RECORDING...');
         $store = Cache::store();
-        $now = Carbon::now('UTC');
-        $bucket = $now->format('Ymd\THi'); // e.g. 20250827T1445
+        $now = UsageDate::now();
+        $bucket = UsageDate::formatBucket($now); // e.g. 20250827T1445
         $expires = $now->copy()->addSeconds($this->ttlSeconds);
 
         $method = strtoupper($method);
