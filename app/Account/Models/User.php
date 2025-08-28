@@ -157,7 +157,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
-    
+
     /**
      * Get the user's personalized greeting.
      */
