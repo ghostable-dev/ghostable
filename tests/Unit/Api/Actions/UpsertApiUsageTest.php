@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 it('upserts hourly usage counts', function () {
     $action = app(UpsertApiUsageHourly::class);
@@ -16,7 +16,7 @@ it('upserts hourly usage counts', function () {
     $action->handle('org', 'token', 'GET', '/endpoint', $hour, 2);
     $action->handle('org', 'token', 'GET', '/endpoint', $hour, 4, 'res', 'id');
 
-    $agg = DB::table('api_usage_hourly')->where([
+    $aggQuery = DB::table('api_usage_hourly')->where([
         'organization_id' => 'org',
         'token_id' => 'token',
         'method' => 'GET',
@@ -24,7 +24,10 @@ it('upserts hourly usage counts', function () {
         'resource_type' => null,
         'resource_id' => null,
         'hour' => $hour,
-    ])->value('count');
+    ]);
+
+    $agg = $aggQuery->value('count');
+    $aggRows = $aggQuery->count();
 
     $res = DB::table('api_usage_hourly')->where([
         'organization_id' => 'org',
@@ -37,6 +40,7 @@ it('upserts hourly usage counts', function () {
     ])->value('count');
 
     expect($agg)->toBe(3)
+        ->and($aggRows)->toBe(1)
         ->and($res)->toBe(4);
 });
 
@@ -48,7 +52,7 @@ it('upserts daily usage counts', function () {
     $action->handle('org', 'token', 'GET', '/endpoint', $day, 2);
     $action->handle('org', 'token', 'GET', '/endpoint', $day, 4, 'res', 'id');
 
-    $agg = DB::table('api_usage_daily')->where([
+    $aggQuery = DB::table('api_usage_daily')->where([
         'organization_id' => 'org',
         'token_id' => 'token',
         'method' => 'GET',
@@ -56,7 +60,10 @@ it('upserts daily usage counts', function () {
         'resource_type' => null,
         'resource_id' => null,
         'date' => $day,
-    ])->value('count');
+    ]);
+
+    $agg = $aggQuery->value('count');
+    $aggRows = $aggQuery->count();
 
     $res = DB::table('api_usage_daily')->where([
         'organization_id' => 'org',
@@ -69,5 +76,6 @@ it('upserts daily usage counts', function () {
     ])->value('count');
 
     expect($agg)->toBe(3)
+        ->and($aggRows)->toBe(1)
         ->and($res)->toBe(4);
 });
