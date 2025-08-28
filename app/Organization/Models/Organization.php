@@ -3,6 +3,7 @@
 namespace App\Organization\Models;
 
 use App\Account\Models\User;
+use App\Api\Models\ApiUsageDaily;
 use App\Billing\Concerns\Billable;
 use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
@@ -150,6 +151,11 @@ class Organization extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function apiUsages(): HasMany
+    {
+        return $this->hasMany(ApiUsageDaily::class);
     }
 
     public function getActivitylogOptions(): LogOptions
