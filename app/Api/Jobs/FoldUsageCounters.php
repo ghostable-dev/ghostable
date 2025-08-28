@@ -6,12 +6,12 @@ use App\Api\Actions\UpsertApiUsageDaily;
 use App\Api\Actions\UpsertApiUsageHourly;
 use App\Api\Entities\UsageBucketData;
 use App\Api\Helpers\UsageCacheKey;
+use App\Api\Helpers\UsageDate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -51,10 +51,10 @@ class FoldUsageCounters implements ShouldQueue
      */
     private function recentBuckets(): array
     {
-        $now = Carbon::now('UTC')->startOfMinute();
+        $now = UsageDate::now()->startOfMinute();
         $buckets = [];
         for ($i = 1; $i <= $this->lookbackMinutes; $i++) {
-            $buckets[] = $now->copy()->subMinutes($i)->format('Ymd\THi');
+            $buckets[] = UsageDate::formatBucket($now->copy()->subMinutes($i));
         }
 
         return $buckets;

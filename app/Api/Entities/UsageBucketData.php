@@ -2,6 +2,7 @@
 
 namespace App\Api\Entities;
 
+use App\Api\Helpers\UsageDate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Data;
@@ -18,7 +19,7 @@ class UsageBucketData extends Data
     public static function fromBucket(string $bucket, string $endpoint): self
     {
         $endpoint = Str::limit($endpoint, 191, '');
-        $minuteUtc = Carbon::createFromFormat('Ymd\THi', $bucket, 'UTC')->startOfMinute();
+        $minuteUtc = UsageDate::parseBucket($bucket);
         $hourUtc = $minuteUtc->copy()->startOfHour();
         $dayUtc = $minuteUtc->copy()->startOfDay();
 
