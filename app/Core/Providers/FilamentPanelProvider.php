@@ -2,6 +2,7 @@
 
 namespace App\Core\Providers;
 
+use App\Filament\Widgets\ApiUsageStats;
 use App\Filament\Widgets\UserStats;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -43,6 +44,7 @@ class FilamentPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 UserStats::class,
+                ApiUsageStats::class,
                 FilamentInfoWidget::class,
             ])
             ->middleware([
