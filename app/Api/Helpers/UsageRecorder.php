@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api\Helpers;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 final class UsageRecorder
@@ -21,7 +20,6 @@ final class UsageRecorder
         string|int|null $resourceId = null,
         ?int $status = null,
     ): void {
-        Log::info('RECORDING...');
         $store = Cache::store();
         $now = UsageDate::now();
         $bucket = UsageDate::formatBucket($now); // e.g. 20250827T1445
@@ -44,7 +42,6 @@ final class UsageRecorder
         $redis = method_exists($store->getStore(), 'connection') ? $store->getStore()->connection() : null;
 
         if ($redis) {
-            Log::info('RECORDING WITH REDIS');
             $redis->pipeline(function ($pipe) use ($counterKey, $indexKey, $byResKey, $expires, $resourceType, $resourceId) {
                 $pipe->incr($counterKey);
                 $pipe->expireAt($counterKey, $expires->timestamp);
