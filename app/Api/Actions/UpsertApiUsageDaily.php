@@ -17,19 +17,25 @@ class UpsertApiUsageDaily
         ?string $resourceType = null,
         ?string $resourceId = null,
     ): void {
-        DB::table('api_usage_daily')->upsert(
-            [
-                'organization_id' => $organizationId,
-                'token_id' => $tokenId,
-                'method' => $method,
-                'endpoint' => $endpoint,
-                'resource_type' => $resourceType,
-                'resource_id' => $resourceId,
-                'date' => $day,
-                'count' => $count,
-            ],
-            ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
-            ['count' => DB::raw('api_usage_daily.count + '.$count)]
-        );
+        $attrs = [
+            'organization_id' => $organizationId,
+            'token_id' => $tokenId,
+            'method' => $method,
+            'endpoint' => $endpoint,
+            'resource_type' => $resourceType,
+            'resource_id' => $resourceId,
+            'date' => $day,
+        ];
+
+        DB::transaction(function () use ($attrs, $count) {
+            $query = DB::table('api_usage_daily')->where($attrs);
+            if ($query->increment('count', $count, ['updated_at' => now()]) === 0) {
+                DB::table('api_usage_daily')->insert($attrs + [
+                    'count' => $count,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
     }
 }
