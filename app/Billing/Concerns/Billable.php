@@ -11,44 +11,26 @@ trait Billable
 {
     use CashierBillable;
 
+    /**
+     * Get the current plan (based on active subscription).
+     */
     protected function plan(): Attribute
     {
         return Attribute::make(
-            get: fn () => collect([Plan::ENTERPRISE, Plan::GROWTH, Plan::STARTER])
-                ->first(fn ($p) => $this->subscribed(type: $p))
+            get: fn () => collect(Plan::billable())
+                ->first(fn (Plan $plan) => $this->subscribed($plan->value))
                 ?? Plan::FREE
         );
     }
 
-    public function isEnterprise(): bool
-    {
-        return $this->subscribed(Plan::ENTERPRISE);
-    }
-
-    public function isGrowth(): bool
-    {
-        return $this->subscribed(Plan::GROWTH);
-    }
-
-    public function isStarter(): bool
-    {
-        return $this->subscribed(Plan::STARTER);
-    }
-
+    /**
+     * Get the active subscription (based on plan).
+     */
     public function activeSubscription(): ?Subscription
     {
-        if ($this->isEnterprise()) {
-            return $this->subscription(Plan::ENTERPRISE);
-        }
-
-        if ($this->isGrowth()) {
-            return $this->subscription(Plan::GROWTH);
-        }
-
-        if ($this->isStarter()) {
-            return $this->subscription(Plan::STARTER);
-        }
-
-        return null;
+        return collect(Plan::billable())
+            ->map(fn (Plan $plan) => $this->subscription($plan->value))
+            ->filter(fn (?Subscription $sub) => $sub?->valid())
+            ->first();
     }
 }

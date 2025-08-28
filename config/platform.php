@@ -1,21 +1,23 @@
 <?php
 
+use App\Billing\Enums\Plan;
+
 return [
 
     /**
      * Billing configuration details.
      */
     'billing' => [
-        'starter' => [
-            'type' => 'starter',
-            'api_id' => env('STARTER_SUBSCRIPTION_API_ID'),
+        Plan::STANDARD->value => [
+            'type' => Plan::STANDARD->value,
+            'api_id' => env('STANDARD_SUBSCRIPTION_API_ID'),
         ],
-        'growth' => [
-            'type' => 'growth',
-            'api_id' => env('GROWTH_SUBSCRIPTION_API_ID'),
+        Plan::SCALE->value => [
+            'type' => Plan::SCALE->value,
+            'api_id' => env('SCALE_SUBSCRIPTION_API_ID'),
         ],
-        'enterprise' => [
-            'type' => 'enterprise',
+        Plan::ENTERPRISE->value => [
+            'type' => Plan::ENTERPRISE->value,
             'api_id' => env('ENTERPRISE_SUBSCRIPTION_API_ID'),
         ],
     ],

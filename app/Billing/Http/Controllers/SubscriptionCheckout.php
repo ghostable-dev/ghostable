@@ -2,6 +2,7 @@
 
 namespace App\Billing\Http\Controllers;
 
+use App\Billing\Enums\Plan;
 use App\Core\Http\Controllers\Controller;
 use App\Organization\Models\Organization;
 use Illuminate\Support\Facades\Auth;
@@ -11,14 +12,14 @@ abstract class SubscriptionCheckout extends Controller
 {
     public function checkout(Organization $organization): Checkout
     {
-        if (empty($subscriptionId = $this->getSubscriptionApiId())
-            || empty($type = $this->getSubscriptionType())) {
+        $plan = $this->getBillablePlan();
+        if (!$plan->isBillable()) {
             abort(404);
         }
 
         $subscription = $organization->newSubscription(
-            type: $type,
-            prices: [$subscriptionId]
+            type: $plan->value,
+            prices: [$plan->getBillableId()]
         );
 
         return $subscription
@@ -39,7 +40,5 @@ abstract class SubscriptionCheckout extends Controller
             );
     }
 
-    abstract protected function getSubscriptionType(): ?string;
-
-    abstract protected function getSubscriptionApiId(): ?string;
+    abstract protected function getBillablePlan(): Plan;
 }

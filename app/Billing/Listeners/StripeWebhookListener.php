@@ -10,9 +10,9 @@ class StripeWebhookListener
 {
     public function handle(WebhookHandled|WebhookReceived $event)
     {
-        Log::info('Event: '.$event->payload['type']);
-        $id = $event->payload['data']['object']['customer'] ?? null;
-        Log::info('ID: '.$id ?? 'N/A');
-        Log::info('--');
+        Log::info('Stripe event received', [
+            'event' => $event->payload['type'] ?? 'unknown',
+            'customer_id' => $event->payload['data']['object']['customer'] ?? 'N/A',
+        ]);
     }
 }

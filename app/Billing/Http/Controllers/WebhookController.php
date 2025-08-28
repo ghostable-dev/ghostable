@@ -3,7 +3,7 @@
 namespace App\Billing\Http\Controllers;
 
 use App\Billing\Entities\StripePayload;
-use App\Billing\Enums\SubscriptionType;
+use App\Billing\Enums\Plan;
 use App\Billing\Events\SubscriptionEnded;
 use App\Billing\Events\SubscriptionStarted;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +17,8 @@ class WebhookController extends CashierWebhookController
 
         $data = new StripePayload($payload);
         if (! is_null($organization = $data->organizationFromStripeId())) {
-            $type = $this->getSubscriptionTypeFromPayload($payload);
-            SubscriptionStarted::dispatch($organization, $type, $data);
+            $plan = $this->getSubscriptionPlanFromPayload($payload);
+            SubscriptionStarted::dispatch($organization, $plan, $data);
         } else {
             Log::error('Stripe Webhook Error', [
                 'method' => 'handleCustomerSubscriptionCreated',
@@ -35,8 +35,8 @@ class WebhookController extends CashierWebhookController
 
         $data = new StripePayload($payload);
         if (! is_null($organization = $data->organizationFromStripeId())) {
-            $type = $this->getSubscriptionTypeFromPayload($payload);
-            SubscriptionEnded::dispatch($organization, $type, $data);
+            $plan = $this->getSubscriptionPlanFromPayload($payload);
+            SubscriptionEnded::dispatch($organization, $plan, $data);
         } else {
             Log::error('Stripe Webhook Error', [
                 'method' => 'handleCustomerSubscriptionDeleted',
@@ -47,21 +47,21 @@ class WebhookController extends CashierWebhookController
         return $response;
     }
 
-    protected function getSubscriptionTypeFromPayload(array $payload): ?SubscriptionType
+    protected function getSubscriptionPlanFromPayload(array $payload): ?Plan
     {
         if (is_null($id = $payload['data']['object']['plan']['id'] ?? null)) {
-            Log::error('Could not find subscription type identifier.', compact('payload'));
+            Log::error('Could not find subscription plan identifier.', compact('payload'));
 
             return null;
         }
 
-        if (is_null($type = SubscriptionType::tryFromApiId($id))) {
-            Log::error('Could not find subscription type for identifier.', compact('id', 'payload'));
+        if (is_null($plan = Plan::tryFromBillableId($id))) {
+            Log::error('Could not find subscription plan for identifier.', compact('id', 'payload'));
 
             return null;
         }
 
-        return $type;
+        return $plan;
     }
 
     protected function handleCheckoutSessionCompleted(array $payload)

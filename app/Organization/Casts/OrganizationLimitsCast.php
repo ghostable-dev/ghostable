@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Organization\Casts;
 
-use App\Organization\Entities\FreeOrganizationLimits;
-use App\Organization\Entities\GrowthOrganizationLimits;
 use App\Organization\Entities\OrganizationLimits;
-use App\Organization\Entities\StarterOrganizationLimits;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
@@ -16,26 +13,11 @@ class OrganizationLimitsCast implements CastsAttributes
 {
     public function get(Model $model, string $key, mixed $value, array $attributes): OrganizationLimits
     {
-        if ($model->isStarter()) {
-            return StarterOrganizationLimits::from(
-                json_decode($value ?? '', true) ?? []
-            );
-        }
+        $overrides = json_decode($value ?? '', true) ?? [];
 
-        if ($model->isGrowth()) {
-            return GrowthOrganizationLimits::from(
-                json_decode($value ?? '', true) ?? []
-            );
-        }
-
-        return FreeOrganizationLimits::from(
-            json_decode($value ?? '', true) ?? []
-        );
+        return OrganizationLimits::fromPlan($model->plan)->withOverrides($overrides);
     }
 
-    /**
-     * Encrypt the given value for storage.
-     */
     public function set(Model $model, string $key, mixed $value, array $attributes): ?string
     {
         if (is_null($value)) {
@@ -43,7 +25,7 @@ class OrganizationLimitsCast implements CastsAttributes
         }
 
         if (! $value instanceof OrganizationLimits) {
-            throw new InvalidArgumentException('The given value is not a CustomSettings instance.');
+            throw new InvalidArgumentException('The given value is not a OrganizationLimits instance.');
         }
 
         return $value->toJson();

@@ -22,8 +22,8 @@
             <div class="mt-20 flow-root">
                     <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
                         <x-billing.plan-card 
-                            name="Starter" 
-                            alt-price="Free"
+                            name="Free" 
+                            price="0"
                             description="Everything you need to get started."
                             pl=""
                             :features="[
@@ -38,26 +38,26 @@
                                 'Version Tracking'
                             ]"/>
                         <x-billing.plan-card 
-                            name="Growth" 
+                            name="Standard" 
                             price="15" 
                             featured
                             description="Everything you need to get started"
                             :features="[
                                 'Up to 5 Users',
                                 'Up to 25,000 API Operations',
-                                'Everything from Starter',
+                                'Everything from Free',
                                 'Advanced User Permissions',
                                 '30 Day Audit History'
                             ]"/>
                         <x-billing.plan-card 
-                            name="Business" 
+                            name="Scale" 
                             price="50"
                             pr=""
                             description="Predictable pricing for scaling SaaS teams with CI/CD"
                             :features="[
                                 'Up to 10 Users',
                                 'Up to 60,000 API Operations',
-                                'Everything from Growth',
+                                'Everything from Standard',
                                 '60 Day Audit History',
                                 'SOC2 Integrations'
                             ]"/>

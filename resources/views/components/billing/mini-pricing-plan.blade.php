@@ -13,26 +13,26 @@
     </x-billing.mini-product> --}}
     
     <x-billing.mini-product
-        title="Starter"
+        title="Standard"
         description="Everything you need to get started">
         <span class="block mb-4 text-center">
             <span class="text-xl font-bold tracking-tight text-gray-900">$15</span>
             <span class="text-base text-gray-500">/month</span>
         </span>
         <flux:button 
-            href="{{ route('organization.billing.starter.checkout', $organization) }}"
+            href="{{ route('organization.billing.standard.checkout', $organization) }}"
             variant="primary">Select</flux:button>
     </x-billing.mini-product>
     
     <x-billing.mini-product
-        title="Growth"
+        title="Scale"
         description="Predictable pricing for scaling SaaS teams with CI/CD">
         <span class="block mb-4 text-center">
             <span class="text-xl font-bold tracking-tight text-gray-900">$50</span>
             <span class="text-base text-gray-500">/month</span>
         </span>
         <flux:button 
-            href="{{ route('organization.billing.growth.checkout', $organization) }}"
+            href="{{ route('organization.billing.scale.checkout', $organization) }}"
             variant="primary">Select</flux:button>
     </x-billing.mini-product>
     

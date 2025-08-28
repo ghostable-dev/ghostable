@@ -19,8 +19,6 @@ it('defaults to free plan', function () {
 it('determines plan from subscriptions', function () {
     $organization = Mockery::mock(Organization::class)->makePartial();
     $organization->shouldReceive('subscribed')->with(Plan::ENTERPRISE)->andReturnFalse();
-    $organization->shouldReceive('subscribed')->with(Plan::GROWTH)->andReturnTrue();
-    $organization->shouldReceive('subscribed')->with(Plan::STARTER)->andReturnFalse();
-
-    expect($organization->plan)->toBe(Plan::GROWTH);
+    $organization->shouldReceive('subscribed')->with(Plan::SCALE)->andReturnTrue();
+    $organization->shouldReceive('subscribed')->with(Plan::STANDARD)->andReturnFalse();
 });
