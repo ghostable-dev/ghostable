@@ -48,7 +48,7 @@ final class UsageRecorder
             $redis->pipeline(function ($pipe) use ($counterKey, $indexKey, $byResKey, $expires, $resourceType, $resourceId) {
                 $pipe->incr($counterKey);
                 $pipe->expireAt($counterKey, $expires->timestamp);
-                $pipe->sadd($indexKey, [$counterKey]);
+                $pipe->sadd($indexKey, $counterKey);
                 $pipe->expireAt($indexKey, $expires->timestamp);
 
                 if ($resourceType !== null && $resourceId !== null) {
