@@ -2,11 +2,11 @@
 
 namespace App\Core\Http\Controllers;
 
+use App\Core\Enums\InquiryType;
 use App\Core\Models\Inquiry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Enum;
-use App\Core\Enums\InquiryType;
 
 class ContactController extends Controller
 {
