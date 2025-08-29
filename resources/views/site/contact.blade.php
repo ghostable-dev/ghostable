@@ -30,7 +30,7 @@
                 })"
                 class="space-y-6">
                 @csrf
-                <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+                <input type="hidden" name="recaptcha_token" id="recaptcha_token" x-ref="recaptcha_token">
                 <flux:input label="Name" id="name" name="name" value="{{ old('name') }}" required/>
                 <flux:input label="Email" type="email" id="email" name="email" value="{{ old('email') }}" required/>
                 <flux:select label="Inquiry" id="inquiry" name="inquiry">
