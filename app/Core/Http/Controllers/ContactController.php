@@ -16,35 +16,34 @@ class ContactController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {]
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'inquiry' => ['required', new Enum(InquiryType::class)],
+            'message' => ['required', 'string'],
+            'recaptcha_token' => ['required', 'string'],
+        ]);
 
-        // $validated = $request->validate([
-        //     'name' => ['required', 'string', 'max:255'],
-        //     'email' => ['required', 'email', 'max:255'],
-        //     'inquiry' => ['required', new Enum(InquiryType::class)],
-        //     'message' => ['required', 'string'],
-        //     'recaptcha_token' => ['required', 'string'],
-        // ]);
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.secret'),
+            'response' => $validated['recaptcha_token'],
+            'remoteip' => $request->ip(),
+        ]);
 
-        // $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-        //     'secret' => config('services.recaptcha.secret'),
-        //     'response' => $validated['recaptcha_token'],
-        //     'remoteip' => $request->ip(),
-        // ]);
+        if (! $response->json('success') || $response->json('score') < 0.5) {
+            return back()->withErrors([
+                'recaptcha_token' => 'reCAPTCHA verification failed or suspicious behavior detected.',
+            ])->withInput();
+        }
 
-        // if (! $response->json('success') || $response->json('score') < 0.5) {
-        //     return back()->withErrors([
-        //         'recaptcha_token' => 'reCAPTCHA verification failed or suspicious behavior detected.',
-        //     ])->withInput();
-        // }
+        Inquiry::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'inquiry' => $validated['inquiry'],
+            'message' => $validated['message'],
+        ]);
 
-        // Inquiry::create([
-        //     'name' => $validated['name'],
-        //     'email' => $validated['email'],
-        //     'inquiry' => $validated['inquiry'],
-        //     'message' => $validated['message'],
-        // ]);
-
-        // return back()->with('status', 'Thanks for reaching out! We\'ll be in touch.');
+        return back()->with('status', 'Thanks for reaching out! We\'ll be in touch.');
     }
 }
