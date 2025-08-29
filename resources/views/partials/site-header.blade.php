@@ -38,16 +38,30 @@
             </flux:navbar.item> --}}
         </flux:navbar>
 
-        <!-- Auth buttons -->
+        <!-- Auth buttons & mobile navigation -->
         <div class="flex items-center gap-x-4">
-            <flux:link 
-                variant="ghost" 
+            <!-- Mobile nav toggle -->
+            <flux:dropdown class="md:hidden">
+                <flux:button
+                    icon="bars-3"
+                    variant="ghost"
+                    class="!text-white"
+                />
+                <flux:menu>
+                    <flux:menu.item href="/pricing">Pricing</flux:menu.item>
+                    <flux:menu.item href="/contact">Contact</flux:menu.item>
+                    <flux:menu.item href="https://docs.ghostable.dev" target="_blank">Docs</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+
+            <flux:link
+                variant="ghost"
                 class="!text-white"
                 href="{{ route('login') }}">
                 Sign in
             </flux:link>
-            <flux:button 
-                variant="primary" 
+            <flux:button
+                variant="primary"
                 class="bg-white text-black hover:bg-gray-100"
                 href="{{ route('register') }}">
                 Sign up
