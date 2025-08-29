@@ -90,7 +90,7 @@ class Post extends Model implements Sitemapable
 
     public function toSitemapTag(): Url|string|array
     {
-        return Url::create(route('blog.view-post', $this->slug))
+        return Url::create(route('blog.view', $this->slug))
             ->setLastModificationDate($this->posted_at)
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.7);

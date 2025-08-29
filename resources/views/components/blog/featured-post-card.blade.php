@@ -8,7 +8,7 @@
     <div class="flex flex-1 flex-col p-8">
         <div class="text-sm text-gray-700">{{ $post->posted_at->isoFormat('dddd, MMMM D, YYYY') }}</div>
         <div class="mt-2 text-base font-medium">
-            <a href="{{ route('blog.view-post', $post) }}">
+            <a href="{{ route('blog.view', $post) }}">
                 <span class="absolute inset-0"></span>{{ $post->title }}
             </a>
         </div>

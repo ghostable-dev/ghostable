@@ -29,7 +29,7 @@
                 <div class="flex flex-wrap gap-2">
                     <a
                         class="rounded-full border border-dotted border-gray-300 bg-gray-50 px-2 text-sm/6 font-medium text-gray-500"
-                        href="{{ route('blog', ['category' => $post->category->value]) }}">
+                        href="{{ route('blog.index', ['category' => $post->category->value]) }}">
                         {{ $post->category->label() }}
                     </a>
                 </div>
@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="mt-10">
-                        <flux:button icon="chevron-left" href="{{ route('blog') }}">
+                        <flux:button icon="chevron-left" href="{{ route('blog.index') }}">
                             Back to blog
                         </flux:button>
                     </div>

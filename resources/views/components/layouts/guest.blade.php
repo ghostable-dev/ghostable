@@ -7,5 +7,6 @@
     {{ $slot }}
     @include('partials.footer')
     @fluxScripts
+    @stack('scripts')
 </body>
 </html>

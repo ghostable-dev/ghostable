@@ -19,6 +19,6 @@ class BlogPosting extends SchemaGenerator
             // ->image(!is_null($post->hero) ? asset($post->hero) : null)
             ->genre($post->category->label())
             // ->wordCount($post->wordCount)
-            ->url(route('blog.view-post', $this->post));
+            ->url(route('blog.view', $this->post));
     }
 }

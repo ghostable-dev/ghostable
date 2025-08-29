@@ -21,6 +21,11 @@
                 Blog
             </flux:navbar.item> --}}
             <flux:navbar.item
+                href="/contact"
+                class="!text-white">
+                Contact
+            </flux:navbar.item>
+            <flux:navbar.item
                 href="https://docs.ghostable.dev"
                 target="_blank"
                 class="!text-white">
