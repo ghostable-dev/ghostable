@@ -72,7 +72,7 @@
                             <flux:subheading size="lg">
                                 Do you have special requirements that don't fit one of our plans? Contact us and we'll work something out.
                             </flux:subheading>
-                            <flux:button variant="primary">Contact Sales</flux:button>
+                            <flux:button variant="primary" href="{{ route('contact') }}">Contact Sales</flux:button>
                         </div>
                     </div>
                 </article>
