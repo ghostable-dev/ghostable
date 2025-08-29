@@ -3,7 +3,10 @@
     'lastUpdated' => null    
 ])
 <x-layouts.guest>
-    <div class="py-12 px-4 space-y-8">
+    
+    @include('partials.site-header')
+    
+    <div class="py-12 px-4 space-y-8 bg-white">
         <div class="mx-auto max-w-2xl text-left">
             <h1 class="text-4xl font-bold tracking-tight text-gray-900">
                 {{ $title }}
