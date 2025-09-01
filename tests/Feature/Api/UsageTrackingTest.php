@@ -1,6 +1,7 @@
 <?php
 
 use App\Api\Jobs\FoldUsageCounters;
+use App\Environment\Enums\EnvironmentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -93,5 +94,52 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
     ])->exists())->toBeFalse();
 
     // Cleanup frozen time
+    Carbon::setTestNow();
+});
+
+it('records environment as the resource for environment-scoped endpoints', function () {
+    config()->set('cache.default', 'array');
+    Cache::store()->clear();
+
+    $tRequest = Carbon::create(2025, 8, 27, 14, 44, 10, 'UTC');
+    Carbon::setTestNow($tRequest);
+
+    $user = $this->createUser('Ray', 'ray@example.com');
+    $organization = $this->createOrganization('Ghostbusters', $user);
+    $project = $this->createProject('Website', $organization);
+    $envA = $this->createEnvironment('dev', EnvironmentType::DEVELOPMENT, $project);
+    $envB = $this->createEnvironment('prod', EnvironmentType::PRODUCTION, $project);
+    $token = $user->createToken('test');
+
+    $path = "/api/v1/projects/{$project->id}/environments/%s";
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->getJson(sprintf($path, $envA->name))
+        ->assertOk();
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->getJson(sprintf($path, $envB->name))
+        ->assertOk();
+
+    Carbon::setTestNow($tRequest->copy()->addMinute()->startOfMinute());
+    (new FoldUsageCounters)->handle();
+
+    $hour = $tRequest->copy()->startOfHour();
+    $route = app('router')->getRoutes()->match(Request::create(sprintf($path, $envA->name), 'GET'));
+    $endpoint = $route->getName() ?? $route->uri();
+    $tokenId = (string) $token->accessToken->id;
+    $orgId = (string) $organization->id;
+
+    foreach ([$envA, $envB] as $env) {
+        expect(DB::table('api_usage_hourly')->where([
+            'organization_id' => $orgId,
+            'token_id' => $tokenId,
+            'method' => 'GET',
+            'endpoint' => $endpoint,
+            'resource_type' => 'environment',
+            'resource_id' => $env->id,
+            'hour' => $hour,
+            'count' => 1,
+        ])->exists())->toBeTrue();
+    }
+
     Carbon::setTestNow();
 });
