@@ -14,7 +14,6 @@ final class UsageCacheKey
 
     public const INDEX_PREFIX = self::PREFIX.':index';
 
-
     public static function counter(
         string $bucket,
         string $orgId,
