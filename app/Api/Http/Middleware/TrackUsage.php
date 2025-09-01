@@ -7,9 +7,7 @@ namespace App\Api\Http\Middleware;
 use App\Api\Actions\RecordApiUsage;
 use App\Api\Helpers\OrganizationContextResolver;
 use App\Organization\Models\Organization;
-use App\Project\Models\Project;
 use Closure;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,12 +61,8 @@ class TrackUsage
             return response()->json(['message' => 'API rate limit exceeded.'], 429);
         }
 
-        // Prepare analytics context
-        $endpoint = $request->route()?->getName()
-            ?? $request->route()?->uri()
-            ?? $request->path();
-
-        [$resourceType, $resourceId] = $this->extractResource($request);
+        // Prepare analytics context using full request path
+        $endpoint = $request->path();
 
         // Proceed; always record in finally (captures exceptions as "attempts").
         /** @var Response|null $response */
@@ -84,56 +78,7 @@ class TrackUsage
                 tokenId: (string) $token->id,
                 method: $request->getMethod(),
                 endpoint: $endpoint,
-                resourceType: $resourceType,
-                resourceId: $resourceId
             );
         }
-    }
-
-    /**
-     * Pick the "primary" concrete resource from route params/body for analytics.
-     * Skips Organization; uses the first Eloquent model param as the resource.
-     */
-    private function extractResource(Request $request): array
-    {
-        $route = $request->route();
-        $params = $route?->parameters() ?? [];
-
-        // Attempt to resolve project even if bindings haven't run yet
-        $projectParam = $params['project'] ?? null;
-        $project = $projectParam instanceof Project
-            ? $projectParam
-            : (is_string($projectParam) ? Project::find($projectParam) : null);
-
-        // Prefer environment when a name param is present
-        if ($project) {
-            $name = $params['name'] ?? null;
-            if (is_string($name)) {
-                $env = $project->environments()->where('name', $name)->first();
-                if ($env) {
-                    return [$env->getMorphClass(), (string) $env->getKey()];
-                }
-
-                // Environment not found → fall back to project
-                return [$project->getMorphClass(), (string) $project->getKey()];
-            }
-        }
-
-        // Fallback: first model param excluding org
-        foreach ($params as $param) {
-            if ($param instanceof Organization) {
-                continue; // org is accounted for separately
-            }
-            if ($param instanceof Model) {
-                return [$param->getMorphClass(), (string) $param->getKey()];
-            }
-        }
-
-        // Final fallback: project if resolved, else null
-        if ($project) {
-            return [$project->getMorphClass(), (string) $project->getKey()];
-        }
-
-        return [null, null];
     }
 }

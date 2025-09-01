@@ -2,7 +2,6 @@
 
 use App\Api\Jobs\FoldUsageCounters;
 use App\Environment\Enums\EnvironmentType;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,18 +45,14 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
     $hour = $tRequest->copy()->startOfHour();
     $day = $tRequest->copy()->startOfDay();
 
-    // Derive endpoints EXACTLY like middleware (no names = URI template)
-    $routeTracked = app('router')->getRoutes()->match(Request::create($pathTracked, 'GET'));
-    $endpointTracked = $routeTracked->getName() ?? $routeTracked->uri(); // "api/v1/organizations/{organization}/projects"
-
-    $routeUntracked = app('router')->getRoutes()->match(Request::create($pathUntracked, 'GET'));
-    $endpointUntracked = $routeUntracked->getName() ?? $routeUntracked->uri(); // "api/v1/organizations"
+    $endpointTracked = ltrim($pathTracked, '/');
+    $endpointUntracked = ltrim($pathUntracked, '/');
 
     $tokenId = (string) $token->accessToken->id;
     $orgId = (string) $organization->id;
 
     // ---------- Assertions ----------
-    // Tracked route SHOULD be folded (aggregate row: resource fields NULL)
+    // Tracked route SHOULD be folded
     expect(DB::table('api_usage_hourly')->where([
         'organization_id' => $orgId,
         'token_id' => $tokenId,
@@ -65,7 +60,7 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
         'endpoint' => $endpointTracked,
         'hour' => $hour,
         'count' => 1,
-    ])->whereNull('resource_type')->whereNull('resource_id')->exists())->toBeTrue();
+    ])->exists())->toBeTrue();
 
     expect(DB::table('api_usage_daily')->where([
         'organization_id' => $orgId,
@@ -74,7 +69,7 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
         'endpoint' => $endpointTracked,
         'date' => $day,
         'count' => 1,
-    ])->whereNull('resource_type')->whereNull('resource_id')->exists())->toBeTrue();
+    ])->exists())->toBeTrue();
 
     // Untracked route SHOULD NOT appear in aggregates
     expect(DB::table('api_usage_hourly')->where([
@@ -97,7 +92,7 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
     Carbon::setTestNow();
 });
 
-it('records environment as the resource for environment-scoped endpoints', function () {
+it('keys counts by full endpoint path', function () {
     config()->set('cache.default', 'array');
     Cache::store()->clear();
 
@@ -123,23 +118,40 @@ it('records environment as the resource for environment-scoped endpoints', funct
     (new FoldUsageCounters)->handle();
 
     $hour = $tRequest->copy()->startOfHour();
-    $route = app('router')->getRoutes()->match(Request::create(sprintf($path, $envA->name), 'GET'));
-    $endpoint = $route->getName() ?? $route->uri();
+    $day = $tRequest->copy()->startOfDay();
     $tokenId = (string) $token->accessToken->id;
     $orgId = (string) $organization->id;
 
-    foreach ([$envA, $envB] as $env) {
+    $endpointA = ltrim(sprintf($path, $envA->name), '/');
+    $endpointB = ltrim(sprintf($path, $envB->name), '/');
+
+    foreach ([$endpointA, $endpointB] as $endpoint) {
         expect(DB::table('api_usage_hourly')->where([
             'organization_id' => $orgId,
             'token_id' => $tokenId,
             'method' => 'GET',
             'endpoint' => $endpoint,
-            'resource_type' => 'environment',
-            'resource_id' => $env->id,
             'hour' => $hour,
             'count' => 1,
         ])->exists())->toBeTrue();
     }
+
+    $template = 'api/v1/projects/{project}/environments/{name}';
+    expect(DB::table('api_usage_hourly')->where([
+        'organization_id' => $orgId,
+        'token_id' => $tokenId,
+        'method' => 'GET',
+        'endpoint' => $template,
+        'hour' => $hour,
+    ])->exists())->toBeFalse();
+
+    expect(DB::table('api_usage_daily')->where([
+        'organization_id' => $orgId,
+        'token_id' => $tokenId,
+        'method' => 'GET',
+        'endpoint' => $template,
+        'date' => $day,
+    ])->exists())->toBeFalse();
 
     Carbon::setTestNow();
 });

@@ -14,13 +14,12 @@ return new class extends Migration
             $table->foreignUuid('token_id');
             $table->string('method', 8)->nullable();
             $table->string('endpoint', 191);
-            $table->nullableUuidMorphs('resource'); // -> resource_type, resource_id (UUID), indexed
             $table->timestamp('hour');
             $table->unsignedBigInteger('count')->default(0);
             $table->timestamps();
 
             $table->unique(
-                ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'hour'],
+                ['organization_id', 'token_id', 'method', 'endpoint', 'hour'],
                 'au_hourly_uq'
             );
         });
@@ -31,13 +30,12 @@ return new class extends Migration
             $table->foreignUuid('token_id');
             $table->string('method', 8)->nullable();
             $table->string('endpoint', 191);
-            $table->nullableUuidMorphs('resource'); // same here
             $table->date('date');
             $table->unsignedBigInteger('count')->default(0);
             $table->timestamps();
 
             $table->unique(
-                ['organization_id', 'token_id', 'method', 'endpoint', 'resource_type', 'resource_id', 'date'],
+                ['organization_id', 'token_id', 'method', 'endpoint', 'date'],
                 'au_daily_uq'
             );
         });

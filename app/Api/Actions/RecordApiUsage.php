@@ -18,8 +18,6 @@ final class RecordApiUsage
         string $tokenId,
         string $method,
         string $endpoint,
-        ?string $resourceType = null,
-        string|int|null $resourceId = null,
         ?int $status = null,
     ): void {
         $store = Cache::store();
@@ -38,22 +36,16 @@ final class RecordApiUsage
             endpoint: $endpoint,
         );
         $indexKey = UsageCacheKey::index($bucket);
-        $byResKey = UsageCacheKey::byResource($counterKey);
 
         // Try Redis-specific path
         $redis = method_exists($store->getStore(), 'connection') ? $store->getStore()->connection() : null;
 
         if ($redis) {
-            $redis->pipeline(function ($pipe) use ($counterKey, $indexKey, $byResKey, $expires, $resourceType, $resourceId) {
+            $redis->pipeline(function ($pipe) use ($counterKey, $indexKey, $expires) {
                 $pipe->incr($counterKey);
                 $pipe->expireAt($counterKey, $expires->timestamp);
                 $pipe->sadd($indexKey, $counterKey);
                 $pipe->expireAt($indexKey, $expires->timestamp);
-
-                if ($resourceType !== null && $resourceId !== null) {
-                    $pipe->hincrby($byResKey, "{$resourceType}:{$resourceId}", 1);
-                    $pipe->expireAt($byResKey, $expires->timestamp);
-                }
 
                 // Optional status class breakdown (uncomment if you want it)
                 // if ($status !== null) {
@@ -71,25 +63,9 @@ final class RecordApiUsage
         $store->add($counterKey, 0, $expires);
         $store->increment($counterKey);
 
-        if ($resourceType !== null && $resourceId !== null) {
-            // simulate per-resource using extra counter keys
-            $resKey = UsageCacheKey::resourceKeyFromCounter(
-                counterKey: $counterKey,
-                resourceType: $resourceType,
-                resourceId: $resourceId,
-            );
-            $store->add($resKey, 0, $expires);
-            $store->increment($resKey);
-        }
-
-        // keep a per-minute list of keys; best-effort concurrency
         $list = $store->get($indexKey, []);
         if (! in_array($counterKey, $list, true)) {
             $list[] = $counterKey;
-        }
-        // also index the resKey so the rollup can find it easily
-        if (isset($resKey) && ! in_array($resKey, $list, true)) {
-            $list[] = $resKey;
         }
         $store->put($indexKey, $list, $expires);
     }
