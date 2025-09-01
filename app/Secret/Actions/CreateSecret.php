@@ -4,9 +4,9 @@ namespace App\Secret\Actions;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
-use Illuminate\Encryption\Encrypter;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
+use Illuminate\Encryption\Encrypter;
 
 class CreateSecret
 {
