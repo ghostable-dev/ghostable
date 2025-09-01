@@ -4,6 +4,7 @@ namespace App\Secret\Models;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Secret\Actions\LogSecretActivity;
 use App\Secret\Casts\EncryptedSecretValue;
 use App\Secret\Concerns\HasMaskedValue;
@@ -11,6 +12,7 @@ use App\Secret\Entities\SecretNotificationsData;
 use App\Secret\Enums\SecretType;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Encryption\Encrypter;
+use RuntimeException;
 
 /**
  * @property string $id
@@ -79,6 +83,8 @@ class Secret extends Model
         'notifications',
         'type',
         'value',
+        'dek_wrapped',
+        'kek_salt',
     ];
 
     protected $casts = [
@@ -136,5 +142,47 @@ class Secret extends Model
             event: $event,
             user: $user,
         );
+    }
+
+    public function encrypter(): EncrypterContract
+    {
+        $environment = ResolveEnvironment::onceWithContext($this->environment_id);
+
+        if (! $environment) {
+            throw new RuntimeException('Environment is missing; cannot resolve secret encrypter.');
+        }
+
+        if ($this->dek_wrapped) {
+            $kek = $environment->encrypter($this->kek_salt);
+            $dek = $kek->decryptString($this->dek_wrapped);
+
+            return new Encrypter(base64_decode($dek), config('app.cipher'));
+        }
+
+        // Backward compatibility for secrets without a dedicated DEK
+        return $environment->encrypter();
+    }
+
+    public function rotateDek(): void
+    {
+        $currentEncrypter = $this->encrypter();
+        $plaintext = $currentEncrypter->decryptString($this->getRawOriginal('value'));
+
+        $versionsPlain = [];
+        foreach ($this->versions as $version) {
+            $versionsPlain[$version->id] = $currentEncrypter->decryptString($version->getRawOriginal('value'));
+        }
+
+        $environment = ResolveEnvironment::onceWithContext($this->environment_id);
+        $dek = base64_encode(Encrypter::generateKey(config('app.cipher')));
+        $this->dek_wrapped = $environment->encrypter()->encryptString($dek);
+        $this->kek_salt = $environment->kek_salt;
+        $this->value = $plaintext; // re-encrypt with new DEK via cast
+        $this->save();
+
+        foreach ($this->versions as $version) {
+            $version->value = $versionsPlain[$version->id];
+            $version->save();
+        }
     }
 }

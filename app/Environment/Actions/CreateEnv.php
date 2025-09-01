@@ -7,7 +7,6 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Environment\Rules\WithinProjectEnvironmentCap;
 use App\Project\Models\Project;
-use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Validator;
 
 class CreateEnv
@@ -28,9 +27,7 @@ class CreateEnv
         $env->type = $type;
         $env->file_format = EnvFileFormat::ALPHABETICAL;
 
-        $env->encryption_key = base64_encode(
-            Encrypter::generateKey(config('app.cipher')),
-        );
+        $env->kek_salt = base64_encode(random_bytes(32));
 
         $env->project()->associate($project);
         $env->base()->associate($base);

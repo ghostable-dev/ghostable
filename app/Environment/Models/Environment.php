@@ -105,7 +105,7 @@ class Environment extends Model implements SupportsOverrides
     // protected static function booted(): void
     // {
     //     static::creating(function (Environment $environment) {
-    //         $environment->encryption_key ??= base64_encode(
+    //         $environment->kek_salt ??= base64_encode(
     //             Encrypter::generateKey(config('app.cipher')),
     //         );
     //     });
@@ -152,13 +152,23 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariableRule::class);
     }
 
-    public function encrypter(): EncrypterContract
+    public function encrypter(?string $kekSalt = null): EncrypterContract
     {
-        if (! $this->encryption_key) {
-            throw new RuntimeException('Environment missing encryption key');
+        $salt = $kekSalt ?? $this->kek_salt;
+
+        if (! $salt) {
+            throw new RuntimeException('Environment missing KEK salt');
         }
 
-        return new Encrypter(base64_decode($this->encryption_key), config('app.cipher'));
+        $appKey = config('app.key');
+
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+
+        $key = hash_hkdf('sha256', $appKey, 32, 'env-kek', base64_decode($salt));
+
+        return new Encrypter($key, config('app.cipher'));
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool

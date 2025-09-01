@@ -3,7 +3,6 @@
 use App\Environment\Models\Environment;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,11 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('environments', function (Blueprint $table) {
-            $table->string('encryption_key')->nullable()->after('notifications');
+            $table->string('kek_salt')->nullable()->after('notifications');
         });
 
-        Environment::query()->whereNull('encryption_key')->each(function (Environment $environment) {
-            $environment->encryption_key = base64_encode(Encrypter::generateKey(config('app.cipher')));
+        Environment::query()->whereNull('kek_salt')->each(function (Environment $environment) {
+            $environment->kek_salt = base64_encode(random_bytes(32));
             $environment->save();
         });
     }
@@ -29,7 +28,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('environments', function (Blueprint $table) {
-            $table->dropColumn('encryption_key');
+            $table->dropColumn('kek_salt');
         });
     }
 };

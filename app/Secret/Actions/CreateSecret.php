@@ -6,6 +6,7 @@ use App\Account\Models\User;
 use App\Environment\Models\Environment;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
+use Illuminate\Encryption\Encrypter;
 
 class CreateSecret
 {
@@ -24,6 +25,11 @@ class CreateSecret
             'name' => $name,
             'type' => $type,
         ]);
+
+        // Initialize a per-secret DEK and wrap it with the environment KEK
+        $dek = base64_encode(Encrypter::generateKey(config('app.cipher')));
+        $secret->dek_wrapped = $environment->encrypter()->encryptString($dek);
+        $secret->kek_salt = $environment->kek_salt;
 
         $secret->value = $value;
         $secret->createdBy()->associate($createdBy);
