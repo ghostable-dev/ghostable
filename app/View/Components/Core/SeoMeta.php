@@ -21,15 +21,13 @@ class SeoMeta extends Component
     {
         return <<<'blade'
             <meta property="og:locale" content="en_US">
-            <meta property="og:site_name" content="aijobs.com">
+            <meta property="og:site_name" content="Ghostable">
             <meta property="og:type" content="{{ $type }}"/>
             <meta property="og:title" content="{{ $title }}"/>
             <meta property="og:description" content="{{ $description }}"/>
             <meta property="og:image" content="{{ $sharingImage }}"/>
             <meta property="og:image:alt" content="{{ $description }}"/>
             <meta property="og:url" content="{{ $requestUrl }}"/>
-            <meta name="twitter:site" content="@teamaijobs"/>
-            <meta name="twitter:creator" content="@teamaijobs"/>
             <meta name="twitter:title" content="{{ $title }}"/>
             <meta name="twitter:description" content="{{ $description }}"/>
             <meta name="twitter:card" content="summary_large_image"/>
