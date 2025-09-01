@@ -14,16 +14,12 @@ class UpsertApiUsageDaily
         string $endpoint,
         Carbon $day,
         int $count,
-        ?string $resourceType = null,
-        ?string $resourceId = null,
     ): void {
         $attrs = [
             'organization_id' => $organizationId,
             'token_id' => $tokenId,
             'method' => $method,
             'endpoint' => $endpoint,
-            'resource_type' => $resourceType,
-            'resource_id' => $resourceId,
             'date' => $day,
         ];
 

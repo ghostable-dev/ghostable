@@ -15,8 +15,6 @@ class ApiUsageDaily extends Model
         'token_id',
         'method',
         'endpoint',
-        'resource_type',
-        'resource_id',
         'date',
         'count',
     ];

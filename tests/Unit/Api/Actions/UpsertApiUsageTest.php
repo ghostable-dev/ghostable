@@ -14,34 +14,21 @@ it('upserts hourly usage counts', function () {
 
     $action->handle('org', 'token', 'GET', '/endpoint', $hour, 1);
     $action->handle('org', 'token', 'GET', '/endpoint', $hour, 2);
-    $action->handle('org', 'token', 'GET', '/endpoint', $hour, 4, 'res', 'id');
+    $action->handle('org', 'token', 'GET', '/endpoint', $hour, 4);
 
-    $aggQuery = DB::table('api_usage_hourly')->where([
+    $query = DB::table('api_usage_hourly')->where([
         'organization_id' => 'org',
         'token_id' => 'token',
         'method' => 'GET',
         'endpoint' => '/endpoint',
-        'resource_type' => null,
-        'resource_id' => null,
         'hour' => $hour,
     ]);
 
-    $agg = $aggQuery->value('count');
-    $aggRows = $aggQuery->count();
+    $count = $query->value('count');
+    $rows = $query->count();
 
-    $res = DB::table('api_usage_hourly')->where([
-        'organization_id' => 'org',
-        'token_id' => 'token',
-        'method' => 'GET',
-        'endpoint' => '/endpoint',
-        'resource_type' => 'res',
-        'resource_id' => 'id',
-        'hour' => $hour,
-    ])->value('count');
-
-    expect($agg)->toBe(3)
-        ->and($aggRows)->toBe(1)
-        ->and($res)->toBe(4);
+    expect($count)->toBe(7)
+        ->and($rows)->toBe(1);
 });
 
 it('upserts daily usage counts', function () {
@@ -50,32 +37,19 @@ it('upserts daily usage counts', function () {
 
     $action->handle('org', 'token', 'GET', '/endpoint', $day, 1);
     $action->handle('org', 'token', 'GET', '/endpoint', $day, 2);
-    $action->handle('org', 'token', 'GET', '/endpoint', $day, 4, 'res', 'id');
+    $action->handle('org', 'token', 'GET', '/endpoint', $day, 4);
 
-    $aggQuery = DB::table('api_usage_daily')->where([
+    $query = DB::table('api_usage_daily')->where([
         'organization_id' => 'org',
         'token_id' => 'token',
         'method' => 'GET',
         'endpoint' => '/endpoint',
-        'resource_type' => null,
-        'resource_id' => null,
         'date' => $day,
     ]);
 
-    $agg = $aggQuery->value('count');
-    $aggRows = $aggQuery->count();
+    $count = $query->value('count');
+    $rows = $query->count();
 
-    $res = DB::table('api_usage_daily')->where([
-        'organization_id' => 'org',
-        'token_id' => 'token',
-        'method' => 'GET',
-        'endpoint' => '/endpoint',
-        'resource_type' => 'res',
-        'resource_id' => 'id',
-        'date' => $day,
-    ])->value('count');
-
-    expect($agg)->toBe(3)
-        ->and($aggRows)->toBe(1)
-        ->and($res)->toBe(4);
+    expect($count)->toBe(7)
+        ->and($rows)->toBe(1);
 });
