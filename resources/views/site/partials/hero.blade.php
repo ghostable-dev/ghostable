@@ -5,10 +5,10 @@
                 <x-app-logo-icon class="floating size-22 fill-current text-white" />
             </span>
         </div>
-        <h1 class="text-5xl font-bold tracking-tighter text-balance text-white sm:text-6xl">
+        <h1 class="text-5xl font-medium tracking-tighter text-pretty text-balance text-white sm:text-6xl">
             The Complete <span class="bg-gradient-to-r from-brand-light from-10% via-brand via-30% to-brand-light to-90% shadow-xl bg-clip-text text-transparent">.env Suite</span> for Laravel Teams
         </h1>
-        <p class="mt-8 text-lg font-medium text-gray-400 sm:text-xl/8">
+        <p class="mt-8 text-lg text-gray-400 sm:text-xl/8">
             Securely manage, effortlessly sync, automatically validate, audit changes, and confidently deploy your Laravel environment variables and secrets—all within one unified platform.
         </p>
         <div class="mt-10 flex items-center justify-center gap-x-4">

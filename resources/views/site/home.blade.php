@@ -22,17 +22,17 @@
 
     <div class="py-24 sm:py-32 lg:pb-40">
         
-        @include('homepage.partials.hero')
+        @include('site.partials.hero')
         
-        @include('homepage.partials.features-overview')
+        @include('site.partials.features-overview')
         
-        @include('homepage.partials.secure-sharing')
+        @include('site.partials.secure-sharing')
         
-        {{-- @include('homepage.partials.encryption') --}}
+        {{-- @include('site.partials.encryption') --}}
         
-        @include('homepage.partials.validation')
+        @include('site.partials.validation')
         
-        @include('homepage.partials.faqs')
+        @include('site.partials.faqs')
         
     </div>
         

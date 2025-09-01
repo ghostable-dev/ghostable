@@ -1,5 +1,5 @@
 <div class="rounded-2xl shadow-lg ring-1 ring-black/5 my-10">
-  <div class="grid grid-cols-1 rounded-2xl p-3 bg-white shadow-md">
+  <div class="grid grid-cols-1 rounded-2xl p-2 bg-white shadow-md">
     <div class="rounded-xl bg-white shadow-xl ring-1 ring-black/5">
 <div
   @class([

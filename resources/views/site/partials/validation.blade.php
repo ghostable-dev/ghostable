@@ -3,7 +3,7 @@
 
     {{-- Section Heading --}}
     <div class="text-center px-10">
-      <flux:heading level="2" class="!text-3xl md:!text-5xl !font-bold tracking-tight text-balance">
+      <flux:heading level="2" class="!text-3xl md:!text-5xl !font-medium tracking-tighter text-pretty">
         Enforced Validation, No Surprises
       </flux:heading>
       <flux:subheading size="xl">
