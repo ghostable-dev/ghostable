@@ -1,12 +1,11 @@
 <?php
- 
+
 namespace App\Core\Http\Controllers;
 
-use App\Core\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
- 
+
 class GeneratePagesSitemap extends Controller
 {
     public function __invoke()
@@ -19,7 +18,7 @@ class GeneratePagesSitemap extends Controller
             ->add($this->privacy())
             ->toResponse(request());
     }
-    
+
     private function home(): Url
     {
         return Url::create(url('/'))
@@ -27,7 +26,7 @@ class GeneratePagesSitemap extends Controller
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_ALWAYS)
             ->setPriority(1.0);
     }
-    
+
     private function pricing(): Url
     {
         return Url::create(route('pricing'))
@@ -36,7 +35,7 @@ class GeneratePagesSitemap extends Controller
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.9);
     }
-    
+
     private function contact(): Url
     {
         return Url::create(route('contact'))
@@ -45,7 +44,7 @@ class GeneratePagesSitemap extends Controller
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.9);
     }
-    
+
     private function terms(): Url
     {
         return Url::create(route('terms'))
@@ -54,7 +53,7 @@ class GeneratePagesSitemap extends Controller
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.3);
     }
-    
+
     private function privacy(): Url
     {
         return Url::create(route('privacy'))

@@ -27,7 +27,7 @@ abstract class SchemaGenerator extends Component
             )->founders([
                 Schema::person()
                     ->name('Joe Rucci')
-                    ->email('joe@ghostable.dev')
+                    ->email('joe@ghostable.dev'),
             ])
             ->sameAs([
                 config('contact.social.github'),
