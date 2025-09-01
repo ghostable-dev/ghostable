@@ -7,6 +7,7 @@ namespace App\Api\Http\Middleware;
 use App\Api\Actions\RecordApiUsage;
 use App\Api\Helpers\OrganizationContextResolver;
 use App\Organization\Models\Organization;
+use App\Project\Models\Project;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -95,14 +96,42 @@ final class TrackUsage
      */
     private function extractResource(Request $request): array
     {
-        // Prefer route-model bound params
-        foreach ($request->route()?->parameters() ?? [] as $param) {
+        $route = $request->route();
+        $params = $route?->parameters() ?? [];
+
+        // Attempt to resolve project even if bindings haven't run yet
+        $projectParam = $params['project'] ?? null;
+        $project = $projectParam instanceof Project
+            ? $projectParam
+            : (is_string($projectParam) ? Project::find($projectParam) : null);
+
+        // Prefer environment when a name param is present
+        if ($project) {
+            $name = $params['name'] ?? null;
+            if (is_string($name)) {
+                $env = $project->environments()->where('name', $name)->first();
+                if ($env) {
+                    return [$env->getMorphClass(), (string) $env->getKey()];
+                }
+
+                // Environment not found → fall back to project
+                return [$project->getMorphClass(), (string) $project->getKey()];
+            }
+        }
+
+        // Fallback: first model param excluding org
+        foreach ($params as $param) {
             if ($param instanceof Organization) {
                 continue; // org is accounted for separately
             }
             if ($param instanceof Model) {
                 return [$param->getMorphClass(), (string) $param->getKey()];
             }
+        }
+
+        // Final fallback: project if resolved, else null
+        if ($project) {
+            return [$project->getMorphClass(), (string) $project->getKey()];
         }
 
         return [null, null];
