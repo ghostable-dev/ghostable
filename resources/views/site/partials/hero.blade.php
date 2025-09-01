@@ -1,5 +1,6 @@
 <div class="mx-auto max-w-7xl px-6 lg:px-8">
     <div class="mx-auto max-w-2xl text-center">
+        
         <div class="flex flex-col items-center gap-2 font-medium">
             <span class="flex h-22 w-22 mb-4 items-center justify-center rounded-md">
                 <x-app-logo-icon class="floating size-22 fill-current text-white" />

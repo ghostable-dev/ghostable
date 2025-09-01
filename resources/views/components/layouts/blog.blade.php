@@ -1,5 +1,5 @@
 <x-layouts.guest>
-    @include('partials.site-header')
+    @include('site.partials.header')
     <main>
         {{ $slot }}
     </main>

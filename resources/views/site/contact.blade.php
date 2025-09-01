@@ -16,7 +16,7 @@
         />
     @endpush
     
-    @include('partials.site-header')
+    @include('site.partials.header')
 
     <div class="px-6 lg:px-8 py-16 bg-white">
         <div class="mx-auto lg:max-w-3xl space-y-10">

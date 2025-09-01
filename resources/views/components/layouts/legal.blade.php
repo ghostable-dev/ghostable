@@ -4,7 +4,7 @@
 ])
 <x-layouts.guest>
     
-    @include('partials.site-header')
+    @include('site.partials.header')
     
     <div class="py-12 px-4 space-y-8 bg-white">
         <div class="mx-auto max-w-2xl text-left">

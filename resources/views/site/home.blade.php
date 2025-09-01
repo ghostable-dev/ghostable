@@ -18,7 +18,7 @@
         />
     @endpush
     
-    @include('partials.site-header')
+    @include('site.partials.header')
 
     <div class="py-24 sm:py-32 lg:pb-40">
         

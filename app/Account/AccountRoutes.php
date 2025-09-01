@@ -25,9 +25,5 @@ class AccountRoutes
         Route::middleware('guest')->group(function () {
             Route::get('register', Register::class)->name('register');
         });
-
-        Route::view('privacy', 'legal.privacy')->name('privacy');
-        Route::view('terms', 'legal.terms')->name('terms');
-
     }
 }

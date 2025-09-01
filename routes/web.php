@@ -32,9 +32,11 @@ BillingRoutes::web();
 
 // Site pages
 Route::get('/', fn () => view('site.home'))->name('home');
-Route::get('/pricing', fn () => view('site.pricing'))->name('pricing');
-Route::get('/contact', [ContactController::class, 'create'])->name('contact');
-Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact');
+Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
+Route::get('contact', [ContactController::class, 'create'])->name('contact');
+Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:contact');
+Route::view('privacy', 'site.privacy')->name('privacy');
+Route::view('terms', 'site.terms')->name('terms');
 
 // Blog
 Route::prefix('blog')
