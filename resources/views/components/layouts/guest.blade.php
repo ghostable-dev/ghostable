@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark bg-accent">
 <head>
     @include('partials.head')
 </head>
-<body class="antialiased bg-gradient-to-b from-neutral-950 to-neutral-900">
+<body class="antialiased bg-accent">
     {{ $slot }}
     @include('partials.footer')
     @fluxScripts

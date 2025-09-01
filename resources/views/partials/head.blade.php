@@ -1,7 +1,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>{{ $title ?? config('app.name') }}</title>
+<title>{{ $title ?? 'Ghostable – Secure Environment Management' }}</title>
+
+<meta name="theme-color" content="#080808">
+
+@stack('meta')     
 
 <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

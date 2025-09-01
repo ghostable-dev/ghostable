@@ -21,7 +21,7 @@ class SeoMeta extends Component
     {
         return <<<'blade'
             <meta property="og:locale" content="en_US">
-            <meta property="og:site_name" content="aijobs.com">
+            <meta property="og:site_name" content="Ghostable">
             <meta property="og:type" content="{{ $type }}"/>
             <meta property="og:title" content="{{ $title }}"/>
             <meta property="og:description" content="{{ $description }}"/>
@@ -47,7 +47,7 @@ class SeoMeta extends Component
     public function sharingImage(): string
     {
         return empty($this->image)
-            ? asset('/images/ai-job-board-social.jpg')
+            ? asset('/og-default.png')
             : $this->image;
     }
 }

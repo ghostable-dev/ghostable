@@ -1,4 +1,21 @@
 <x-layouts.guest title="Ghostable - Contact">
+    
+    @push('meta')
+        <x-core.seo-meta
+            title="Contact Ghostable"
+            description="Have questions about Ghostable? Get in touch with our team to talk about pricing, enterprise options, or general inquiries."
+            :keywords="[
+                'ghostable contact',
+                'contact ghostable',
+                'support',
+                'sales',
+                'enterprise',
+                'environment variables',
+                'secrets management'
+            ]"
+        />
+    @endpush
+    
     @include('partials.site-header')
 
     <div class="px-6 lg:px-8 py-16 bg-white">
@@ -54,4 +71,5 @@
     @push('scripts')
         <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
     @endpush
+    
 </x-layouts.guest>

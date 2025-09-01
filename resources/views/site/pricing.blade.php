@@ -1,13 +1,23 @@
 <x-layouts.guest title="Ghostable - Pricing">
+    
+    @push('meta')
+        <x-core.seo-meta
+            title="Ghostable Pricing"
+            description="Simple, transparent pricing for secure environment & secrets management. Choose a plan that fits your team—with validation, version history, and full audit visibility."
+            :keywords="[
+                'ghostable pricing',
+                'pricing plans',
+                'environment variables',
+                'secrets management',
+                'validation',
+                'version history',
+                'audit logs',
+                'laravel'
+            ]"
+        />
+    @endpush
 
     @include('partials.site-header')
-
-    @push('meta')
-    <x-core.seo-meta
-        title="Ghostable Blog"
-        description="Product updates, best practices, and tips for managing environment variables with Ghostable."
-        :keywords="['ghostable', 'environment variables', 'best practices']"/>
-    @endpush
 
     <div class="px-6 lg:px-8 py-12 md:py-16 bg-white">
         <div class="mx-auto lg:max-w-6xl space-y-10">
