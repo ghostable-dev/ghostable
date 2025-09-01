@@ -7,7 +7,7 @@ use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
 use App\Blog\Factories\PostFactory;
 use App\Blog\Markdown\CustomConverter;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
+#[UseEloquentBuilder(PostBuilder::class)]
 class Post extends Model implements Sitemapable
 {
     use HasFactory;
@@ -54,11 +55,6 @@ class Post extends Model implements Sitemapable
     protected static function newFactory(): Factory
     {
         return PostFactory::new();
-    }
-
-    public function newEloquentBuilder($query): Builder
-    {
-        return new PostBuilder($query);
     }
 
     protected function readTime(): Attribute
