@@ -1,8 +1,6 @@
 <x-layouts.guest title="Ghostable - Pricing">
 
     @include('partials.site-header')
-    
-    {{-- @section('title', 'Ghostable Blog') --}}
 
     @push('meta')
     <x-core.seo-meta
@@ -11,13 +9,16 @@
         :keywords="['ghostable', 'environment variables', 'best practices']"/>
     @endpush
 
-    <div class="px-6 lg:px-8 py-16 bg-white">
-        <div class="mx-auto lg:max-w-7xl space-y-10">
-            <div>
-                <h1 class="text-4xl font-medium tracking-tighter text-gray-950 sm:text-6xl text-pretty">
-                    Plans that scale with your team size.
+    <div class="px-6 lg:px-8 py-12 md:py-16 bg-white">
+        <div class="mx-auto lg:max-w-6xl space-y-10">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-medium tracking-tighter text-gray-950 text-pretty">
+                    Pricing that scales with you
                 </h1>
-                <p class="mt-6 max-w-2xl text-2xl font-medium text-gray-500">Every team deserves safe, reliable environments. Ghostable gives you validation, versioning, and secret sharing out of the box — with fair pricing that scales as you do.</p>
+                <p class="mt-6 max-w-xl text-lg/7 font-medium text-gray-500 mx-auto">
+                Every team deserves safe, reliable environments. Ghostable gives you validation, 
+                versioning, and secret sharing out of the box — with fair pricing 
+                that scales as you do.</p>
             </div>
             <div class="mt-20 flow-root">
                     <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
@@ -64,20 +65,24 @@
                     </div>
                 </div>  
                 
-            <div>
-                <article class="relative flex flex-col rounded-3xl bg-white p-2 shadow-md ring-1 shadow-black/5 ring-black/5">
-                    <div class="w-full rounded-2xl bg-zinc-50">
-                        <div class="flex !p-10" inline>
+            <div class="relative flex flex-col rounded-3xl bg-white p-2 shadow-md ring-1 ring-black/5">
+                <div class="w-full rounded-2xl bg-zinc-50 p-6">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div class="space-y-2 md:max-w-md">
                             <flux:heading size="lg">Looking for Enterprise?</flux:heading>
-                            <flux:subheading size="lg">
+                            <flux:subheading>
                                 Do you have special requirements that don't fit one of our plans? Contact us and we'll work something out.
                             </flux:subheading>
-                            <flux:button variant="primary" href="{{ route('contact') }}">Contact Sales</flux:button>
+                        </div>
+                        <div class="shrink-0">
+                            <flux:button variant="primary" href="{{ route('contact') }}">
+                                Contact Sales
+                            </flux:button>
                         </div>
                     </div>
-                </article>
-                
+                </div>
             </div>
+            
         </div>
     </div>
 

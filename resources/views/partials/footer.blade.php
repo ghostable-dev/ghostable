@@ -25,7 +25,7 @@
                         <flux:icon.discord variant="mini"/>
                     </flux:link>
                 </div>
-                <flux:subheading>&copy; {{ date('Y') }} Ghostable LLC</flux:subheading>
+                <flux:subheading>&copy; {{ date('Y') }} Ghostable, LLC</flux:subheading>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-sm">
                     <flux:link href="{{ route('terms')}}" variant="subtle">Terms</flux:link>
                     <flux:link href="{{ route('privacy')}}" variant="subtle">Privacy</flux:link>
@@ -34,14 +34,14 @@
             </div>
 
             <!-- Right: Credits -->
-            <flux:subheading class="text-center sm:text-left">
+            {{-- <flux:subheading class="text-center sm:text-left">
                 Built with
                 <flux:icon.heart variant="micro" class="inline-flex"/>
                 by
                 <flux:link variant="ghost" href="{{ url('') }}">
                   the Ghostable organization
                 </flux:link>
-            </flux:subheading>
+            </flux:subheading> --}}
 
         </div>
     </div>

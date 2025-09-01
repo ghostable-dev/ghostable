@@ -8,7 +8,7 @@
                     Get in touch
                 </h1>
                 <p class="mt-6 max-w-2xl text-2xl font-medium text-gray-500">
-                    We'd love to hear from you. Select an inquiry type and send us a message.
+                    Need to ask a question or get account support? Contact us and we’ll get back to you as soon as we can!
                 </p>
             </div>
 
@@ -33,7 +33,7 @@
                 <input type="hidden" name="recaptcha_token" id="recaptcha_token" x-ref="recaptcha_token">
                 <flux:input label="Name" id="name" name="name" value="{{ old('name') }}" required/>
                 <flux:input label="Email" type="email" id="email" name="email" value="{{ old('email') }}" required/>
-                <flux:select label="Inquiry" id="inquiry" name="inquiry">
+                <flux:select label="How can we help?" id="inquiry" name="inquiry">
                     @foreach (\App\Core\Enums\InquiryType::cases() as $type)
                         <option value="{{ $type->value }}" @selected(old('inquiry') === $type->value)>
                             {{ $type->label() }}
@@ -44,7 +44,7 @@
                     {{ old('message') }}
                 </flux:textarea>
                 <div>
-                    <flux:button type="submit" variant="primary">Send</flux:button>
+                    <flux:button type="submit" variant="primary">Submit</flux:button>
                 </div>
             </form>
             
