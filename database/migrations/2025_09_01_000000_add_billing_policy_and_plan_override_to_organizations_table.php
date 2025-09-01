@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('organizations', function (Blueprint $table) {
-            $table->string('billing_policy', 50)->default(BillingPolicy::RESPECT_SUBSCRIPTION->value);
-            $table->string('plan_override', 50)->nullable();
+            $table->string('billing_policy', 50)->after('stripe_id')->default(BillingPolicy::RESPECT_SUBSCRIPTION->value);
+            $table->string('plan_override', 50)->after('billing_policy')->nullable();
         });
     }
 
