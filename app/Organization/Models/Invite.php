@@ -9,7 +9,7 @@ use App\Organization\Enums\OrganizationRole;
 use App\Organization\Events\InviteCreated;
 use App\Organization\Events\InviteSent;
 use App\Organization\Notifications\InviteNotification;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Notification;
  *
  * @mixin \Eloquent
  */
+#[UseEloquentBuilder(InviteBuilder::class)]
 class Invite extends Model
 {
     protected $table = 'organization_invites';
@@ -89,11 +90,6 @@ class Invite extends Model
     protected $dispatchesEvents = [
         'created' => InviteCreated::class,
     ];
-
-    public function newEloquentBuilder($query): Builder
-    {
-        return new InviteBuilder($query);
-    }
 
     public function organization(): BelongsTo
     {

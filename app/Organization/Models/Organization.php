@@ -14,7 +14,7 @@ use App\Organization\Casts\OrganizationLimitsCast;
 use App\Organization\Entities\OrganizationNotificationsData;
 use App\Project\Models\Project;
 use Database\Factories\OrganizationFactory;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -70,6 +70,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[UseEloquentBuilder(OrganizationBuilder::class)]
 class Organization extends Model
 {
     use Billable;
@@ -105,11 +106,6 @@ class Organization extends Model
     public static function newFactory(): OrganizationFactory
     {
         return OrganizationFactory::new();
-    }
-
-    public function newEloquentBuilder($query): Builder
-    {
-        return new OrganizationBuilder($query);
     }
 
     #[On('creating')]

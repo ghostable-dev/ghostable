@@ -5,7 +5,7 @@ namespace App\Organization\Models;
 use App\Account\Concerns\BelongsToUser;
 use App\Organization\Builders\OrganizationPermissionOverrideBuilder;
 use App\Organization\Enums\OrganizationPermission;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride forUser(\App\Account\Models\User $user)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride newModelQuery()
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride newQuery()
- * @method static Builder<static>|OrganizationPermissionOverride onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationPermissionOverride onlyTrashed()
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride query()
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride whereCreatedAt($value)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride whereDeletedAt($value)
@@ -37,11 +37,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride whereUpdatedAt($value)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride whereUserId($value)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride withPermission(\App\Organization\Enums\OrganizationPermission $permission)
- * @method static Builder<static>|OrganizationPermissionOverride withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|OrganizationPermissionOverride withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationPermissionOverride withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationPermissionOverride withoutTrashed()
  *
  * @mixin \Eloquent
  */
+#[UseEloquentBuilder(OrganizationPermissionOverrideBuilder::class)]
 class OrganizationPermissionOverride extends Model
 {
     use BelongsToUser;
@@ -55,11 +56,6 @@ class OrganizationPermissionOverride extends Model
     protected $casts = [
         'permission' => OrganizationPermission::class,
     ];
-
-    public function newEloquentBuilder($query): Builder
-    {
-        return new OrganizationPermissionOverrideBuilder($query);
-    }
 
     public function target(): MorphTo
     {
