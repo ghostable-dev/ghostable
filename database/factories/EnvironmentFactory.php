@@ -7,7 +7,6 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Encryption\Encrypter;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Environment\Models\Environment>
@@ -24,7 +23,7 @@ class EnvironmentFactory extends Factory
             'name' => $type->value,
             'type' => $type->value,
             'file_format' => EnvFileFormat::GROUPED->value,
-            'encryption_key' => base64_encode(Encrypter::generateKey(config('app.cipher'))),
+            'kek_salt' => base64_encode(random_bytes(32)),
         ];
     }
 
