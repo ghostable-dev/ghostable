@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-final class TrackUsage
+class TrackUsage
 {
     public function __construct(
         private RecordApiUsage $recordUsage,
