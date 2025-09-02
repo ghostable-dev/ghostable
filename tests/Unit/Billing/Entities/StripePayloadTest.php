@@ -60,3 +60,36 @@ it('returns debug data for checkout session completed', function () {
         ->and($debug['id'])->toBe('cs_test')
         ->and($debug['payment_method_configuration_id'])->toBe('pmc_1');
 });
+
+it('returns debug data for customer subscription created', function () {
+    $payload = new StripePayload([
+        'type' => 'customer.subscription.created',
+        'data' => [
+            'object' => [
+                'id' => 'sub_1',
+                'application' => null,
+                'created' => 1,
+            ],
+        ],
+    ]);
+
+    $debug = $payload->debugData();
+
+    expect($debug['type'])->toBe('customer.subscription.created')
+        ->and($debug['id'])->toBe('sub_1')
+        ->and($debug)->toHaveKey('application');
+});
+
+it('returns null for missing organization and user', function () {
+    $payload = new StripePayload([
+        'data' => [
+            'object' => [
+                'customer' => 'unknown',
+                'metadata' => [],
+            ],
+        ],
+    ]);
+
+    expect($payload->organizationFromStripeId())->toBeNull()
+        ->and($payload->causedByUser())->toBeNull();
+});
