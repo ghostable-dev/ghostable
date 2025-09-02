@@ -9,4 +9,3 @@ class ViewOrganization extends ViewRecord
 {
     protected static string $resource = OrganizationResource::class;
 }
-
