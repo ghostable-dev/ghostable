@@ -20,14 +20,14 @@ if (! class_exists(ACLManager::class)) {
 
 namespace Tests\Unit\View\Components\Account;
 
-use App\View\Components\Account\RoleSelect;
 use App\Account\Managers\ACLManager;
+use App\View\Components\Account\RoleSelect;
 use Tests\TestCase;
 
 uses(TestCase::class);
 
 it('returns roles from ACLManager', function () {
-    $component = new RoleSelect();
+    $component = new RoleSelect;
 
     expect($component->roles())->toEqual(ACLManager::getRoles());
 });

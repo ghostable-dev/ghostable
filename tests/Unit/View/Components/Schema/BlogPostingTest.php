@@ -1,27 +1,39 @@
 <?php
 
-use App\View\Components\Schema\BlogPosting;
-use App\Blog\Models\Post;
 use App\Blog\Enums\PostCategory;
-use Illuminate\Database\Eloquent\Model;
+use App\Blog\Models\Post;
+use App\View\Components\Schema\BlogPosting;
 use Illuminate\Database\ConnectionResolverInterface;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 uses(TestCase::class);
 
 it('generates blog posting schema', function () {
-    Model::setConnectionResolver(new class implements ConnectionResolverInterface {
-        public function connection($name = null) {
-            return new class {
-                public function getQueryGrammar() {
-                    return new class {
-                        public function getDateFormat() { return 'Y-m-d H:i:s'; }
+    Model::setConnectionResolver(new class implements ConnectionResolverInterface
+    {
+        public function connection($name = null)
+        {
+            return new class
+            {
+                public function getQueryGrammar()
+                {
+                    return new class
+                    {
+                        public function getDateFormat()
+                        {
+                            return 'Y-m-d H:i:s';
+                        }
                     };
                 }
             };
         }
-        public function getDefaultConnection() { return 'test'; }
+
+        public function getDefaultConnection()
+        {
+            return 'test';
+        }
+
         public function setDefaultConnection($name): void {}
     });
 
@@ -32,8 +44,6 @@ it('generates blog posting schema', function () {
         'posted_at' => '2025-01-01',
         'category' => PostCategory::PRODUCT_UPDATES,
     ]);
-
-    Route::get('/blog/{post}')->name('blog.view');
 
     $component = new BlogPosting($post);
 
