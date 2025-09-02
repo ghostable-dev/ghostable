@@ -5,7 +5,6 @@ use App\Organization\Enums\OrganizationRole;
 use App\Organization\Events\MemberRoleChanged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use RuntimeException;
 
 uses(RefreshDatabase::class);
 
