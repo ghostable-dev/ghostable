@@ -90,6 +90,7 @@ class EncryptedString implements CastsAttributes
      *
      * @param  'encrypt'|'decrypt'  $phase
      */
+    // @codeCoverageIgnoreStart
     protected function logFailure(string $phase, Throwable $error, Model $model, string $attribute): void
     {
         Log::warning('EncryptedString '.$phase.'ion failed', [
@@ -101,4 +102,5 @@ class EncryptedString implements CastsAttributes
             'exception_msg' => $error->getMessage(),
         ]);
     }
+    // @codeCoverageIgnoreEnd
 }
