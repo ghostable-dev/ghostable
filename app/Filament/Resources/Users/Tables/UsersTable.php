@@ -28,13 +28,10 @@ class UsersTable
                 TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('two_factor_confirmed_at')
-                    ->dateTime()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -43,17 +40,6 @@ class UsersTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('stripe_id')
-                    ->searchable(),
-                TextColumn::make('pm_type')
-                    ->searchable(),
-                TextColumn::make('pm_last_four')
-                    ->searchable(),
-                TextColumn::make('trial_ends_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('timezone')
-                    ->searchable(),
             ])
             ->filters([
                 TrashedFilter::make(),

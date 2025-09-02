@@ -18,11 +18,8 @@ class UserForm
                     ->label('Email address')
                     ->email()
                     ->required(),
-                DateTimePicker::make('email_verified_at'),
-                TextInput::make('password')
-                    ->password()
-                    ->required(),
-                DateTimePicker::make('two_factor_confirmed_at'),
+                DateTimePicker::make('email_verified_at')->readOnly(),
+                DateTimePicker::make('two_factor_confirmed_at')->readOnly(),
                 TextInput::make('timezone')
                     ->required()
                     ->default('UTC'),
