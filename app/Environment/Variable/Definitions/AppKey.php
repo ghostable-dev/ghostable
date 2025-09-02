@@ -14,15 +14,19 @@ class AppKey extends VariableDefinition
         return 'APP_KEY';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The base64-encoded encryption key used by Laravel.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::App;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

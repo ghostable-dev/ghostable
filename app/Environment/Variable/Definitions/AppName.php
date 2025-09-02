@@ -14,15 +14,19 @@ class AppName extends VariableDefinition
         return 'APP_NAME';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The name of your application.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::App;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

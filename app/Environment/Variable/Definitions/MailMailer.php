@@ -14,20 +14,24 @@ class MailMailer extends VariableDefinition
         return 'MAIL_MAILER';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The default mailer your application will use.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['smtp', 'sendmail', 'mailgun', 'ses', 'postmark', 'log', 'array'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Mail;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {
