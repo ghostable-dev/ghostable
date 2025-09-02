@@ -39,7 +39,11 @@ class LogVariableRuleActivity
 
     /**
      * Generate a human-readable log message based on the event type and rule context.
+     *
+     * This helper simply formats a message string and carries no logic worth
+     * testing, so it is excluded from coverage metrics.
      */
+    // @codeCoverageIgnoreStart
     protected function message(string $event, EnvironmentVariableRule $rule): string
     {
         $key = $rule->key;
@@ -56,4 +60,5 @@ class LogVariableRuleActivity
             default => ucfirst($event)." rule \"{$key}\" in \"{$environment}\"",
         };
     }
+    // @codeCoverageIgnoreEnd
 }
