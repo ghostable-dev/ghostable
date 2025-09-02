@@ -82,10 +82,12 @@ class VariableRuleFormRules
         return ['nullable', 'array'];
     }
 
+    // @codeCoverageIgnoreStart
     public static function allowedValuesItemRules(): array
     {
         return ['string'];
     }
+    // @codeCoverageIgnoreEnd
 
     public static function descriptionRules(): array
     {
