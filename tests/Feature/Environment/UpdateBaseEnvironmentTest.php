@@ -87,3 +87,27 @@ it('removes local variable if new base provides same value', function () {
 
     expect(EnvironmentVariable::query()->forEnvironment($env)->key('BAZ')->exists())->toBeFalse();
 });
+
+it('marks local variable as override when new base provides different value', function () {
+    $project = Project::factory()->create();
+
+    $env = Environment::factory()->forProject($project)->create();
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $env,
+        key: 'QUX',
+        value: 'child',
+    ));
+
+    $newBase = Environment::factory()->forProject($project)->create();
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $newBase,
+        key: 'QUX',
+        value: 'base',
+    ));
+
+    resolve(UpdateBaseEnvironment::class)->handle($env, $newBase);
+
+    $var = $env->variables()->where('key', 'QUX')->first();
+
+    expect((bool) $var->is_override)->toBeTrue();
+});
