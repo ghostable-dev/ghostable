@@ -5,7 +5,7 @@ namespace App\Core\Concerns;
 if (! trait_exists(MakesLinks::class)) {
     trait MakesLinks
     {
-        public function makeLink(string $url, string $label, string $icon = null, bool $active = false, string $target = '_self'): array
+        public function makeLink(string $url, string $label, ?string $icon = null, bool $active = false, string $target = '_self'): array
         {
             return compact('url', 'label', 'icon', 'active', 'target');
         }
@@ -32,7 +32,7 @@ beforeEach(function () {
 });
 
 it('returns primary site links', function () {
-    $component = new Site();
+    $component = new Site;
 
     expect($component->primaryLinks())->toHaveCount(3);
 });

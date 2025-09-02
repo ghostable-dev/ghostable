@@ -15,19 +15,19 @@ beforeEach(function () {
 });
 
 it('provides social links', function () {
-    $component = new Site();
+    $component = new Site;
 
     expect($component->socialLinks())->toHaveCount(4);
 });
 
 it('provides resource links', function () {
-    $component = new Site();
+    $component = new Site;
 
     expect($component->resourceLinks())->toHaveCount(4);
 });
 
 it('provides company links', function () {
-    $component = new Site();
+    $component = new Site;
 
     expect($component->companyLinks())->toHaveCount(2);
 });

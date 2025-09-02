@@ -5,7 +5,7 @@ namespace App\Core\Concerns;
 if (! trait_exists(MakesLinks::class)) {
     trait MakesLinks
     {
-        public function makeLink(string $url, string $label, string $icon = null, bool $active = false, string $target = '_self'): array
+        public function makeLink(string $url, string $label, ?string $icon = null, bool $active = false, string $target = '_self'): array
         {
             return compact('url', 'label', 'icon', 'active', 'target');
         }
@@ -22,17 +22,15 @@ namespace App\Account\Models;
 if (! class_exists(Account::class)) {
     class Account
     {
-        public function __construct(public $id)
-        {
-        }
+        public function __construct(public $id) {}
     }
 }
 
 namespace Tests\Unit\View\Components\Headers;
 
-use App\View\Components\Headers\App as AppHeader;
-use App\Account\Models\User;
 use App\Account\Models\Account;
+use App\Account\Models\User;
+use App\View\Components\Headers\App as AppHeader;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -54,7 +52,7 @@ it('returns candidate links for candidate user', function () {
     $user->shouldReceive('isCandidate')->andReturn(true);
     $user->shouldReceive('isFounder')->andReturn(false);
 
-    $component = new AppHeader();
+    $component = new AppHeader;
 
     $links = $component->for($user);
 
@@ -70,7 +68,7 @@ it('returns organization links for founder', function () {
 
     $account = new Account(1);
 
-    $component = new AppHeader();
+    $component = new AppHeader;
 
     $links = $component->orgLinks($user, $account);
 

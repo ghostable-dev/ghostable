@@ -20,13 +20,13 @@ class DummySchema extends SchemaGenerator
 }
 
 it('renders schema script', function () {
-    $component = new DummySchema();
+    $component = new DummySchema;
 
     expect($component->render())->toContain('<script type="application/ld+json"');
 });
 
 it('returns default organization schema', function () {
-    $component = new DummySchema();
+    $component = new DummySchema;
 
     expect($component->organizationScript())->toContain('Ghostable');
 });

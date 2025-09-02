@@ -5,7 +5,7 @@ namespace App\Core\Concerns;
 if (! trait_exists(MakesLinks::class)) {
     trait MakesLinks
     {
-        public function makeLink(string $url, string $label, string $icon = null, bool $active = false, string $target = '_self'): array
+        public function makeLink(string $url, string $label, ?string $icon = null, bool $active = false, string $target = '_self'): array
         {
             return compact('url', 'label', 'icon', 'active', 'target');
         }
@@ -19,8 +19,8 @@ if (! trait_exists(MakesLinks::class)) {
 
 namespace Tests\Unit\View\Components;
 
-use App\View\Components\Header;
 use App\Account\Models\User;
+use App\View\Components\Header;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -39,7 +39,7 @@ it('returns primary links for non-organization user', function () {
 
     $this->be($user);
 
-    $component = new Header();
+    $component = new Header;
 
     expect($component->primaryLinks())->toHaveCount(3);
 });
@@ -51,7 +51,7 @@ it('includes account links for organization user', function () {
 
     $this->be($user);
 
-    $component = new Header();
+    $component = new Header;
     $links = $component->primaryLinks();
 
     expect($links[0]['label'])->toBe('My Jobs');

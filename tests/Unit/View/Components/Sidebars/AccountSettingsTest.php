@@ -5,7 +5,7 @@ namespace App\Core\Concerns;
 if (! trait_exists(MakesLinks::class)) {
     trait MakesLinks
     {
-        public function makeLink(string $url, string $label, string $icon = null, bool $active = false, string $target = '_self'): array
+        public function makeLink(string $url, string $label, ?string $icon = null, bool $active = false, string $target = '_self'): array
         {
             return compact('url', 'label', 'icon', 'active', 'target');
         }
@@ -36,17 +36,15 @@ namespace App\Account\Models;
 if (! class_exists(Account::class)) {
     class Account
     {
-        public function __construct(public $id)
-        {
-        }
+        public function __construct(public $id) {}
     }
 }
 
 namespace Tests\Unit\View\Components\Sidebars;
 
-use App\View\Components\Sidebars\AccountSettings;
-use App\Account\Models\User;
 use App\Account\Models\Account;
+use App\Account\Models\User;
+use App\View\Components\Sidebars\AccountSettings;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -58,7 +56,7 @@ it('returns account for account holder', function () {
     $user->primaryAccount = $account;
     $this->be($user);
 
-    $component = new AccountSettings();
+    $component = new AccountSettings;
     $method = (new \ReflectionClass($component))->getMethod('getAccount');
     $method->setAccessible(true);
 
@@ -71,7 +69,7 @@ it('returns null when no account', function () {
     $user->shouldReceive('isAccountHolder')->andReturn(false);
     $this->be($user);
 
-    $component = new AccountSettings();
+    $component = new AccountSettings;
     $method = (new \ReflectionClass($component))->getMethod('getAccount');
     $method->setAccessible(true);
 
