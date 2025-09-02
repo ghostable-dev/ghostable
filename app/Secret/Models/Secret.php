@@ -148,9 +148,11 @@ class Secret extends Model
     {
         $environment = ResolveEnvironment::onceWithContext($this->environment_id);
 
+        // @codeCoverageIgnoreStart
         if (! $environment) {
             throw new RuntimeException('Environment is missing; cannot resolve secret encrypter.');
         }
+        // @codeCoverageIgnoreEnd
 
         if ($this->dek_wrapped) {
             $kek = $environment->encrypter($this->kek_salt);

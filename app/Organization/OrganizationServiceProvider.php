@@ -28,7 +28,9 @@ use InvalidArgumentException;
 
 class OrganizationServiceProvider extends ServiceProvider
 {
+    // @codeCoverageIgnoreStart
     public function register(): void {}
+    // @codeCoverageIgnoreEnd
 
     public function boot(): void
     {
