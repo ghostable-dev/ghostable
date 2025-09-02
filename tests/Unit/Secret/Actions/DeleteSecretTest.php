@@ -6,8 +6,8 @@ use App\Secret\Actions\DeleteSecret;
 use App\Secret\Actions\LogSecretActivity;
 use App\Secret\Enums\SecretType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Mockery as Mock;
+use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
