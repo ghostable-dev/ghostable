@@ -4,10 +4,10 @@ namespace App\Filament\Resources\Organizations\Schemas;
 
 use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class OrganizationForm
@@ -35,7 +35,8 @@ class OrganizationForm
                             ->required(),
                         Select::make('plan_override')
                             ->options(Plan::class)
-                            ->nullable(),
+                            ->nullable()
+                            ->visible(fn ($record) => $record->billing_policy->isManualOverride()),
                     ]),
             ]);
     }
