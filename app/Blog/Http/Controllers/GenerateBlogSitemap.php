@@ -12,7 +12,7 @@ class GenerateBlogSitemap extends Controller
     public function __invoke()
     {
         return Sitemap::create()
-            ->add(Url::create(route('blog'))
+            ->add(Url::create(route('blog.index'))
                 ->setLastModificationDate(
                     Post::published()->latest('posted_at')->first()?->posted_at ?? now()
                 )->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
