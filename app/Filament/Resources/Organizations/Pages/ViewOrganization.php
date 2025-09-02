@@ -9,11 +9,11 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewOrganization extends ViewRecord
 {
     protected static string $resource = OrganizationResource::class;
-    
+
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make()
+            EditAction::make(),
         ];
     }
 }

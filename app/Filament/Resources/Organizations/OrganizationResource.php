@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Organizations;
 
-use App\Filament\Resources\Organizations\Pages\CreateOrganization;
 use App\Filament\Resources\Organizations\Pages\EditOrganization;
 use App\Filament\Resources\Organizations\Pages\ListOrganizations;
 use App\Filament\Resources\Organizations\Pages\ViewOrganization;
@@ -23,7 +22,7 @@ class OrganizationResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
-    
+
     public static function canCreate(): bool
     {
         return false;
