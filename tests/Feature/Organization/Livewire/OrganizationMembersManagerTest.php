@@ -2,8 +2,8 @@
 
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Livewire\OrganizationMembersManager;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
