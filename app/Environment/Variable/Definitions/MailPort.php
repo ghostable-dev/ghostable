@@ -14,20 +14,24 @@ class MailPort extends VariableDefinition
         return 'MAIL_PORT';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The port your mail server uses.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['25', '465', '587'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Mail;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

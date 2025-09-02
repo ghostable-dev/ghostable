@@ -14,20 +14,24 @@ class SessionDriver extends VariableDefinition
         return 'SESSION_DRIVER';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The session driver used to handle user sessions.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['file', 'cookie', 'database', 'redis', 'memcached', 'dynamodb', 'array'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::App;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

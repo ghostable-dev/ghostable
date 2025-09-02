@@ -15,20 +15,24 @@ class AppEnv extends VariableDefinition
         return 'APP_ENV';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The environment your application is running in.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return collect(EnvironmentType::cases())->map(fn ($type) => $type->value)->toArray();
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::App;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

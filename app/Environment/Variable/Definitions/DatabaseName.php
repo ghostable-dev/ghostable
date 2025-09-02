@@ -14,15 +14,19 @@ class DatabaseName extends VariableDefinition
         return 'DB_DATABASE';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The name of your application\'s database.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Database;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

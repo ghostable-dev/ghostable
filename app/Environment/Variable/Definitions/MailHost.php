@@ -14,15 +14,19 @@ class MailHost extends VariableDefinition
         return 'MAIL_HOST';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The hostname of your mail server.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Mail;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

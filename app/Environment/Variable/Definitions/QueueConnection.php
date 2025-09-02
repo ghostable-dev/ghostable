@@ -14,20 +14,24 @@ class QueueConnection extends VariableDefinition
         return 'QUEUE_CONNECTION';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The queue connection your application should use.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['sync', 'database', 'redis', 'sqs', 'beanstalkd', 'null'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Queue;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

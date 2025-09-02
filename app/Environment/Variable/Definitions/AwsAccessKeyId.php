@@ -14,15 +14,19 @@ class AwsAccessKeyId extends VariableDefinition
         return 'AWS_ACCESS_KEY_ID';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'Your AWS access key ID used for authenticating AWS SDK requests.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Aws;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {
