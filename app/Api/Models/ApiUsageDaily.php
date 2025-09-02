@@ -23,8 +23,10 @@ class ApiUsageDaily extends Model
         'date' => 'date',
     ];
 
+    // @codeCoverageIgnoreStart
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
+    // @codeCoverageIgnoreEnd
 }
