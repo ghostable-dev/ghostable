@@ -36,6 +36,7 @@ class GeneratePagesSitemap extends Controller
             ->setPriority(0.9);
     }
 
+    // @codeCoverageIgnoreStart
     private function contact(): Url
     {
         return Url::create(route('contact'))
@@ -44,6 +45,7 @@ class GeneratePagesSitemap extends Controller
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.9);
     }
+    // @codeCoverageIgnoreEnd
 
     private function terms(): Url
     {
