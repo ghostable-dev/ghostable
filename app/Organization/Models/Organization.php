@@ -5,6 +5,8 @@ namespace App\Organization\Models;
 use App\Account\Models\User;
 use App\Api\Models\ApiUsageDaily;
 use App\Billing\Concerns\Billable;
+use App\Billing\Enums\BillingPolicy;
+use App\Billing\Enums\Plan;
 use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
 use App\Organization\Actions\CreateNonConflictingSlug;
@@ -89,6 +91,8 @@ class Organization extends Model
         'slack_enabled',
         'limits',
         'features',
+        'billing_policy',
+        'plan_override',
     ];
 
     protected $attributes = [
@@ -101,6 +105,8 @@ class Organization extends Model
         'slack_webhook_url' => 'string',
         'limits' => OrganizationLimitsCast::class,
         'features' => OrganizationFeaturesCast::class,
+        'billing_policy' => BillingPolicy::class,
+        'plan_override' => Plan::class,
     ];
 
     public static function newFactory(): OrganizationFactory
