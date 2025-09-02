@@ -12,13 +12,13 @@ class UpdateOrganizationMemberRole
     public static function handle(User $member, Organization $organization, OrganizationRole $role): void
     {
         // Ensure member is already part of the organization
-        if (! $member->organizations->contains($organization->id)) {
+        if (! $member->organizations()->where('organization_id', $organization->id)->exists()) {
             throw new \RuntimeException('User is not a member of this organization.');
         }
 
         // Prepare pivot update attributes
         $attributes = [
-            'role' => $role->key,
+            'role' => $role->value,
             'permissions' => null,
         ];
 
