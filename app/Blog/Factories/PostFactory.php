@@ -6,6 +6,7 @@ use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
 use App\Blog\Models\Post;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class PostFactory extends Factory
 {
@@ -13,7 +14,7 @@ class PostFactory extends Factory
 
     public function definition(): array
     {
-        $title = $this->faker->realText(50);
+        $title = 'Post '.Str::random(8);
 
         return [
             'title' => $title,
