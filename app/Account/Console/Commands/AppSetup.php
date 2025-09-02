@@ -4,6 +4,7 @@ namespace App\Account\Console\Commands;
 
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
+use App\Organization\Enums\OrganizationRole;
 use Illuminate\Console\Command;
 
 class AppSetup extends Command
@@ -26,9 +27,13 @@ class AppSetup extends Command
 
         $this->resetDatabase();
 
-        $this->seedCurricula();
+        $this->seedGhostable();
 
-        $this->seedHuntress();
+        $this->seedPiedPiper();
+
+        $this->seedHooli();
+
+        $this->seedAviato();
     }
 
     protected function resetDatabase(): void
@@ -41,19 +46,16 @@ class AppSetup extends Command
         $this->call('cache:clear');
     }
 
-    protected function seedCurricula(): void
+    protected function seedGhostable(): void
     {
-        $joe = $this->createUser(name: 'Joe Rucci', email: 'joe@curricula.com');
+        $joe = $this->createUser(name: 'Joe Rucci', email: 'rucci.joe@gmail.com');
 
-        $tony = $this->createUser(name: 'Tony Lea', email: 'tony@curricula.com');
-
-        $curricula = $this->createOrganization(
-            name: 'Currciula',
+        $ghostable = $this->createOrganization(
+            name: 'Ghostable',
             owner: $joe,
-            members: [$tony]
         );
 
-        $primary = $this->createProject('Primary', $curricula);
+        $primary = $this->createProject('Primary', $ghostable);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
         $this->createVariables(env: $production, amount: 10, createdBy: $joe);
         $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
@@ -61,46 +63,85 @@ class AppSetup extends Command
         $this->createVariables(env: $staging, amount: 4, createdBy: $joe);
         $this->createSecrets(env: $staging, amount: 2, createdBy: $joe);
         $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $primary, $staging);
-        $this->createVariables(env: $local, amount: 3, createdBy: $tony);
-        $this->createSecrets(env: $local, amount: 1, createdBy: $tony);
+        $this->createVariables(env: $local, amount: 3, createdBy: $joe);
+        $this->createSecrets(env: $local, amount: 1, createdBy: $joe);
 
-        $phishing = $this->createProject('Phishing', $curricula);
-        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $phishing);
-        $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $phishing, $production);
-        $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
-        $this->createEnvironment('local-jr', EnvironmentType::LOCAL, $phishing, $local);
-        $this->createVariables(env: $production, amount: 10, createdBy: $joe);
-        $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
-
-        $this->createInvite(organization: $curricula, sender: $joe, email: 'nick@curricula.com');
+        $this->createInvite(organization: $ghostable, sender: $joe, email: 'admin@ghostable.com');
     }
 
-    protected function seedHuntress(): void
+    protected function seedPiedPiper(): void
     {
-        $joe = $this->createUser(name: 'Joe', email: 'joe@huntress.com');
-        $jake = $this->createUser(name: 'Jake', email: 'jake@huntress.com');
+        $richard = $this->createUser(name: 'Richard Hendricks', email: 'richard@piedpiper.com');
+        $gilfoyle = $this->createUser(name: 'Bertram Gilfoyle', email: 'gilfoyle@piedpiper.com');
+        $dinesh = $this->createUser(name: 'Dinesh Chugtai', email: 'dinesh@piedpiper.com');
+        $jared = $this->createUser(name: 'Jared Dunn', email: 'jared@piedpiper.com');
+        $monica = $this->createUser(name: 'Monica Hall', email: 'monica@piedpiper.com');
 
-        $huntress = $this->createOrganization(
-            name: 'Huntress',
-            owner: $joe,
-            members: [$jake]
+        $piedPiper = $this->createOrganization(
+            name: 'Pied Piper',
+            owner: $richard,
         );
 
-        $primary = $this->createProject('Primary', $huntress);
-        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
-        $this->createVariables(env: $production, amount: 10, createdBy: $jake);
-        $this->createSecrets(env: $production, amount: 3, createdBy: $jake);
-        $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $primary, $production);
-        $this->createVariables(env: $staging, amount: 5, createdBy: $jake);
-        $this->createSecrets(env: $staging, amount: 2, createdBy: $jake);
+        $gilfoyle->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::DEVELOPER);
+        $dinesh->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::DEVELOPER);
+        $jared->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::ADMIN);
+        $monica->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::BILLING_ONLY);
 
-        $phishing = $this->createProject('Phishing', $huntress);
-        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $phishing);
-        $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $phishing, $production);
-        $this->createEnvironment('local', EnvironmentType::LOCAL, $phishing, $staging);
-        $this->createVariables(env: $production, amount: 10, createdBy: $joe);
-        $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
+        $platform = $this->createProject('Platform', $piedPiper);
+        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $platform);
+        $this->createVariables(env: $production, amount: 10, createdBy: $gilfoyle);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $gilfoyle);
+        $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $platform, $production);
+        $this->createVariables(env: $staging, amount: 5, createdBy: $dinesh);
+        $this->createSecrets(env: $staging, amount: 2, createdBy: $dinesh);
 
-        $this->createInvite(organization: $huntress, sender: $joe, email: 'joe@curricula.com');
+        $compression = $this->createProject('Compression', $piedPiper);
+        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $compression);
+        $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $compression, $production);
+        $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $compression, $staging);
+        $this->createVariables(env: $production, amount: 10, createdBy: $richard);
+        $this->createSecrets(env: $production, amount: 3, createdBy: $richard);
+        $this->createVariables(env: $local, amount: 3, createdBy: $jared);
+        $this->createSecrets(env: $local, amount: 1, createdBy: $jared);
+
+        $this->createInvite(organization: $piedPiper, sender: $richard, email: 'gavin@hooli.com');
+    }
+
+    protected function seedHooli(): void
+    {
+        $gavin = $this->createUser(name: 'Gavin Belson', email: 'gavin@hooli.com');
+        $bighead = $this->createUser(name: 'Nelson Bighetti', email: 'bighead@hooli.com');
+        $jianyang = $this->createUser(name: 'Jian Yang', email: 'jianyang@hooli.com');
+
+        $hooli = $this->createOrganization(
+            name: 'Hooli',
+            owner: $gavin,
+        );
+
+        $bighead->organizationMembership()->assignToOrganization(organization: $hooli, role: OrganizationRole::DEVELOPER_READ_ONLY);
+        $jianyang->organizationMembership()->assignToOrganization(organization: $hooli, role: OrganizationRole::DEVELOPER);
+
+        $box = $this->createProject('Hooli Box', $hooli);
+        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $box);
+        $this->createVariables(env: $production, amount: 5, createdBy: $gavin);
+        $this->createSecrets(env: $production, amount: 2, createdBy: $gavin);
+    }
+
+    protected function seedAviato(): void
+    {
+        $erlich = $this->createUser(name: 'Erlich Bachman', email: 'erlich@aviato.com');
+        $bighead = $this->createUser(name: 'Big Head', email: 'bighead@aviato.com');
+
+        $aviato = $this->createOrganization(
+            name: 'Aviato',
+            owner: $erlich,
+        );
+
+        $bighead->organizationMembership()->assignToOrganization(organization: $aviato, role: OrganizationRole::DEVELOPER);
+
+        $app = $this->createProject('App', $aviato);
+        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $app);
+        $this->createVariables(env: $production, amount: 5, createdBy: $erlich);
+        $this->createSecrets(env: $production, amount: 2, createdBy: $erlich);
     }
 }
