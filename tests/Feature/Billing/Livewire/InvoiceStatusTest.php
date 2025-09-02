@@ -3,7 +3,7 @@
 use App\Billing\Livewire\InvoiceStatus;
 
 it('exposes status helpers', function () {
-    $component = new InvoiceStatus();
+    $component = new InvoiceStatus;
     $component->status = 'paid';
 
     expect($component->getIsPaidProperty())->toBeTrue()

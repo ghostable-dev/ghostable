@@ -5,10 +5,10 @@ use App\Billing\Events\SubscriptionEnded;
 use App\Billing\Events\SubscriptionStarted;
 use App\Billing\Http\Controllers\WebhookController;
 use App\Organization\Models\Organization;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
