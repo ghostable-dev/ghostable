@@ -6,11 +6,7 @@
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-    <head>
-        @include('partials.head')
-    </head>
-    
+    <x-head :dark-mode="true" :title="$title ?? null"/>
     <body class="min-h-screen">
         <div class="h-1 w-full block bg-accent"></div>
         <flux:header sticky 

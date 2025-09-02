@@ -1,4 +1,4 @@
-<x-layouts.guest title="Ghostable - Contact">
+<x-layouts.guest title="Contact">
     
     @push('meta')
         <x-core.seo-meta
