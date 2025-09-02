@@ -5,7 +5,7 @@ set -euo pipefail
 XDEBUG_EXT="${XDEBUG_EXT:-/Applications/Herd.app/Contents/Resources/xdebug/xdebug-83-arm64.so}"
 XDEBUG_MODE="${XDEBUG_MODE:-coverage}"
 MEMORY_LIMIT="${MEMORY_LIMIT:-512M}"
-PEST_ARGS="${PEST_ARGS:---coverage --compact}"
+PEST_ARGS="${PEST_ARGS:---coverage --compact --min=90}"
 
 php \
   -d zend_extension="$XDEBUG_EXT" \
