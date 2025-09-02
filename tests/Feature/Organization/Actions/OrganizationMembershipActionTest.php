@@ -9,11 +9,13 @@ test('organization membership action builds cache keys', function () {
     $owner = $this->createUser('Owner', 'owner@example.com');
     $organization = $this->createOrganization('Acme', $owner);
 
-    $action = new class extends OrganizationMembershipAction {
+    $action = new class extends OrganizationMembershipAction
+    {
         public function membershipKey($org, $user)
         {
             return $this->cacheKeyForMembership($org, $user);
         }
+
         public function recordKey($org, $user)
         {
             return $this->cacheKeyForMembershipRecord($org, $user);

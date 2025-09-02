@@ -1,7 +1,7 @@
 <?php
 
-use App\Organization\Actions\DeclineInvite;
 use App\Organization\Actions\CreateInvite;
+use App\Organization\Actions\DeclineInvite;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Invite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
