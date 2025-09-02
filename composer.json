@@ -80,6 +80,7 @@
             "@php artisan config:clear --ansi",
             "@php artisan test --parallel"
         ],
+       "test-coverage": "bash scripts/test-coverage.sh",
         "pint": "./vendor/bin/pint",
         "ide": "php artisan ide-helper:generate",
         "ide-models": "php artisan ide-helper:models -RW"
