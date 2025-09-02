@@ -1,10 +1,10 @@
 <?php
 
 use App\Account\Models\User;
-use Tests\TestCase;
 use App\Billing\Entities\StripePayload;
 use App\Organization\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
