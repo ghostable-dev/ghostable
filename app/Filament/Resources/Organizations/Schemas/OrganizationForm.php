@@ -36,7 +36,7 @@ class OrganizationForm
                         Select::make('plan_override')
                             ->options(Plan::class)
                             ->nullable()
-                            ->visible(fn ($record) => $record->billing_policy->isManualOverride()),
+                            ->visible(fn ($record) => $record?->billing_policy->isManualOverride()),
                     ]),
             ]);
     }
