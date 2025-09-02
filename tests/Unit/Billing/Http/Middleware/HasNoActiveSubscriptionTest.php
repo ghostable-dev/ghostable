@@ -14,7 +14,8 @@ beforeEach(function () {
 });
 
 it('redirects if organization is subscribed', function () {
-    $organization = new class extends Organization {
+    $organization = new class extends Organization
+    {
         public function subscribed($type = 'default', $price = null)
         {
             return true;
@@ -34,7 +35,8 @@ it('redirects if organization is subscribed', function () {
 });
 
 it('continues if organization is not subscribed', function () {
-    $organization = new class extends Organization {
+    $organization = new class extends Organization
+    {
         public function subscribed($type = 'default', $price = null)
         {
             return false;

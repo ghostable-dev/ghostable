@@ -25,14 +25,17 @@ it('creates a checkout session', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $organization = new class extends Organization {
+    $organization = new class extends Organization
+    {
         public function newSubscription($type, $prices = [])
         {
-            return new class extends \Laravel\Cashier\Checkout {
+            return new class extends \Laravel\Cashier\Checkout
+            {
                 public array $sessionOptions;
+
                 public array $customerOptions;
 
-                public function __construct(){}
+                public function __construct() {}
 
                 public function checkout($sessionOptions, $customerOptions)
                 {
@@ -47,7 +50,7 @@ it('creates a checkout session', function () {
     $organization->id = 1;
     $organization->name = 'Test Org';
 
-    $controller = new StandardCheckout();
+    $controller = new StandardCheckout;
 
     $checkout = $controller->checkout($organization);
 
@@ -56,7 +59,8 @@ it('creates a checkout session', function () {
 });
 
 it('aborts when plan is not billable', function () {
-    $controller = new class extends SubscriptionCheckout {
+    $controller = new class extends SubscriptionCheckout
+    {
         protected function getBillablePlan(): Plan
         {
             return Plan::FREE;

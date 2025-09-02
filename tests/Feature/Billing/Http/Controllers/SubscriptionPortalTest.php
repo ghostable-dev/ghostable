@@ -4,7 +4,6 @@ use App\Billing\Http\Controllers\SubscriptionPortal;
 use App\Organization\Models\Organization;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use Mockery;
 
 afterEach(function () {
     Mockery::close();
