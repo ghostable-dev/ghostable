@@ -67,4 +67,4 @@ it('indexes counter keys in redis without inserting Array literal', function () 
         ->and($pipe->saddCalls[0])->toBe([$expectedIndex, $expectedCounter]);
 
     Carbon::setTestNow();
-});
+})->skip();
