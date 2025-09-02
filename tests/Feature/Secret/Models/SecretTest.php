@@ -4,13 +4,12 @@ use App\Environment\Enums\EnvironmentType;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    config(['app.key' => 'base64:' . base64_encode(random_bytes(32))]);
+    config(['app.key' => 'base64:'.base64_encode(random_bytes(32))]);
     $this->user = $this->createUser('Egon', 'egon@example.com');
     $this->organization = $this->createOrganization('Ghostbusters', $this->user);
     $this->project = $this->createProject('Website', $this->organization);

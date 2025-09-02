@@ -10,7 +10,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 test('secret notifications manager toggles notifications', function () {
-    config(['app.key' => 'base64:' . base64_encode(random_bytes(32))]);
+    config(['app.key' => 'base64:'.base64_encode(random_bytes(32))]);
 
     $user = $this->createUser('Egon', 'egon@example.com');
     $organization = $this->createOrganization('Ghostbusters', $user);
@@ -26,7 +26,7 @@ test('secret notifications manager toggles notifications', function () {
         createdBy: $user,
     );
 
-    $secret->notifications = new \App\Secret\Entities\SecretNotificationsData();
+    $secret->notifications = new \App\Secret\Entities\SecretNotificationsData;
     $secret->save();
 
     Livewire::actingAs($user)

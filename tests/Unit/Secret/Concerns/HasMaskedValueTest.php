@@ -3,7 +3,8 @@
 use App\Secret\Concerns\HasMaskedValue;
 
 it('displays masked value', function () {
-    $obj = new class {
+    $obj = new class
+    {
         use HasMaskedValue;
     };
 

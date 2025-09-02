@@ -10,7 +10,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 test('secret editor updates a secret', function () {
-    config(['app.key' => 'base64:' . base64_encode(random_bytes(32))]);
+    config(['app.key' => 'base64:'.base64_encode(random_bytes(32))]);
 
     $user = $this->createUser('Egon', 'egon@example.com');
     $organization = $this->createOrganization('Ghostbusters', $user);
