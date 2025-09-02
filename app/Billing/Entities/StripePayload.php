@@ -39,6 +39,7 @@ class StripePayload extends Data
         return null;
     }
 
+    // @codeCoverageIgnoreStart
     public function lineItems(): array
     {
         $stripe = new StripeClient(config('cashier.secret'));
@@ -49,6 +50,7 @@ class StripePayload extends Data
 
         return $details->line_items->data;
     }
+    // @codeCoverageIgnoreEnd
 
     public function debugData(): array
     {

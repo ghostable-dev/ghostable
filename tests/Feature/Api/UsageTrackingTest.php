@@ -2,6 +2,7 @@
 
 use App\Api\Jobs\FoldUsageCounters;
 use App\Environment\Enums\EnvironmentType;
+use App\Organization\Entities\OrganizationLimits;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -90,6 +91,36 @@ it('folds only tracked routes into hourly/daily aggregates', function () {
 
     // Cleanup frozen time
     Carbon::setTestNow();
+});
+
+it('returns 429 when organization API access is disabled', function () {
+    $user = $this->createUser('Winston', 'winston@example.com');
+    $organization = $this->createOrganization('Ghostbusters', $user);
+    $organization->update(['limits' => OrganizationLimits::from(['api_operations' => 0])]);
+    $token = $user->createToken('test');
+
+    $path = "/api/v1/organizations/{$organization->id}/projects";
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->getJson($path)
+        ->assertStatus(429)
+        ->assertJson(['message' => 'API access disabled for this organization.']);
+});
+
+it('enforces per-minute limit and returns 429 when exceeded', function () {
+    $user = $this->createUser('Peter', 'peter@example.com');
+    $organization = $this->createOrganization('Ghostbusters', $user);
+    $organization->update(['limits' => OrganizationLimits::from(['api_operations' => 1])]);
+    $token = $user->createToken('test');
+
+    $path = "/api/v1/organizations/{$organization->id}/projects";
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->getJson($path)
+        ->assertOk();
+
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->getJson($path)
+        ->assertStatus(429)
+        ->assertJson(['message' => 'API rate limit exceeded.']);
 });
 
 it('keys counts by full endpoint path', function () {
