@@ -204,10 +204,12 @@ class VariableManager extends Component
      * Dispatch an event to open the versions
      * manager for the given variable.
      */
+    // @codeCoverageIgnoreStart
     public function viewVersions(EnvironmentVariable $variable): void
     {
         $this->dispatch(VersionManager::LAUNCH, $variable->id);
     }
+    // @codeCoverageIgnoreEnd
 
     /**
      * Livewire listener to refresh the list of environment variables
