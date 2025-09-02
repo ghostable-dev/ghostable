@@ -50,4 +50,3 @@ test('creates environment variable rule and logs activity', function () {
         ->and($rule->is_override)->toBeTrue()
         ->and($rule->is_deleted)->toBeFalse();
 });
-

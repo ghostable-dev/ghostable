@@ -41,4 +41,3 @@ test('deletes environment variable rule and logs activity', function () {
 
     expect(EnvironmentVariableRule::count())->toBe(0);
 });
-
