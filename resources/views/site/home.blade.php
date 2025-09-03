@@ -1,7 +1,7 @@
 <x-layouts.guest>
         
     @push('meta')
-        <x-core.seo-meta
+        <x-seo-meta
             title="Ghostable – Secure Environment Management"
             description="Ghostable helps teams securely manage and share environment variables and secrets. Enforce validation, track version history, and gain full audit visibility across projects."
             :keywords="[

@@ -1,7 +1,7 @@
 @section('title', 'Ghostable Blog')
 
 @push('meta')
-    <x-core.seo-meta
+    <x-seo-meta
         title="Ghostable Blog"
         description="Stay updated with Ghostable. Read product updates, security insights, and best practices for managing environment variables and secrets."
         :keywords="[

@@ -1,7 +1,7 @@
 <x-layouts.guest title="Contact">
     
     @push('meta')
-        <x-core.seo-meta
+        <x-seo-meta
             title="Contact Ghostable"
             description="Have questions about Ghostable? Get in touch with our team to talk about pricing, enterprise options, or general inquiries."
             :keywords="[

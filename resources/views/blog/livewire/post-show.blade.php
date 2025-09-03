@@ -1,8 +1,8 @@
 @section('title', $post->meta_title)
 
 @push('meta')
-<x-core.seo-meta
-    :image="!is_null($post->social) ? asset($post->social) : null"
+<x-seo-meta
+    :image="!is_null($post->social) ? Storage::url($post->social) : null"
     type="article"
     :title="$post->meta_title"
     :description="$post->meta_description"
@@ -45,7 +45,7 @@
                         <img
                             alt="{{ $post->title }}"
                             class="mb-10 aspect-3/2 w-full rounded-2xl object-cover shadow-xl"
-                            src="{{ asset($post->hero) }}">
+                            src="{{ Storage::url($post->hero) }}">
                     @endif
 
                     <div class="prose my-10 max-w-2xl">

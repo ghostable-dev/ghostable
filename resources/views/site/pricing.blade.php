@@ -1,7 +1,7 @@
 <x-layouts.guest title="Pricing">
     
     @push('meta')
-        <x-core.seo-meta
+        <x-seo-meta
             title="Ghostable Pricing"
             description="Simple, transparent pricing for secure environment & secrets management. Choose a plan that fits your team—with validation, version history, and full audit visibility."
             :keywords="[
