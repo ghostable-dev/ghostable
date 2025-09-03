@@ -29,7 +29,7 @@ trait BelongsToOrganizations
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
             ->using(OrganizationUser::class)
-            ->withPivot(['role'])
+            ->withPivot(['role', 'permissions', 'deleted_at'])
             ->withTimestamps();
     }
 
