@@ -2,7 +2,7 @@
 <article class="relative flex flex-col rounded-3xl bg-white p-2 shadow-md ring-1 shadow-black/5 ring-black/5">
     <div class="aspect-3/2 w-full rounded-2xl bg-gray-200">
         @if($post->hero)
-            <img src="{{ $post->hero }}" alt="{{ $post->title }}" class="w-full h-full object-cover rounded-2xl"/>
+            <img src="{{ asset($post->hero) }}" alt="{{ $post->title }}" class="w-full h-full object-cover rounded-2xl"/>
         @endif
     </div>
     <div class="flex flex-1 flex-col p-8">

@@ -2,7 +2,7 @@
 
 @push('meta')
 <x-core.seo-meta
-    :image="!is_null($post->social) ? route('s3.asset', $post->social) : null"
+    :image="!is_null($post->social) ? asset($post->social) : null"
     type="article"
     :title="$post->meta_title"
     :description="$post->meta_description"
@@ -41,7 +41,7 @@
                         <img
                             alt="{{ $post->title }}"
                             class="mb-10 aspect-3/2 w-full rounded-2xl object-cover shadow-xl"
-                            src="{{ $post->hero }}">
+                            src="{{ asset($post->hero) }}">
                     @endif
 
                     @if($post->description)
