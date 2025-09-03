@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('organization_invites', function (Blueprint $table) {
             $table->dropColumn('permissions');
         });
-        
+
         Schema::table('organization_user', function (Blueprint $table) {
             $table->dropColumn('permissions');
         });
