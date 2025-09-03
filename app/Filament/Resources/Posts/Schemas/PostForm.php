@@ -6,13 +6,12 @@ use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
 use App\Blog\Models\Post;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -38,7 +37,7 @@ class PostForm
                 self::getSEOSection(),
             ]);
     }
-    
+
     public static function getHeroEditor(): FileUpload
     {
         return FileUpload::make('hero')
@@ -49,7 +48,7 @@ class PostForm
             ->preserveFilenames()
             ->imageEditor(true);
     }
-    
+
     public static function getSocialEditor(): FileUpload
     {
         return FileUpload::make('social')
@@ -60,7 +59,7 @@ class PostForm
             ->preserveFilenames()
             ->imageEditor(true);
     }
-    
+
     public static function getSlugEditor(): TextInput
     {
         return TextInput::make('slug')
@@ -69,20 +68,20 @@ class PostForm
             ->maxLength(191)
             ->columnSpanFull();
     }
-    
+
     public static function getMarkdownEditor(): MarkdownEditor
     {
         return MarkdownEditor::make('content')
             ->nullable()
             ->maxLength(65535)
             ->columnSpanFull()
-            ->saveUploadedFileAttachmentUsing(function(Post $record, TemporaryUploadedFile $file) {
+            ->saveUploadedFileAttachmentUsing(function (Post $record, TemporaryUploadedFile $file) {
                 return $file->storeAs($record->directory, str(
                     pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)
                 )->slug('_')->append('.', $file->getClientOriginalExtension()));
             });
     }
-    
+
     public static function getVisibilitySection(): Section
     {
         return Section::make('Visibility')
@@ -97,7 +96,7 @@ class PostForm
                     ->default(now()),
             ]);
     }
-    
+
     public static function getSEOSection(): Section
     {
         return Section::make('SEO')

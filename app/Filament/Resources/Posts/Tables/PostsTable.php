@@ -9,11 +9,9 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class PostsTable
 {
@@ -62,7 +60,7 @@ class PostsTable
                         true: fn ($query) => $query,
                         false: fn ($query) => $query->archived(),
                         blank: fn ($query) => $query->published()->orWhere->draft(),
-                    )
+                    ),
             ])
             ->recordActions([
                 Action::make('preview')
