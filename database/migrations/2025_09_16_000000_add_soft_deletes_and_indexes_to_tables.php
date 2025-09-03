@@ -13,11 +13,6 @@ return new class extends Migration
             $table->index(['status', 'posted_at']);
         });
 
-        Schema::table('organization_user', function (Blueprint $table) {
-            $table->softDeletes();
-            $table->unique(['organization_id', 'user_id', 'deleted_at']);
-        });
-
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->unique(['environment_id', 'key', 'deleted_at']);
         });
@@ -32,11 +27,6 @@ return new class extends Migration
         Schema::table('posts', function (Blueprint $table) {
             $table->dropSoftDeletes();
             $table->dropIndex(['status', 'posted_at']);
-        });
-
-        Schema::table('organization_user', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-            $table->dropUnique(['organization_id', 'user_id', 'deleted_at']);
         });
 
         Schema::table('environment_variables', function (Blueprint $table) {

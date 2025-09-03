@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Notification;
  * @property string|null $user_id
  * @property string $email
  * @property OrganizationRole|null $role
- * @property string|null $permissions
  * @property \Illuminate\Support\Carbon|null $sent_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -45,7 +44,6 @@ use Illuminate\Support\Facades\Notification;
  * @method static InviteBuilder<static>|Invite whereDeletedAt($value)
  * @method static InviteBuilder<static>|Invite whereEmail($value)
  * @method static InviteBuilder<static>|Invite whereId($value)
- * @method static InviteBuilder<static>|Invite wherePermissions($value)
  * @method static InviteBuilder<static>|Invite whereRole($value)
  * @method static InviteBuilder<static>|Invite whereSentAt($value)
  * @method static InviteBuilder<static>|Invite whereStatus($value)

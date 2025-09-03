@@ -14,7 +14,6 @@ use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
 use App\Organization\Casts\OrganizationLimitsCast;
 use App\Organization\Entities\OrganizationNotificationsData;
-use App\Organization\Models\OrganizationUser;
 use App\Project\Models\Project;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -142,8 +141,7 @@ class Organization extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
-            ->using(OrganizationUser::class)
-            ->withPivot(['role', 'permissions', 'deleted_at'])
+            ->withPivot(['role'])
             ->withTimestamps();
     }
 
