@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string $organization_id
  * @property string $user_id
  * @property OrganizationRole|null $role
- * @property string|null $permissions
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  *
@@ -38,16 +37,13 @@ class OrganizationUser extends Pivot
         'organization_id',
         'user_id',
         'role',
-        'permissions',
     ];
 
     protected $casts = [
-        // 'permissions' => 'json',
         'role' => OrganizationRole::class,
     ];
 
     protected $attributes = [
-        'permissions' => [],
         'role' => null,
     ];
 }

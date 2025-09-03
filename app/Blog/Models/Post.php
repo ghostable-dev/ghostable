@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
@@ -21,6 +22,7 @@ class Post extends Model implements Sitemapable
 {
     use HasFactory;
     use HasUuids;
+    use SoftDeletes;
 
     protected $fillable = [
         'category',

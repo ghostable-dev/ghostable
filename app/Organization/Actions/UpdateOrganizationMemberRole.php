@@ -19,7 +19,6 @@ class UpdateOrganizationMemberRole
         // Prepare pivot update attributes
         $attributes = [
             'role' => $role->value,
-            'permissions' => null,
         ];
 
         // Update the pivot record
