@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Api\Providers;
 
-use App\Api\Commands\FoldUsageCountersCommand;
 use App\Api\Http\Exception\ApiExceptionMap;
 use App\Api\Http\Middleware\AddApiControlHeaders;
 use App\Api\Http\Middleware\ApplyApiVersion;
@@ -42,7 +41,7 @@ final class ApiServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                FoldUsageCountersCommand::class,
+                //
             ]);
         }
     }
