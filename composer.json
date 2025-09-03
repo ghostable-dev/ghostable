@@ -33,6 +33,7 @@
         "barryvdh/laravel-debugbar": "^3.15",
         "barryvdh/laravel-ide-helper": "^3.5",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
@@ -84,7 +85,8 @@
        "test-coverage": "bash scripts/test-coverage.sh",
         "pint": "./vendor/bin/pint",
         "ide": "php artisan ide-helper:generate",
-        "ide-models": "php artisan ide-helper:models -RW"
+        "ide-models": "php artisan ide-helper:models -RW",
+        "phpstan": "./vendor/bin/phpstan analyse --memory-limit=2G"
     },
     "extra": {
         "laravel": {

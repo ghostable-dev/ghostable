@@ -4,6 +4,7 @@ return [
     App\Account\AccountServiceProvider::class,
     App\Auth\AuthServiceProdivder::class,
     App\Billing\BillingServiceProvider::class,
+    App\Blog\BlogServiceProvider::class,
     App\Core\Providers\AppServiceProvider::class,
     App\Environment\EnvironmentServiceProvider::class,
     App\Integration\Integrations\Drata\DrataServiceProvider::class,

@@ -9,6 +9,10 @@
     :keywords="$post->meta_keywords"/>
 @endpush
 
+{{-- @push('scripts')
+    <x-blog-posting-schema :post="$post"/>
+@endpush --}}
+
 <div class="px-6 lg:px-8 bg-white py-10">
     <div class="mt-4 mx-auto max-w-2xl lg:max-w-7xl">
        

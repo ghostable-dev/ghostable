@@ -2,7 +2,7 @@
 
 namespace App\Core\Providers;
 
-use App\Core\View\SeoMeta;
+use App\Core\View\Components\SeoMeta;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;

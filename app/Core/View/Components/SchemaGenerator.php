@@ -1,6 +1,6 @@
 <?php
 
-namespace App\View\Components\Schema;
+namespace App\Core\View\Components;
 
 use Illuminate\View\Component;
 use Spatie\SchemaOrg\BaseType;

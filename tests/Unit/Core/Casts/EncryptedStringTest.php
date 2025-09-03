@@ -1,19 +1,14 @@
 <?php
 
+use App\Account\Models\User;
 use App\Core\Casts\EncryptedString;
-use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 uses(TestCase::class);
 
-class DummyModel extends Model
-{
-    protected $table = 'dummy';
-}
-
 it('encrypts and decrypts values', function () {
     $cast = new EncryptedString;
-    $model = new DummyModel;
+    $model = new User;
 
     $encrypted = $cast->set($model, 'secret', 'plain', []);
     expect($encrypted)->not->toBe('plain');
@@ -24,7 +19,7 @@ it('encrypts and decrypts values', function () {
 
 it('returns null for non scalar values', function () {
     $cast = new EncryptedString;
-    $model = new DummyModel;
+    $model = new User;
 
     $result = $cast->set($model, 'secret', ['array'], []);
     expect($result)->toBeNull();
@@ -32,7 +27,7 @@ it('returns null for non scalar values', function () {
 
 it('returns null on decryption failure', function () {
     $cast = new EncryptedString;
-    $model = new DummyModel;
+    $model = new User;
 
     $result = $cast->get($model, 'secret', 'not-encrypted', []);
     expect($result)->toBeNull();
