@@ -17,7 +17,7 @@ class BlogPosting extends SchemaGenerator
             ->publisher($this->defaultOrganization())
             ->datePublished($this->post->posted_at)
             ->keywords($this->post->meta_keywords)
-            ->image(!is_null($post->hero) ? Storage::url($post->hero) : null)
+            ->image(! is_null($post->hero) ? Storage::url($post->hero) : null)
             ->genre($post->category->label())
             // ->wordCount($post->wordCount)
             ->url(url('blog/{post:slug}', $this->post));
