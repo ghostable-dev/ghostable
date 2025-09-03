@@ -2,8 +2,8 @@
 
 use App\Environment\Enums\EnvironmentType;
 use App\Secret\Actions\CreateSecret;
-use App\Secret\Actions\UpdateSecret;
 use App\Secret\Actions\LogSecretActivity;
+use App\Secret\Actions\UpdateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Versioning\Actions\RestoreSecretVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
