@@ -28,4 +28,6 @@
     @if($darkMode)
     @fluxAppearance
     @endif
+    
+    @stack('styles')
 </head>

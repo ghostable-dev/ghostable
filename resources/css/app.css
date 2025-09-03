@@ -104,3 +104,7 @@ select:focus[data-flux-control] {
 .pulse-glow {
   animation: pulseGlow 2.4s ease-in-out infinite;
 }
+
+.prose > pre {
+    background-color: #0d1117;
+}
