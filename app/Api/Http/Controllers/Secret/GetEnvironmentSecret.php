@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Http\Controllers\Secret;
 
-use App\Api\Resources\Secret\SecretResource;
+use App\Api\Resources\Secret\SecretWithRawValueResource;
 use App\Core\Http\Controllers\Controller;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
@@ -24,6 +24,6 @@ final class GetEnvironmentSecret extends Controller
 
         abort_unless($secret->environment_id === $environment->id, 404);
 
-        return new SecretResource($secret);
+        return new SecretWithRawValueResource($secret);
     }
 }
