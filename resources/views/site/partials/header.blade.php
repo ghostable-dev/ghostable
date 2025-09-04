@@ -12,7 +12,7 @@
         @php
             $links = [
                 ['label' => 'Pricing', 'href' => route('pricing'), 'target' => 'self', 'current' => request()->route()->named('pricing')],
-                //['label' => 'Blog', 'href' => route('blog.index'), 'target' => 'self', 'current' => request()->route()->named('blog.index')],
+                ['label' => 'Blog', 'href' => route('blog.index'), 'target' => 'self', 'current' => request()->route()->named('blog.index')],
                 ['label' => 'Contact', 'href' => route('contact'), 'target' => 'self', 'current' => request()->route()->named('contact')],
                 ['label' => 'Docs', 'href' => 'https://docs.ghostable.dev', 'target' => '_blank', 'current' => false]
             ];

@@ -14,13 +14,13 @@ class PostsIndex extends Component
     {
         $featured = Post::published()
             ->where('is_featured', true)
-            ->latest()
+            ->latest('posted_at')
             ->take(3)
             ->get();
 
         $posts = Post::published()
             ->where('is_featured', false)
-            ->latest()
+            ->latest('posted_at')
             ->paginate(6);
 
         return view('blog.livewire.posts-index')
