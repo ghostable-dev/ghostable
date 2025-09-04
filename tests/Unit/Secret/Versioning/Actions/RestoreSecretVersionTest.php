@@ -29,8 +29,6 @@ test('restores secret version and logs activity', function () {
 
     app(UpdateSecret::class)->handle(
         secret: $secret,
-        name: 'API_KEY_NEW',
-        type: SecretType::TOKEN,
         value: 'bar',
         metadata: ['new' => 'val'],
         updatedBy: $user,

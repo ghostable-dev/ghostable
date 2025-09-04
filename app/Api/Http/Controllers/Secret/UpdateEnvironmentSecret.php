@@ -24,16 +24,12 @@ final class UpdateEnvironmentSecret extends Controller
         abort_unless($secret->environment_id === $environment->id, 404);
 
         $validated = request()->validate([
-            'name' => 'required|string|max:255',
             'value' => 'required|string',
-            'type' => 'required|string',
             'metadata' => 'nullable|array',
         ]);
 
         $secret = app(UpdateSecretAction::class)->handle(
             secret: $secret,
-            name: $validated['name'],
-            type: SecretType::from($validated['type']),
             value: $validated['value'],
             metadata: $validated['metadata'] ?? null,
             updatedBy: request()->user(),

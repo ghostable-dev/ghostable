@@ -29,9 +29,8 @@ test('secret editor updates a secret', function () {
     Livewire::actingAs($user)
         ->test(SecretEditor::class)
         ->call('launchEditorModal', $secret)
-        ->set('name', 'NEW_API_KEY')
         ->set('value', 'new-value')
         ->call('updateSecret');
 
-    expect($secret->fresh()->name)->toBe('NEW_API_KEY');
+    expect($secret->fresh()->value)->toBe('new-value');
 });
