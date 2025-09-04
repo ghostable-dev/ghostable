@@ -9,7 +9,6 @@ use App\Core\Http\Controllers\Controller;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use App\Secret\Actions\UpdateSecret as UpdateSecretAction;
-use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
 use Illuminate\Http\Resources\Json\JsonResource;
 
