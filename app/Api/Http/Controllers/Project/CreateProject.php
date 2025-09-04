@@ -6,7 +6,6 @@ namespace App\Api\Http\Controllers\Project;
 
 use App\Api\Resources\Project\ProjectResource;
 use App\Core\Http\Controllers\Controller;
-use App\Environment\Enums\EnvironmentType;
 use App\Organization\Models\Organization;
 use App\Project\Actions\CreateProject as CreateProjectAction;
 use App\Project\Models\Project;
@@ -31,10 +30,6 @@ final class CreateProject extends Controller
             name: $validated['name'],
             organization: $organization
         );
-
-        $project->environments()->createMany([
-            ['name' => 'local', 'type' => EnvironmentType::LOCAL],
-        ]);
 
         return new ProjectResource($project->load('environments'));
     }
