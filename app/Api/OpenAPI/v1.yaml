@@ -97,6 +97,9 @@ paths:
       summary: Create environment secret
       responses: {}
   /projects/{project}/environments/{name}/secrets/{secret}:
+    get:
+      summary: Get environment secret
+      responses: {}
     put:
       summary: Update environment secret
       responses: {}
