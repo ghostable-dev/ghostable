@@ -9,9 +9,9 @@
         </flux:accordion.item>
 
         <flux:accordion.item>
-            <flux:accordion.heading>How do I share environment files with my organization?</flux:accordion.heading>
+            <flux:accordion.heading>How do I share environment files with my team?</flux:accordion.heading>
             <flux:accordion.content>
-                Ghostable lets you push environment files to your organization or organization using our CLI. Organizationmates can pull the latest version based on their project permissions—no email, Slack threads, or Notion links required.
+                Ghostable lets you push environment files to your organization or team using our CLI. Teammates can pull the latest version based on their project permissions—no email, Slack threads, or Notion links required.
             </flux:accordion.content>
         </flux:accordion.item>
 
