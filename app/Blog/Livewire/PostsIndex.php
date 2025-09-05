@@ -3,9 +3,11 @@
 namespace App\Blog\Livewire;
 
 use App\Blog\Models\Post;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('components.layouts.blog', ['title' => 'Ghostable Blog'])]
 class PostsIndex extends Component
 {
     use WithPagination;
@@ -24,7 +26,6 @@ class PostsIndex extends Component
             ->paginate(6);
 
         return view('blog.livewire.posts-index')
-            ->layout('components.layouts.blog')
             ->with([
                 'featuredPosts' => $featured,
                 'posts' => $posts,

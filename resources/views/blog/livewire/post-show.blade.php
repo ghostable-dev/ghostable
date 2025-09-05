@@ -1,5 +1,3 @@
-@section('title', $post->meta_title)
-
 @push('meta')
 <x-seo-meta
     :image="!is_null($post->social) ? Storage::url($post->social) : null"

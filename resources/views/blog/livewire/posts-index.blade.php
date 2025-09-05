@@ -1,5 +1,3 @@
-@section('title', 'Ghostable Blog')
-
 @push('meta')
     <x-seo-meta
         title="Ghostable Blog"

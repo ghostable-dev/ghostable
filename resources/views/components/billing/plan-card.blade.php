@@ -24,11 +24,11 @@
     @endisset
     <div class="mt-6">
         @if($featured)
-            <flux:button disabled class="w-full" variant="primary">
+            <flux:button href="{{ route('login') }}" class="w-full" variant="primary">
                 Most Popular
             </flux:button>
         @else
-            <flux:button disabled class="w-full" variant="filled">
+            <flux:button href="{{ route('login') }}" class="w-full" variant="filled">
                 Get Started
             </flux:button>
         @endif
