@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-accent">
-    <x-head :dark-mode="false" :title="$title ?? null"/>
+    <x-head :dark-mode="false" :title="$title ?? null" tracking/>
     <body class="antialiased bg-accent">
         {{ $slot }}
         @include('partials.footer')

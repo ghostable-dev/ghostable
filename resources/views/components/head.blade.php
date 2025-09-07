@@ -1,7 +1,8 @@
 @props([
     'title' => 'Secure Environment Management',
     'darkMode' => true,
-    'themeColor' => '#080808' 
+    'themeColor' => '#080808',
+    'tracking' => false
 ])
 
 <head>
@@ -27,6 +28,12 @@
 
     @if($darkMode)
     @fluxAppearance
+    @endif
+    
+    @if($tracking && app()->environment('production'))
+    <!-- Fathom - beautiful, simple website analytics -->
+    <script src="https://cdn.usefathom.com/script.js" data-site="NMGPOVRL" defer></script>
+    <!-- / Fathom -->
     @endif
     
     @stack('styles')
