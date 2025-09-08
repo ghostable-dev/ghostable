@@ -17,16 +17,23 @@
         <div class="grid grid-cols-1 gap-8 pb-24 lg:grid-cols-[15rem_1fr] xl:grid-cols-[15rem_1fr_15rem]">
             <div class="flex flex-wrap items-center gap-8 max-lg:justify-between lg:flex-col lg:items-start">
                 <div class="flex flex-wrap gap-2">
-                    <a
-                        class="rounded-full border border-dotted border-gray-300 bg-gray-50 px-2 text-sm/6 font-medium text-gray-500"
-                        href="{{ route('blog.index', ['category' => $post->category->value]) }}">
+                    <flux:button size="sm" variant="filled" href="{{ route('blog.category', $post->category) }}">
                         {{ $post->category->label() }}
-                    </a>
+                    </flux:button>
                 </div>
             </div>
 
             <div class="text-gray-700">
                 <div class="max-w-2xl xl:mx-auto">
+                    
+                    <div>
+                        <flux:breadcrumbs class="pb-6">
+                            <flux:breadcrumbs.item href="{{ route('blog.index') }}" separator="slash">Blog</flux:breadcrumbs.item>
+                            <flux:breadcrumbs.item href="{{ route('blog.category', $post->category) }}">
+                                {{ $post->category->label() }}
+                            </flux:breadcrumbs.item>
+                        </flux:breadcrumbs>
+                    </div>
                     
                     <div class="mb-10">
                         <h2 class="font-mono text-xs/5 font-semibold tracking-widest text-gray-500 uppercase">

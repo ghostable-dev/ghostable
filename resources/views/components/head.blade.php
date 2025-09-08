@@ -2,7 +2,8 @@
     'title' => 'Secure Environment Management',
     'darkMode' => true,
     'themeColor' => '#080808',
-    'tracking' => false
+    'tracking' => false,
+    'canonical' => null
 ])
 
 <head>
@@ -10,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>{{ str()->of($title)->trim()->finish(' | Ghostable') }}</title>
-    <link rel="canonical" href="{{ url()->current() }}" />
+    <link rel="canonical" href="{{ $canonical ?? url()->current() }}" />
     
     <meta name="theme-color" content="{{ $themeColor }}">
 

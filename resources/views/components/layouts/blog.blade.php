@@ -1,4 +1,4 @@
-<x-layouts.guest :title="$title ?? null">
+<x-layouts.guest :title="$title ?? null" :canonical="$canonical ?? null">
     @include('site.partials.header')
     <main class="blog">
         {{ $slot }}
