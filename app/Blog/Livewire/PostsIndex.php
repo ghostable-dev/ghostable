@@ -7,32 +7,29 @@ use App\Blog\Models\Post;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class PostsIndex extends Component
 {
     public ?PostCategory $category = null;
-    
+
     public function mount(?PostCategory $category = null): void
     {
         $this->category = $category;
     }
-    
+
     #[Computed()]
     public function posts(): LengthAwarePaginator
     {
         return Post::published()
             ->where('is_featured', false)
-            ->when(!empty($this->category), function($posts) {
+            ->when(! empty($this->category), function ($posts) {
                 return $posts->ofCategory($this->category);
             })
             ->latest('posted_at')
             ->paginate(2);
     }
-    
+
     #[Computed(persist: true)]
     public function featured(): Collection
     {
@@ -42,19 +39,19 @@ class PostsIndex extends Component
             ->take(3)
             ->get();
     }
-    
+
     #[Computed()]
     public function metaTitle(): string
     {
         $base = $this->category
             ? "{$this->category->label()} — Ghostable Blog"
-            : "Ghostable Blog";
+            : 'Ghostable Blog';
 
-        return $this->page > 1 
-            ? sprintf("%s (Page %d)", $base, $this->page)
+        return $this->page > 1
+            ? sprintf('%s (Page %d)', $base, $this->page)
             : $base;
     }
-    
+
     #[Computed()]
     public function metaDescription(): string
     {
@@ -64,11 +61,11 @@ class PostsIndex extends Component
             ? $this->category->description()
             : $baseDesc;
 
-        return $this->page > 1 
-            ? "{$desc} Browse page {$this->page}." 
+        return $this->page > 1
+            ? "{$desc} Browse page {$this->page}."
             : $desc;
     }
-    
+
     #[Computed()]
     public function metaCanonical(): string
     {
@@ -80,7 +77,7 @@ class PostsIndex extends Component
             ? "{$canonical}?page={$this->page}"
             : $canonical;
     }
-    
+
     #[Computed()]
     public function metaKeywords(): array
     {
@@ -105,7 +102,6 @@ class PostsIndex extends Component
         return array_values(array_unique([...$base, ...$extra]));
     }
 
-    
     #[Computed()]
     public function page(): int
     {
@@ -117,7 +113,7 @@ class PostsIndex extends Component
         return view('blog.livewire.posts-index')
             ->layout('components.layouts.blog', [
                 'title' => $this->metaTitle,
-                'canonical' => $this->metaCanonical
+                'canonical' => $this->metaCanonical,
             ]);
     }
 }

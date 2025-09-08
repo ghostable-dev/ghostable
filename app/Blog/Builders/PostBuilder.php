@@ -27,7 +27,7 @@ class PostBuilder extends Builder
     {
         return $this->where('status', $status->value);
     }
-    
+
     public function ofCategory(PostCategory $category): Builder
     {
         return $this->where('category', $category);

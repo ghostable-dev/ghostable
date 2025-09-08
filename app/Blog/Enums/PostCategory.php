@@ -29,7 +29,7 @@ enum PostCategory: string
             self::RELEASE_NOTES => 'Release Notes',
         };
     }
-    
+
     public function description(): string
     {
         return match ($this) {
