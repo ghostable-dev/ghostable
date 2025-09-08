@@ -43,6 +43,7 @@ Route::prefix('blog')
     ->name('blog.')
     ->group(function () {
         Route::get('/', PostsIndex::class)->name('index');
+        Route::get('category/{category}', PostsIndex::class)->name('category');
         Route::middleware(PostIsPublished::class)->get('{post:slug}', PostShow::class)->name('view');
         Route::middleware(['auth', IsFounder::class])->get('preview/{post:slug}', PostShow::class)->name('preview');
     });
