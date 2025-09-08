@@ -27,9 +27,7 @@ class GenerateBlogSitemap extends Controller
         $this->addBlogPosts();
         
         $this->addBlogCategories();
-        
-        dd($this->sitemap->toResponse(request()));
-        
+
         return $this->sitemap->toResponse(request());
     }
     
@@ -61,8 +59,6 @@ class GenerateBlogSitemap extends Controller
             return;
         }
         
-
-
         // Keep only categories defined in your enum
         $validSlugs = collect(PostCategory::cases())->map->value->all();
         $rows = $rows->filter(fn ($r) => in_array($r->category->value, $validSlugs, true) && (int) $r->cnt > 0);
