@@ -11,7 +11,7 @@ test('posts index component lists posts', function () {
     $featured = Post::factory()->published()->featured()->create(['title' => 'Featured']);
     $post = Post::factory()->published()->create(['title' => 'Regular']);
 
-    Livewire::test(PostsIndex::class)
+    Livewire::test(PostsIndex::class, ['category' => null])
         ->assertSee('Featured')
         ->assertSee('Regular');
 });
