@@ -2,13 +2,15 @@
     
     <div class="space-y-12 max-w-4xl">
         
-        @if($this->environment->owningOrganization()->activeSubscription())
-            @can('manageAccessControls', $this->environment->owningOrganization())
-                <div class="space-y-6">
-                    
-                    {{-- CLI Token management --}}
-                    <livewire:environment.livewire.environment-access-token-manager 
-                        :environment="$this->environment"/>
+        @can('manageAccessControls', $this->environment->owningOrganization())
+        
+            <div class="space-y-6">
+                
+                {{-- CLI Token management --}}
+                <livewire:environment.livewire.environment-access-token-manager 
+                    :environment="$this->environment"/>
+                
+                @if($this->environment->owningOrganization()->activeSubscription())
                     
                     {{-- User Override Access Restrictions --}}
                     <x-section>
@@ -51,13 +53,14 @@
                     {{-- Override removal modal --}}
                     @include('environment.access.partials.override-removal-modal')
                     
-                </div>
-            @else
-                <x-access-restricted/>
-            @endcan
+                @else
+                    <x-paid-plan-required/>
+                @endif
+                
+            </div>
         @else
-            <x-paid-plan-required/>
-        @endif
-            
+            <x-access-restricted/>
+        @endcan
+        
     </div>
 </x-layouts.environment-settings>

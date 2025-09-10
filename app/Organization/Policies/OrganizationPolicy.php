@@ -50,11 +50,10 @@ class OrganizationPolicy
      */
     public function manageAccessControls(User $user, Organization $organization): bool
     {
-        return $organization->activeSubscription() &&
-            $user->organizationMembership()->hasOrganizationPermission(
-                permission: OrganizationPermission::ManageAccessControls,
-                organization: $organization
-            );
+        return $user->organizationMembership()->hasOrganizationPermission(
+            permission: OrganizationPermission::ManageAccessControls,
+            organization: $organization
+        );
     }
 
     /**
