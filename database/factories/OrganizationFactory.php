@@ -1,0 +1,21 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Organization\Models\Organization;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Organization\Models\Organization>
+ */
+class OrganizationFactory extends Factory
+{
+    protected $model = Organization::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->unique()->company(),
+        ];
+    }
+}

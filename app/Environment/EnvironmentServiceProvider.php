@@ -57,5 +57,6 @@ class EnvironmentServiceProvider extends ServiceProvider
                 resolve(EnvironmentAncestryResolver::class)->bust($event->environment);
             }
         );
+
     }
 }

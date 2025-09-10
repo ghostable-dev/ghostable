@@ -6,7 +6,7 @@ use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Resolvers\ResolveVariable;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Exception;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -87,7 +87,7 @@ abstract class VariableModalComponent extends Component
         // not necessarily the one that owns the variable. Regardless of whether the variable is
         // directly owned or inherited, the user must have permission to edit variables in the
         // target environment, since the edit (or override) will apply there.
-        $this->authorize('perform', [$target, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$target, OrganizationPermission::EditVariables]);
 
         // If the variable is inherited, ensure it is actually from an ancestor of the target.
         // This prevents spoofing or tampering with unrelated variables by enforcing a valid

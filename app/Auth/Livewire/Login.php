@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-#[Layout('components.layouts.auth')]
+#[Layout('components.layouts.auth', ['title' => 'Login'])]
 class Login extends Component
 {
     #[Validate('required|string|email')]
@@ -59,8 +59,8 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        if ($user->teams()->count() > 1) {
-            session(['show-team-switcher' => true]);
+        if ($user->organizations()->count() > 1) {
+            session(['show-organization-switcher' => true]);
         }
 
         $this->redirectIntended(

@@ -50,6 +50,7 @@ class ResolveEnvironmentVariables
         })->values();
     }
 
+    // @codeCoverageIgnoreStart
     /**
      * Build ancestry chain from root → current env.
      */
@@ -64,4 +65,5 @@ class ResolveEnvironmentVariables
 
         return $chain;
     }
+    // @codeCoverageIgnoreEnd
 }

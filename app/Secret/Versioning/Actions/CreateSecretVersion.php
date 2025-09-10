@@ -15,13 +15,13 @@ class CreateSecretVersion
         $version = new SecretVersion([
             'name' => $secret->name,
             'type' => $secret->type,
-            'value_encrypted' => $secret->value_encrypted,
             'metadata' => $secret->metadata,
             'version' => $secret->versions()->max('version') + 1,
+            'secret_id' => $secret->id,
         ]);
 
         $version->changedBy()->associate($changedBy);
-        $version->secret()->associate($secret);
+        $version->value = $secret->value;
         $version->save();
 
         return $version;

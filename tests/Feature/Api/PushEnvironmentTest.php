@@ -1,17 +1,17 @@
 <?php
 
 use App\Environment\Enums\EnvironmentType;
-use App\Team\Enums\TeamRole;
+use App\Organization\Enums\OrganizationRole;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
-    $project = $this->createProject(name: 'Website', team: $this->team);
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+    $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
-    $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/push";
+    $this->endpoint = "/api/v1/projects/{$project->id}/environments/{$this->env->name}/push";
 });
 
 test('unauthenticated users cannot push environments', function () {
@@ -24,10 +24,10 @@ test('fails with improper vars', function () {
 });
 
 test('fails with production debug true', function () {
-    $project = $this->createProject(name: 'Store', team: $this->team);
+    $project = $this->createProject(name: 'Store', organization: $this->organization);
     $production = $this->createEnvironment(name: 'Production', type: EnvironmentType::PRODUCTION, project: $project);
     Sanctum::actingAs($this->ray);
-    $this->postJson("/api/projects/{$project->id}/environments/{$production->name}/push", ['vars' => [
+    $this->postJson("/api/v1/projects/{$project->id}/environments/{$production->name}/push", ['vars' => [
         'APP_DEBUG=TRUE',
         'APP_ENV=production',
         'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
@@ -72,7 +72,7 @@ test('forbids non-members from pushing', function () {
 
 test('forbids members without permission from pushing', function () {
     $peter = $this->createUser(name: 'Peter', email: 'peter@ghostbusters.com');
-    $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::DEVELOPER_READ_ONLY);
+    $peter->organizationMembership()->assignToOrganization(organization: $this->organization, role: OrganizationRole::DEVELOPER_READ_ONLY);
     Sanctum::actingAs($peter);
     $this->postJson($this->endpoint, ['vars' => ['APP_ENV=local']])->assertForbidden();
 });

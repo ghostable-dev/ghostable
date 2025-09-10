@@ -2,29 +2,30 @@
 
 namespace App\Billing\Http\Controllers;
 
+use App\Billing\Enums\Plan;
 use App\Core\Http\Controllers\Controller;
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Cashier\Checkout;
 
 abstract class SubscriptionCheckout extends Controller
 {
-    public function checkout(Team $team): Checkout
+    public function checkout(Organization $organization): Checkout
     {
-        if (empty($subscriptionId = $this->getSubscriptionApiId())
-            || empty($type = $this->getSubscriptionType())) {
+        $plan = $this->getBillablePlan();
+        if (! $plan->isBillable()) {
             abort(404);
         }
 
-        $subscription = $team->newSubscription(
-            type: $type,
-            prices: [$subscriptionId]
+        $subscription = $organization->newSubscription(
+            type: $plan->value,
+            prices: [$plan->getBillableId()]
         );
 
         return $subscription
             ->checkout(sessionOptions: [
-                'success_url' => route('team.settings.billing', $team),
-                'cancel_url' => route('team.settings.billing', $team),
+                'success_url' => route('organization.settings.billing', $organization),
+                'cancel_url' => route('organization.settings.billing', $organization),
                 'metadata' => [
                     'platform_user_id' => Auth::user()->id,
                 ],
@@ -32,14 +33,12 @@ abstract class SubscriptionCheckout extends Controller
                 customerOptions: [
                     'email' => Auth::user()->email,
                     'metadata' => [
-                        'platform_team_id' => $team->id,
-                        'platform_team_name' => $team->name,
+                        'platform_organization_id' => $organization->id,
+                        'platform_organization_name' => $organization->name,
                     ],
                 ]
             );
     }
 
-    abstract protected function getSubscriptionType(): ?string;
-
-    abstract protected function getSubscriptionApiId(): ?string;
+    abstract protected function getBillablePlan(): Plan;
 }

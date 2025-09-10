@@ -8,7 +8,7 @@ use App\Environment\Validation\Actions\DeleteVariableRule;
 use App\Environment\Validation\Actions\SuppressInheritedVariableRule;
 use App\Environment\Validation\Actions\SuppressOverrideVariableRule;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -34,7 +34,7 @@ class VariableRuleDeleter extends Component
     {
         $environment = $targetEnvironment ?? $rule->environment;
 
-        $this->authorize('perform', [$environment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$environment, OrganizationPermission::ManageValidationRules]);
 
         if (! $rule->belongsToEnvironment($environment) && ! $environment->isDescendantOf($rule->environment)) {
             abort(403, 'Invalid inheritance.');
@@ -75,7 +75,7 @@ class VariableRuleDeleter extends Component
 
     public function removeRule(): void
     {
-        $this->authorize('perform', [$this->targetEnvironment, TeamPermission::ManageValidationRules]);
+        $this->authorize('perform', [$this->targetEnvironment, OrganizationPermission::ManageValidationRules]);
 
         if (! $this->isLocalToTarget) {
             $this->suppressInherited();

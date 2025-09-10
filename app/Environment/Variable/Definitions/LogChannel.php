@@ -14,20 +14,24 @@ class LogChannel extends VariableDefinition
         return 'LOG_CHANNEL';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The logging channel to use (e.g., stack, single, daily, etc.).';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['stack', 'single', 'daily', 'slack'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Logging;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

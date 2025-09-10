@@ -7,9 +7,9 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
-    $this->project = $this->createProject(name: 'Website', team: $this->team);
-    $this->endpoint = "/api/projects/{$this->project->id}/generate-suggested-environment-names";
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+    $this->project = $this->createProject(name: 'Website', organization: $this->organization);
+    $this->endpoint = "/api/v1/projects/{$this->project->id}/generate-suggested-environment-names";
 });
 
 test('unauthenticated users cannot generate suggestions', function () {

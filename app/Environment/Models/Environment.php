@@ -11,18 +11,21 @@ use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentUpdated;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Organization\Concerns\HasPermissionOverrides;
+use App\Organization\Contracts\SupportsOverrides;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Concerns\HasPermissionOverrides;
-use App\Team\Contracts\SupportsOverrides;
-use App\Team\Models\Team;
 use Database\Factories\EnvironmentFactory;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Encryption\Encrypter;
 use Laravel\Sanctum\HasApiTokens;
+use RuntimeException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -43,7 +46,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Environment|null $base
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $derived
  * @property-read int|null $derived_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\TeamPermissionOverride> $permissionOverrides
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableRule> $rules
@@ -99,6 +102,15 @@ class Environment extends Model implements SupportsOverrides
         'notifications' => EnvironmentNotificationsData::class.':default',
     ];
 
+    // protected static function booted(): void
+    // {
+    //     static::creating(function (Environment $environment) {
+    //         $environment->kek_salt ??= base64_encode(
+    //             Encrypter::generateKey(config('app.cipher')),
+    //         );
+    //     });
+    // }
+
     protected $dispatchesEvents = [
         'created' => EnvironmentCreated::class,
         'updated' => EnvironmentUpdated::class,
@@ -130,14 +142,33 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariable::class);
     }
 
-    public function secrets(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function secrets(): HasMany
     {
-        return $this->morphMany(\App\Secret\Models\Secret::class, 'owner');
+        return $this->hasMany(\App\Secret\Models\Secret::class, 'environment_id');
     }
 
     public function rules(): HasMany
     {
         return $this->hasMany(EnvironmentVariableRule::class);
+    }
+
+    public function encrypter(?string $kekSalt = null): EncrypterContract
+    {
+        $salt = $kekSalt ?? $this->kek_salt;
+
+        if (! $salt) {
+            throw new RuntimeException('Environment missing KEK salt');
+        }
+
+        $appKey = config('app.key');
+
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+
+        $key = hash_hkdf('sha256', $appKey, 32, 'env-kek', base64_decode($salt));
+
+        return new Encrypter($key, config('app.cipher'));
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool
@@ -177,11 +208,11 @@ class Environment extends Model implements SupportsOverrides
         };
     }
 
-    public function owningTeam(): Team
+    public function owningOrganization(): Organization
     {
         return once(function () {
-            return $this->project->owningTeam();
-        }, "owningTeam:{$this->id}");
+            return $this->project->owningOrganization();
+        }, "owningOrganization:{$this->id}");
     }
 
     public function findLocalVariableForKey(string $key): ?EnvironmentVariable

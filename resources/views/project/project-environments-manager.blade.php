@@ -1,4 +1,4 @@
-<div>
+<x-layouts.project :project="$this->project">
     <flux:tab.group>
         
         {{-- Header --}}
@@ -49,22 +49,6 @@
                 @foreach($this->environments as $env)
                     <li class="col-span-1" wire:key="board-{{ $env->id }}">
                         <x-environment.display-card :$env/>
-                        {{-- <flux:callout>
-                            <flux:callout.heading>
-                                @if($env->base_id)
-                                    <flux:badge color="blue" icon="git-branch" size="sm" class="mb-2">
-                                        {{ $env->base->name }}
-                                    </flux:badge>
-                                @endif
-                                <flux:badge size="sm" class="mb-2">
-                                    {{ $env->type->label() }}
-                                </flux:badge>
-                            </flux:callout.heading>
-                            <flux:callout.heading>{{ $env->name }}</flux:callout.heading>
-                            <x-slot name="actions">
-                                <flux:link href="{{ route('environment.variables', $env) }}">View</flux:link>
-                            </x-slot>
-                        </flux:callout> --}}
                     </li>
                 @endforeach
             </ul>
@@ -148,4 +132,16 @@
         </form>
     </flux:modal>
 
-</div>
+    <flux:modal name="upgrade-environment-limit" class="md:w-96">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Upgrade Required</flux:heading>
+                <flux:text class="mt-2">Environment limit reached for this project. Upgrade to create more environments.</flux:text>
+            </div>
+            <div class="flex justify-end">
+                <flux:button variant="primary">Upgrade Plan</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+</x-layouts.project>

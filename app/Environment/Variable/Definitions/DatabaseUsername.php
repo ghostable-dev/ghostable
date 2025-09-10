@@ -14,15 +14,19 @@ class DatabaseUsername extends VariableDefinition
         return 'DB_USERNAME';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The username used to authenticate with your database.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Database;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

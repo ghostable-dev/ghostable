@@ -14,15 +14,19 @@ class AwsBucket extends VariableDefinition
         return 'AWS_BUCKET';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The name of the default S3 bucket used by your application.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Aws;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

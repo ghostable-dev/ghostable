@@ -2,8 +2,11 @@
     'title' => null,
     'lastUpdated' => null    
 ])
-<x-layouts.guest>
-    <div class="py-12 px-4 space-y-8">
+<x-layouts.guest :title="$title ?? null">
+    
+    @include('site.partials.header')
+    
+    <div class="py-12 px-4 space-y-8 bg-white">
         <div class="mx-auto max-w-2xl text-left">
             <h1 class="text-4xl font-bold tracking-tight text-gray-900">
                 {{ $title }}
@@ -13,8 +16,8 @@
             <p class="font-bold text-xs">
                 @if($lastUpdated)
                     Last Updated:
-                    <time datetime="{{ $lastUpdated->toDateString() }}">
-                        {{ $lastUpdated->format('F d, Y') }}
+                    <time datetime="{{ $lastUpdated->timezone(timezone())->toDateString() }}">
+                        {{ $lastUpdated->timezone(timezone())->format('F d, Y') }}
                     </time>
                 @endif
             </p>

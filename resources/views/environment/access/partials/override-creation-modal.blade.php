@@ -2,13 +2,13 @@
     <form wire:submit="createOverride" class="space-y-6">
         <div>
             <flux:heading size="lg">Add Permission Override</flux:heading>
-            <flux:text class="mt-2">Grant specific access to a team member on this 
-            environment, regardless of their team role. Use this to fine-tune access 
+            <flux:text class="mt-2">Grant specific access to a organization member on this 
+            environment, regardless of their organization role. Use this to fine-tune access 
             for non-admin users.</flux:text>
         </div>
         <div>
             <flux:select 
-                label="Team Member"
+                label="Organization Member"
                 variant="listbox" 
                 searchable 
                 placeholder="Select member..."

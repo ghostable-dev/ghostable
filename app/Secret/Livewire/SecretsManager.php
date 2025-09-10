@@ -3,15 +3,13 @@
 namespace App\Secret\Livewire;
 
 use App\Environment\Models\Environment;
-use App\Project\Models\Project;
+use App\Environment\Resolvers\ResolveEnvironment;
+use App\Organization\Enums\OrganizationPermission;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Actions\DeleteSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -22,10 +20,7 @@ use Livewire\Component;
 class SecretsManager extends Component
 {
     #[Locked]
-    public string $ownerType;
-
-    #[Locked]
-    public string $ownerId;
+    public string $environmentId;
 
     public string $name = '';
 
@@ -39,42 +34,35 @@ class SecretsManager extends Component
 
     public ?string $secretToRemoveId = null;
 
+    public function mount(Environment $environment): void
+    {
+        $this->authorize('view', $environment);
+
+        $this->environmentId = $environment->id;
+    }
+
+    #[Computed]
+    public function environment(): Environment
+    {
+        return ResolveEnvironment::onceWithContext($this->environmentId);
+    }
+
     #[On(SecretEditor::UPDATED)]
     public function refreshSecrets(): void
     {
-        $this->owner->refresh();
+        $this->environment->refresh();
     }
 
     #[Computed(persist: true)]
     public function canEditSecrets(): bool
     {
-        return Gate::allows('perform', [$this->owner, TeamPermission::EditSecrets]);
-    }
-
-    public function setOwner(Environment|Project $owner): void
-    {
-        $this->ownerType = $owner->getMorphClass();
-
-        $this->ownerId = $owner->getKey();
-    }
-    // public function mount(Model $owner): void
-    // {
-    //     $this->ownerType = $owner->getMorphClass();
-    //     $this->ownerId = $owner->getKey();
-    // }
-
-    #[Computed]
-    public function owner(): Model
-    {
-        $class = Relation::getMorphedModel($this->ownerType) ?? $this->ownerType;
-
-        return $class::findOrFail($this->ownerId);
+        return Gate::allows('perform', [$this->environment, OrganizationPermission::EditSecrets]);
     }
 
     #[Computed]
     public function secrets()
     {
-        return $this->owner->secrets()->with('latestVersion')->get();
+        return $this->environment->secrets()->with('latestVersion')->get();
     }
 
     public function createSecret(): void
@@ -86,7 +74,7 @@ class SecretsManager extends Component
         ]);
 
         $secret = app(CreateSecret::class)->handle(
-            owner: $this->owner,
+            environment: $this->environment,
             name: $this->name,
             type: $this->type,
             value: $this->value,
@@ -98,6 +86,8 @@ class SecretsManager extends Component
 
         $this->reset('name', 'value');
         $this->showCreateModal = false;
+
+        $this->environment->refresh();
     }
 
     public function confirmShowSecret(Secret $secret): void
@@ -125,7 +115,7 @@ class SecretsManager extends Component
     {
         $this->secretToRemoveId = $secret->id;
 
-        $this->authorize('perform', [$secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         Flux::modal('confirm-secret-removal')->show();
     }
@@ -139,7 +129,7 @@ class SecretsManager extends Component
     public function removeSecret(): void
     {
         $secret = $this->secretToRemove;
-        $this->authorize('perform', [$secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         app(DeleteSecret::class)->handle(
             secret: $secret,
@@ -149,12 +139,12 @@ class SecretsManager extends Component
         Flux::modal('confirm-secret-removal')->close();
         Flux::toast("Secret '{$secret->name}' removed.");
 
-        $this->owner->refresh();
+        $this->environment->refresh();
         $this->reset('secretToRemoveId');
     }
 
     public function render()
     {
-        return view('secret.secrets-manager');
+        return view('environment.environment-secrets-manager');
     }
 }

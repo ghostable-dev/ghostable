@@ -4,7 +4,7 @@ namespace App\Environment\Notifications;
 
 use App\Environment\Models\Environment;
 use App\Integration\Integrations\Slack\SlackNotifiable;
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -16,9 +16,9 @@ abstract class EnvironmentNotification extends Notification implements SlackNoti
         protected Environment $environment,
     ) {}
 
-    public function forTeam(): Team
+    public function forOrganization(): Organization
     {
-        return $this->environment->owningTeam();
+        return $this->environment->owningOrganization();
     }
 
     public function via(object $notifiable): array|string
@@ -30,8 +30,9 @@ abstract class EnvironmentNotification extends Notification implements SlackNoti
     {
         return (new MailMessage)
             ->subject($this->subject())
+            ->greeting($notifiable->greeting())
             ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this team.');
+            ->line('You are receiving this alert because you are an administrator of this organization.');
     }
 
     public function toSlack(object $notifiable): string

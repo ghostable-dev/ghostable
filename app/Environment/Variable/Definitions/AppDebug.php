@@ -13,20 +13,24 @@ class AppDebug extends VariableDefinition
         return 'APP_DEBUG';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'Whether to show detailed error messages. Should be false in production.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['true', 'false'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::App;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

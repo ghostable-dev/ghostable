@@ -1,8 +1,8 @@
 <x-layouts.environment :environment="$this->environment">
     <div>
         
-        @if(!$this->environment->owningTeam()->isPersonal())
-            @can('viewAuditLogs', $this->environment->owningTeam())
+        @if($this->environment->owningOrganization()->activeSubscription())
+            @can('viewAuditLogs', $this->environment->owningOrganization())
                 <x-section>
                     <x-slot:title>Activity History</x-slot:title>
                     <x-slot:subheading>
@@ -38,7 +38,7 @@
                                             @endif
                                         </flux:table.cell>
                                         <flux:table.cell>{{ $activity->description }}</flux:table.cell>
-                                        <flux:table.cell>{{ $activity->created_at->diffForHumans() }}</flux:table.cell>
+                                        <flux:table.cell>{{ $activity->created_at->timezone(timezone())->diffForHumans() }}</flux:table.cell>
                                     </flux:table.row>
                                 @endforeach
                             </flux:table.rows>
@@ -51,9 +51,9 @@
             @else
                 <x-access-restricted/>
             @endcan
-        @else
-            <x-non-personal-team-restricted/>
-        @endif
+            @else
+                <x-paid-plan-required/>
+            @endif
         
     </div>
 </x-layouts.environment>

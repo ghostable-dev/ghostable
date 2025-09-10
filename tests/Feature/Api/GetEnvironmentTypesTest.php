@@ -6,7 +6,7 @@ use Laravel\Sanctum\Sanctum;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot fetch environment types', function () {
-    $this->getJson('/api/environment-types')
+    $this->getJson('/api/v1/environment-types')
         ->assertUnauthorized();
 });
 
@@ -20,7 +20,7 @@ test('returns all environment types in the correct format', function () {
             'label' => $type->label(),
         ]);
 
-    $response = $this->getJson('/api/environment-types');
+    $response = $this->getJson('/api/v1/environment-types');
 
     $response->assertOk()
         ->assertJsonCount($expected->count(), 'data')

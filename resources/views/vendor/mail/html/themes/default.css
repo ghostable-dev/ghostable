@@ -23,12 +23,12 @@ p,
 ul,
 ol,
 blockquote {
-    line-height: 1.4;
+    line-height: 1.6;
     text-align: left;
 }
 
 a {
-    color: #3869d4;
+    color: #212121;
 }
 
 a img {
@@ -61,8 +61,8 @@ h3 {
 
 p {
     font-size: 16px;
-    line-height: 1.5em;
-    margin-top: 0;
+    line-height: 1.75em;
+    margin: 0 0 1.25em;
     text-align: left;
 }
 
@@ -80,7 +80,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #edf2f7;
+    background-color: #fafafa;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -123,9 +123,9 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #edf2f7;
-    border-bottom: 1px solid #edf2f7;
-    border-top: 1px solid #edf2f7;
+    background-color: #fafafa;
+    border-bottom: 1px solid #fafafa;
+    border-top: 1px solid #fafafa;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -137,16 +137,13 @@ img {
     -premailer-width: 570px;
     background-color: #ffffff;
     border-color: #e8e5ef;
-    border-radius: 2px;
+    border-radius: 16px;
     border-width: 1px;
     box-shadow: 0 2px 0 rgba(0, 0, 150, 0.025), 2px 4px 0 rgba(0, 0, 150, 0.015);
     margin: 0 auto;
+    overflow: hidden;
     padding: 0;
     width: 570px;
-}
-
-.inner-body a {
-    word-break: break-all;
 }
 
 /* Subcopy */
@@ -210,7 +207,7 @@ img {
 
 .content-cell {
     max-width: 100vw;
-    padding: 32px;
+    padding: 56px 48px;
 }
 
 /* Buttons */
@@ -223,10 +220,10 @@ img {
     padding: 0;
     text-align: center;
     width: 100%;
-    float: unset;
 }
 
 .button {
+    font-size: 18px;
     -webkit-text-size-adjust: none;
     border-radius: 4px;
     color: #fff;
@@ -235,13 +232,21 @@ img {
     text-decoration: none;
 }
 
+.button-black {
+    background-color: #000000;
+    border-bottom: 8px solid #000000;
+    border-left: 18px solid #000000;
+    border-right: 18px solid #000000;
+    border-top: 8px solid #000000;
+}
+
 .button-blue,
 .button-primary {
-    background-color: #2d3748;
-    border-bottom: 8px solid #2d3748;
-    border-left: 18px solid #2d3748;
-    border-right: 18px solid #2d3748;
-    border-top: 8px solid #2d3748;
+    background-color: #212121;
+    border-bottom: 8px solid #212121;
+    border-left: 18px solid #212121;
+    border-right: 18px solid #212121;
+    border-top: 8px solid #212121;
 }
 
 .button-green,
@@ -270,7 +275,7 @@ img {
 }
 
 .panel-content {
-    background-color: #edf2f7;
+    background-color: #fafafa;
     color: #718096;
     padding: 16px;
 }

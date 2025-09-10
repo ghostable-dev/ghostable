@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Account\Models\User;
-use App\Team\Actions\CreatePersonalTeam;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -25,6 +24,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'timezone' => fake()->randomElement(array_keys(timezone_options())),
         ];
     }
 
@@ -37,8 +37,6 @@ class UserFactory extends Factory
 
     public function configure(): static
     {
-        return $this->afterCreating(function (User $user) {
-            app(CreatePersonalTeam::class)->handle($user);
-        });
+        return $this->afterCreating(function (User $user) {});
     }
 }

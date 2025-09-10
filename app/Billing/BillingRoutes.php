@@ -2,8 +2,8 @@
 
 namespace App\Billing;
 
-use App\Billing\Http\Controllers\BusinessCheckout;
-use App\Billing\Http\Controllers\EnterpriseCheckout;
+use App\Billing\Http\Controllers\ScaleCheckout;
+use App\Billing\Http\Controllers\StandardCheckout;
 use App\Billing\Http\Controllers\SubscriptionPortal;
 use App\Billing\Http\Controllers\WebhookController;
 use App\Billing\Http\Middleware\HasNoActiveSubscription;
@@ -11,26 +11,25 @@ use Illuminate\Support\Facades\Route;
 
 class BillingRoutes
 {
-    public static function api() {}
-
     public static function web()
     {
         Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])
             ->name('webhook');
 
-        Route::prefix('/team/{team}/billing')
-            ->name('team.billing.')
-            ->middleware(['auth', 'verified', 'can:manageBilling,team'])
+        Route::prefix('/organization/{organization}/billing')
+            ->name('organization.billing.')
+            ->middleware(['auth', 'verified', 'can:manageBilling,organization'])
             ->group(function () {
 
-                // Professional checkout
-                Route::name('business.checkout')
-                    ->get('/business/checkout', [BusinessCheckout::class, 'checkout'])
+                // Standard checkout
+                Route::name('standard.checkout')
+                    ->get('/standard/checkout', [StandardCheckout::class, 'checkout'])
                     ->middleware(HasNoActiveSubscription::class);
 
-                // Enterprise checkout
-                Route::name('enterprise.checkout')
-                    ->get('/enterprise/checkout', [EnterpriseCheckout::class, 'checkout']);
+                // Scale checkout
+                Route::name('scale.checkout')
+                    ->get('/scale/checkout', [ScaleCheckout::class, 'checkout'])
+                    ->middleware(HasNoActiveSubscription::class);
 
                 // Customer portal
                 Route::get('/portal', SubscriptionPortal::class)->name('portal');

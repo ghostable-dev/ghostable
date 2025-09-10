@@ -6,6 +6,6 @@
         </span>
     </flux:heading>
     <flux:subheading>
-        Notifications for this environment will also be sent to Slack via the parent team.
+        Notifications for this environment will also be sent to Slack via the parent organization.
     </flux:subheading>
 </flux:card>

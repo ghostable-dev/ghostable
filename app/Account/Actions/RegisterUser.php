@@ -3,9 +3,7 @@
 namespace App\Account\Actions;
 
 use App\Account\Models\User;
-use App\Team\Actions\CreatePersonalTeam;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Hash;
 
 class RegisterUser
 {
@@ -13,13 +11,9 @@ class RegisterUser
     {
         $data['email'] = strtolower($data['email']);
 
-        $data['password'] = Hash::make($data['password']);
-
         $user = User::create($data);
 
         event(new Registered($user));
-
-        app(CreatePersonalTeam::class)->handle($user);
 
         return $user;
     }

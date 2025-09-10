@@ -14,20 +14,24 @@ class CacheDriver extends VariableDefinition
         return 'CACHE_DRIVER';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The default cache driver your application should use.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['file', 'redis', 'array', 'memcached', 'database', 'dynamodb', 'null'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Cache;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

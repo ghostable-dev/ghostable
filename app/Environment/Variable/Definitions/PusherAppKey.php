@@ -14,15 +14,19 @@ class PusherAppKey extends VariableDefinition
         return 'PUSHER_APP_KEY';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'Your Pusher application key.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Pusher;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

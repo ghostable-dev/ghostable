@@ -38,7 +38,7 @@
         {{ $var->latestVersion->version }}
     </flux:table.cell>
     <flux:table.cell>
-        {{ $var->last_updated_at->shortAbsoluteDiffForHumans() }}
+        {{ $var->last_updated_at->timezone(timezone())->shortAbsoluteDiffForHumans() }}
     </flux:table.cell>
     <flux:table.cell align="end">
         @if($this->canEditVariables)

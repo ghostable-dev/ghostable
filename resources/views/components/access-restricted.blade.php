@@ -7,6 +7,6 @@
     <flux:heading size="lg">{{ $title }}</flux:heading>
     <flux:text class="max-w-md">
         You don’t have permission to view this section.
-        Please contact a team admin if you believe this is a mistake.
+        Please contact a organization admin if you believe this is a mistake.
     </flux:text>
 </div>

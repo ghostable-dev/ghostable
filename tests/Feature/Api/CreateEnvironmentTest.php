@@ -1,22 +1,22 @@
 <?php
 
 use App\Environment\Enums\EnvironmentType;
-use App\Team\Enums\TeamRole;
+use App\Organization\Enums\OrganizationRole;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('unauthenticated users cannot create environments', function () {
-    $this->postJson('/api/projects/123/environments')->assertUnauthorized();
+    $this->postJson('/api/v1/projects/123/environments')->assertUnauthorized();
 });
 
 test('persists a new environment record and returns JSON shape', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
-    $project = $this->createProject(name: 'Website', team: $team);
+    $organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray);
+    $project = $this->createProject(name: 'Website', organization: $organization);
     Sanctum::actingAs($ray);
     $payload = ['name' => 'staging', 'type' => EnvironmentType::STAGING->value];
-    $this->postJson("/api/projects/{$project->id}/environments", $payload)
+    $this->postJson("/api/v1/projects/{$project->id}/environments", $payload)
         ->assertStatus(201)
         ->assertJsonStructure([
             'data' => [
@@ -36,8 +36,8 @@ test('persists a new environment record and returns JSON shape', function () {
 
 test('can set a base environment when creating', function () {
     $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
-    $project = $this->createProject(name: 'Website', team: $team);
+    $organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray);
+    $project = $this->createProject(name: 'Website', organization: $organization);
     $base = $this->createEnvironment(
         name: 'production',
         type: EnvironmentType::PRODUCTION,
@@ -49,7 +49,7 @@ test('can set a base environment when creating', function () {
         'type' => EnvironmentType::STAGING->value,
         'base_id' => $base->id,
     ];
-    $this->postJson("/api/projects/{$project->id}/environments", $payload)
+    $this->postJson("/api/v1/projects/{$project->id}/environments", $payload)
         ->assertStatus(201)
         ->assertJsonPath('data.base_id', $base->id);
     $env = $project->fresh()->environments()->where('name', 'staging')->first();
@@ -60,10 +60,10 @@ test('can set a base environment when creating', function () {
 describe('validation', function () {
     beforeEach(function () {
         $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-        $team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
-        $this->project = $this->createProject(name: 'Website', team: $team);
+        $organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray);
+        $this->project = $this->createProject(name: 'Website', organization: $organization);
         Sanctum::actingAs($ray);
-        $this->endpoint = "/api/projects/{$this->project->id}/environments";
+        $this->endpoint = "/api/v1/projects/{$this->project->id}/environments";
     });
 
     test('fails when name is not a unique', function () {
@@ -78,7 +78,7 @@ describe('validation', function () {
         ])->assertStatus(422);
     });
 
-    test('fails when type is not a recognized team role', function () {
+    test('fails when type is not a recognized organization role', function () {
         $this->postJson($this->endpoint, [
             'name' => 'Staging',
             'type' => 'invalid-type',
@@ -89,11 +89,11 @@ describe('validation', function () {
 describe('authorization', function () {
     beforeEach(function () {
         $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-        $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $ray);
-        $this->project = $this->createProject(name: 'Website', team: $this->team);
+        $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray);
+        $this->project = $this->createProject(name: 'Website', organization: $this->organization);
         $this->zuul = $this->createUser(name: 'Zuul', email: 'zuul@gozers-minions.com');
         Sanctum::actingAs($ray);
-        $this->endpoint = "/api/projects/{$this->project->id}/environments";
+        $this->endpoint = "/api/v1/projects/{$this->project->id}/environments";
     });
 
     test('forbids non-members from creating', function () {
@@ -106,7 +106,7 @@ describe('authorization', function () {
 
     test('forbids members without permission from creating', function () {
         $peter = $this->createUser(name: 'Peter', email: 'perter@ghostbusters.com');
-        $peter->teamMembership()->assignToTeam(team: $this->team, role: TeamRole::DEVELOPER_READ_ONLY);
+        $peter->organizationMembership()->assignToOrganization(organization: $this->organization, role: OrganizationRole::DEVELOPER_READ_ONLY);
         Sanctum::actingAs($peter);
         $this->postJson($this->endpoint, [
             'name' => 'staging',

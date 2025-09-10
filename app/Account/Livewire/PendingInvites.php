@@ -2,9 +2,9 @@
 
 namespace App\Account\Livewire;
 
-use App\Team\Actions\AcceptInvite;
-use App\Team\Actions\DeclineInvite;
-use App\Team\Models\TeamInvite;
+use App\Organization\Actions\AcceptInvite;
+use App\Organization\Actions\DeclineInvite;
+use App\Organization\Models\Invite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -15,17 +15,17 @@ class PendingInvites extends Component
     #[Computed]
     public function pendingInvites(): Collection
     {
-        return TeamInvite::where('email', Auth::user()->email)->pending()->get();
+        return Invite::where('email', Auth::user()->email)->pending()->get();
     }
 
-    public function accept(TeamInvite $invite): void
+    public function accept(Invite $invite): void
     {
         Auth::user()->can('accept', $invite);
 
         app(AcceptInvite::class)->handle(Auth::user(), $invite);
     }
 
-    public function decline(TeamInvite $invite): void
+    public function decline(Invite $invite): void
     {
         Auth::user()->can('decline', $invite);
 

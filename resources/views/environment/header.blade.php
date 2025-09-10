@@ -33,7 +33,7 @@
         
         {{-- Memebers --}}
         {{-- <flux:avatar.group class="flex-shrink-0">
-            @foreach($this->environment->project->team->users as $user)
+            @foreach($this->environment->project->organization->users as $user)
                 <flux:avatar circle :initials="$user->initials()" />
             @endforeach
         </flux:avatar.group> --}}

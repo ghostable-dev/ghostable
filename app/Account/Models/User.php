@@ -2,10 +2,12 @@
 
 namespace App\Account\Models;
 
-use App\Team\Concerns\BelongsToTeams;
-use App\Team\Models\TeamInvite;
-use App\Team\Services\TeamMembership;
+use App\Organization\Concerns\BelongsToOrganizations;
+use App\Organization\Models\Invite;
+use App\Organization\Services\OrganizationMembership;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,11 +38,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $trial_ends_at
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\Team> $ownedTeams
- * @property-read int|null $owned_teams_count
- * @property-read \App\Team\Models\TeamUser|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Team\Models\Team> $teams
- * @property-read int|null $teams_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $ownedOrganizations
+ * @property-read int|null $owned_organizations_count
+ * @property-read \App\Organization\Models\OrganizationUser|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $organizations
+ * @property-read int|null $organizations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  *
@@ -70,9 +72,9 @@ use Laravel\Sanctum\HasApiTokens;
  *
  * @mixin \Eloquent
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use BelongsToTeams;
+    use BelongsToOrganizations;
     use HasApiTokens;
     use HasFactory;
     use HasUuids;
@@ -89,6 +91,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'timezone',
     ];
 
     /**
@@ -119,19 +122,29 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isFounder();
+    }
+
+    public function isFounder(): bool
+    {
+        return in_array($this->email, ['rucci.joe@gmail.com', 'joe@curricula.com']);
+    }
+
     public static function newFactory(): UserFactory
     {
         return UserFactory::new();
     }
 
-    public function teamMembership(): TeamMembership
+    public function organizationMembership(): OrganizationMembership
     {
-        return new TeamMembership(user: $this);
+        return new OrganizationMembership(user: $this);
     }
 
     public function pendingInvites(): Collection
     {
-        return TeamInvite::where('email', $this->email)->pending()->get();
+        return Invite::where('email', $this->email)->pending()->get();
     }
 
     public function isVerified(): bool
@@ -148,5 +161,17 @@ class User extends Authenticatable implements MustVerifyEmail
             ->explode(' ')
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
+    }
+
+    /**
+     * Get the user's personalized greeting.
+     */
+    public function greeting(string $greeting = 'Hello'): string
+    {
+        $first = Str::of($this->name)->explode(' ')->first();
+
+        return $first
+            ? sprintf('%s %s,', $greeting, $first)
+            : "$greeting,";
     }
 }

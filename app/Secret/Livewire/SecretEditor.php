@@ -2,10 +2,10 @@
 
 namespace App\Secret\Livewire;
 
+use App\Organization\Enums\OrganizationPermission;
 use App\Secret\Actions\UpdateSecret;
 use App\Secret\Enums\SecretType;
 use App\Secret\Models\Secret;
-use App\Team\Enums\TeamPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -31,7 +31,7 @@ class SecretEditor extends Component
     #[On(self::LAUNCH)]
     public function launchEditorModal(Secret $secret): void
     {
-        $this->authorize('perform', [$secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$secret->environment, OrganizationPermission::EditSecrets]);
 
         $this->secretId = $secret->id;
         $this->name = $secret->name;
@@ -50,15 +50,12 @@ class SecretEditor extends Component
     #[Computed]
     public function noChangesWereMade(): bool
     {
-        return $this->secret &&
-            $this->name === $this->secret->name &&
-            $this->type->value === $this->secret->type->value &&
-            $this->value === $this->secret->value;
+        return $this->secret && $this->value === $this->secret->value;
     }
 
     public function updateSecret(): void
     {
-        $this->authorize('perform', [$this->secret->owner, TeamPermission::EditSecrets]);
+        $this->authorize('perform', [$this->secret->environment, OrganizationPermission::EditSecrets]);
 
         if ($this->noChangesWereMade) {
             $this->showing = false;
@@ -68,15 +65,11 @@ class SecretEditor extends Component
         }
 
         $this->validate([
-            'name' => 'required|max:255',
             'value' => 'required',
-            'type' => 'required',
         ]);
 
         app(UpdateSecret::class)->handle(
             secret: $this->secret,
-            name: $this->name,
-            type: $this->type,
             value: $this->value,
             metadata: null,
             updatedBy: Auth::user(),
@@ -102,14 +95,8 @@ class SecretEditor extends Component
                     <div>
                         <flux:heading size="lg">Update Secret</flux:heading>
                     </div>
-                    <flux:input label="Name" wire:model="name" required />
-                    <flux:select label="Type" wire:model="type">
-                        @foreach(\App\Secret\Enums\SecretType::cases() as $option)
-                            <flux:select.option wire:key="type-{{ $option->value }}" value="{{ $option->value }}">
-                                {{ $option->label() }}
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
+                    <flux:input label="Name" value="{{ $name }}" readonly icon:trailing="lock-closed"/>
+                    <flux:input label="Type" value="{{ $type }}" readonly icon:trailing="lock-closed"/>
                     <flux:textarea label="Value" wire:model="value" required />
                     <div class="flex gap-2">
                         <flux:spacer />

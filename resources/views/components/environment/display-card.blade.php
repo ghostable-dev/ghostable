@@ -32,7 +32,7 @@
                 @endif
 
                 @isset($env->updated_at)
-                    <span>Updated {{ $env->updated_at->diffForHumans() }}</span>
+                    <span>Updated {{ $env->updated_at->timezone(timezone())->diffForHumans() }}</span>
                 @endisset
 
                 @if($env->base_id && isset($env->inherited_count, $env->overridden_count))

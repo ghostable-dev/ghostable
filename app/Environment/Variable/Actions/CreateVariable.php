@@ -20,14 +20,17 @@ class CreateVariable
     {
         $var = new EnvironmentVariable([
             'key' => $data->key,
-            'value' => $data->value,
             'is_commented' => $data->is_commented,
             'is_override' => $data->is_override,
             'is_deleted' => $data->is_deleted,
             'last_updated_at' => now(),
         ]);
 
+        // The value cast requires the environment relationship in order to
+        // retrieve the correct encryption key. Associate the environment first
+        // before assigning the value so it is encrypted with the proper key.
         $var->environment()->associate($data->environment);
+        $var->value = $data->value;
         $var->lastUpdatedBy()->associate($data->createdBy);
         $var->save();
 

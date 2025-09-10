@@ -12,7 +12,7 @@ use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Environment\Variable\Rules\VariableRules;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Enums\OrganizationPermission;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -45,7 +45,7 @@ class VariableCreator extends Component
 
     public function mount(Environment $environment): void
     {
-        $this->authorize('perform', [$environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$environment, OrganizationPermission::EditVariables]);
 
         $this->envId = $environment->id;
     }
@@ -127,7 +127,7 @@ class VariableCreator extends Component
      */
     public function addVariable(): void
     {
-        $this->authorize('perform', [$this->environment, TeamPermission::EditVariables]);
+        $this->authorize('perform', [$this->environment, OrganizationPermission::EditVariables]);
 
         $validated = $this->validate(
             rules: VariableRules::create($this->environment),

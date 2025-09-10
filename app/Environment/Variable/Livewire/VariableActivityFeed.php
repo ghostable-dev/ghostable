@@ -20,7 +20,7 @@ class VariableActivityFeed extends Component
     #[On(self::LAUNCH)]
     public function launch(EnvironmentVariable $variable): void
     {
-        // $this->authorize('viewAuditLogs', $variable->environment->owningTeam());
+        // $this->authorize('viewAuditLogs', $variable->environment->owningOrganization());
 
         $this->environmentVariableId = $variable->id;
         $this->showing = true;
@@ -83,7 +83,7 @@ class VariableActivityFeed extends Component
                                                     </flux:text>
                                                 </div>
                                                 <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                                                    {{ $activity->created_at->diffForHumans() }}
+                                                    {{ $activity->created_at->timezone(timezone())->diffForHumans() }}
                                                 </div>
                                             </div>
                                         </div>

@@ -6,25 +6,30 @@ use App\Project\Api\Controllers\GenerateSuggestedEnvironmentNames;
 use App\Project\Api\Controllers\GetEnvironments;
 use App\Project\Api\Controllers\ProjectController;
 use App\Project\Livewire\ProjectView;
+use App\Project\Livewire\ProjectAccessManager;
+use App\Project\Livewire\ProjectActivity;
+use App\Project\Livewire\ProjectEnvironmentsManager;
+use App\Project\Livewire\ProjectGeneralSettings;
+use App\Project\Livewire\ProjectNotificationsManager;
 use Illuminate\Support\Facades\Route;
 
 class ProjectRoutes
 {
-    public static function api(): void
-    {
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::get('teams/{team}/projects', [ProjectController::class, 'index']);
-            Route::get('/projects/{project}', [ProjectController::class, 'show']);
-            Route::get('/projects/{project}/environments', GetEnvironments::class);
-            Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
-            Route::post('teams/{team}/projects', [ProjectController::class, 'store']);
-        });
-    }
-
     public static function web(): void
     {
-        Route::middleware(['auth', 'verified'])->group(function () {
-            Route::get('projects/{project}', ProjectView::class)->name('projects.view');
-        });
+        Route::middleware(['auth', 'verified'])
+            ->prefix('projects/{project}/')
+            ->name('project.')
+            ->group(function () {
+                Route::get('environments', ProjectEnvironmentsManager::class)->name('environments');
+                Route::get('activity', ProjectActivity::class)->name('activity');
+                Route::prefix('settings/')
+                    ->name('settings.')
+                    ->group(function () {
+                        Route::get('general', ProjectGeneralSettings::class)->name('general');
+                        Route::get('access', ProjectAccessManager::class)->name('access');
+                        Route::get('notifications', ProjectNotificationsManager::class)->name('notifications');
+                    });
+            });
     }
 }

@@ -3,14 +3,12 @@
     "name": "laravel/livewire-starter-kit",
     "type": "project",
     "description": "The official Laravel starter kit for Livewire.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
+    "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
         "dompdf/dompdf": "^3.1",
+        "filament/filament": "^4.0",
         "ghostable-dev/cli": "^1.0@beta",
         "joerucci/laravel-domain-tools": "^1.0",
         "laravel/cashier": "^15.7",
@@ -19,11 +17,14 @@
         "laravel/nightwatch": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "livewire/flux": "^2.0",
         "livewire/flux-pro": "^2.0",
         "livewire/volt": "^1.7.0",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-data": "^4.15",
+        "spatie/laravel-sitemap": "^7.3",
+        "spatie/schema-org": "^3.23",
         "symfony/http-client": "^7.2",
         "symfony/mailgun-mailer": "^7.2",
         "vlucas/phpdotenv": "^5.6"
@@ -32,6 +33,7 @@
         "barryvdh/laravel-debugbar": "^3.15",
         "barryvdh/laravel-ide-helper": "^3.5",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
@@ -58,7 +60,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -79,9 +82,11 @@
             "@php artisan config:clear --ansi",
             "@php artisan test --parallel"
         ],
+       "test-coverage": "bash scripts/test-coverage.sh",
         "pint": "./vendor/bin/pint",
         "ide": "php artisan ide-helper:generate",
-        "ide-models": "php artisan ide-helper:models -RW"
+        "ide-models": "php artisan ide-helper:models -RW",
+        "phpstan": "./vendor/bin/phpstan analyse --memory-limit=2G"
     },
     "extra": {
         "laravel": {

@@ -22,13 +22,15 @@ class CreateVariableVersion
     ): EnvironmentVariableVersion {
         $version = new EnvironmentVariableVersion([
             'key' => $variable->key,
-            'value' => $variable->value,
             'is_commented' => $variable->is_commented,
             'version' => $variable->versions()->max('version') + 1,
         ]);
 
-        $version->changedBy()->associate($changedBy);
+        // The value mutator needs the parent variable to determine which
+        // environment key to use, so associate it before assigning the value.
         $version->variable()->associate($variable);
+        $version->value = $variable->value;
+        $version->changedBy()->associate($changedBy);
         $version->save();
 
         return $version;

@@ -33,7 +33,7 @@ class GenerateSuggestedEnvironmentNames
 
         // Only personalize certain types
         if (in_array($type, self::PERSONALIZED_TYPES)) {
-            $memberNames = $project->team
+            $memberNames = $project->organization
                 ->users()
                 ->get()
                 ->map(fn ($user) => $user->initials())

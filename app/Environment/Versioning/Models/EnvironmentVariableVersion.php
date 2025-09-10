@@ -3,9 +3,9 @@
 namespace App\Environment\Versioning\Models;
 
 use App\Account\Models\User;
-use App\Environment\Variable\Casts\EncryptedString;
 use App\Environment\Variable\Concerns\HasSecretValues;
 use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Versioning\Casts\EncryptedVariableVersionValue;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,7 +52,7 @@ class EnvironmentVariableVersion extends Model
     ];
 
     protected $casts = [
-        'value' => EncryptedString::class,
+        'value' => EncryptedVariableVersionValue::class,
     ];
 
     public function variable(): BelongsTo

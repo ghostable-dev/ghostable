@@ -54,13 +54,13 @@ class EnvironmentVariableFactory extends Factory
 
     public function forEnvironment(Environment $environment): static
     {
-        $teamUsers = $environment->project->team->users;
+        $organizationUsers = $environment->project->organization->users;
 
-        return $this->state(function () use ($environment, $teamUsers) {
+        return $this->state(function () use ($environment, $organizationUsers) {
             return [
                 'environment_id' => $environment->id,
-                'last_updated_by' => $teamUsers->isNotEmpty()
-                    ? $teamUsers->random()->id
+                'last_updated_by' => $organizationUsers->isNotEmpty()
+                    ? $organizationUsers->random()->id
                     : null,
                 'last_updated_at' => now(),
             ];

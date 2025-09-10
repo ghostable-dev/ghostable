@@ -14,20 +14,24 @@ class LogLevel extends VariableDefinition
         return 'LOG_LEVEL';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The minimum log level to record.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Logging;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

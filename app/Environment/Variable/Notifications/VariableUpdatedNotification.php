@@ -5,16 +5,16 @@ namespace App\Environment\Variable\Notifications;
 use App\Core\Notifications\BaseNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Integration\Integrations\Slack\SlackNotifiable;
-use App\Team\Models\Team;
+use App\Organization\Models\Organization;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class VariableUpdatedNotification extends BaseNotification implements SlackNotifiable
 {
     public function __construct(protected EnvironmentVariable $variable) {}
 
-    public function forTeam(): Team
+    public function forOrganization(): Organization
     {
-        return $this->variable->environment->owningTeam();
+        return $this->variable->environment->owningOrganization();
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -26,6 +26,6 @@ class VariableUpdatedNotification extends BaseNotification implements SlackNotif
 
     public function toSlack(object $notifiable): array|string
     {
-        return "Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}' of the \"{$this->variable->environment->project->name}\" project on the \"{$this->forTeam()->name}\" team.";
+        return "Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}' of the \"{$this->variable->environment->project->name}\" project on the \"{$this->forOrganization()->name}\" organization.";
     }
 }

@@ -23,6 +23,7 @@ class EnvironmentFactory extends Factory
             'name' => $type->value,
             'type' => $type->value,
             'file_format' => EnvFileFormat::GROUPED->value,
+            'kek_salt' => base64_encode(random_bytes(32)),
         ];
     }
 

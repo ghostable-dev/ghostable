@@ -3,8 +3,8 @@
 namespace App\Project\Notifications;
 
 use App\Integration\Integrations\Slack\SlackNotifiable;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Team\Models\Team;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -16,9 +16,9 @@ abstract class ProjectNotification extends Notification implements SlackNotifiab
         protected Project $project,
     ) {}
 
-    public function forTeam(): Team
+    public function forOrganization(): Organization
     {
-        return $this->project->team;
+        return $this->project->organization;
     }
 
     public function via(object $notifiable): string|array
@@ -30,8 +30,9 @@ abstract class ProjectNotification extends Notification implements SlackNotifiab
     {
         return (new MailMessage)
             ->subject($this->subject())
+            ->greeting($notifiable->greeting())
             ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this team.');
+            ->line('You are receiving this alert because you are an administrator of this organization.');
     }
 
     public function toSlack(object $notifiable): string

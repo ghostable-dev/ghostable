@@ -14,20 +14,24 @@ class DatabasePort extends VariableDefinition
         return 'DB_PORT';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'Port used to connect to the database.';
     }
+    // @codeCoverageIgnoreEnd
 
     public function suggestedValues(): array
     {
         return ['3306', '5432'];
     }
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Database;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {

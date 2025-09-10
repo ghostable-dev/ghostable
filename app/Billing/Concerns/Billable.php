@@ -2,7 +2,7 @@
 
 namespace App\Billing\Concerns;
 
-use App\Billing\BillingServiceProvider;
+use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Laravel\Cashier\Billable as CashierBillable;
@@ -12,41 +12,36 @@ trait Billable
 {
     use CashierBillable;
 
+    /**
+     * Get the current plan (based on active subscription).
+     */
     protected function plan(): Attribute
     {
         return Attribute::make(
             get: function () {
-                if ($this->subscribed(type: BillingServiceProvider::ENTERPRISE)) {
-                    return Plan::ENTERPRISE;
-                } elseif ($this->subscribed(type: BillingServiceProvider::BUSINESS)) {
-                    return Plan::BUSINESS;
-                } else {
-                    return Plan::PERSONAL;
+                if ($this->billing_policy instanceof BillingPolicy && $this->billing_policy->isManualOverride()) {
+                    return $this->plan_override ?? Plan::FREE;
                 }
+
+                return collect(Plan::billable())
+                    ->first(fn (Plan $plan) => $this->subscribed($plan->value))
+                    ?? Plan::FREE;
             }
         );
     }
 
-    public function isEnterprise(): bool
-    {
-        return $this->subscribed(BillingServiceProvider::ENTERPRISE);
-    }
-
-    public function isBusiness(): bool
-    {
-        return $this->subscribed(BillingServiceProvider::BUSINESS);
-    }
-
+    /**
+     * Get the active subscription (based on plan).
+     */
     public function activeSubscription(): ?Subscription
     {
-        if ($this->isEnterprise()) {
-            return $this->subscription(BillingServiceProvider::ENTERPRISE);
+        if ($this->billing_policy instanceof BillingPolicy && $this->billing_policy->isManualOverride()) {
+            return null;
         }
 
-        if ($this->isBusiness()) {
-            return $this->subscription(BillingServiceProvider::BUSINESS);
-        }
-
-        return null;
+        return collect(Plan::billable())
+            ->map(fn (Plan $plan) => $this->subscription($plan->value))
+            ->filter(fn (?Subscription $sub) => $sub?->valid())
+            ->first();
     }
 }

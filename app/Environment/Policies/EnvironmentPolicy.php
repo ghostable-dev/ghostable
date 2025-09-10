@@ -4,8 +4,8 @@ namespace App\Environment\Policies;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
-use App\Team\Concerns\EvaluatesPermissionOverrides;
-use App\Team\Enums\TeamPermission;
+use App\Organization\Concerns\EvaluatesPermissionOverrides;
+use App\Organization\Enums\OrganizationPermission;
 
 class EnvironmentPolicy
 {
@@ -19,7 +19,7 @@ class EnvironmentPolicy
      */
     public function view(User $user, Environment $environment): bool
     {
-        return $user->teamMembership()->belongsToTeam($environment->owningTeam());
+        return $user->organizationMembership()->belongsToOrganization($environment->owningOrganization());
     }
 
     /**
@@ -27,13 +27,13 @@ class EnvironmentPolicy
      * such as name and type.
      *
      * This action is not overridable and requires the
-     * ManageEnvironmentSettings permission on the owning team.
+     * ManageEnvironmentSettings permission on the owning organization.
      */
     public function manageSettings(User $user, Environment $environment): bool
     {
-        return $user->teamMembership()->hasTeamPermission(
-            permission: TeamPermission::ManageEnvironmentSettings,
-            team: $environment->project->team
+        return $user->organizationMembership()->hasOrganizationPermission(
+            permission: OrganizationPermission::ManageEnvironmentSettings,
+            organization: $environment->project->organization
         );
     }
 
@@ -43,7 +43,7 @@ class EnvironmentPolicy
      */
     public function manageTokens(User $user, Environment $environment): bool
     {
-        return $user->isTeamAdmin($environment->owningTeam());
+        return $user->isOrganizationAdmin($environment->owningOrganization());
     }
 
     /**
@@ -67,9 +67,9 @@ class EnvironmentPolicy
             return false;
         }
 
-        // Require team-level ManageEnvironmentSettings (not overridable)
+        // Require organization-level ManageEnvironmentSettings (not overridable)
         if (! $this->manageSettings($user, $environment)
-            || ! $this->perform($user, $environment, TeamPermission::EditVariables)) {
+            || ! $this->perform($user, $environment, OrganizationPermission::EditVariables)) {
             return false;
         }
 
@@ -85,7 +85,7 @@ class EnvironmentPolicy
     public function perform(
         User $user,
         Environment $environment,
-        TeamPermission $permission
+        OrganizationPermission $permission
     ): bool {
         return $this->hasPermission($user, $environment, $permission);
     }

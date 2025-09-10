@@ -2,11 +2,11 @@
 
 namespace App\Project\Livewire;
 
+use App\Organization\Enums\OrganizationPermission;
 use App\Project\Actions\UpdateProjectName;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use App\Project\Rules\ProjectRules;
-use App\Team\Enums\TeamPermission;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -54,7 +54,7 @@ class ProjectGeneralSettings extends Component
     #[Computed(persist: true)]
     public function canEdit(): bool
     {
-        return Gate::allows('perform', [$this->project, TeamPermission::ManageProjectSettings]);
+        return Gate::allows('perform', [$this->project, OrganizationPermission::ManageProjectSettings]);
     }
 
     /**
@@ -68,7 +68,7 @@ class ProjectGeneralSettings extends Component
      */
     public function updateProject(): void
     {
-        $this->authorize('perform', [$this->project, TeamPermission::ManageProjectSettings]);
+        $this->authorize('perform', [$this->project, OrganizationPermission::ManageProjectSettings]);
 
         $validated = $this->validate(ProjectRules::updateRules($this->project));
 

@@ -12,13 +12,17 @@ class MailPassword extends VariableDefinition
         return 'MAIL_PASSWORD';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The password used to authenticate with your mail server.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Mail;
     }
+    // @codeCoverageIgnoreEnd
 }

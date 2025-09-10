@@ -3,30 +3,31 @@
 use App\Environment\Actions\RenderEnvFile;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
-use App\Environment\Variable\Models\EnvironmentVariable;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
-    $this->team = $this->createTeam(name: 'Ray’s Occult Books', owner: $this->ray);
-    $project = $this->createProject(name: 'Website', team: $this->team);
+    $this->organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $this->ray);
+    $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
     $this->env->file_format = EnvFileFormat::GROUPED;
     $this->env->save();
-    $this->endpoint = "/api/projects/{$project->id}/environments/{$this->env->name}/pull";
+    $this->endpoint = "/api/v1/projects/{$project->id}/environments/{$this->env->name}/pull";
 
-    EnvironmentVariable::factory()->forEnvironment($this->env)->create([
-        'key' => 'APP_NAME',
-        'value' => 'Ghostable',
-        'is_commented' => false,
-    ]);
-    EnvironmentVariable::factory()->forEnvironment($this->env)->create([
-        'key' => 'DB_HOST',
-        'value' => 'localhost',
-        'is_commented' => false,
-    ]);
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->env,
+        key: 'APP_NAME',
+        value: 'Ghostable',
+    ));
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->env,
+        key: 'DB_HOST',
+        value: 'localhost',
+    ));
 });
 
 test('unauthenticated users cannot pull environment', function () {

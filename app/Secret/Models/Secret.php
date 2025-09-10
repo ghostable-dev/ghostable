@@ -3,30 +3,32 @@
 namespace App\Secret\Models;
 
 use App\Account\Models\User;
+use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironment;
 use App\Secret\Actions\LogSecretActivity;
+use App\Secret\Casts\EncryptedSecretValue;
 use App\Secret\Concerns\HasMaskedValue;
 use App\Secret\Entities\SecretNotificationsData;
 use App\Secret\Enums\SecretType;
 use App\Secret\Versioning\Actions\CreateSecretVersion;
 use App\Secret\Versioning\Models\SecretVersion;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Encryption\Encrypter;
+use RuntimeException;
 
 /**
  * @property string $id
- * @property string $owner_type
- * @property string $owner_id
+ * @property string $environment_id
  * @property string $name
  * @property SecretType $type
- * @property string $value_encrypted
+ * @property string $value
  * @property array<array-key, mixed>|null $metadata
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
@@ -38,7 +40,7 @@ use Illuminate\Support\Facades\Crypt;
  * @property-read User $createdBy
  * @property-read User|null $lastUpdatedBy
  * @property-read SecretVersion|null $latestVersion
- * @property-read Model|\Eloquent $owner
+ * @property-read Environment $environment
  * @property mixed $value
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SecretVersion> $versions
  * @property-read int|null $versions_count
@@ -56,8 +58,7 @@ use Illuminate\Support\Facades\Crypt;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereMetadata($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereNotifications($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereOwnerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereOwnerType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereEnvironmentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereValueEncrypted($value)
@@ -74,25 +75,29 @@ class Secret extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'type',
-        'value_encrypted',
-        'metadata',
-        'notifications',
+        'environment_id',
         'last_updated_at',
         'last_updated_by',
+        'metadata',
+        'name',
+        'notifications',
+        'type',
+        'value',
+        'dek_wrapped',
+        'kek_salt',
     ];
 
     protected $casts = [
+        'value' => EncryptedSecretValue::class,
         'type' => SecretType::class,
         'metadata' => 'array',
         'last_updated_at' => 'datetime',
         'notifications' => SecretNotificationsData::class,
     ];
 
-    public function owner(): MorphTo
+    public function environment(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Environment::class, 'environment_id');
     }
 
     public function createdBy(): BelongsTo
@@ -117,18 +122,6 @@ class Secret extends Model
             ->orderByDesc('version');
     }
 
-    protected function value(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->value_encrypted
-                ? Crypt::decryptString($this->value_encrypted)
-                : null,
-            set: fn ($value) => [
-                'value_encrypted' => $value === null ? null : Crypt::encryptString($value),
-            ],
-        );
-    }
-
     public function displayValue(): string
     {
         return str_repeat('•', 10);
@@ -149,5 +142,49 @@ class Secret extends Model
             event: $event,
             user: $user,
         );
+    }
+
+    public function encrypter(): EncrypterContract
+    {
+        $environment = ResolveEnvironment::onceWithContext($this->environment_id);
+
+        // @codeCoverageIgnoreStart
+        if (! $environment) {
+            throw new RuntimeException('Environment is missing; cannot resolve secret encrypter.');
+        }
+        // @codeCoverageIgnoreEnd
+
+        if ($this->dek_wrapped) {
+            $kek = $environment->encrypter($this->kek_salt);
+            $dek = $kek->decryptString($this->dek_wrapped);
+
+            return new Encrypter(base64_decode($dek), config('app.cipher'));
+        }
+
+        // Backward compatibility for secrets without a dedicated DEK
+        return $environment->encrypter();
+    }
+
+    public function rotateDek(): void
+    {
+        $currentEncrypter = $this->encrypter();
+        $plaintext = $currentEncrypter->decryptString($this->getRawOriginal('value'));
+
+        $versionsPlain = [];
+        foreach ($this->versions as $version) {
+            $versionsPlain[$version->id] = $currentEncrypter->decryptString($version->getRawOriginal('value'));
+        }
+
+        $environment = ResolveEnvironment::onceWithContext($this->environment_id);
+        $dek = base64_encode(Encrypter::generateKey(config('app.cipher')));
+        $this->dek_wrapped = $environment->encrypter()->encryptString($dek);
+        $this->kek_salt = $environment->kek_salt;
+        $this->value = $plaintext; // re-encrypt with new DEK via cast
+        $this->save();
+
+        foreach ($this->versions as $version) {
+            $version->value = $versionsPlain[$version->id];
+            $version->save();
+        }
     }
 }

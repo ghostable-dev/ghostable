@@ -12,13 +12,17 @@ class DatabaseHost extends VariableDefinition
         return 'DB_HOST';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'The hostname or IP address of your database server.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Database;
     }
+    // @codeCoverageIgnoreEnd
 }

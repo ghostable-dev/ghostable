@@ -14,15 +14,19 @@ class PusherAppSecret extends VariableDefinition
         return 'PUSHER_APP_SECRET';
     }
 
+    // @codeCoverageIgnoreStart
     public function description(): ?string
     {
         return 'Your Pusher application secret.';
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     public function group(): VariableGroup
     {
         return VariableGroup::Pusher;
     }
+    // @codeCoverageIgnoreEnd
 
     public function ruleProviders(): array
     {
