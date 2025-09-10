@@ -7,7 +7,7 @@ use App\Project\Models\Project;
 
 class UpdateProjectName
 {
-    public function handle(Project $project, string $name, string $description): Project
+    public function handle(Project $project, string $name, ?string $description = null): Project
     {
         $project->update([
             'name' => $name,
