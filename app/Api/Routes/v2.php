@@ -63,7 +63,6 @@ Route::middleware('api.version:v2')->group(function () {
                     Route::post('/push', PushEnvironment::class);
                     Route::post('/diff', DiffEnvironment::class);
                     Route::get('/pull', PullEnvironment::class);
-                    Route::get('/fetch', PullEnvironment::class);
                     Route::post('/validate', ValidateEnvironment::class);
                     Route::get('/secrets', GetEnvironmentSecrets::class);
                     Route::post('/secrets', CreateEnvironmentSecret::class);

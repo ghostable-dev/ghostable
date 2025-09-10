@@ -85,10 +85,6 @@ paths:
     get:
       summary: Pull environment
       responses: {}
-  /projects/{project}/environments/{name}/fetch:
-    get:
-      summary: Fetch environment
-      responses: {}
   /projects/{project}/environments/{name}/validate:
     post:
       summary: Validate environment
