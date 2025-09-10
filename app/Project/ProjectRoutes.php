@@ -2,10 +2,6 @@
 
 namespace App\Project;
 
-use App\Project\Api\Controllers\GenerateSuggestedEnvironmentNames;
-use App\Project\Api\Controllers\GetEnvironments;
-use App\Project\Api\Controllers\ProjectController;
-use App\Project\Livewire\ProjectView;
 use App\Project\Livewire\ProjectAccessManager;
 use App\Project\Livewire\ProjectActivity;
 use App\Project\Livewire\ProjectEnvironmentsManager;

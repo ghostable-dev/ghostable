@@ -4,6 +4,7 @@ use App\Api\Http\Controllers\Auth\LoginViaCli;
 use App\Api\Http\Controllers\Environment\CreateEnvironment;
 use App\Api\Http\Controllers\Environment\DeployEnvironment;
 use App\Api\Http\Controllers\Environment\DiffEnvironment;
+use App\Api\Http\Controllers\Environment\FetchEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\Http\Controllers\Environment\GetEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
@@ -63,6 +64,7 @@ Route::middleware('api.version:v1')->group(function () {
                     Route::post('/push', PushEnvironment::class);
                     Route::post('/diff', DiffEnvironment::class);
                     Route::get('/pull', PullEnvironment::class);
+                    Route::get('/fetch', FetchEnvironment::class);
                     Route::post('/validate', ValidateEnvironment::class);
                     Route::get('/secrets', GetEnvironmentSecrets::class);
                     Route::post('/secrets', CreateEnvironmentSecret::class);
