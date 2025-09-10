@@ -4,35 +4,50 @@ declare(strict_types=1);
 
 namespace App\Api\Http\Controllers\Environment;
 
+use App\Api\Resources\Environment\EnvironmentVariableResource;
 use App\Core\Http\Controllers\Controller;
-use App\Environment\Actions\RenderEnvFile;
+use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Models\Environment;
+use App\Environment\Validation\Actions\ValidateEnvironment as Validate;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Validation\ValidationException;
 
 final class DeployEnvironment extends Controller
 {
     /**
-     * Render and return the environment variables for deployment.
-     *
-     * This endpoint uses a token-based authentication approach, where the token directly
-     * references and authenticates a specific environment. It returns the environment
-     * variables formatted as a `.env` file.
-     *
-     * Authorization: Token must resolve directly to an existing Environment.
+     * Validate and return environment variables for deployment.
      */
-    public function __invoke(): Response
+    public function __invoke(): JsonResponse|JsonResource
     {
-        // Retrieve the environment directly associated with the provided token.
-        $environment = request()->user();
+        $environment = $this->resolveEnvironmentFromToken();
 
-        if (! $environment instanceof Environment || ! $environment->tokenCan('deploy')) {
-            throw new AuthorizationException('The provided token is invalid or does not correspond to any environment.');
+        // Validate
+        try {
+            app(Validate::class)->handle($environment);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
         }
 
-        // Generate and return the .env-formatted string content.
-        $content = RenderEnvFile::handle(env: $environment);
+        $vars = resolve(ResolveEnvironmentVariables::class)->handle($environment);
 
-        return response($content, 200, ['Content-Type' => 'text/plain']);
+        return EnvironmentVariableResource::collection($vars);
+    }
+
+    private function resolveEnvironmentFromToken(): Environment
+    {
+        $actor = request()->user();
+
+        if (! $actor instanceof Environment || ! $actor->tokenCan('deploy')) {
+            throw new AuthorizationException(
+                'The provided token is invalid, lacks deploy scope, or does not correspond to an environment.'
+            );
+        }
+
+        return $actor;
     }
 }

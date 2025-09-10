@@ -2,6 +2,8 @@
 
 use App\Environment\Actions\Token\CreateEnvToken;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Variable\Actions\CreateVariable;
+use App\Environment\Variable\Entities\CreateVariableData;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -11,6 +13,31 @@ beforeEach(function () {
     $project = $this->createProject(name: 'Website', organization: $organization);
     $this->environment = $this->createEnvironment(name: 'Production', type: EnvironmentType::PRODUCTION, project: $project);
     $this->endpoint = '/api/v1/ci/deploy';
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->environment,
+        key: 'APP_NAME',
+        value: 'Ghostable',
+    ));
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->environment,
+        key: 'APP_DEBUG',
+        value: 'false',
+    ));
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->environment,
+        key: 'APP_URL',
+        value: 'https://ghostable.dev',
+    ));
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->environment,
+        key: 'APP_ENV',
+        value: 'production',
+    ));
+    app(CreateVariable::class)->handle(new CreateVariableData(
+        environment: $this->environment,
+        key: 'APP_KEY',
+        value: 'base64:dTk5YXdvZ3V5bDdrZTRnNm1sbHk2YzI1NW0zcnNmcWg=',
+    ));
 });
 
 test('unauthenticated users cannot deploy environments', function () {
@@ -18,12 +45,12 @@ test('unauthenticated users cannot deploy environments', function () {
 });
 
 test('environment token can deploy environment', function () {
-    $token = app(CreateEnvToken::class)->handle(name: 'deploy', environment: $this->environment);
+    $token = app(CreateEnvToken::class)
+        ->handle(name: 'deploy', environment: $this->environment);
 
     $this->withHeaders(['Authorization' => 'Bearer '.$token->plainTextToken])
         ->get($this->endpoint)
-        ->assertOk()
-        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
+        ->assertOk();
 });
 
 test('user tokens cannot deploy environments', function () {
