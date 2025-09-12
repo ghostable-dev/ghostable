@@ -198,6 +198,15 @@ class EnvironmentGeneralSettings extends Component
 
         $this->authorize('perform', [$project, OrganizationPermission::DeleteEnvironments]);
 
+        // Capture derived environments before deleting so we can detach them.
+        $derived = $this->environment->derived()->get();
+
+        // Detach each derived environment from this base and clear ancestry cache.
+        foreach ($derived as $env) {
+            resolve(UpdateBaseEnvironment::class)->handle($env, base: null);
+            resolve(EnvironmentAncestryResolver::class)->bust($env);
+        }
+
         $this->environment->delete();
 
         $this->redirect(route('project.environments', $project));
