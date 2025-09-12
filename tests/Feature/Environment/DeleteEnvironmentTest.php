@@ -40,4 +40,3 @@ test('deleting base environment detaches derived environments', function () {
     $var = $child->variables()->where('key', 'FOO')->first();
     expect((bool) $var->is_override)->toBeFalse();
 });
-
