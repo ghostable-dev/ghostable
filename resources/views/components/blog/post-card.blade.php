@@ -1,5 +1,4 @@
 @props(['post'])
-<div class="relative grid grid-cols-1 border-b border-b-gray-100 py-10 first:border-t first:border-t-gray-200 max-sm:gap-3 sm:grid-cols-3">
     <div>
         <div class="text-sm max-sm:text-gray-700 sm:font-medium">
             {{ $post->posted_at->isoFormat('dddd, MMMM D, YYYY') }}
@@ -20,4 +19,3 @@
             </flux:link>
         </div>
     </div>
-</div>
