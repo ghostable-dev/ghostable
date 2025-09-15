@@ -15,12 +15,12 @@ class InquiryStats extends BaseWidget
         return [
             Stat::make('Inquiries Today', Inquiry::whereDate('created_at', $now)->count()),
             Stat::make('Inquiries This Week', Inquiry::whereBetween('created_at', [
-                $now->copy()->startOfWeek(), 
-                $now->copy()->endOfWeek()
+                $now->copy()->startOfWeek(),
+                $now->copy()->endOfWeek(),
             ])->count()),
             Stat::make('Inquiries This Month', Inquiry::whereBetween('created_at', [
-                $now->copy()->startOfMonth(), 
-                $now->copy()->endOfMonth()
+                $now->copy()->startOfMonth(),
+                $now->copy()->endOfMonth(),
             ])->count()),
         ];
     }

@@ -9,8 +9,8 @@ use App\Project\Listeners\SendProjectActivityNotification;
 use App\Project\Listeners\SendProjectSettingsChangedNotification;
 use App\Project\Models\Project;
 use App\Project\Policies\ProjectPolicy;
-use Event;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

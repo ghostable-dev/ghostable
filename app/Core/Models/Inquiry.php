@@ -3,6 +3,7 @@
 namespace App\Core\Models;
 
 use App\Core\Enums\InquiryType;
+use App\Core\Events\InquiryCreated;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -23,5 +24,12 @@ class Inquiry extends Model
 
     protected $casts = [
         'inquiry' => InquiryType::class,
+    ];
+
+    /**
+     * @var array<string, string>
+     */
+    protected $dispatchesEvents = [
+        'created' => InquiryCreated::class,
     ];
 }

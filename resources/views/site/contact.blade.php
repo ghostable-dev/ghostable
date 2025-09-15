@@ -38,13 +38,12 @@
             <form 
                 method="POST" 
                 action="{{ route('contact') }}" 
-                x-data 
                 x-on:submit.prevent="grecaptcha.ready(() => {
-                    grecaptcha.execute('{{ config('services.recaptcha.key') }}', { action: 'contact' }).then((token) => {
-                        $refs.recaptcha_token.value = token;
-                        $el.submit();
-                    });
-                })"
+                        grecaptcha.execute('{{ config('services.recaptcha.key') }}', { action: 'contact' }).then((token) => {
+                            $refs.recaptcha_token.value = token;
+                            $el.submit();
+                        });
+                    })"
                 class="space-y-6">
                 @csrf
                 <input type="hidden" name="recaptcha_token" id="recaptcha_token" x-ref="recaptcha_token">
@@ -68,8 +67,8 @@
         </div>
     </div>
 
-    @push('scripts')
+    @pushIf(!app()->isLocal(), 'scripts')
         <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
-    @endpush
+    @endPushIf
     
 </x-layouts.guest>
