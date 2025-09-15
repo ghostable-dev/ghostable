@@ -5,6 +5,10 @@ namespace App\Filament\Resources\Users;
 use App\Account\Models\User;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\Pages\ViewUser;
+use App\Filament\Resources\Users\RelationManagers\ActivityHistoryRelationManager;
+use App\Filament\Resources\Users\RelationManagers\ChangeHistoryRelationManager;
+use App\Filament\Resources\Users\RelationManagers\OrganizationsRelationshipManager;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use BackedEnum;
@@ -36,7 +40,9 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            OrganizationsRelationshipManager::class,
+            ActivityHistoryRelationManager::class,
+            ChangeHistoryRelationManager::class,
         ];
     }
 
@@ -44,6 +50,7 @@ class UserResource extends Resource
     {
         return [
             'index' => ListUsers::route('/'),
+            'view' => ViewUser::route('/{record}'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
     }

@@ -11,10 +11,12 @@ class ApiUsageStats extends BaseWidget
 {
     protected function getStats(): array
     {
+        $now = now()->timezone(timezone());
+
         return [
-            Stat::make('API Calls This Hour', ApiUsageHourly::where('hour', now()->startOfHour())->sum('count')),
-            Stat::make('API Calls Today', ApiUsageDaily::whereDate('date', today())->sum('count')),
-            Stat::make('API Calls This Month', ApiUsageDaily::whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])->sum('count')),
+            Stat::make('API Calls This Hour', ApiUsageHourly::where('hour', $now->startOfHour())->sum('count')),
+            Stat::make('API Calls Today', ApiUsageDaily::whereDate('date', $now)->sum('count')),
+            Stat::make('API Calls This Month', ApiUsageDaily::whereBetween('date', [$now->startOfMonth(), $now->endOfMonth()])->sum('count')),
         ];
     }
 }

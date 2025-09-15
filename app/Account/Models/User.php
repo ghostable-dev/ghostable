@@ -11,6 +11,7 @@ use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,6 +19,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\ActivitylogServiceProvider;
 
 /**
  * @property string $id
@@ -116,7 +118,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            // 'two_factor_confirmed_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             // 'two_factor_secret' => 'encrypted',
             // 'two_factor_recovery_codes' => 'encrypted:array',
         ];
@@ -130,6 +132,21 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function isFounder(): bool
     {
         return in_array($this->email, ['rucci.joe@gmail.com', 'joe@curricula.com']);
+    }
+
+    public function activities(): MorphMany
+    {
+        return $this->morphMany(
+            ActivitylogServiceProvider::determineActivityModel(),
+            'causer'
+        );
+    }
+
+    public function history(): MorphMany
+    {
+        return $this->morphMany(
+            ActivitylogServiceProvider::determineActivityModel(), 'subject'
+        )->whereIn('event', ['created', 'updated', 'deleted']);
     }
 
     public static function newFactory(): UserFactory

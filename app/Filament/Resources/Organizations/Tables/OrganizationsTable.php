@@ -14,7 +14,8 @@ class OrganizationsTable
             ->columns([
                 TextColumn::make('id')
                     ->label('ID')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('stripe_id')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -33,12 +34,12 @@ class OrganizationsTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
-            ->recordActions([
-                ViewAction::make(),
+            ->actions([
+                ViewAction::make()->visible(true),
             ])
             ->toolbarActions([
                 //
