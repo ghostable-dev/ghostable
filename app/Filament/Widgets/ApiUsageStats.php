@@ -15,8 +15,11 @@ class ApiUsageStats extends BaseWidget
 
         return [
             Stat::make('API Calls This Hour', ApiUsageHourly::where('hour', $now->startOfHour())->sum('count')),
-            Stat::make('API Calls Today', ApiUsageDaily::whereDate('date', $now)->sum('count')),
-            Stat::make('API Calls This Month', ApiUsageDaily::whereBetween('date', [$now->startOfMonth(), $now->endOfMonth()])->sum('count')),
+            Stat::make('API Calls Today', ApiUsageDaily::whereDate('date', $now->copy())->sum('count')),
+            Stat::make('API Calls This Month', ApiUsageDaily::whereBetween('date', [
+                $now->copy()->startOfMonth(), 
+                $now->copy()->endOfMonth()
+            ])->sum('count')),
         ];
     }
 }

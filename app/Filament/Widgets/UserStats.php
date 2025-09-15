@@ -14,8 +14,14 @@ class UserStats extends BaseWidget
 
         return [
             Stat::make('Users Today', User::whereDate('created_at', $now)->count()),
-            Stat::make('Users This Week', User::whereBetween('created_at', [$now->startOfWeek(), $now->endOfWeek()])->count()),
-            Stat::make('Users This Month', User::whereBetween('created_at', [$now->startOfMonth(), $now->endOfMonth()])->count()),
+            Stat::make('Users This Week', User::whereBetween('created_at', [
+                $now->copy()->startOfWeek(), 
+                $now->copy()->endOfWeek()
+            ])->count()),
+            Stat::make('Users This Month', User::whereBetween('created_at', [
+                $now->copy()->startOfMonth(), 
+                $now->copy()->endOfMonth()
+            ])->count()),
         ];
     }
 }
