@@ -15,6 +15,8 @@ class MailingListEmailResource extends Resource
 {
     protected static ?string $model = MailingListEmail::class;
 
+    protected static ?string $navigationLabel = 'Mailing List';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
     protected static ?string $recordTitleAttribute = 'email';
