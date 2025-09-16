@@ -17,11 +17,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     {
         $channels = ['mail'];
 
-        // if (method_exists($notifiable, 'routeNotificationForSlack') &&
-        //     $notifiable->routeNotificationForSlack($this)) {
-        //     $channels[] = 'slack';
-        // }
-
         return $channels;
     }
 

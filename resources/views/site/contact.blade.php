@@ -36,17 +36,24 @@
             @endif
 
             <form 
+                class="space-y-6"
                 method="POST" 
                 action="{{ route('contact') }}" 
-                x-on:submit.prevent="grecaptcha.ready(() => {
-                        grecaptcha.execute('{{ config('services.recaptcha.key') }}', { action: 'contact' }).then((token) => {
+                x-data="{recaptchaEnabled: @json($recaptchaEnabled)}"
+                x-on:submit.prevent="
+                    if(!this.recaptchaEnabled) {
+                        $el.submit();
+                    }
+                    grecaptcha.ready(() => {
+                        grecaptcha.execute('{{ $recaptchaKey }}', { action: 'contact' }).then((token) => {
                             $refs.recaptcha_token.value = token;
                             $el.submit();
                         });
-                    })"
-                class="space-y-6">
+                    })">
                 @csrf
-                <input type="hidden" name="recaptcha_token" id="recaptcha_token" x-ref="recaptcha_token">
+                @if($recaptchaEnabled)
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token" x-ref="recaptcha_token">
+                @endif
                 <flux:input label="Name" id="name" name="name" value="{{ old('name') }}" required/>
                 <flux:input label="Email" type="email" id="email" name="email" value="{{ old('email') }}" required/>
                 <flux:select label="How can we help?" id="inquiry" name="inquiry">
@@ -63,12 +70,13 @@
                     <flux:button type="submit" variant="primary">Submit</flux:button>
                 </div>
             </form>
-            
         </div>
     </div>
-
-    @push('scripts')
-        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
-    @endpush
+    
+    @if($recaptchaEnabled)
+        @push('scripts')
+            <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
+        @endpush
+    @endif
     
 </x-layouts.guest>
