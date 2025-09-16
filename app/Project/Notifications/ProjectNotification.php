@@ -26,21 +26,8 @@ abstract class ProjectNotification extends Notification implements SlackNotifiab
         return ['mail', 'slack'];
     }
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject($this->subject())
-            ->greeting($notifiable->greeting())
-            ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this organization.');
-    }
-
     public function toSlack(object $notifiable): string
     {
         return $this->messageLine();
     }
-
-    abstract protected function subject(): string;
-
-    abstract protected function messageLine(): string;
 }
