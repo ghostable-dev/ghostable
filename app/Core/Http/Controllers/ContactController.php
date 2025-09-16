@@ -20,7 +20,7 @@ class ContactController extends Controller
     {
         $validated = $request->validate($this->getRules());
 
-        if (! App::isLocal()) {
+        //if (! App::isLocal()) {
             $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                 'secret' => config('services.recaptcha.secret'),
                 'response' => $validated['recaptcha_token'],
@@ -32,7 +32,7 @@ class ContactController extends Controller
                     'recaptcha_token' => 'reCAPTCHA verification failed or suspicious behavior detected.',
                 ])->withInput();
             }
-        }
+        //}
 
         Inquiry::create([
             'name' => $validated['name'],
@@ -53,9 +53,9 @@ class ContactController extends Controller
             'message' => ['required', 'string'],
         ];
 
-        if (! App::isLocal()) {
+        //if (! App::isLocal()) {
             $rules['recaptcha_token'] = ['required', 'string'];
-        }
+        //}
 
         return $rules;
     }

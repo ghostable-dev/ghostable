@@ -67,8 +67,8 @@
         </div>
     </div>
 
-    @pushIf(!app()->isLocal(), 'scripts')
+    @push('scripts')
         <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
-    @endPushIf
+    @endpush
     
 </x-layouts.guest>
