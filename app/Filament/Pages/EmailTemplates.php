@@ -71,45 +71,22 @@ class EmailTemplates extends Page
     #[Computed(persist: true)]
     public function user(): User
     {
-        return User::factory()->make([
-            'name' => 'Joe Rucci',
-            'email' => 'rucci.joe@gmail.com',
-        ]);
+        return User::where('email', 'rucci.joe@gmail.com')->firstOrFail();
     }
 
     private function sampleOrganization(): Organization
     {
-        $organization = Organization::factory()->make([
-            'name' => 'Acme Inc',
-        ]);
-
-        $organization->setRelation('owner', $this->user);
-
-        return $organization;
+        return $this->user()->organizations->first();
     }
 
     private function sampleProject(): Project
     {
-        $organization = $this->sampleOrganization();
-        $project = Project::factory()->forOrganization($organization)->make([
-            'name' => 'Demo Project',
-        ]);
-
-        $project->setRelation('organization', $organization);
-
-        return $project;
+        return $this->user()->organizations->first()->projects->first();
     }
 
     private function sampleEnvironment(): Environment
     {
-        $project = $this->sampleProject();
-        $environment = Environment::factory()->forProject($project)->make([
-            'name' => 'Production',
-        ]);
-
-        $environment->setRelation('project', $project);
-
-        return $environment;
+        return $this->user()->organizations->first()->projects->first()->environments->first();
     }
 
     private function sampleInvite(): Invite
@@ -126,14 +103,7 @@ class EmailTemplates extends Page
 
     private function sampleEnvironmentVariable(): EnvironmentVariable
     {
-        $environment = $this->sampleEnvironment();
-        $variable = new EnvironmentVariable([
-            'key' => 'APP_KEY',
-        ]);
-
-        $variable->setRelation('environment', $environment);
-
-        return $variable;
+        return $this->sampleEnvironment()->variables->first();
     }
 
     private function sampleSecret(): Secret

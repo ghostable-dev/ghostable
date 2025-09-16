@@ -1,6 +1,6 @@
 @extends('mail.layouts.simple')
 
-@section('title', "Project deleted")
+@section('title', "Project Deleted")
 
 @section('preheader')
     The project named {{ $project->name }} has been deleted from the {{ $project->organization->name }} organization of Ghostable.
