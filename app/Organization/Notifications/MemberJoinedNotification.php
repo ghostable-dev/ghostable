@@ -16,6 +16,18 @@ class MemberJoinedNotification extends MembershipActivityNotification
         return $this->invite->organization;
     }
 
+    protected function mailView(): string
+    {
+        return 'mail.organization.member-joined';
+    }
+
+    protected function mailViewData(): array
+    {
+        return array_merge(parent::mailViewData(), [
+            'invite' => $this->invite,
+        ]);
+    }
+
     protected function subject(): string
     {
         return "{$this->invite->email} joined the {$this->invite->organization->name} organization.";

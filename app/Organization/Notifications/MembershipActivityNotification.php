@@ -19,14 +19,26 @@ abstract class MembershipActivityNotification extends Notification implements Sl
     {
         return (new MailMessage)
             ->subject($this->subject())
-            ->greeting($notifiable->greeting())
-            ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this organization.');
+            ->view($this->mailView(), $this->mailViewData());
     }
 
     public function toSlack(object $notifiable): string
     {
         return $this->messageLine();
+    }
+
+    protected function mailView(): string
+    {
+        return 'mail.organization.membership-activity';
+    }
+
+    protected function mailViewData(): array
+    {
+        return [
+            'title' => $this->subject(),
+            'organization' => $this->forOrganization(),
+            'message' => $this->messageLine(),
+        ];
     }
 
     abstract protected function subject(): string;

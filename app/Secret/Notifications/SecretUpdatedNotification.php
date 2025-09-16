@@ -14,8 +14,10 @@ class SecretUpdatedNotification extends BaseNotification
     {
         return (new MailMessage)
             ->subject('Secret Updated')
-            ->greeting($notifiable->greeting())
-            ->line("Secret '{$this->secret->name}' was updated.");
+            ->view('mail.secret-updated', [
+                'title' => 'Secret updated',
+                'secret' => $this->secret,
+            ]);
     }
 
     public function toSlack(object $notifiable): string

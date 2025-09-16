@@ -4,6 +4,11 @@ namespace App\Environment\Notifications;
 
 class EnvironmentCreatedNotification extends EnvironmentNotification
 {
+    protected function mailView(): string
+    {
+        return 'mail.environment.created';
+    }
+
     protected function subject(): string
     {
         return 'New environment created';

@@ -1,6 +1,6 @@
 @extends('mail.layouts.simple')
 
-@section('title', "New project created")
+@section('title', "Project settings updated")
 
 @section('preheader')
     Project settings for the project {{ $project->name }} changed in the {{ $project->organization->name }} organization of Ghostable.

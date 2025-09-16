@@ -4,9 +4,14 @@ namespace App\Environment\Notifications;
 
 class EnvironmentDeletedNotification extends EnvironmentNotification
 {
+    protected function mailView(): string
+    {
+        return 'mail.environment.deleted';
+    }
+
     protected function subject(): string
     {
-        return 'New environment deleted';
+        return 'Environment deleted';
     }
 
     protected function messageLine(): string
