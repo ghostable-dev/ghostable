@@ -17,9 +17,10 @@ it('builds secret updated mail and slack messages', function () {
     $mail = $notification->toMail($notifiable);
 
     expect($mail->subject)->toBe('Secret Updated')
-        ->and($mail->greeting)->toBe($notifiable->greeting())
-        ->and($mail->introLines)->toBe([
-            "Secret 'API_KEY' was updated.",
+        ->and($mail->view)->toBe('mail.secret-updated')
+        ->and($mail->viewData)->toMatchArray([
+            'title' => 'Secret updated',
+            'secret' => $secret,
         ]);
 
     expect($notification->toSlack($notifiable))->toBe("Secret 'API_KEY' was updated.");

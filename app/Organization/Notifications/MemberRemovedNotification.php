@@ -17,6 +17,18 @@ class MemberRemovedNotification extends MembershipActivityNotification
         return $this->organization;
     }
 
+    protected function mailView(): string
+    {
+        return 'mail.organization.member-removed';
+    }
+
+    protected function mailViewData(): array
+    {
+        return array_merge(parent::mailViewData(), [
+            'removedUser' => $this->user,
+        ]);
+    }
+
     protected function subject(): string
     {
         return "{$this->user->email} removed from {$this->organization->name}";

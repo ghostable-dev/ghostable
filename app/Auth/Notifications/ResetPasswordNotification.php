@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Auth\Notifications;
+
+use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Lang;
+
+class ResetPasswordNotification extends BaseResetPassword
+{
+    public function toMail($notifiable): MailMessage
+    {
+        $url = $this->resetUrl($notifiable);
+        $expiration = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
+
+        return (new MailMessage)
+            ->subject(Lang::get('Reset your Ghostable password'))
+            ->view('mail.auth.reset-password', [
+                'title' => Lang::get('Reset your Ghostable password'),
+                'url' => $url,
+                'expiration' => $expiration,
+                'notifiable' => $notifiable,
+            ]);
+    }
+}

@@ -2,7 +2,7 @@
 
 use App\Auth\Actions\Logout;
 use App\Auth\Livewire\VerifyEmail;
-use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
+use App\Auth\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
