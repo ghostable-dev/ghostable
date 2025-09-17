@@ -13,7 +13,7 @@ class VerifyEmailNotification extends BaseVerifyEmail
         $url = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject(Lang::get('Ghostable account: Verify your email'))
+            ->subject(Lang::get('Verify your email'))
             ->view('mail.auth.verify-email', [
                 'title' => Lang::get('Verify email'),
                 'url' => $url,
