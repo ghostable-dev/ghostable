@@ -1,3 +1,12 @@
+@push('meta')
+    <x-seo-meta
+        title="Verify your email"
+        description="Please verify your email address to activate your Ghostable account."
+        :keywords="[]"
+        robots="noindex, nofollow, noarchive, noimageindex"
+    />
+@endpush
+
 <div class="mt-4 flex flex-col gap-6">
     <flux:text class="text-center">
         {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}

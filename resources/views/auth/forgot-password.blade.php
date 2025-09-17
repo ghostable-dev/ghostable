@@ -1,4 +1,13 @@
- <div class="flex flex-col gap-6">
+@push('meta')
+    <x-seo-meta
+        title="Reset your Ghostable password"
+        description="Request a secure link to reset your Ghostable account password."
+        :keywords="[]"
+        robots="noindex, nofollow, noarchive, noimageindex"
+    />
+@endpush
+
+<div class="flex flex-col gap-6">
     <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
 
     <!-- Session Status -->

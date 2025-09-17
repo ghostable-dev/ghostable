@@ -1,23 +1,19 @@
-<x-layouts.guest title="Contact">
+@push('meta')
+    <x-seo-meta
+        title="Contact Ghostable"
+        description="Have questions about Ghostable? Get in touch with our team to talk about pricing, enterprise options, or general inquiries."
+        :keywords="[
+            'ghostable contact',
+            'contact ghostable',
+            'support',
+            'sales',
+            'enterprise',
+            'environment variables',
+            'secrets management'
+        ]"/>
+@endpush
     
-    @push('meta')
-        <x-seo-meta
-            title="Contact Ghostable"
-            description="Have questions about Ghostable? Get in touch with our team to talk about pricing, enterprise options, or general inquiries."
-            :keywords="[
-                'ghostable contact',
-                'contact ghostable',
-                'support',
-                'sales',
-                'enterprise',
-                'environment variables',
-                'secrets management'
-            ]"
-        />
-    @endpush
-    
-    @include('site.partials.header')
-
+<x-layouts.guest title="Contact" canonical="{{ route('contact') }}">
     <div class="px-6 lg:px-8 py-16 bg-white">
         <div class="mx-auto lg:max-w-3xl space-y-10">
             <div>
@@ -70,13 +66,11 @@
                     <flux:button type="submit" variant="primary">Submit</flux:button>
                 </div>
             </form>
+            
         </div>
     </div>
-    
-    @if($recaptchaEnabled)
-        @push('scripts')
-            <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
-        @endpush
-    @endif
-    
 </x-layouts.guest>
+
+@pushIf($recaptchaEnabled, 'scripts')
+    <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
+@endPushIf

@@ -8,11 +8,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-#[Layout('components.layouts.auth', ['title' => 'Login'])]
 class Login extends Component
 {
     #[Validate('required|string|email')]
@@ -100,6 +98,10 @@ class Login extends Component
 
     public function render()
     {
-        return view('auth.login');
+        return view('auth.login')
+            ->layout('components.layouts.auth', [
+                'title' => 'Login',
+                'canonical' => route('login'),
+            ]);
     }
 }

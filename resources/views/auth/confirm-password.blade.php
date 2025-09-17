@@ -1,3 +1,12 @@
+@push('meta')
+    <x-seo-meta
+        title="Confirm your Ghostable password"
+        description="Re-enter your password to continue."
+        :keywords="[]"
+        robots="noindex, nofollow, noarchive, noimageindex"
+    />
+@endpush
+
 <div class="flex flex-col gap-6">
     <x-auth-header
         :title="__('Confirm password')"

@@ -6,8 +6,10 @@ use App\Account\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('components.layouts.shells.user-settings')]
 class Profile extends Component
 {
     public string $name = '';
@@ -83,6 +85,6 @@ class Profile extends Component
 
     public function render()
     {
-        return view('account.profile');
+        return view('account.settings.profile');
     }
 }

@@ -1,16 +1,15 @@
-@section('title', 'Terms of Service')
-
 @push('meta')
-<x-seo-meta
-    title="Terms of Service"
-    description="Terms of Service for ghostable.dev"
-    :keywords="[]"/>
+    <x-seo-meta
+        title="Terms of Service"
+        description="Terms of Service for ghostable.dev"
+        :keywords="[]"/>
 @endpush
 
 @inject('carbon', '\Illuminate\Support\Carbon')
 
 <x-layouts.legal 
     title="Terms of Service"
+    canonical="{{ route('terms') }}"
     :last-updated="$carbon::create(2025, 6, 23, 12, 0, 0)">
     <x-slot:document>
         {!! str(file_get_contents(resource_path('markdown/terms-of-service.md')))->markdown() !!}

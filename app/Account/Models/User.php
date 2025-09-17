@@ -2,6 +2,8 @@
 
 namespace App\Account\Models;
 
+use App\Account\Builders\UserBuilder;
+use App\Account\Entities\NotificationSettings;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
 use App\Organization\Concerns\BelongsToOrganizations;
@@ -11,6 +13,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -76,6 +79,7 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  *
  * @mixin \Eloquent
  */
+#[UseEloquentBuilder(UserBuilder::class)]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use BelongsToOrganizations;
@@ -96,6 +100,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'email',
         'password',
         'timezone',
+        'notifications',
     ];
 
     /**
@@ -121,6 +126,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'notifications' => NotificationSettings::class.':default',
             // 'two_factor_secret' => 'encrypted',
             // 'two_factor_recovery_codes' => 'encrypted:array',
         ];

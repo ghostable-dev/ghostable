@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-accent">
-    <x-head :dark-mode="false" :title="$title ?? null" :canonical="$canonical ?? null" tracking/>
-    <body class="antialiased bg-accent">
+@props([
+    'withHeader' => true,
+    'withFooter' => true    
+])
+<x-layouts.base 
+    {{ $attributes }}
+    :with-appearance="false"
+    body-classes="bg-accent min-h-dvh flex flex-col">
+    @includeWhen($withHeader, 'site.partials.header')
+    <main class="flex-1">
         {{ $slot }}
-        @include('partials.footer')
-        @fluxScripts
-        @stack('scripts')
-    </body>
-</html>
+    </main>
+    @includeWhen($withFooter, 'partials.footer')
+</x-layouts.base>

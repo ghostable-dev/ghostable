@@ -14,6 +14,9 @@ class PostShow extends Component
     public function render()
     {
         return view('blog.livewire.post-show')
-            ->layout('components.layouts.blog', ['title' => $this->post->meta_title]);
+            ->layout('components.layouts.blog', [
+                'title' => $this->post->meta_title,
+                'canonical' => route('blog.view', $this->post),
+            ]);
     }
 }
