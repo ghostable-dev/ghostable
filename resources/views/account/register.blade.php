@@ -1,3 +1,12 @@
+@push('meta')
+    <x-seo-meta
+        title="Create your Ghostable account"
+        description="Sign up to securely manage and share environment variables, with validation, version history, and full audit visibility."
+        :keywords="[]"
+        robots="noindex, nofollow, noarchive, noimageindex"
+    />
+@endpush
+
 <div class="flex flex-col gap-6">
     <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
 

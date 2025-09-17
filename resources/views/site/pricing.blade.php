@@ -1,24 +1,20 @@
-<x-layouts.guest title="Pricing">
-    
-    @push('meta')
-        <x-seo-meta
-            title="Ghostable Pricing"
-            description="Simple, transparent pricing for secure environment & secrets management. Choose a plan that fits your team—with validation, version history, and full audit visibility."
-            :keywords="[
-                'ghostable pricing',
-                'pricing plans',
-                'environment variables',
-                'secrets management',
-                'validation',
-                'version history',
-                'audit logs',
-                'laravel'
-            ]"
-        />
-    @endpush
+@push('meta')
+    <x-seo-meta
+        title="Ghostable Pricing"
+        description="Simple, transparent pricing for secure environment & secrets management. Choose a plan that fits your team—with validation, version history, and full audit visibility."
+        :keywords="[
+            'ghostable pricing',
+            'pricing plans',
+            'environment variables',
+            'secrets management',
+            'validation',
+            'version history',
+            'audit logs',
+            'laravel'
+        ]"/>
+@endpush
 
-    @include('site.partials.header')
-
+<x-layouts.guest title="Pricing" canonical="{{ route('pricing') }}">
     <div class="px-6 lg:px-8 py-12 md:py-16 bg-white">
         <div class="mx-auto lg:max-w-6xl space-y-10">
             <div class="text-center">

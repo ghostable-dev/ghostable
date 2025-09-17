@@ -1,3 +1,12 @@
+@push('meta')
+    <x-seo-meta
+        title="Sign in to Ghostable"
+        description="Access your Ghostable account to manage environment variables and secrets."
+        :keywords="[]"
+        robots="noindex, nofollow, noarchive, noimageindex"
+    />
+@endpush
+
 <div class="flex flex-col gap-6">
     <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
 

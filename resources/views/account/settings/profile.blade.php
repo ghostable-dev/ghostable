@@ -1,13 +1,9 @@
-<section class="w-full">
-    @include('partials.settings-heading')
-
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your profile details')">
+<div class="max-w-xl space-y-6">
+    <x-section title="{{ __('Profile') }}" subheading="{{ __('Update your profile details') }}">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
-
             <div>
                 <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
-
                 @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
                     <div>
                         <flux:text class="mt-4">
@@ -26,7 +22,6 @@
                     </div>
                 @endif
             </div>
-
             <flux:select
                 wire:model="timezone"
                 :label="__('Time Zone')"
@@ -37,18 +32,16 @@
                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
-
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
                     <flux:button variant="primary" type="submit" class="w-full">{{ __('Save') }}</flux:button>
                 </div>
-
                 <x-action-message class="me-3" on="profile-updated">
                     {{ __('Saved.') }}
                 </x-action-message>
             </div>
         </form>
-
-        <livewire:account.livewire.delete-user-form />
-    </x-settings.layout>
-</section>
+    </x-section>
+    
+    <livewire:account.livewire.delete-user-form />
+</div>

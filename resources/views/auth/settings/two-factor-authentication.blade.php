@@ -1,9 +1,7 @@
-<section class="w-full">
-    @include('partials.settings-heading')
-
-    <x-settings.layout 
-        :heading="__('Two-factor authentication')" 
-        :subheading="__('Add additional security to your account using two factor authentication')">
+<div class="max-w-xl">
+    <x-section 
+        title="{{ __('Two-factor authentication') }}"
+        subheading="{{ __('Add additional security to your account using two factor authentication') }}">
         <div class="space-y-6">
             @if ($this->enabled)
                 @if ($showingQrCode)
@@ -108,5 +106,5 @@
                 
             </div>
         </div>
-    </x-settings.layout>
-</section>
+    </x-section>
+</div>

@@ -40,6 +40,10 @@ class Register extends Component
 
     public function render()
     {
-        return view('account.register');
+        return view('account.register')
+            ->layout('components.layouts.auth', [
+                'title' => 'Sign up',
+                'canonical' => route('register'),
+            ]);
     }
 }

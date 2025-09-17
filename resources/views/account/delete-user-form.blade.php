@@ -1,9 +1,5 @@
-<section class="mt-10 space-y-6">
-    <div class="relative mb-5">
-        <flux:heading>{{ __('Delete account') }}</flux:heading>
-        <flux:subheading>{{ __('Delete your account and all of its resources') }}</flux:subheading>
-    </div>
-
+<x-section title="{{ __('Delete account') }}" subheading="{{ __('Delete your account and all of its resources') }}">
+    
     <flux:modal.trigger name="confirm-user-deletion">
         <flux:button variant="danger" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">
             {{ __('Delete account') }}
@@ -31,4 +27,4 @@
             </div>
         </form>
     </flux:modal>
-</section>
+</x-section>
