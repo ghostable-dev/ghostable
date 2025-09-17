@@ -7,7 +7,7 @@
         <meta name="color-scheme" content="light only">
         <meta name="supported-color-schemes" content="light only">
         <title>@yield('title')</title>
-        <style>:root{--bg:#f5f5f5;--text:#171717;--muted:#737373;--btn-bg:#080808;--btn-text:#ffffff}@media (prefers-color-scheme:dark){:root{--bg:#000000;--text:#ffffff;--muted:#9b9b9b;--btn-bg:#ffffff;--btn-text:#080808}}@media (max-width:600px){.container{padding:100px 20px}.h1{font-size:36px;line-height:40px}}</style>
+        <style>:root{--bg:#f5f5f5;--text:#171717;--muted:#737373;--btn-bg:#080808;--btn-text:#ffffff}@media (prefers-color-scheme:dark){:root{--bg:#000000;--text:#ffffff;--muted:#9b9b9b;--btn-bg:#ffffff;--btn-text:#080808}}@media (max-width:600px){.container{padding:64px 20px}.h1{font-size:36px;line-height:40px}}</style>
     </head>
     <body role="article" aria-roledescription="email" style="margin:0;background:#f5f5f5;background:var(--bg, #f5f5f5);color:#171717;color:var(--text, #171717);">
       
@@ -23,7 +23,7 @@
                     style="background:#f5f5f5;background:var(--bg,#f5f5f5);">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:500px;margin:0 auto;">
                         <tr>
-                            <td class="container" style="padding:120px 20px;text-align:center;">
+                            <td class="container" style="padding:96px 20px;text-align:center;">
                       
                                 <x-mail.simple.card-logo/>
 
