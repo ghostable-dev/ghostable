@@ -3,18 +3,18 @@
 @section('title', $title)
 
 @section('preheader')
-    Member "{{ $user->email }}" role was changed in the {{ $organization->name }} organization of Ghostable.
+    Permissions for {{ $user->email }} were updated in the {{ $organization->name }} organization on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        Member <strong>{{ $user->email }}</strong> role was changed in the
-        <strong>{{ $organization->name }}</strong> organization of Ghostable.
+        Permissions for <strong>{{ $user->email }}</strong> were updated in the
+        <strong>{{ $organization->name }}</strong> organization on Ghostable.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

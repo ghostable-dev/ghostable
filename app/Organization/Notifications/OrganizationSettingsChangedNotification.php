@@ -28,7 +28,7 @@ class OrganizationSettingsChangedNotification extends Notification implements Sl
         return (new MailMessage)
             ->subject($this->subject())
             ->view('mail.organization.settings-changed', [
-                'title' => $this->subject(),
+                'title' => $this->title(),
                 'organization' => $this->organization,
             ]);
     }
@@ -40,11 +40,22 @@ class OrganizationSettingsChangedNotification extends Notification implements Sl
 
     protected function subject(): string
     {
-        return 'Organization settings changed';
+        return sprintf(
+            'Ghostable update: %s settings updated',
+            $this->organization->name,
+        );
     }
 
     protected function messageLine(): string
     {
-        return "Organization settings for the \"{$this->organization->name}\" organization has been updated.";
+        return sprintf(
+            'Settings for the "%s" organization were updated on Ghostable.',
+            $this->organization->name,
+        );
+    }
+
+    protected function title(): string
+    {
+        return 'Organization updated';
     }
 }

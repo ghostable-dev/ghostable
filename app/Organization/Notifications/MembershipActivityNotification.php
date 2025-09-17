@@ -35,11 +35,13 @@ abstract class MembershipActivityNotification extends Notification implements Sl
     protected function mailViewData(): array
     {
         return [
-            'title' => $this->subject(),
+            'title' => $this->title(),
             'organization' => $this->forOrganization(),
             'message' => $this->messageLine(),
         ];
     }
+
+    abstract protected function title(): string;
 
     abstract protected function subject(): string;
 

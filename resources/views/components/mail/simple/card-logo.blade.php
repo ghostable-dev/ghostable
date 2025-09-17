@@ -1,5 +1,9 @@
+@php($logoUrl = function_exists('mail_asset')
+    ? mail_asset('logos/ghostable-dark@2x.v2.png')
+    : asset('logos/ghostable-dark@2x.v2.png'))
+
 <img
-    src="{{ mail_asset('logos/ghostable-dark@2x.v2.png') }}"
+    src="{{ $logoUrl }}"
     alt="Ghostable"
     width="50" height="50"
     class="logo"

@@ -28,13 +28,27 @@ class MemberInvitedNotification extends MembershipActivityNotification
         ]);
     }
 
+    protected function title(): string
+    {
+        return 'Member invited';
+    }
+
     protected function subject(): string
     {
-        return "{$this->invite->email} invited to {$this->invite->organization->name}";
+        return sprintf(
+            'Ghostable update: %s invited to %s',
+            $this->invite->email,
+            $this->invite->organization->name,
+        );
     }
 
     protected function messageLine(): string
     {
-        return "{$this->invite->user->email} invited {$this->invite->email} to the organization \"{$this->invite->organization->name}\".";
+        return sprintf(
+            '%s invited %s to the "%s" organization on Ghostable.',
+            $this->invite->user->email,
+            $this->invite->email,
+            $this->invite->organization->name,
+        );
     }
 }

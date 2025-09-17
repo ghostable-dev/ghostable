@@ -3,19 +3,19 @@
 @section('title', $title)
 
 @section('preheader')
-    Environment named {{ $environment->name }} was deleted from the {{ $environment->project->name }} project of the {{ $organization->name }} organization.
+    The {{ $environment->name }} environment was deleted from the {{ $environment->project->name }} project in the {{ $organization->name }} organization on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        Environment named <strong>{{ $environment->name }}</strong> was deleted from the
-        <strong>{{ $environment->project->name }}</strong> project of the
-        <strong>{{ $organization->name }}</strong> organization.
+        The <strong>{{ $environment->name }}</strong> environment was deleted from the
+        <strong>{{ $environment->project->name }}</strong> project in the
+        <strong>{{ $organization->name }}</strong> organization on Ghostable.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

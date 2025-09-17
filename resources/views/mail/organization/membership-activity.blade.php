@@ -13,7 +13,7 @@
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

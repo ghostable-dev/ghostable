@@ -3,17 +3,17 @@
 @section('title', $title)
 
 @section('preheader')
-    Organization settings for {{ $organization->name }} were updated in Ghostable.
+    Settings for the {{ $organization->name }} organization were updated on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        Organization settings for <strong>{{ $organization->name }}</strong> were updated in Ghostable.
+        Settings for the <strong>{{ $organization->name }}</strong> organization were updated on Ghostable.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

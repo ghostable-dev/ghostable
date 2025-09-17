@@ -1,19 +1,20 @@
 @extends('mail.layouts.simple')
 
-@section('title', "Project Deleted")
+@section('title', 'Project deleted')
 
 @section('preheader')
-    The project named {{ $project->name }} has been deleted from the {{ $project->organization->name }} organization of Ghostable.
+    The project {{ $project->name }} was deleted from the {{ $project->organization->name }} organization on Ghostable.
 @endsection
 
 @section('content')
-    
+
     <x-mail.simple.paragraph>
-        The project named <strong>{{ $project->name }}</strong> has been deleted from the <strong>{{ $project->organization->name }}</strong> organization of Ghostable.
+        The project <strong>{{ $project->name }}</strong> was deleted from the
+        <strong>{{ $project->organization->name }}</strong> organization on Ghostable.
     </x-mail.simple.paragraph>
-    
+
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

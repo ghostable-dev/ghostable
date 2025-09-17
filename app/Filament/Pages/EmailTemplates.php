@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Account\Models\User;
+use App\Auth\Notifications\ResetPasswordNotification;
+use App\Auth\Notifications\VerifyEmailNotification;
 use App\Environment\Models\Environment;
 use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
@@ -42,6 +44,8 @@ class EmailTemplates extends Page
     public function notifications(): array
     {
         return [
+            VerifyEmailNotification::class,
+            ResetPasswordNotification::class,
             ProjectCreatedNotification::class,
             ProjectDeletedNotification::class,
             ProjectSettingsChangedNotification::class,
@@ -117,6 +121,8 @@ class EmailTemplates extends Page
     public function html(): ?string
     {
         $notification = match ($this->notificationClass) {
+            VerifyEmailNotification::class => new VerifyEmailNotification(),
+            ResetPasswordNotification::class => new ResetPasswordNotification('example-token'),
             ProjectCreatedNotification::class => new ProjectCreatedNotification($this->sampleProject()),
             ProjectDeletedNotification::class => new ProjectDeletedNotification($this->sampleProject()),
             ProjectSettingsChangedNotification::class => new ProjectSettingsChangedNotification($this->sampleProject()),

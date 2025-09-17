@@ -3,17 +3,17 @@
 @section('title', $title)
 
 @section('preheader')
-    Secret "{{ $secret->name }}" was updated in Ghostable.
+    The {{ $secret->name }} secret was updated on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        Secret <strong>{{ $secret->name }}</strong> was updated in Ghostable.
+        The <strong>{{ $secret->name }}</strong> secret was updated on Ghostable.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

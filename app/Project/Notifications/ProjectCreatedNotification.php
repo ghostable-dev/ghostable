@@ -9,16 +9,19 @@ class ProjectCreatedNotification extends ProjectNotification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Ghostable project created')
+            ->subject(sprintf(
+                'Ghostable update: Project "%s" created',
+                $this->project->name,
+            ))
             ->view('mail.project-created', ['project' => $this->project]);
     }
-    
+
     public function toSlack(object $notifiable): string
     {
         return sprintf(
-            "New project named %s created in the %s organization of Ghostable.", 
-            $this->project->name, 
-            $this->project->organization->name
+            'A new project named "%s" was created in the "%s" organization on Ghostable.',
+            $this->project->name,
+            $this->project->organization->name,
         );
     }
 }
