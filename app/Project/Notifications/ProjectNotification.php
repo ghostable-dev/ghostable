@@ -5,7 +5,6 @@ namespace App\Project\Notifications;
 use App\Integration\Integrations\Slack\SlackNotifiable;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 abstract class ProjectNotification extends Notification implements SlackNotifiable

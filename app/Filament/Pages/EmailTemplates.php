@@ -121,7 +121,7 @@ class EmailTemplates extends Page
     public function html(): ?string
     {
         $notification = match ($this->notificationClass) {
-            VerifyEmailNotification::class => new VerifyEmailNotification(),
+            VerifyEmailNotification::class => new VerifyEmailNotification,
             ResetPasswordNotification::class => new ResetPasswordNotification('example-token'),
             ProjectCreatedNotification::class => new ProjectCreatedNotification($this->sampleProject()),
             ProjectDeletedNotification::class => new ProjectDeletedNotification($this->sampleProject()),
