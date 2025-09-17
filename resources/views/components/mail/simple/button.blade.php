@@ -1,7 +1,7 @@
 @props([
     'href',
     'color' => "color: #ffffff; color:var(--btn-text, #ffffff);",
-    'background' => "background: #080808; background:var(--btn-bg, #080808);"
+    'background' => "background-color: #080808; background-color:var(--btn-bg, #080808); background: #080808; background:var(--btn-bg, #080808);"
 ])
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 40px;width:100%;">
     <tr>
