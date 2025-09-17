@@ -20,7 +20,10 @@ class InviteNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You're invited to join {$this->invite->organization->name} in Ghostable")
+            ->subject(sprintf(
+                'Ghostable invitation: Join %s',
+                $this->invite->organization->name,
+            ))
             ->view('mail.invite', [
                 'organization' => $this->invite->organization,
             ]);

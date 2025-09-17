@@ -9,16 +9,19 @@ class ProjectDeletedNotification extends ProjectNotification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Ghostable project deleted')
+            ->subject(sprintf(
+                'Ghostable update: Project "%s" deleted',
+                $this->project->name,
+            ))
             ->view('mail.project-deleted', ['project' => $this->project]);
     }
-    
+
     public function toSlack(object $notifiable): string
     {
         return sprintf(
-            "The project named %s has been deleted from the %s organization of Ghostable.", 
-            $this->project->name, 
-            $this->project->organization->name
+            'The project "%s" was deleted from the "%s" organization on Ghostable.',
+            $this->project->name,
+            $this->project->organization->name,
         );
     }
 }

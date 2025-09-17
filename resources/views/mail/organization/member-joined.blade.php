@@ -3,18 +3,22 @@
 @section('title', $title)
 
 @section('preheader')
-    {{ $invite->email }} joined the {{ $organization->name }} organization in Ghostable.
+    {{ $invite->email }} joined the {{ $organization->name }} organization on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
         <strong>{{ $invite->email }}</strong> joined the
-        <strong>{{ $organization->name }}</strong> organization in Ghostable.
+        <strong>{{ $organization->name }}</strong> organization on Ghostable.
     </x-mail.simple.paragraph>
+    
+    <x-mail.simple.button href="{{ route('login') }}">
+        Manage
+    </x-mail.simple.button>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

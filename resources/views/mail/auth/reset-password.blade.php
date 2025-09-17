@@ -3,13 +3,13 @@
 @section('title', $title)
 
 @section('preheader')
-    You requested to reset your Ghostable password.
+    Use the button below to reset your Ghostable password.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        You are receiving this email because we received a password reset request for your Ghostable account.
+        You're receiving this message because we received a password reset request for your Ghostable account.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.button href="{{ $url }}">Reset Password</x-mail.simple.button>
@@ -19,7 +19,7 @@
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
-        If you did not request a password reset, no further action is required.
+        If you didn't request a password reset, you can safely ignore this email.
     </x-mail.simple.paragraph>
 
 @endsection

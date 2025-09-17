@@ -29,13 +29,26 @@ class MemberRemovedNotification extends MembershipActivityNotification
         ]);
     }
 
+    protected function title(): string
+    {
+        return 'Member removed';
+    }
+
     protected function subject(): string
     {
-        return "{$this->user->email} removed from {$this->organization->name}";
+        return sprintf(
+            'Ghostable update: %s removed from %s',
+            $this->user->email,
+            $this->organization->name,
+        );
     }
 
     protected function messageLine(): string
     {
-        return "{$this->user->email} removed from the organization \"{$this->organization->name}\".";
+        return sprintf(
+            '%s was removed from the "%s" organization on Ghostable.',
+            $this->user->email,
+            $this->organization->name,
+        );
     }
 }

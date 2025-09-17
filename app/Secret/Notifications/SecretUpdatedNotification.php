@@ -13,7 +13,10 @@ class SecretUpdatedNotification extends BaseNotification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Secret Updated')
+            ->subject(sprintf(
+                'Ghostable update: Secret "%s" updated',
+                $this->secret->name,
+            ))
             ->view('mail.secret-updated', [
                 'title' => 'Secret updated',
                 'secret' => $this->secret,
@@ -22,6 +25,9 @@ class SecretUpdatedNotification extends BaseNotification
 
     public function toSlack(object $notifiable): string
     {
-        return "Secret '{$this->secret->name}' was updated.";
+        return sprintf(
+            'The "%s" secret was updated on Ghostable.',
+            $this->secret->name,
+        );
     }
 }

@@ -3,19 +3,23 @@
 @section('title', $title)
 
 @section('preheader')
-    New environment named {{ $environment->name }} created in the {{ $environment->project->name }} project of the {{ $organization->name }} organization.
+    A new environment named {{ $environment->name }} was created for the {{ $environment->project->name }} project in the {{ $organization->name }} organization on Ghostable.
 @endsection
 
 @section('content')
 
     <x-mail.simple.paragraph>
-        New environment named <strong>{{ $environment->name }}</strong> created in the
-        <strong>{{ $environment->project->name }}</strong> project of the
-        <strong>{{ $organization->name }}</strong> organization.
+        A new environment named <strong>{{ $environment->name }}</strong> was created for the
+        <strong>{{ $environment->project->name }}</strong> project in the
+        <strong>{{ $organization->name }}</strong> organization on Ghostable.
     </x-mail.simple.paragraph>
+    
+    <x-mail.simple.button href="{{ route('login') }}">
+        Manage
+    </x-mail.simple.button>
 
     <x-mail.simple.paragraph>
-        You are receiving this alert because you are an administrator of this organization.
+        You're receiving this message because you manage this organization in Ghostable.
     </x-mail.simple.paragraph>
 
 @endsection

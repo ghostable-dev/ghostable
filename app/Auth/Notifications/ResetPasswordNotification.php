@@ -14,9 +14,9 @@ class ResetPasswordNotification extends BaseResetPassword
         $expiration = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
 
         return (new MailMessage)
-            ->subject(Lang::get('Reset your Ghostable password'))
+            ->subject(Lang::get('Ghostable account: Reset your password'))
             ->view('mail.auth.reset-password', [
-                'title' => Lang::get('Reset your Ghostable password'),
+                'title' => Lang::get('Reset password'),
                 'url' => $url,
                 'expiration' => $expiration,
                 'notifiable' => $notifiable,
