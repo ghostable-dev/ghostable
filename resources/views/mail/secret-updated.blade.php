@@ -11,6 +11,10 @@
     <x-mail.simple.paragraph>
         The <strong>{{ $secret->name }}</strong> secret was updated on Ghostable.
     </x-mail.simple.paragraph>
+    
+    <x-mail.simple.button href="{{ route('login') }}">
+        Manage
+    </x-mail.simple.button>
 
     <x-mail.simple.paragraph>
         You're receiving this message because you manage this organization in Ghostable.
