@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <meta name="x-apple-disable-message-reformatting">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <meta name="color-scheme" content="light dark">
-        <meta name="supported-color-schemes" content="light dark">
+        <meta name="color-scheme" content="light only">
+        <meta name="supported-color-schemes" content="light only">
         <title>@yield('title')</title>
         <style>:root{--bg:#f5f5f5;--text:#171717;--muted:#737373;--btn-bg:#080808;--btn-text:#ffffff}@media (prefers-color-scheme:dark){:root{--bg:#000000;--text:#ffffff;--muted:#9b9b9b;--btn-bg:#ffffff;--btn-text:#080808}}@media (max-width:600px){.container{padding:100px 20px}.h1{font-size:36px;line-height:40px}}</style>
     </head>
