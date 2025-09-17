@@ -50,7 +50,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "bootstrap/timezone.php"
+            "bootstrap/timezone.php",
+            "bootstrap/mail_asset.php"
         ]
     },
     "autoload-dev": {

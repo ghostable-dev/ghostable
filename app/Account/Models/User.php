@@ -2,6 +2,8 @@
 
 namespace App\Account\Models;
 
+use App\Auth\Notifications\ResetPasswordNotification;
+use App\Auth\Notifications\VerifyEmailNotification;
 use App\Organization\Concerns\BelongsToOrganizations;
 use App\Organization\Models\Invite;
 use App\Organization\Services\OrganizationMembership;
@@ -167,6 +169,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function isVerified(): bool
     {
         return ! is_null($this->email_verified_at);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
     }
 
     /**

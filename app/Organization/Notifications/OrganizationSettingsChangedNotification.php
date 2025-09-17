@@ -27,9 +27,10 @@ class OrganizationSettingsChangedNotification extends Notification implements Sl
     {
         return (new MailMessage)
             ->subject($this->subject())
-            ->greeting($notifiable->greeting())
-            ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this organization.');
+            ->view('mail.organization.settings-changed', [
+                'title' => $this->title(),
+                'organization' => $this->organization,
+            ]);
     }
 
     public function toSlack(object $notifiable): string
@@ -39,11 +40,22 @@ class OrganizationSettingsChangedNotification extends Notification implements Sl
 
     protected function subject(): string
     {
-        return 'Organization settings changed';
+        return sprintf(
+            'Ghostable update: %s settings updated',
+            $this->organization->name,
+        );
     }
 
     protected function messageLine(): string
     {
-        return "Organization settings for the \"{$this->organization->name}\" organization has been updated.";
+        return sprintf(
+            'Settings for the "%s" organization were updated on Ghostable.',
+            $this->organization->name,
+        );
+    }
+
+    protected function title(): string
+    {
+        return 'Organization updated';
     }
 }

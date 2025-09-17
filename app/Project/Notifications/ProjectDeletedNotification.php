@@ -2,15 +2,26 @@
 
 namespace App\Project\Notifications;
 
+use Illuminate\Notifications\Messages\MailMessage;
+
 class ProjectDeletedNotification extends ProjectNotification
 {
-    protected function subject(): string
+    public function toMail(object $notifiable): MailMessage
     {
-        return "Project \"{$this->project->name}\" deleted";
+        return (new MailMessage)
+            ->subject(sprintf(
+                'Ghostable update: Project "%s" deleted',
+                $this->project->name,
+            ))
+            ->view('mail.project-deleted', ['project' => $this->project]);
     }
 
-    protected function messageLine(): string
+    public function toSlack(object $notifiable): string
     {
-        return "The project named \"{$this->project->name}\" has been deleted from the \"{$this->project->organization->name}\" organization.";
+        return sprintf(
+            'The project "%s" was deleted from the "%s" organization on Ghostable.',
+            $this->project->name,
+            $this->project->organization->name,
+        );
     }
 }

@@ -1,18 +1,16 @@
 <x-filament-panels::page>
     <div class="space-y-4">
-        
-        <div class="fi-input-wrp-content-ctn">
-            <select wire:model.live="notificationClass" class="fi-select-input block w-full max-w-md rounded-lg border-gray-300 dark:bg-gray-900">
-                @foreach($this->notificationOptions as $class => $label)
-                    <option value="{{ $class }}">{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-
+        <select class="mb-2" wire:model.live="notificationClass">
+            @foreach($this->notificationOptions as $class => $label)
+                <option value="{{ $class }}">{{ $label }}</option>
+            @endforeach
+        </select>
         @if ($this->html)
-            <div class="border rounded-lg bg-white p-4 dark:bg-gray-800">
-                {!! $this->html !!}
-            </div>
+            <iframe 
+                height="800px" 
+                width="100%" 
+                srcdoc="{{ $this->html }}">        
+            </iframe>
         @else
             <p class="text-sm text-gray-500">No preview available.</p>
         @endif

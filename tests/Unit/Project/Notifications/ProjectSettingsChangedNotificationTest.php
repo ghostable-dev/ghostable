@@ -20,14 +20,13 @@ it('routes via mail and slack and builds messages', function () {
 
     $mail = $notification->toMail($notifiable);
 
-    expect($mail->subject)->toBe('Project settings changed')
-        ->and($mail->greeting)->toBe($notifiable->greeting())
-        ->and($mail->introLines)->toBe([
-            'Project settings for the "Website" project has been updated in the "Acme" organization.',
-            'You are receiving this alert because you are an administrator of this organization.',
+    expect($mail->subject)->toBe('Ghostable update: Project "Website" settings updated')
+        ->and($mail->view)->toBe('mail.project-settings-changed')
+        ->and($mail->viewData)->toMatchArray([
+            'project' => $project,
         ]);
 
     expect($notification->toSlack($notifiable))->toBe(
-        'Project settings for the "Website" project has been updated in the "Acme" organization.'
+        'Settings for the "Website" project in the "Acme" organization were updated on Ghostable.'
     );
 });

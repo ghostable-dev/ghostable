@@ -31,9 +31,11 @@ class AccessChangeNotification extends Notification implements SlackNotifiable
     {
         return (new MailMessage)
             ->subject($this->subject())
-            ->greeting($notifiable->greeting())
-            ->line($this->messageLine())
-            ->line('You are receiving this alert because you are an administrator of this organization.');
+            ->view('mail.organization.access-changed', [
+                'title' => $this->title(),
+                'organization' => $this->organization,
+                'user' => $this->user,
+            ]);
     }
 
     public function toSlack(object $notifiable): string
@@ -43,11 +45,23 @@ class AccessChangeNotification extends Notification implements SlackNotifiable
 
     protected function subject(): string
     {
-        return "Member \"{$this->user->email}\" role was changed";
+        return sprintf(
+            'Ghostable update: Permissions updated for %s',
+            $this->user->email,
+        );
     }
 
     protected function messageLine(): string
     {
-        return "Member \"{$this->user->email}\" role was changed in the \"{$this->organization->name}\" organization";
+        return sprintf(
+            'Permissions for "%s" were updated in the "%s" organization on Ghostable.',
+            $this->user->email,
+            $this->organization->name,
+        );
+    }
+
+    protected function title(): string
+    {
+        return 'Role updated';
     }
 }

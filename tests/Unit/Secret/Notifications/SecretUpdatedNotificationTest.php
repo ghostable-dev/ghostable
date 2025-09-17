@@ -16,11 +16,12 @@ it('builds secret updated mail and slack messages', function () {
 
     $mail = $notification->toMail($notifiable);
 
-    expect($mail->subject)->toBe('Secret Updated')
-        ->and($mail->greeting)->toBe($notifiable->greeting())
-        ->and($mail->introLines)->toBe([
-            "Secret 'API_KEY' was updated.",
+    expect($mail->subject)->toBe('Ghostable update: Secret "API_KEY" updated')
+        ->and($mail->view)->toBe('mail.secret-updated')
+        ->and($mail->viewData)->toMatchArray([
+            'title' => 'Secret updated',
+            'secret' => $secret,
         ]);
 
-    expect($notification->toSlack($notifiable))->toBe("Secret 'API_KEY' was updated.");
+    expect($notification->toSlack($notifiable))->toBe('The "API_KEY" secret was updated on Ghostable.');
 });

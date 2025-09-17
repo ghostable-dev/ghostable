@@ -20,12 +20,26 @@ class VariableUpdatedNotification extends BaseNotification implements SlackNotif
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Variable Updated')
-            ->line("Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}'.");
+            ->subject(sprintf(
+                'Ghostable update: Variable "%s" updated',
+                $this->variable->key,
+            ))
+            ->view('mail.environment.variable-updated', [
+                'title' => 'Variable updated',
+                'variable' => $this->variable,
+                'environment' => $this->variable->environment,
+                'organization' => $this->forOrganization(),
+            ]);
     }
 
     public function toSlack(object $notifiable): array|string
     {
-        return "Variable '{$this->variable->key}' was updated in environment '{$this->variable->environment->name}' of the \"{$this->variable->environment->project->name}\" project on the \"{$this->forOrganization()->name}\" organization.";
+        return sprintf(
+            'The "%s" variable was updated in the "%s" environment of the "%s" project in the "%s" organization on Ghostable.',
+            $this->variable->key,
+            $this->variable->environment->name,
+            $this->variable->environment->project->name,
+            $this->forOrganization()->name,
+        );
     }
 }
