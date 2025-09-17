@@ -12,7 +12,7 @@
         You're receiving this message because we received a password reset request for your Ghostable account.
     </x-mail.simple.paragraph>
 
-    <x-mail.simple.button href="{{ $url }}">Reset Password</x-mail.simple.button>
+    <x-mail.simple.button :href="$url">Reset Password</x-mail.simple.button>
 
     <x-mail.simple.paragraph>
         This link will expire in {{ $expiration }} minutes.

@@ -12,7 +12,7 @@
         Click the button below to verify your email address and finish setting up your Ghostable account.
     </x-mail.simple.paragraph>
 
-    <x-mail.simple.button href="{{ $url }}">Verify Email Address</x-mail.simple.button>
+    <x-mail.simple.button :href="$url">Verify Email Address</x-mail.simple.button>
 
     <x-mail.simple.paragraph>
         If you didn't create an account, you can safely ignore this email.
