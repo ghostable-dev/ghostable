@@ -2,60 +2,59 @@
 
 namespace App\Account\Concerns;
 
-use App\Account\Entities\NotificationSettings;
-use Carbon\Carbon;
+use App\Core\Enums\NotificationCategory;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasNotificationsScopes
 {
-    public function receivesPromotionalNotifications(): Builder
-    {
-        return $this->withNotificiationEnabled(
-            'promotional',
-            (new NotificationSettings)->promotional
-        );
-    }
-
     public function receivesBlogNotifications(): Builder
     {
-        return $this->withNotificiationEnabled(
-            'blog',
-            (new NotificationSettings)->blog
-        );
+        return $this->withPreferenceEnabled(NotificationCategory::BLOG);
     }
 
-    public function withNotificiationEnabled(string $field, bool $default): Builder
+    public function receivesResearchNotifications(): Builder
     {
-        $value = var_export($default, true);
-
-        $raw = "COALESCE(JSON_EXTRACT(notifications, '$.{$field}'), '{$value}') = 'true'";
-
-        return $this->whereRaw($raw);
+        return $this->withPreferenceEnabled(NotificationCategory::RESEARCH);
     }
 
-    public function didntRecieveNotification(
-        string $class,
-        ?Carbon $sentAfter = null
-    ): Builder {
-        return $this->whereDoesntHave('sentNotifications', function ($query) use ($class, $sentAfter) {
-            $query->where('event', str(class_basename($class))->kebab()->lower());
-            $query->when(
-                ! is_null($sentAfter),
-                fn ($query) => $query->where('created_at', '>', $sentAfter)
-            );
-        });
+    public function receivesPromotionalNotifications(): Builder
+    {
+        return $this->withPreferenceEnabled(NotificationCategory::PROMOTIONAL);
     }
 
-    public function recievedNotification(
-        string $class,
-        ?Carbon $sentAfter = null
-    ): Builder {
-        return $this->whereHas('sentNotifications', function ($query) use ($class, $sentAfter) {
-            $query->where('event', str(class_basename($class))->kebab()->lower());
-            $query->when(
-                ! is_null($sentAfter),
-                fn ($query) => $query->where('created_at', '>', $sentAfter)
-            );
-        });
+    public function receivesProductTips(): Builder
+    {
+        return $this->withPreferenceEnabled(NotificationCategory::PRODUCT_TIPS);
+    }
+
+    /**
+     * Read users.notifications.preferences[$key] as a boolean.
+     * Works even if notifications/preferences/key is missing or NULL.
+     *
+     * MySQL 8+: JSON_UNQUOTE(JSON_EXTRACT(...)) returns 'true'/'false' strings.
+     */
+    public function withPreferenceEnabled(NotificationCategory $category): Builder
+    {
+        // Path like $.preferences.blog (properly quoted)
+        $jsonPath = $this->jsonPath("preferences.$category->value");
+
+        // COALESCE to default when JSON_EXTRACT is NULL (missing key or null value)
+        $sql = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`users`.`notifications`, ?)), ?) = 'true'";
+
+        return $this->whereRaw($sql, [$jsonPath, 'true']);
+    }
+
+    /**
+     * Build a safe JSON path: "a.b" -> $.\"a\".\"b\"
+     * (quoted segments prevent surprises with special chars).
+     */
+    protected function jsonPath(string $dotPath): string
+    {
+        $segments = array_map(
+            fn ($s) => str_replace('"', '\"', $s),
+            explode('.', $dotPath)
+        );
+
+        return '$.'.implode('.', array_map(fn ($s) => "\"{$s}\"", $segments));
     }
 }
