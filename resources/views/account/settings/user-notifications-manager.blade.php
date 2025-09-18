@@ -4,7 +4,15 @@
         title="{{ __('Notifications') }}"
         subheading="{{ __('Manage your email notification settings.') }}">
         <div class="space-y-6">
-            <div class="col-span-6 sm:col-span-4">
+            @foreach($this->categories as $category)
+                <flux:switch 
+                    label="{{ $category->label() }}"
+                    description="{{ $category->description() }}" 
+                    wire:model.live="preferences.{{ $category->value }}"
+                    align="left">
+                </flux:switch>
+            @endforeach
+            {{-- <div class="col-span-6 sm:col-span-4">
                 <flux:switch 
                     label="Promotional"
                     description="Receive updates on special promotions, product updates, and community benefits." 
@@ -23,7 +31,7 @@
                     wire:model.live="blog"
                     align="left">
                 </flux:switch>
-            </div>
+            </div> --}}
         </div>
     </x-section>
 </div>

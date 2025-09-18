@@ -23,21 +23,13 @@
                         <flux:subheading>Checked preferences indicate the type of emails you are opted into</flux:subheading>
                     </div>
         
-                    <flux:switch 
-                        id="promotional" 
-                        name="promotional" 
-                        wire:model.defer="promotional" 
-                        label="Promotional"
-                        description="Receive updates on special promotions, product updates, and community benefits.">
-                    </flux:switch>
-                    
-                    <flux:switch 
-                        id="blog" 
-                        name="blog" 
-                        wire:model.defer="blog" 
-                        label="Blog & Newsletter"
-                        description="Receive updates when new blog posts are published.">
-                    </flux:switch>
+                    @foreach($this->categories as $category)
+                        <flux:switch 
+                            label="{{ $category->label() }}"
+                            description="{{ $category->description() }}" 
+                            wire:model.live="preferences.{{ $category->value }}">
+                        </flux:switch>
+                    @endforeach
                     
                     <div class="flex justify-center">
                         <flux:button 

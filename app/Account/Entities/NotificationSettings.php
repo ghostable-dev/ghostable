@@ -3,11 +3,26 @@
 namespace App\Account\Entities;
 
 use Spatie\LaravelData\Data;
+use App\Account\Enums\NotificationCategory;
 
 class NotificationSettings extends Data
 {
+    /** @param array<string,bool> $preferences */
     public function __construct(
-        public bool $blog = true,
-        public bool $promotional = true,
+        public array $preferences = []
     ) {}
+
+    public static function defaults(): self
+    {
+        $prefs = collect(NotificationCategory::cases())
+            ->mapWithKeys(fn ($case) => [$case->value => true])
+            ->all();
+
+        return new self($prefs);
+    }
+
+    public function enabled(NotificationCategory $category): bool
+    {
+        return $this->preferences[$category->value] ?? true;
+    }
 }

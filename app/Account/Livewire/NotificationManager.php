@@ -5,6 +5,7 @@ namespace App\Account\Livewire;
 use App\Account\Entities\NotificationSettings;
 use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
+use App\Core\Concerns\ManagesNotifiableNotificationSettings;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -14,15 +15,15 @@ use Livewire\Component;
 #[Layout('components.layouts.guest')]
 class NotificationManager extends Component
 {
+    use ManagesNotifiableNotificationSettings;
+    
     #[Locked]
     public string $notifiableId;
 
     #[Locked]
     public string $type;
-
-    public bool $blog;
-
-    public bool $promotional;
+    
+    public array $preferences;
 
     #[Layout('components.layouts.guest', ['title' => 'Manage your email preferences'])]
     public function mount(string $type, string $id): void
@@ -33,9 +34,8 @@ class NotificationManager extends Component
         if (is_null($this->notifiable)) {
             abort(404);
         }
-
-        $this->blog = $this->notifiable->notifications->blog;
-        $this->promotional = $this->notifiable->notifications->promotional;
+        
+        $this->preferences = $this->getNotificationSettings($this->notifiable);
     }
 
     #[Computed(persist: true)]
@@ -50,16 +50,15 @@ class NotificationManager extends Component
 
     public function save()
     {
-        $notifiable = $this->notifiable;
-        $notifiable->notifications = new NotificationSettings(
-            blog: $this->blog,
-            promotional: $this->promotional
-        );
-        $notifiable->save();
-
+        $this->updateNotificationSettings(notifiable: $this->notifiable, settings: $this->preferences);
+        
         Flux::toast(variant: 'success', heading: 'Success!', text: 'Preferences successfully updated.');
+    }
 
-        $this->dispatch('saved');
+    #[Computed(persist: true)]
+    public function categories(): array
+    {
+        return $this->notificationCategories();
     }
 
     public function render()
