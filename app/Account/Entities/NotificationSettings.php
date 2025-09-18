@@ -2,8 +2,8 @@
 
 namespace App\Account\Entities;
 
-use Spatie\LaravelData\Data;
 use App\Account\Enums\NotificationCategory;
+use Spatie\LaravelData\Data;
 
 class NotificationSettings extends Data
 {

@@ -2,7 +2,6 @@
 
 namespace App\Account\Livewire;
 
-use App\Account\Entities\NotificationSettings;
 use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
 use App\Core\Concerns\ManagesNotifiableNotificationSettings;
@@ -16,13 +15,13 @@ use Livewire\Component;
 class NotificationManager extends Component
 {
     use ManagesNotifiableNotificationSettings;
-    
+
     #[Locked]
     public string $notifiableId;
 
     #[Locked]
     public string $type;
-    
+
     public array $preferences;
 
     #[Layout('components.layouts.guest', ['title' => 'Manage your email preferences'])]
@@ -34,7 +33,7 @@ class NotificationManager extends Component
         if (is_null($this->notifiable)) {
             abort(404);
         }
-        
+
         $this->preferences = $this->getNotificationSettings($this->notifiable);
     }
 
@@ -51,7 +50,7 @@ class NotificationManager extends Component
     public function save()
     {
         $this->updateNotificationSettings(notifiable: $this->notifiable, settings: $this->preferences);
-        
+
         Flux::toast(variant: 'success', heading: 'Success!', text: 'Preferences successfully updated.');
     }
 

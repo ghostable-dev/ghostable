@@ -45,6 +45,7 @@ use RuntimeException;
  * @property-read SecretVersion|null $latestVersion
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SecretVersion> $versions
  * @property-read int|null $versions_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret onlyTrashed()
@@ -66,6 +67,7 @@ use RuntimeException;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Secret extends Model

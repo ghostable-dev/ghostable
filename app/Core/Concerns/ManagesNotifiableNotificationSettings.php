@@ -13,24 +13,24 @@ trait ManagesNotifiableNotificationSettings
     protected function getNotificationSettings(User|MailingListEmail $notifiable): array
     {
         $current = (array) optional($notifiable->notifications)->preferences ?? [];
-        
+
         $defaults = collect($this->notificationCategories())
             ->mapWithKeys(fn ($c) => [$c->value => true])
             ->all();
 
         return array_replace($defaults, Arr::only($current, array_keys($defaults)));
     }
-    
+
     protected function updateNotificationSettings(
-        User|MailingListEmail $notifiable, 
+        User|MailingListEmail $notifiable,
         ?array $settings = null
-    ): void
-    {
+    ): void {
         $validKeys = collect($this->notificationCategories())->map->value->all();
 
         if ($settings === null) {
             $notifiable->notifications = null;
             $notifiable->save();
+
             return;
         }
 
@@ -46,7 +46,7 @@ trait ManagesNotifiableNotificationSettings
 
         $notifiable->save();
     }
-    
+
     protected function notificationCategories(): array
     {
         return NotificationCategory::cases();
