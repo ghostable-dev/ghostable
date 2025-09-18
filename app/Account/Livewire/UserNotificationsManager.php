@@ -13,7 +13,7 @@ use Livewire\Component;
 class UserNotificationsManager extends Component
 {
     use ManagesNotifiableNotificationSettings;
-    
+
     public array $preferences;
 
     public function mount()
@@ -27,7 +27,7 @@ class UserNotificationsManager extends Component
 
         Flux::toast(variant: 'success', heading: 'Success!', text: 'Preferences successfully updated.');
     }
-    
+
     #[Computed(persist: true)]
     public function categories(): array
     {

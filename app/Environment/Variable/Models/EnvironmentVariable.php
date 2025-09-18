@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read EnvironmentVariableVersion|null $latestVersion
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableVersion> $versions
  * @property-read int|null $versions_count
+ *
  * @method static VariableBuilder<static>|EnvironmentVariable commented()
  * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
  * @method static VariableBuilder<static>|EnvironmentVariable forEnvironment(\App\Environment\Models\Environment|string $environment)
@@ -65,6 +66,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static VariableBuilder<static>|EnvironmentVariable withLatestVersion()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(VariableBuilder::class)]

@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Notification;
  * @property-read int|null $notifications_count
  * @property-read \App\Organization\Models\Organization|null $organization
  * @property-read \App\Account\Models\User|null $user
+ *
  * @method static InviteBuilder<static>|Invite accepted()
  * @method static InviteBuilder<static>|Invite expired()
  * @method static InviteBuilder<static>|Invite newModelQuery()
@@ -52,6 +53,7 @@ use Illuminate\Support\Facades\Notification;
  * @method static InviteBuilder<static>|Invite withStatus(\App\Organization\Enums\InviteStatus $status)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(InviteBuilder::class)]

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Organization|null $organization
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly query()
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly whereOrganizationId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly whereTokenId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageHourly whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ApiUsageHourly extends Model

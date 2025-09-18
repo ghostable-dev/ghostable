@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\URL;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @method static MailingListEmailBuilder<static>|MailingListEmail didntRecieveNotification(string $class, ?\Carbon\Carbon $sentAfter = null)
  * @method static MailingListEmailBuilder<static>|MailingListEmail fromBlog()
  * @method static MailingListEmailBuilder<static>|MailingListEmail fromSource(\App\Account\Enums\MailingListEmailSource $source)
@@ -43,6 +44,7 @@ use Illuminate\Support\Facades\URL;
  * @method static MailingListEmailBuilder<static>|MailingListEmail withNotificiationEnabled(string $field, bool $default)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MailingListEmail withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MailingListEmail withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class MailingListEmail extends Model
