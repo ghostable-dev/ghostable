@@ -25,14 +25,13 @@ use Illuminate\Support\Facades\Notification;
  * @property string $email
  * @property OrganizationRole|null $role
  * @property \Illuminate\Support\Carbon|null $sent_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read \App\Organization\Models\Organization|null $organization
  * @property-read \App\Account\Models\User|null $user
- *
  * @method static InviteBuilder<static>|Invite accepted()
  * @method static InviteBuilder<static>|Invite expired()
  * @method static InviteBuilder<static>|Invite newModelQuery()
@@ -44,16 +43,15 @@ use Illuminate\Support\Facades\Notification;
  * @method static InviteBuilder<static>|Invite whereDeletedAt($value)
  * @method static InviteBuilder<static>|Invite whereEmail($value)
  * @method static InviteBuilder<static>|Invite whereId($value)
+ * @method static InviteBuilder<static>|Invite whereOrganizationId($value)
  * @method static InviteBuilder<static>|Invite whereRole($value)
  * @method static InviteBuilder<static>|Invite whereSentAt($value)
  * @method static InviteBuilder<static>|Invite whereStatus($value)
- * @method static InviteBuilder<static>|Invite whereOrganizationId($value)
  * @method static InviteBuilder<static>|Invite whereUpdatedAt($value)
  * @method static InviteBuilder<static>|Invite whereUserId($value)
  * @method static InviteBuilder<static>|Invite withStatus(\App\Organization\Enums\InviteStatus $status)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite withoutTrashed()
- *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(InviteBuilder::class)]

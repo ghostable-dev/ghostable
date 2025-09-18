@@ -29,42 +29,43 @@ use RuntimeException;
  * @property string $name
  * @property SecretType $type
  * @property string $value
+ * @property string|null $dek_wrapped
+ * @property string|null $kek_salt
  * @property array<array-key, mixed>|null $metadata
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
  * @property string $created_by_id
  * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
- * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read User $createdBy
+ * @property-read Environment $environment
  * @property-read User|null $lastUpdatedBy
  * @property-read SecretVersion|null $latestVersion
- * @property-read Environment $environment
- * @property mixed $value
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SecretVersion> $versions
  * @property-read int|null $versions_count
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereCreatedById($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereDekWrapped($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereEnvironmentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereKekSalt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereLastUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereLastUpdatedBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereMetadata($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereNotifications($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereEnvironmentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereValueEncrypted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secret withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Secret extends Model

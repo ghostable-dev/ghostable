@@ -31,16 +31,26 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * @property string $id
  * @property string|null $stripe_id
+ * @property BillingPolicy $billing_policy
+ * @property Plan|null $plan_override
+ * @property string|null $pm_type
+ * @property string|null $pm_last_four
+ * @property string|null $trial_ends_at
  * @property string|null $slug
  * @property string $name
  * @property string|null $owner_id
  * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property string|null $slack_webhook_url
  * @property bool $slack_enabled
+ * @property \App\Organization\Entities\OrganizationFeatures|null $features
+ * @property \App\Organization\Entities\OrganizationLimits|null $limits
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ApiUsageDaily> $apiUsages
+ * @property-read int|null $api_usages_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Invite> $invites
  * @property-read int|null $invites_count
  * @property-read int|null $notifications_count
@@ -52,24 +62,33 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $subscriptions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read int|null $users_count
- *
  * @method static \Database\Factories\OrganizationFactory factory($count = null, $state = [])
  * @method static OrganizationBuilder<static>|Organization hasExpiredGenericTrial()
  * @method static OrganizationBuilder<static>|Organization newModelQuery()
  * @method static OrganizationBuilder<static>|Organization newQuery()
  * @method static OrganizationBuilder<static>|Organization onGenericTrial()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Organization onlyTrashed()
  * @method static OrganizationBuilder<static>|Organization query()
+ * @method static OrganizationBuilder<static>|Organization whereBillingPolicy($value)
  * @method static OrganizationBuilder<static>|Organization whereCreatedAt($value)
+ * @method static OrganizationBuilder<static>|Organization whereDeletedAt($value)
+ * @method static OrganizationBuilder<static>|Organization whereFeatures($value)
  * @method static OrganizationBuilder<static>|Organization whereId($value)
+ * @method static OrganizationBuilder<static>|Organization whereLimits($value)
  * @method static OrganizationBuilder<static>|Organization whereName($value)
  * @method static OrganizationBuilder<static>|Organization whereNotifications($value)
  * @method static OrganizationBuilder<static>|Organization whereOwnerId($value)
+ * @method static OrganizationBuilder<static>|Organization wherePlanOverride($value)
+ * @method static OrganizationBuilder<static>|Organization wherePmLastFour($value)
+ * @method static OrganizationBuilder<static>|Organization wherePmType($value)
  * @method static OrganizationBuilder<static>|Organization whereSlackEnabled($value)
  * @method static OrganizationBuilder<static>|Organization whereSlackWebhookUrl($value)
  * @method static OrganizationBuilder<static>|Organization whereSlug($value)
  * @method static OrganizationBuilder<static>|Organization whereStripeId($value)
+ * @method static OrganizationBuilder<static>|Organization whereTrialEndsAt($value)
  * @method static OrganizationBuilder<static>|Organization whereUpdatedAt($value)
- *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Organization withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Organization withoutTrashed()
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(OrganizationBuilder::class)]

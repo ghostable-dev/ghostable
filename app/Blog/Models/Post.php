@@ -18,6 +18,58 @@ use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
 #[UseEloquentBuilder(PostBuilder::class)]
+/**
+ * @property string $id
+ * @property string $title
+ * @property string $slug
+ * @property PostCategory $category
+ * @property string|null $description
+ * @property string|null $content
+ * @property string|null $hero
+ * @property string|null $social
+ * @property string|null $meta_title
+ * @property string|null $meta_description
+ * @property array<array-key, mixed>|null $meta_keywords
+ * @property \Illuminate\Support\Carbon|null $posted_at
+ * @property PostStatus $status
+ * @property bool $is_featured
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $directory
+ * @property-read mixed $read_time
+ * @property-read mixed $word_count
+ * @method static PostBuilder<static>|Post archived()
+ * @method static PostBuilder<static>|Post draft()
+ * @method static \App\Blog\Factories\PostFactory factory($count = null, $state = [])
+ * @method static PostBuilder<static>|Post newModelQuery()
+ * @method static PostBuilder<static>|Post newQuery()
+ * @method static PostBuilder<static>|Post ofCategory(\App\Blog\Enums\PostCategory $category)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post onlyTrashed()
+ * @method static PostBuilder<static>|Post published()
+ * @method static PostBuilder<static>|Post query()
+ * @method static PostBuilder<static>|Post whereCategory($value)
+ * @method static PostBuilder<static>|Post whereContent($value)
+ * @method static PostBuilder<static>|Post whereCreatedAt($value)
+ * @method static PostBuilder<static>|Post whereDeletedAt($value)
+ * @method static PostBuilder<static>|Post whereDescription($value)
+ * @method static PostBuilder<static>|Post whereHero($value)
+ * @method static PostBuilder<static>|Post whereId($value)
+ * @method static PostBuilder<static>|Post whereIsFeatured($value)
+ * @method static PostBuilder<static>|Post whereMetaDescription($value)
+ * @method static PostBuilder<static>|Post whereMetaKeywords($value)
+ * @method static PostBuilder<static>|Post whereMetaTitle($value)
+ * @method static PostBuilder<static>|Post wherePostedAt($value)
+ * @method static PostBuilder<static>|Post whereSlug($value)
+ * @method static PostBuilder<static>|Post whereSocial($value)
+ * @method static PostBuilder<static>|Post whereStatus($value)
+ * @method static PostBuilder<static>|Post whereTitle($value)
+ * @method static PostBuilder<static>|Post whereUpdatedAt($value)
+ * @method static PostBuilder<static>|Post withStatus(\App\Blog\Enums\PostStatus $status)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Post extends Model implements Sitemapable
 {
     use HasFactory;

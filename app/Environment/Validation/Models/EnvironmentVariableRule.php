@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $environment_id
  * @property string $key
  * @property string|null $description
+ * @property bool $is_override
+ * @property bool $is_deleted
  * @property int $is_required
  * @property EnvironmentVariableRuleType $type
  * @property int|null $min
@@ -21,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Environment $environment
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule query()
@@ -30,13 +31,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereEnvironmentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereIsDeleted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereIsOverride($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereIsRequired($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereMax($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereMin($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class EnvironmentVariableRule extends Model

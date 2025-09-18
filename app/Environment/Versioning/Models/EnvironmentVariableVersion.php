@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read User|null $changedBy
  * @property-read EnvironmentVariable $variable
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion query()
@@ -35,7 +34,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableVersion whereVersion($value)
- *
  * @mixin \Eloquent
  */
 class EnvironmentVariableVersion extends Model

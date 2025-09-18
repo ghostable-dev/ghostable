@@ -34,49 +34,53 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property string|null $two_factor_confirmed_at
+ * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property string|null $stripe_id
- * @property string|null $pm_type
- * @property string|null $pm_last_four
- * @property string|null $trial_ends_at
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property string $timezone
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $history
+ * @property-read int|null $history_count
  * @property-read int|null $notifications_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $ownedOrganizations
- * @property-read int|null $owned_organizations_count
  * @property-read \App\Organization\Models\OrganizationUser|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $organizations
  * @property-read int|null $organizations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $ownedOrganizations
+ * @property-read int|null $owned_organizations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
- *
+ * @method static UserBuilder<static>|User didntRecieveNotification(string $class, ?\Carbon\Carbon $sentAfter = null)
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
+ * @method static UserBuilder<static>|User newModelQuery()
+ * @method static UserBuilder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePmLastFour($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePmType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStripeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTrialEndsAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorConfirmedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorRecoveryCodes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorSecret($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ * @method static UserBuilder<static>|User query()
+ * @method static UserBuilder<static>|User receivesBlogNotifications()
+ * @method static UserBuilder<static>|User receivesPromotionalNotifications()
+ * @method static UserBuilder<static>|User recievedNotification(string $class, ?\Carbon\Carbon $sentAfter = null)
+ * @method static UserBuilder<static>|User unverified()
+ * @method static UserBuilder<static>|User verified()
+ * @method static UserBuilder<static>|User whereCreatedAt($value)
+ * @method static UserBuilder<static>|User whereDeletedAt($value)
+ * @method static UserBuilder<static>|User whereEmail($value)
+ * @method static UserBuilder<static>|User whereEmailVerifiedAt($value)
+ * @method static UserBuilder<static>|User whereId($value)
+ * @method static UserBuilder<static>|User whereName($value)
+ * @method static UserBuilder<static>|User whereNotifications($value)
+ * @method static UserBuilder<static>|User wherePassword($value)
+ * @method static UserBuilder<static>|User whereRememberToken($value)
+ * @method static UserBuilder<static>|User whereTimezone($value)
+ * @method static UserBuilder<static>|User whereTwoFactorConfirmedAt($value)
+ * @method static UserBuilder<static>|User whereTwoFactorRecoveryCodes($value)
+ * @method static UserBuilder<static>|User whereTwoFactorSecret($value)
+ * @method static UserBuilder<static>|User whereUpdatedAt($value)
+ * @method static UserBuilder<static>|User withNotificiationEnabled(string $field, bool $default)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
- *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(UserBuilder::class)]

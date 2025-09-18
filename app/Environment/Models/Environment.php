@@ -38,6 +38,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property EnvironmentType $type
  * @property EnvFileFormat $file_format
  * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
+ * @property string|null $kek_salt
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -57,7 +58,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $tokens_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariable> $variables
  * @property-read int|null $variables_count
- *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
@@ -69,6 +69,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereFileFormat($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereIsRestricted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereKekSalt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereNotifications($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereProjectId($value)
@@ -76,7 +77,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withoutTrashed()
- *
  * @mixin \Eloquent
  */
 class Environment extends Model implements SupportsOverrides

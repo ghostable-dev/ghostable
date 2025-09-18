@@ -31,15 +31,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $is_deleted
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
- * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Environment $environment
  * @property-read User|null $lastUpdatedBy
  * @property-read EnvironmentVariableVersion|null $latestVersion
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableVersion> $versions
  * @property-read int|null $versions_count
- *
  * @method static VariableBuilder<static>|EnvironmentVariable commented()
  * @method static \Database\Factories\EnvironmentVariableFactory factory($count = null, $state = [])
  * @method static VariableBuilder<static>|EnvironmentVariable forEnvironment(\App\Environment\Models\Environment|string $environment)
@@ -66,7 +65,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static VariableBuilder<static>|EnvironmentVariable withLatestVersion()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariable withoutTrashed()
- *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(VariableBuilder::class)]

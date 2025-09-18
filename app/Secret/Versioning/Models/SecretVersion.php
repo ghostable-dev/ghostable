@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $secret_id
  * @property string $name
  * @property SecretType $type
+ * @property string $value
  * @property array<array-key, mixed>|null $metadata
  * @property int $version
  * @property string|null $changed_by
@@ -23,8 +24,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read User|null $changedBy
  * @property-read Secret $secret
- * @property mixed $value
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion query()
@@ -36,9 +35,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereSecretId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereValueEncrypted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereVersion($value)
- *
  * @mixin \Eloquent
  */
 class SecretVersion extends Model
