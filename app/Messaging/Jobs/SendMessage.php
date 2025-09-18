@@ -2,6 +2,7 @@
 
 namespace App\Messaging\Jobs;
 
+use App\Messaging\Enums\MessageStatus;
 use App\Messaging\Models\Message;
 use App\Messaging\Registry\CampaignRegistry;
 use Exception;
@@ -29,14 +30,14 @@ class SendMessage implements ShouldQueue
         try {
             Mail::send($campaign->mailable($this->message->recipient));
         } catch (Exception $e) {
-            $this->message->status = 'failed';
+            $this->message->status = MessageStatus::FAILED;
             $this->message->reason = $e->getMessage();
             $this->message->save();
 
             return;
         }
 
-        $this->message->status = 'sent';
+        $this->message->status = MessageStatus::SENT;
         $this->message->sent_at = now();
         $this->message->save();
     }

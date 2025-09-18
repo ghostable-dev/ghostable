@@ -2,6 +2,7 @@
 
 namespace App\Messaging\Commands;
 
+use App\Messaging\Enums\MessageStatus;
 use App\Messaging\Jobs\SendMessage;
 use App\Messaging\Models\Message;
 use Illuminate\Console\Command;
@@ -27,7 +28,7 @@ class SendQueuedMessages extends Command
      */
     public function handle()
     {
-        $messages = Message::where('status', 'queued')->get();
+        $messages = Message::where('status', MessageStatus::QUEUED)->get();
 
         foreach ($messages as $message) {
             SendMessage::dispatch($message);

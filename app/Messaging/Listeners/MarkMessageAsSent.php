@@ -2,6 +2,7 @@
 
 namespace App\Messaging\Listeners;
 
+use App\Messaging\Enums\MessageStatus;
 use App\Messaging\Models\Message as MessageModel;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Str;
@@ -30,7 +31,7 @@ class MarkMessageAsSent
         }
 
         $updates = [
-            'status' => 'sent',
+            'status' => MessageStatus::SENT,
             'sent_at' => now(),
         ];
 
