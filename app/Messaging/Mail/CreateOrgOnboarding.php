@@ -2,6 +2,7 @@
 
 namespace App\Messaging\Mail;
 
+use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -12,7 +13,7 @@ class CreateOrgOnboarding extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(protected User $user)
+    public function __construct(protected User|MailingListEmail $recipient)
     {
         //
     }
@@ -23,8 +24,8 @@ class CreateOrgOnboarding extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'You gotta make an org',
-            to: $this->user->email
+            subject: 'Create your first Ghostable organization',
+            to: $this->recipient->email
         );
     }
 
@@ -34,7 +35,10 @@ class CreateOrgOnboarding extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.welcome-mail',
+            view: 'mail.welcome-mail',
+            with: [
+                'name' => $this->recipientName(),
+            ],
         );
     }
 
@@ -46,5 +50,14 @@ class CreateOrgOnboarding extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    private function recipientName(): string
+    {
+        if ($this->recipient instanceof User && filled($this->recipient->name)) {
+            return $this->recipient->name;
+        }
+
+        return $this->recipient->email;
     }
 }
