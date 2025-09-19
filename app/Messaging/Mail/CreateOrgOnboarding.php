@@ -8,19 +8,8 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-class CreateOrgOnboarding extends Mailable
+class CreateOrgOnboarding extends UnsubscribableMail
 {
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(protected User|MailingListEmail $recipient)
-    {
-        //
-    }
-
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -29,29 +18,16 @@ class CreateOrgOnboarding extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
+    protected function getContent(): Content
     {
         return new Content(
-            view: 'mail.welcome-mail',
+            view: 'mail.drip.create-org-onboarding',
             with: [
                 'name' => $this->recipientName(),
             ],
         );
     }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
-    }
-
+    
     private function recipientName(): string
     {
         if ($this->recipient instanceof User && filled($this->recipient->name)) {

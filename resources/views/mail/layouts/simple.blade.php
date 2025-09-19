@@ -43,7 +43,13 @@
                                 
                                 <p style="margin-bottom:16px;font-size:12px;line-height:22px;color:#9b9b9b;color:var(--muted, #9b9b9b);font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">
                                     &copy; {{ date('Y') }} Ghostable. @lang('All rights reserved.')<br/>
+                                    @if($unsubscribable ?? false && $unsubscribe_url ?? false)
+                                        <a 
+                                            href="{{ $unsubscribe_url }}"
+                                            style="font-size:12px;line-height:22px;color:#9b9b9b;color:var(--muted, #9b9b9b);font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">Unsubscribe</a>
+                                    @endif
                                 </p>
+                                
                             </td>
                         </tr>
                     </table>
