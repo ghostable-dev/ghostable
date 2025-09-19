@@ -58,6 +58,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $tokens_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariable> $variables
  * @property-read int|null $variables_count
+ *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
@@ -77,6 +78,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Environment extends Model implements SupportsOverrides

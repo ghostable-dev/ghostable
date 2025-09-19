@@ -56,6 +56,7 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property-read int|null $owned_organizations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static UserBuilder<static>|User newModelQuery()
  * @method static UserBuilder<static>|User newQuery()
@@ -84,6 +85,7 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @method static UserBuilder<static>|User withPreferenceEnabled(\App\Core\Enums\NotificationCategory $category)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(UserBuilder::class)]

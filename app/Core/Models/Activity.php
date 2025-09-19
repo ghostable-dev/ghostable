@@ -26,6 +26,7 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * @property-read \Illuminate\Database\Eloquent\Model|null $causer
  * @property-read \Illuminate\Support\Collection $changes
  * @property-read \Illuminate\Database\Eloquent\Model|null $subject
+ *
  * @method static Builder<static>|Activity causedBy(\Illuminate\Database\Eloquent\Model $causer)
  * @method static Builder<static>|Activity forBatch(string $batchUuid)
  * @method static Builder<static>|Activity forEnvironment(\App\Environment\Models\Environment $environment)
@@ -58,6 +59,7 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * @method static Builder<static>|Activity whereSubjectId($value)
  * @method static Builder<static>|Activity whereSubjectType($value)
  * @method static Builder<static>|Activity whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Activity extends SpatieActivity

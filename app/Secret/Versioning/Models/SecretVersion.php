@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read User|null $changedBy
  * @property-read Secret $secret
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion query()
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SecretVersion whereVersion($value)
+ *
  * @mixin \Eloquent
  */
 class SecretVersion extends Model

@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Model|\Eloquent $recipient
+ *
  * @method static MessageBuilder<static>|Message failed()
  * @method static MessageBuilder<static>|Message forCampaign(\App\Messaging\Contracts\Campaign $campaign)
  * @method static MessageBuilder<static>|Message newModelQuery()
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static MessageBuilder<static>|Message whereStatus($value)
  * @method static MessageBuilder<static>|Message whereUpdatedAt($value)
  * @method static MessageBuilder<static>|Message withStatus(\App\Messaging\Enums\MessageStatus $status)
+ *
  * @mixin \Eloquent
  */
 class Message extends Model

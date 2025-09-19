@@ -25,6 +25,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Messaging\Models\Message> $messages
  * @property-read int|null $messages_count
  * @property-read int|null $notifications_count
+ *
  * @method static MailingListEmailBuilder<static>|MailingListEmail fromBlog()
  * @method static MailingListEmailBuilder<static>|MailingListEmail fromSource(\App\Account\Enums\MailingListEmailSource $source)
  * @method static MailingListEmailBuilder<static>|MailingListEmail newModelQuery()
@@ -46,6 +47,7 @@ use Illuminate\Notifications\Notifiable;
  * @method static MailingListEmailBuilder<static>|MailingListEmail withPreferenceEnabled(\App\Core\Enums\NotificationCategory $category)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MailingListEmail withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MailingListEmail withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class MailingListEmail extends Model

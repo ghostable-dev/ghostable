@@ -39,6 +39,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read mixed $directory
  * @property-read mixed $read_time
  * @property-read mixed $word_count
+ *
  * @method static PostBuilder<static>|Post archived()
  * @method static PostBuilder<static>|Post draft()
  * @method static \App\Blog\Factories\PostFactory factory($count = null, $state = [])
@@ -68,6 +69,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static PostBuilder<static>|Post withStatus(\App\Blog\Enums\PostStatus $status)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Post extends Model implements Sitemapable

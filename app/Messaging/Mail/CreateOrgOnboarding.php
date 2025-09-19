@@ -2,9 +2,7 @@
 
 namespace App\Messaging\Mail;
 
-use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
-use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
@@ -27,7 +25,7 @@ class CreateOrgOnboarding extends UnsubscribableMail
             ],
         );
     }
-    
+
     private function recipientName(): string
     {
         if ($this->recipient instanceof User && filled($this->recipient->name)) {

@@ -11,12 +11,12 @@ use Illuminate\Mail\Mailables\Headers;
 abstract class UnsubscribableMail extends Mailable
 {
     protected string $unsubscribeLink;
-    
+
     public function __construct(protected User|MailingListEmail $recipient)
     {
         $this->unsubscribeLink = $this->recipient->unsubscribeLink();
     }
-    
+
     public function headers(): Headers
     {
         return new Headers(
@@ -33,9 +33,9 @@ abstract class UnsubscribableMail extends Mailable
 
         $content->with('unsubscribable', true);
         $content->with('unsubscribe_url', $this->unsubscribeLink);
-        
+
         return $content;
     }
-    
+
     abstract protected function getContent(): Content;
 }

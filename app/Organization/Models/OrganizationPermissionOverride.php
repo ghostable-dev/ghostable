@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read Model|\Eloquent $target
  * @property-read \App\Account\Models\User $user
+ *
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride forUser(\App\Account\Models\User $user)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride newModelQuery()
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride newQuery()
@@ -38,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride withPermission(\App\Organization\Enums\OrganizationPermission $permission)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationPermissionOverride withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationPermissionOverride withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(OrganizationPermissionOverrideBuilder::class)]

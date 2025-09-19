@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Environment $environment
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule query()
@@ -39,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereMin($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EnvironmentVariableRule whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class EnvironmentVariableRule extends Model
