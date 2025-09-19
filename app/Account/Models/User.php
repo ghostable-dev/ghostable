@@ -6,6 +6,7 @@ use App\Account\Builders\UserBuilder;
 use App\Account\Entities\NotificationSettings;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
+use App\Messaging\Concerns\ReceivesMessages;
 use App\Organization\Concerns\BelongsToOrganizations;
 use App\Organization\Models\Invite;
 use App\Organization\Services\OrganizationMembership;
@@ -37,14 +38,16 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property string $timezone
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property string $timezone
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $history
  * @property-read int|null $history_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Messaging\Models\Message> $messages
+ * @property-read int|null $messages_count
  * @property-read int|null $notifications_count
  * @property-read \App\Organization\Models\OrganizationUser|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $organizations
@@ -53,16 +56,15 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property-read int|null $owned_organizations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
- *
- * @method static UserBuilder<static>|User didntRecieveNotification(string $class, ?\Carbon\Carbon $sentAfter = null)
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static UserBuilder<static>|User newModelQuery()
  * @method static UserBuilder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
  * @method static UserBuilder<static>|User query()
  * @method static UserBuilder<static>|User receivesBlogNotifications()
+ * @method static UserBuilder<static>|User receivesProductTips()
  * @method static UserBuilder<static>|User receivesPromotionalNotifications()
- * @method static UserBuilder<static>|User recievedNotification(string $class, ?\Carbon\Carbon $sentAfter = null)
+ * @method static UserBuilder<static>|User receivesResearchNotifications()
  * @method static UserBuilder<static>|User unverified()
  * @method static UserBuilder<static>|User verified()
  * @method static UserBuilder<static>|User whereCreatedAt($value)
@@ -79,10 +81,9 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @method static UserBuilder<static>|User whereTwoFactorRecoveryCodes($value)
  * @method static UserBuilder<static>|User whereTwoFactorSecret($value)
  * @method static UserBuilder<static>|User whereUpdatedAt($value)
- * @method static UserBuilder<static>|User withNotificiationEnabled(string $field, bool $default)
+ * @method static UserBuilder<static>|User withPreferenceEnabled(\App\Core\Enums\NotificationCategory $category)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
- *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(UserBuilder::class)]
@@ -93,6 +94,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     use HasFactory;
     use HasUuids;
     use Notifiable;
+    use ReceivesMessages;
     use SoftDeletes;
     use TwoFactorAuthenticatable;
 
@@ -214,5 +216,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $first
             ? sprintf('%s %s,', $greeting, $first)
             : "$greeting,";
+    }
+
+    public function unsubscribeLink(): string
+    {
+        return $this->buildUnsubscribeLink('user', $this->id);
     }
 }

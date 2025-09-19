@@ -4,7 +4,6 @@ namespace App\Messaging;
 
 use App\Messaging\Campaigns\CreateOrgOnboardingCampaign;
 use App\Messaging\Commands\RunMessagingCampaign;
-use App\Messaging\Commands\SendQueuedMessages;
 use App\Messaging\Listeners\MarkMessageAsSent;
 use App\Messaging\Registry\CampaignRegistry;
 use Illuminate\Mail\Events\MessageSent;
@@ -23,7 +22,6 @@ class MessagingServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 RunMessagingCampaign::class,
-                SendQueuedMessages::class,
             ]);
         }
 

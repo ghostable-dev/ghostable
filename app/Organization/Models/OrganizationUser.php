@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property OrganizationRole|null $role
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser query()
@@ -23,7 +22,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser whereUserId($value)
- *
  * @mixin \Eloquent
  */
 class OrganizationUser extends Pivot

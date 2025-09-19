@@ -73,10 +73,22 @@ class RunMessagingCampaign extends Command
     {
         $this->info("Plan for campaign [{$campaign->key()}]:");
 
+        $schedule = $campaign->schedule();
+        $builders = resolve(GetCampaignAudience::class)->handle($campaign);
+
         $count = 0;
-        foreach (resolve(GetCampaignAudience::class)->handle($campaign)->get() as $user) {
-            if ($campaign->eligible($user)) {
-                $this->line("- {$user->id} {$user->email}");
+        foreach ($builders as $builder) {
+            foreach ($builder->cursor() as $recipient) {
+                if (! $recipient?->email) {
+                    continue;
+                }
+                if (! $schedule->allowSendNowFor($recipient)) {
+                    continue;
+                }
+                if (! $campaign->eligible($recipient)) {
+                    continue;
+                }
+                $this->line("- {$recipient->id} {$recipient->email}");
                 $count++;
             }
         }

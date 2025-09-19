@@ -62,7 +62,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $subscriptions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read int|null $users_count
- *
  * @method static \Database\Factories\OrganizationFactory factory($count = null, $state = [])
  * @method static OrganizationBuilder<static>|Organization hasExpiredGenericTrial()
  * @method static OrganizationBuilder<static>|Organization newModelQuery()
@@ -90,7 +89,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static OrganizationBuilder<static>|Organization whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Organization withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Organization withoutTrashed()
- *
  * @mixin \Eloquent
  */
 #[UseEloquentBuilder(OrganizationBuilder::class)]

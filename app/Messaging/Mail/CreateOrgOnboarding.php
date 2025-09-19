@@ -3,16 +3,12 @@
 namespace App\Messaging\Mail;
 
 use App\Account\Models\User;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
 class CreateOrgOnboarding extends Mailable
 {
-    use Queueable, SerializesModels;
-
     /**
      * Create a new message instance.
      */
