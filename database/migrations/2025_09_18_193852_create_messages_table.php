@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('campaign_key', 96)->index();
 
             // Status rollup
-            $table->string('status', 24)->index(); // queued|sent|delivered|opened|clicked|suppressed|bounced|failed
-            $table->string('reason', 128)->nullable(); // e.g. unsubscribed, missing-email, bounce reason
+            $table->string('status', 24)->index(); // queued|sent|suppressed|failed
+            $table->string('reason', 128)->nullable(); // e.g. unsubscribed, missing-email
 
             // Provider tracking
             $table->string('provider', 32)->nullable();        // e.g. resend
@@ -33,10 +33,6 @@ return new class extends Migration
             // Timeline stamps
             $table->timestamp('queued_at')->nullable();
             $table->timestamp('sent_at')->nullable();
-            $table->timestamp('delivered_at')->nullable();
-            $table->timestamp('opened_at')->nullable();
-            $table->timestamp('clicked_at')->nullable();
-
             $table->json('meta')->nullable();
             $table->timestamps();
 

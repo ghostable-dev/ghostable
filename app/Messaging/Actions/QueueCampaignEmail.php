@@ -4,6 +4,7 @@ namespace App\Messaging\Actions;
 
 use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
+use App\Messaging\Enums\MessageStatus;
 use App\Messaging\Models\Message;
 
 class QueueCampaignEmail
@@ -22,7 +23,7 @@ class QueueCampaignEmail
                 'recipient_type' => $recipient->getMorphClass(),
                 'recipient_id' => $recipient->getKey(),
                 'recipient_email' => '',
-                'status' => 'suppressed',
+                'status' => MessageStatus::SUPPRESSED,
                 'reason' => 'missing-email',
                 'queued_at' => now(),
             ]);
@@ -35,7 +36,7 @@ class QueueCampaignEmail
             'recipient_id' => $recipient->getKey(),
         ], [
             'recipient_email' => $email,
-            'status' => 'queued',
+            'status' => MessageStatus::QUEUED,
             'queued_at' => now(),
         ]);
 
