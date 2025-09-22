@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Messaging\Campaigns\Drip\Series;
+namespace App\Messaging\Series;
 
 use App\Account\Models\User;
 use Closure;

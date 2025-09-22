@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Messaging\Campaigns\Drip\Series;
+namespace App\Messaging\Series;
 
 use App\Messaging\Campaigns\Drip\CliSetupNudge;
 use App\Messaging\Campaigns\Drip\CliSetupReminder;

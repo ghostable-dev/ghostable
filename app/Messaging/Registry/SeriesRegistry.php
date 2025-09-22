@@ -2,7 +2,7 @@
 
 namespace App\Messaging\Registry;
 
-use App\Messaging\Campaigns\Drip\Series\CampaignSeries;
+use App\Messaging\Series\CampaignSeries;
 use InvalidArgumentException;
 
 class SeriesRegistry

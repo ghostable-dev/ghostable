@@ -3,7 +3,7 @@
 use App\Account\Models\User;
 use App\Messaging\Campaigns\Drip\InviteMembersNudge;
 use App\Messaging\Campaigns\Drip\InviteMembersReminder;
-use App\Messaging\Campaigns\Drip\Series\OnboardingSeries;
+use App\Messaging\Series\OnboardingSeries;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
