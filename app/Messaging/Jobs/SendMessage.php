@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Mail;
 class SendMessage implements ShouldQueue
 {
     use Queueable;
-    
+
     public $tries = 25;
 
     public function __construct(public Message $message) {}
