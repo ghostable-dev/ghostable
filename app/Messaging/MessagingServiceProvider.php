@@ -15,12 +15,16 @@ use App\Messaging\Listeners\MarkMessageAsSent;
 use App\Messaging\Registry\CampaignRegistry;
 use App\Messaging\Registry\SeriesRegistry;
 use App\Messaging\Series\OnboardingSeries;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class MessagingServiceProvider extends ServiceProvider
 {
+    public const MAIL_GLOBAL_LIMITER = 'mail-global';
+
     protected $commands = [
         RunBroadcastCampaignCommand::class,
         RunSeriesCampaignCommand::class,
@@ -41,6 +45,10 @@ class MessagingServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        RateLimiter::for(self::MAIL_GLOBAL_LIMITER, fn () => [
+            Limit::perMinute(100)->by(self::MAIL_GLOBAL_LIMITER),
+        ]);
+
         Event::listen(MessageSent::class, MarkMessageAsSent::class);
     }
 

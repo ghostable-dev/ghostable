@@ -3,11 +3,13 @@
 namespace App\Messaging\Jobs;
 
 use App\Messaging\Enums\MessageStatus;
+use App\Messaging\MessagingServiceProvider;
 use App\Messaging\Models\Message;
 use App\Messaging\Registry\CampaignRegistry;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -16,6 +18,11 @@ class SendMessage implements ShouldQueue
     use Queueable;
 
     public function __construct(public Message $message) {}
+
+    public function middleware(): array
+    {
+        return [(new RateLimited(MessagingServiceProvider::MAIL_GLOBAL_LIMITER))->releaseAfter(10)];
+    }
 
     public function handle(CampaignRegistry $registry): void
     {

@@ -49,7 +49,7 @@
             Not sure who to invite first? Start with the teammates who need access to production secrets or help ship
             deployments—Ghostable keeps their access scoped and every action logged.
         @else
-            Each teammate gets their own account with fine-grained permissions and an audit trail. You can always
+            Each teammate gets their own account permissions and an audit trail. You can always
             adjust roles later, so it’s easy to start with the core engineering team today.
         @endif
     </x-mail.simple.paragraph>
