@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->call(RunSeriesCampaignCommand::class)->hourlyAt(7);
     })
     ->withCommands([
-        RunSeriesCampaignCommand::class
+        RunSeriesCampaignCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
