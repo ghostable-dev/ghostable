@@ -46,7 +46,8 @@ class MessagingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for(self::MAIL_GLOBAL_LIMITER, fn () => [
-            Limit::perMinute(100)->by(self::MAIL_GLOBAL_LIMITER),
+            Limit::perSecond(1)->by(self::MAIL_GLOBAL_LIMITER.':sec'),
+            Limit::perMinute(90)->by(self::MAIL_GLOBAL_LIMITER.':min'),
         ]);
 
         Event::listen(MessageSent::class, MarkMessageAsSent::class);
