@@ -34,6 +34,8 @@ class AppSetup extends Command
         $this->seedHooli();
 
         $this->seedAviato();
+
+        $this->seedLeeds();
     }
 
     protected function resetDatabase(): void
@@ -143,5 +145,23 @@ class AppSetup extends Command
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $app);
         $this->createVariables(env: $production, amount: 5, createdBy: $erlich);
         $this->createSecrets(env: $production, amount: 2, createdBy: $erlich);
+    }
+
+    protected function seedLeeds(): void
+    {
+        $bob = $this->createUser(name: 'Bob', email: 'bob@acme.com');
+        // $bighead = $this->createUser(name: 'Big Head', email: 'bighead@aviato.com');
+
+        // $aviato = $this->createOrganization(
+        //     name: 'Aviato',
+        //     owner: $erlich,
+        // );
+
+        // $bighead->organizationMembership()->assignToOrganization(organization: $aviato, role: OrganizationRole::DEVELOPER);
+
+        // $app = $this->createProject('App', $aviato);
+        // $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $app);
+        // $this->createVariables(env: $production, amount: 5, createdBy: $erlich);
+        // $this->createSecrets(env: $production, amount: 2, createdBy: $erlich);
     }
 }

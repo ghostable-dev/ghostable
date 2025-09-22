@@ -5,11 +5,14 @@ namespace App\Filament\Pages;
 use App\Account\Models\User;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
+use App\Blog\Models\Post;
 use App\Environment\Models\Environment;
 use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Notifications\VariableUpdatedNotification;
+use App\Messaging\Mail\CreateOrgOnboarding;
+use App\Messaging\Mail\NewPostPublishedMailable;
 use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
 use App\Organization\Notifications\AccessChangeNotification;
@@ -38,12 +41,13 @@ class EmailTemplates extends Page
 
     protected string $view = 'filament.pages.email-templates';
 
-    public string $notificationClass = ProjectCreatedNotification::class;
+    public string $notificationClass = NewPostPublishedMailable::class;
 
     #[Computed(persist: true)]
     public function notifications(): array
     {
         return [
+            NewPostPublishedMailable::class,
             VerifyEmailNotification::class,
             ResetPasswordNotification::class,
             ProjectCreatedNotification::class,
@@ -59,6 +63,7 @@ class EmailTemplates extends Page
             EnvironmentDeletedNotification::class,
             VariableUpdatedNotification::class,
             SecretUpdatedNotification::class,
+            CreateOrgOnboarding::class,
         ];
     }
 
@@ -105,6 +110,11 @@ class EmailTemplates extends Page
         return $invite;
     }
 
+    private function samplePost(): Post
+    {
+        return Post::first();
+    }
+
     private function sampleEnvironmentVariable(): EnvironmentVariable
     {
         return $this->sampleEnvironment()->variables->first();
@@ -120,25 +130,25 @@ class EmailTemplates extends Page
     #[Computed(persist: false)]
     public function html(): ?string
     {
-        $notification = match ($this->notificationClass) {
-            VerifyEmailNotification::class => new VerifyEmailNotification,
-            ResetPasswordNotification::class => new ResetPasswordNotification('example-token'),
-            ProjectCreatedNotification::class => new ProjectCreatedNotification($this->sampleProject()),
-            ProjectDeletedNotification::class => new ProjectDeletedNotification($this->sampleProject()),
-            ProjectSettingsChangedNotification::class => new ProjectSettingsChangedNotification($this->sampleProject()),
-            MemberInvitedNotification::class => new MemberInvitedNotification($this->sampleInvite()),
-            MemberJoinedNotification::class => new MemberJoinedNotification($this->sampleInvite()),
-            MemberRemovedNotification::class => new MemberRemovedNotification($this->sampleOrganization(), $this->user),
-            AccessChangeNotification::class => new AccessChangeNotification($this->sampleOrganization(), $this->user),
-            OrganizationSettingsChangedNotification::class => new OrganizationSettingsChangedNotification($this->sampleOrganization()),
-            InviteNotification::class => new InviteNotification($this->sampleInvite()),
-            EnvironmentCreatedNotification::class => new EnvironmentCreatedNotification($this->sampleEnvironment()),
-            EnvironmentDeletedNotification::class => new EnvironmentDeletedNotification($this->sampleEnvironment()),
-            VariableUpdatedNotification::class => new VariableUpdatedNotification($this->sampleEnvironmentVariable()),
-            SecretUpdatedNotification::class => new SecretUpdatedNotification($this->sampleSecret()),
+        return match ($this->notificationClass) {
+            NewPostPublishedMailable::class => (new NewPostPublishedMailable($this->user(), $this->samplePost()))->render(),
+            VerifyEmailNotification::class => (new VerifyEmailNotification)->toMail($this->user())->render(),
+            ResetPasswordNotification::class => (new ResetPasswordNotification('example-token'))->toMail($this->user())->render(),
+            ProjectCreatedNotification::class => (new ProjectCreatedNotification($this->sampleProject()))->toMail($this->user())->render(),
+            ProjectDeletedNotification::class => (new ProjectDeletedNotification($this->sampleProject()))->toMail($this->user())->render(),
+            ProjectSettingsChangedNotification::class => (new ProjectSettingsChangedNotification($this->sampleProject()))->toMail($this->user())->render(),
+            MemberInvitedNotification::class => (new MemberInvitedNotification($this->sampleInvite()))->toMail($this->user())->render(),
+            MemberJoinedNotification::class => (new MemberJoinedNotification($this->sampleInvite()))->toMail($this->user())->render(),
+            MemberRemovedNotification::class => (new MemberRemovedNotification($this->sampleOrganization(), $this->user()))->toMail($this->user())->render(),
+            AccessChangeNotification::class => (new AccessChangeNotification($this->sampleOrganization(), $this->user()))->toMail($this->user())->render(),
+            OrganizationSettingsChangedNotification::class => (new OrganizationSettingsChangedNotification($this->sampleOrganization()))->toMail($this->user())->render(),
+            InviteNotification::class => (new InviteNotification($this->sampleInvite()))->toMail($this->user())->render(),
+            EnvironmentCreatedNotification::class => (new EnvironmentCreatedNotification($this->sampleEnvironment()))->toMail($this->user())->render(),
+            EnvironmentDeletedNotification::class => (new EnvironmentDeletedNotification($this->sampleEnvironment()))->toMail($this->user())->render(),
+            VariableUpdatedNotification::class => (new VariableUpdatedNotification($this->sampleEnvironmentVariable()))->toMail($this->user())->render(),
+            SecretUpdatedNotification::class => (new SecretUpdatedNotification($this->sampleSecret()))->toMail($this->user())->render(),
+            CreateOrgOnboarding::class => (new CreateOrgOnboarding($this->user()))->render(),
             default => null,
         };
-
-        return $notification?->toMail($this->user)->render();
     }
 }

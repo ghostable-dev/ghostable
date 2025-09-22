@@ -27103,26 +27103,17 @@ namespace Livewire\Features\SupportTesting {
             }
     }
 
-namespace App\Filament\Resources\Organizations\Pages {
+namespace App\Filament\Resources\Core\Activity\Pages {
     /**
      */
-    class CreateOrganization extends \Filament\Resources\Pages\CreateRecord {
-            }
-    /**
-     */
-    class EditOrganization extends \Filament\Resources\Pages\EditRecord {
-            }
-    /**
-     */
-    class ListOrganizations extends \Filament\Resources\Pages\ListRecords {
+    class ListActivities extends \Filament\Resources\Pages\ListRecords {
             }
     }
 
 namespace Filament\Resources\Pages {
     /**
-     * @property-read Schema $form
      */
-    class CreateRecord extends \Filament\Resources\Pages\Page {
+    class ListRecords extends \Filament\Resources\Pages\Page {
             }
     /**
      */
@@ -27131,11 +27122,17 @@ namespace Filament\Resources\Pages {
     /**
      * @property-read Schema $form
      */
+    class ViewRecord extends \Filament\Resources\Pages\Page {
+            }
+    /**
+     * @property-read Schema $form
+     */
     class EditRecord extends \Filament\Resources\Pages\Page {
             }
     /**
+     * @property-read Schema $form
      */
-    class ListRecords extends \Filament\Resources\Pages\Page {
+    class CreateRecord extends \Filament\Resources\Pages\Page {
             }
     }
 
@@ -27158,6 +27155,57 @@ namespace Filament\Pages {
             }
     }
 
+namespace App\Filament\Resources\Inquiries\Pages {
+    /**
+     */
+    class ListInquiries extends \Filament\Resources\Pages\ListRecords {
+            }
+    /**
+     */
+    class ViewInquiry extends \Filament\Resources\Pages\ViewRecord {
+            }
+    }
+
+namespace App\Filament\Resources\MailingListEmails\Pages {
+    /**
+     */
+    class ListMailingListEmails extends \Filament\Resources\Pages\ListRecords {
+            }
+    /**
+     */
+    class ViewMailingListEmail extends \Filament\Resources\Pages\ViewRecord {
+            }
+    }
+
+namespace App\Filament\Resources\Organizations\Pages {
+    /**
+     */
+    class EditOrganization extends \Filament\Resources\Pages\EditRecord {
+            }
+    /**
+     */
+    class ListOrganizations extends \Filament\Resources\Pages\ListRecords {
+            }
+    /**
+     */
+    class ViewOrganization extends \Filament\Resources\Pages\ViewRecord {
+            }
+    }
+
+namespace App\Filament\Resources\Organizations\RelationManagers {
+    /**
+     */
+    class ApiUsagesRelationManager extends \Filament\Resources\RelationManagers\RelationManager {
+            }
+    }
+
+namespace Filament\Resources\RelationManagers {
+    /**
+     */
+    class RelationManager extends \Livewire\Component {
+            }
+    }
+
 namespace App\Filament\Resources\Posts\Pages {
     /**
      */
@@ -27176,19 +27224,64 @@ namespace App\Filament\Resources\Posts\Pages {
 namespace App\Filament\Resources\Users\Pages {
     /**
      */
-    class CreateUser extends \Filament\Resources\Pages\CreateRecord {
-            }
-    /**
-     */
     class EditUser extends \Filament\Resources\Pages\EditRecord {
             }
     /**
      */
     class ListUsers extends \Filament\Resources\Pages\ListRecords {
             }
+    /**
+     */
+    class ViewUser extends \Filament\Resources\Pages\ViewRecord {
+            }
+    }
+
+namespace App\Filament\Resources\Users\RelationManagers {
+    /**
+     */
+    class ActivityHistoryRelationManager extends \App\Filament\RelationManagers\ChangeHistoryRelationManager {
+            }
+    /**
+     */
+    class ChangeHistoryRelationManager extends \App\Filament\RelationManagers\ChangeHistoryRelationManager {
+            }
+    /**
+     */
+    class OrganizationsRelationshipManager extends \Filament\Resources\RelationManagers\RelationManager {
+            }
+    }
+
+namespace App\Filament\RelationManagers {
+    /**
+     */
+    class ChangeHistoryRelationManager extends \Filament\Resources\RelationManagers\RelationManager {
+            }
+    }
+
+namespace App\Filament\Pages {
+    /**
+     */
+    class EmailTemplates extends \Filament\Pages\Page {
+            }
     }
 
 namespace App\Filament\Widgets {
+    /**
+     */
+    class ApiUsageStats extends \Filament\Widgets\StatsOverviewWidget {
+            }
+    /**
+     */
+    class InquiryStats extends \Filament\Widgets\StatsOverviewWidget {
+            }
+    /**
+     */
+    class MailingListEmailStats extends \Filament\Widgets\StatsOverviewWidget {
+            }
+    /**
+     */
+    class OrganizationStats extends \Filament\Widgets\StatsOverviewWidget {
+            }
     /**
      */
     class UserStats extends \Filament\Widgets\StatsOverviewWidget {
@@ -27207,10 +27300,6 @@ namespace Filament\Widgets {
     /**
      */
     class AccountWidget extends \Filament\Widgets\Widget {
-            }
-    /**
-     */
-    class FilamentInfoWidget extends \Filament\Widgets\Widget {
             }
     }
 
@@ -27466,7 +27555,15 @@ namespace App\Account\Livewire {
             }
     /**
      */
+    class UserNotificationsManager extends \Livewire\Component {
+            }
+    /**
+     */
     class Register extends \Livewire\Component {
+            }
+    /**
+     */
+    class NotificationManager extends \Livewire\Component {
             }
     }
 

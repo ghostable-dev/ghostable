@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         You're receiving this message because we received a password reset request for your Ghostable account.
     </x-mail.simple.paragraph>

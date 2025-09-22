@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         Click the button below to verify your email address and finish setting up your Ghostable account.
     </x-mail.simple.paragraph>

@@ -2,7 +2,7 @@
 
 namespace App\Account\Entities;
 
-use App\Account\Enums\NotificationCategory;
+use App\Core\Enums\NotificationCategory;
 use Spatie\LaravelData\Data;
 
 class NotificationSettings extends Data

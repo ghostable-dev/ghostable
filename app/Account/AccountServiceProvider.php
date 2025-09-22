@@ -14,6 +14,7 @@ class AccountServiceProvider extends ServiceProvider
     {
         Relation::enforceMorphMap([
             'user' => 'App\Account\Models\User',
+            'mailing_list_email' => 'App\Account\Models\MailingListEmail',
         ]);
 
         if ($this->app->runningInConsole()) {
