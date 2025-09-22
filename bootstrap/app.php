@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->job(FoldUsageCounters::class)->everyMinute();
     })
+    ->withCommands([
+        RunSeriesCampaignCommand::class
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
         $middleware->validateCsrfTokens(except: [
