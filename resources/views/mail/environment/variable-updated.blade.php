@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+    
     <x-mail.simple.paragraph>
         The <strong>{{ $variable->key }}</strong> variable was updated in the
         <strong>{{ $environment->name }}</strong> environment for the

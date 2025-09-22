@@ -28,18 +28,17 @@ trait HasNotificationsScopes
     }
 
     /**
-     * Read users.notifications.preferences[$key] as a boolean.
-     * Works even if notifications/preferences/key is missing or NULL.
-     *
-     * MySQL 8+: JSON_UNQUOTE(JSON_EXTRACT(...)) returns 'true'/'false' strings.
+     * Read notifications.preferences[$key] as a boolean.
+     * Works even if the key is missing or NULL.
      */
     public function withPreferenceEnabled(NotificationCategory $category): Builder
     {
-        // Path like $.preferences.blog (properly quoted)
-        $jsonPath = $this->jsonPath("preferences.$category->value");
+        $table = $this->getModel()->getTable();
 
-        // COALESCE to default when JSON_EXTRACT is NULL (missing key or null value)
-        $sql = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`users`.`notifications`, ?)), ?) = 'true'";
+        // Path like $.preferences.blog
+        $jsonPath = $this->jsonPath("preferences.{$category->value}");
+
+        $sql = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`{$table}`.`notifications`, ?)), ?) = 'true'";
 
         return $this->whereRaw($sql, [$jsonPath, 'true']);
     }

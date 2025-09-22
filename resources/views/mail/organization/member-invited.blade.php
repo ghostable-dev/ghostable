@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         <strong>{{ $invite->user->email }}</strong> invited
         <strong>{{ $invite->email }}</strong> to the

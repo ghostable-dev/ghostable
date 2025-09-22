@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         The <strong>{{ $secret->name }}</strong> secret was updated on Ghostable.
     </x-mail.simple.paragraph>

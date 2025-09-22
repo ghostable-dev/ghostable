@@ -1,35 +1,29 @@
 <?php
 
-namespace App\Messaging\Campaigns;
+namespace App\Messaging\Campaigns\Drip;
 
 use App\Account\Models\MailingListEmail;
 use App\Account\Models\User;
 use App\Core\Enums\NotificationCategory;
-use App\Messaging\Entities\CampaignSchedule;
-use App\Messaging\Mail\CreateOrgOnboarding;
+use App\Messaging\Mail\Drip\CliSetupNudgeMailable;
 use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Database\Eloquent\Builder;
 
-class CreateOrgOnboardingCampaign extends DripCampaign
+class CliSetupNudge extends DripCampaign
 {
     public function key(): string
     {
-        return 'drip.create-org.v1';
+        return 'drip.cli-setup.v1';
     }
 
     public function audience(Builder $query): Builder
     {
-        return $query->doesntHave('organizations');
+        return $query->doesntHave('tokens');
     }
 
     public function mailable(User|MailingListEmail $user): Mailable
     {
-        return new CreateOrgOnboarding($user);
-    }
-
-    public function schedule(): CampaignSchedule
-    {
-        return new CampaignSchedule;
+        return new CliSetupNudgeMailable($user);
     }
 
     public function categories(): array

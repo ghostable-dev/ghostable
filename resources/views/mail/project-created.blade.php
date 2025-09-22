@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>Project created</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         A new project named <strong>{{ $project->name }}</strong> was created in the
         <strong>{{ $project->organization->name }}</strong> organization on Ghostable.

@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>Invitation to Ghostable</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         {{ $organization->owner->name }} ({{ $organization->owner->email }}) invited
         you to collaborate on the <strong>{{ $organization->name }}</strong> organization on Ghostable.

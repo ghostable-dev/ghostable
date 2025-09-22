@@ -5,12 +5,14 @@ namespace App\Filament\Pages;
 use App\Account\Models\User;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
+use App\Blog\Models\Post;
 use App\Environment\Models\Environment;
 use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Notifications\VariableUpdatedNotification;
 use App\Messaging\Mail\CreateOrgOnboarding;
+use App\Messaging\Mail\NewPostPublishedMailable;
 use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
 use App\Organization\Notifications\AccessChangeNotification;
@@ -39,12 +41,13 @@ class EmailTemplates extends Page
 
     protected string $view = 'filament.pages.email-templates';
 
-    public string $notificationClass = ProjectCreatedNotification::class;
+    public string $notificationClass = NewPostPublishedMailable::class;
 
     #[Computed(persist: true)]
     public function notifications(): array
     {
         return [
+            NewPostPublishedMailable::class,
             VerifyEmailNotification::class,
             ResetPasswordNotification::class,
             ProjectCreatedNotification::class,
@@ -107,6 +110,11 @@ class EmailTemplates extends Page
         return $invite;
     }
 
+    private function samplePost(): Post
+    {
+        return Post::first();
+    }
+
     private function sampleEnvironmentVariable(): EnvironmentVariable
     {
         return $this->sampleEnvironment()->variables->first();
@@ -123,6 +131,7 @@ class EmailTemplates extends Page
     public function html(): ?string
     {
         return match ($this->notificationClass) {
+            NewPostPublishedMailable::class => (new NewPostPublishedMailable($this->user(), $this->samplePost()))->render(),
             VerifyEmailNotification::class => (new VerifyEmailNotification)->toMail($this->user())->render(),
             ResetPasswordNotification::class => (new ResetPasswordNotification('example-token'))->toMail($this->user())->render(),
             ProjectCreatedNotification::class => (new ProjectCreatedNotification($this->sampleProject()))->toMail($this->user())->render(),

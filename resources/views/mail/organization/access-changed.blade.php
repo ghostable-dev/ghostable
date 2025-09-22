@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         Permissions for <strong>{{ $user->email }}</strong> were updated in the
         <strong>{{ $organization->name }}</strong> organization on Ghostable.

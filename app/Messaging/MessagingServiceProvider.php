@@ -2,16 +2,40 @@
 
 namespace App\Messaging;
 
-use App\Messaging\Campaigns\CreateOrgOnboardingCampaign;
+use App\Messaging\Campaigns\Broadcast\PostPublished;
+use App\Messaging\Campaigns\Drip\CliSetupNudge;
+use App\Messaging\Campaigns\Drip\CliSetupReminder;
+use App\Messaging\Campaigns\Drip\OrganizationSetupNudge;
+use App\Messaging\Campaigns\Drip\OrganizationSetupReminder;
+use App\Messaging\Campaigns\Drip\Series\OnboardingSeries;
 use App\Messaging\Commands\RunMessagingCampaign;
+use App\Messaging\Commands\RunOnboardingSeries;
+use App\Messaging\Commands\RunSeries;
 use App\Messaging\Listeners\MarkMessageAsSent;
 use App\Messaging\Registry\CampaignRegistry;
+use App\Messaging\Registry\SeriesRegistry;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class MessagingServiceProvider extends ServiceProvider
 {
+    protected $commands = [
+        RunMessagingCampaign::class,
+        RunSeries::class
+    ];
+    
+    protected $drips = [
+        OrganizationSetupNudge::class,
+        OrganizationSetupReminder::class,
+        CliSetupNudge::class,
+        CliSetupReminder::class,
+    ];
+
+    protected $broadcasts = [
+        PostPublished::class,
+    ];
+
     public function boot(): void
     {
         Event::listen(MessageSent::class, MarkMessageAsSent::class);
@@ -20,16 +44,33 @@ class MessagingServiceProvider extends ServiceProvider
     public function register(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                RunMessagingCampaign::class,
-            ]);
+            $this->commands($this->commands);
         }
 
-        $this->app->singleton(CampaignRegistry::class, function () {
-            $registry = new CampaignRegistry;
-            $registry->register(new CreateOrgOnboardingCampaign);
+        $this->registerCampaigns();
 
-            return $registry;
+        $this->registerSeries();
+    }
+
+    protected function registerCampaigns(): void
+    {
+        $this->app->singleton(CampaignRegistry::class, fn () => tap(new CampaignRegistry, function (CampaignRegistry $r) {
+            foreach ($this->drips as $cls) {
+                $r->register($this->app->make($cls));
+            }
+            foreach ($this->broadcasts as $cls) {
+                $r->registerBroadcast($cls);
+            }
+        }));
+    }
+
+    protected function registerSeries(): void
+    {
+        $this->app->singleton(SeriesRegistry::class, function () {
+            $m = new SeriesRegistry;
+            $m->register(OnboardingSeries::make());
+
+            return $m;
         });
     }
 }

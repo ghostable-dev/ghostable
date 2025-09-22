@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         A new environment named <strong>{{ $environment->name }}</strong> was created for the
         <strong>{{ $environment->project->name }}</strong> project in the

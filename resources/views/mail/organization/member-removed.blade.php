@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         <strong>{{ $removedUser->email }}</strong> was removed from the
         <strong>{{ $organization->name }}</strong> organization on Ghostable.
