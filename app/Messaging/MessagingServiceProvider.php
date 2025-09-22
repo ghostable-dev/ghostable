@@ -5,6 +5,8 @@ namespace App\Messaging;
 use App\Messaging\Campaigns\Broadcast\PostPublished;
 use App\Messaging\Campaigns\Drip\CliSetupNudge;
 use App\Messaging\Campaigns\Drip\CliSetupReminder;
+use App\Messaging\Campaigns\Drip\InviteMembersNudge;
+use App\Messaging\Campaigns\Drip\InviteMembersReminder;
 use App\Messaging\Campaigns\Drip\OrganizationSetupNudge;
 use App\Messaging\Campaigns\Drip\OrganizationSetupReminder;
 use App\Messaging\Campaigns\Drip\Series\OnboardingSeries;
@@ -29,6 +31,8 @@ class MessagingServiceProvider extends ServiceProvider
         OrganizationSetupReminder::class,
         CliSetupNudge::class,
         CliSetupReminder::class,
+        InviteMembersNudge::class,
+        InviteMembersReminder::class,
     ];
 
     protected $broadcasts = [
