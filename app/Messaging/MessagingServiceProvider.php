@@ -8,9 +8,8 @@ use App\Messaging\Campaigns\Drip\CliSetupReminder;
 use App\Messaging\Campaigns\Drip\OrganizationSetupNudge;
 use App\Messaging\Campaigns\Drip\OrganizationSetupReminder;
 use App\Messaging\Campaigns\Drip\Series\OnboardingSeries;
-use App\Messaging\Commands\RunMessagingCampaign;
-use App\Messaging\Commands\RunOnboardingSeries;
-use App\Messaging\Commands\RunSeries;
+use App\Messaging\Commands\RunBroadcastCampaignCommand;
+use App\Messaging\Commands\RunSeriesCampaignCommand;
 use App\Messaging\Listeners\MarkMessageAsSent;
 use App\Messaging\Registry\CampaignRegistry;
 use App\Messaging\Registry\SeriesRegistry;
@@ -21,10 +20,10 @@ use Illuminate\Support\ServiceProvider;
 class MessagingServiceProvider extends ServiceProvider
 {
     protected $commands = [
-        RunMessagingCampaign::class,
-        RunSeries::class
+        RunBroadcastCampaignCommand::class,
+        RunSeriesCampaignCommand::class,
     ];
-    
+
     protected $drips = [
         OrganizationSetupNudge::class,
         OrganizationSetupReminder::class,

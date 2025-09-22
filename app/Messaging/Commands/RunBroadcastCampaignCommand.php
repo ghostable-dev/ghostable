@@ -4,18 +4,44 @@ namespace App\Messaging\Commands;
 
 use App\Messaging\Actions\GetCampaignAudience;
 use App\Messaging\Contracts\Campaign;
-use App\Messaging\Jobs\RunCampaign;
 use App\Messaging\Registry\CampaignRegistry;
 use Exception;
 use Illuminate\Console\Command;
 
-abstract class CampaignRunnerCommand extends Command
+class RunBroadcastCampaignCommand extends Command
 {
-    protected function runCampaign(string $key): void
-    {
-        RunCampaign::dispatch($key);
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'messaging:run-broadcast-campaign 
+        {campaign_key : The campaign key to run}
+        {--plan : Show who would receive this campaign instead of dispatching it}';
 
-        $this->info("Campaign [{$key}] dispatched.");
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    public function handle()
+    {
+        $campaign = $this->resolveCampaignFromKey($this->argument('campaign_key'));
+        if (! $campaign) {
+            return self::FAILURE;
+        }
+
+        if ($this->option('plan')) {
+            $this->displayPlan($campaign);
+
+            return self::SUCCESS;
+        }
+
+        $this->runCampaign($campaign->key());
+
+        return self::SUCCESS;
     }
 
     protected function resolveCampaignFromKey(?string $key): ?Campaign
@@ -58,5 +84,12 @@ abstract class CampaignRunnerCommand extends Command
         }
 
         $this->info("Total eligible recipients: {$count}");
+    }
+
+    protected function runCampaign(string $key): void
+    {
+        RunBroadcastCampaign::dispatch($key);
+
+        $this->info("Campaign [{$key}] dispatched.");
     }
 }

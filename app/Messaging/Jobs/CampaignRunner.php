@@ -13,22 +13,20 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-class RunCampaign implements ShouldQueue
+abstract class CampaignRunner implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $campaignKey) {}
-
-    public function handle(): void
-    {
-        $campaign = $this->resolveCampaign($this->campaignKey);
-        if (! $campaign) {
-            return;
-        }
-
+    /**
+     * Iterate the campaign audience and invoke $callback for each recipient that passes gates.
+     */
+    protected function withEligibleAudience(
+        Campaign $campaign,
+        callable $callback,
+        ?callable $extraGate = null
+    ): void {
         $schedule = $campaign->schedule();
-
-        $builders = resolve(GetCampaignAudience::class)->handle($campaign);
+        $builders = app(GetCampaignAudience::class)->handle($campaign);
 
         foreach ($builders as $builder) {
             foreach ($builder->cursor() as $recipient) {
@@ -41,7 +39,11 @@ class RunCampaign implements ShouldQueue
                 if (! $campaign->eligible($recipient)) {
                     continue;
                 }
-                $this->send($campaign, $recipient);
+                if ($extraGate && $extraGate($recipient) === false) {
+                    continue;
+                }
+
+                $callback($recipient);
             }
         }
     }

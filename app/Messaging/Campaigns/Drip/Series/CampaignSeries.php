@@ -20,6 +20,19 @@ class CampaignSeries
     ) {}
 
     /**
+     * @return string[]
+     */
+    public function keys(CampaignRegistry $registry): array
+    {
+        $all = [];
+        foreach ($this->steps as $step) {
+            $all = array_merge($all, $this->keysForStep($registry, $step));
+        }
+
+        return array_values(array_unique($all));
+    }
+
+    /**
      * Decide which campaign key (if any) should be sent to the given user right now.
      */
     public function nextKeyFor(User $user, CampaignRegistry $registry): ?string
