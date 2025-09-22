@@ -27,10 +27,6 @@
                       
                                 <x-mail.simple.card-logo/>
 
-                                <h1 class="h1" style="color:#171717;color:var(--text, #171717);margin:0 0 30px;font-size:48px;line-height:48px;font-weight:400;text-wrap:balance;font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">
-                                    @yield('title')
-                                </h1>
-
                                 @yield('content')
                                 
                                 <p style="margin-top:96px;font-size:12px;line-height:22px;color:#9b9b9b;color:var(--muted, #9b9b9b);font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">
@@ -43,7 +39,13 @@
                                 
                                 <p style="margin-bottom:16px;font-size:12px;line-height:22px;color:#9b9b9b;color:var(--muted, #9b9b9b);font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">
                                     &copy; {{ date('Y') }} Ghostable. @lang('All rights reserved.')<br/>
+                                    @if($unsubscribable ?? false && $unsubscribe_url ?? false)
+                                        <a 
+                                            href="{{ $unsubscribe_url }}"
+                                            style="font-size:12px;line-height:22px;color:#9b9b9b;color:var(--muted, #9b9b9b);font-family:-apple-system,BlinkMacSystemFont,'Albert Sans',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;">Unsubscribe</a>
+                                    @endif
                                 </p>
+                                
                             </td>
                         </tr>
                     </table>

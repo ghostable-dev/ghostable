@@ -1,6 +1,7 @@
 <?php
 
 use App\Api\Jobs\FoldUsageCounters;
+use App\Messaging\Commands\RunSeriesCampaignCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule) {
         $schedule->job(FoldUsageCounters::class)->everyMinute();
+        $schedule->call(RunSeriesCampaignCommand::class)->hourlyAt(7);
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();

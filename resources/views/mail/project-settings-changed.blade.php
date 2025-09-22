@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>Project updated</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         Settings for the <strong>{{ $project->name }}</strong> project in the
         <strong>{{ $project->organization->name }}</strong> organization were updated on Ghostable.

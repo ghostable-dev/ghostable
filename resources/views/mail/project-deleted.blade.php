@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>Project deleted</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         The project <strong>{{ $project->name }}</strong> was deleted from the
         <strong>{{ $project->organization->name }}</strong> organization on Ghostable.

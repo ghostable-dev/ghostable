@@ -8,6 +8,8 @@
 
 @section('content')
 
+    <x-mail.simple.title>{{ $title }}</x-mail.simple.title>
+
     <x-mail.simple.paragraph>
         The <strong>{{ $environment->name }}</strong> environment was deleted from the
         <strong>{{ $environment->project->name }}</strong> project in the
