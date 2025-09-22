@@ -31,13 +31,13 @@
                         <x-billing.plan-card 
                             name="Free" 
                             price="0"
-                            description="Everything you need to get started."
+                            description="Ideal for individuals and small projects exploring Ghostable."
                             pl=""
                             :features="[
                                 'Up to 2 Users',
                                 'Up to 5,000 API Operations',
-                                'Unlimted Projects',
-                                'Unlimted Environments',
+                                'Unlimited Projects',
+                                'Unlimited Environments',
                                 'CLI Access',
                                 'CI/CD Workflows',
                                 'Secrets Management',
@@ -48,7 +48,7 @@
                             name="Standard" 
                             price="15" 
                             featured
-                            description="Everything you need to get started"
+                            description="Perfect for growing teams that need collaboration and security controls."
                             :features="[
                                 'Up to 5 Users',
                                 'Up to 25,000 API Operations',
@@ -60,13 +60,13 @@
                             name="Scale" 
                             price="50"
                             pr=""
-                            description="Predictable pricing for scaling SaaS teams with CI/CD"
+                            description="Designed for scaling SaaS teams with advanced compliance and CI/CD needs."
                             :features="[
                                 'Up to 10 Users',
                                 'Up to 60,000 API Operations',
                                 'Everything from Standard',
                                 '60 Day Audit History',
-                                'SOC2 Integrations'
+                                //'SOC2 Integrations'
                             ]"/>
                     </div>
                 </div>  
