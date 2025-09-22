@@ -16,12 +16,14 @@ use Illuminate\Support\Facades\Mail;
 class SendMessage implements ShouldQueue
 {
     use Queueable;
+    
+    public $tries = 25;
 
     public function __construct(public Message $message) {}
 
     public function middleware(): array
     {
-        return [(new RateLimited(MessagingServiceProvider::MAIL_GLOBAL_LIMITER))->releaseAfter(10)];
+        return [(new RateLimited(MessagingServiceProvider::MAIL_GLOBAL_LIMITER))->releaseAfter(1)];
     }
 
     public function handle(CampaignRegistry $registry): void
