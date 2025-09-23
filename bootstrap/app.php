@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule) {
         $schedule->job(FoldUsageCounters::class)->everyMinute();
-        $schedule->call(new RunSeriesCampaignCommand, ['name' => 'onboarding'])->hourlyAt(7);
+        $schedule->command(RunSeriesCampaignCommand::class, ['name' => 'onboarding'])->hourlyAt(7);
     })
     ->withCommands([
         RunSeriesCampaignCommand::class,
