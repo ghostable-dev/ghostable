@@ -11,8 +11,8 @@ use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Notifications\VariableUpdatedNotification;
-use App\Messaging\Mail\CreateOrgOnboarding;
-use App\Messaging\Mail\NewPostPublishedMailable;
+use App\Messaging\Mail\Broadcast\PostPublishedMailable;
+use App\Messaging\Mail\Drip\OrganizationSetupNudgeMailable;
 use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
 use App\Organization\Notifications\AccessChangeNotification;
@@ -41,13 +41,13 @@ class EmailTemplates extends Page
 
     protected string $view = 'filament.pages.email-templates';
 
-    public string $notificationClass = NewPostPublishedMailable::class;
+    public string $notificationClass = PostPublishedMailable::class;
 
     #[Computed(persist: true)]
     public function notifications(): array
     {
         return [
-            NewPostPublishedMailable::class,
+            PostPublishedMailable::class,
             VerifyEmailNotification::class,
             ResetPasswordNotification::class,
             ProjectCreatedNotification::class,
@@ -63,7 +63,7 @@ class EmailTemplates extends Page
             EnvironmentDeletedNotification::class,
             VariableUpdatedNotification::class,
             SecretUpdatedNotification::class,
-            CreateOrgOnboarding::class,
+            OrganizationSetupNudgeMailable::class,
         ];
     }
 
@@ -131,7 +131,7 @@ class EmailTemplates extends Page
     public function html(): ?string
     {
         return match ($this->notificationClass) {
-            NewPostPublishedMailable::class => (new NewPostPublishedMailable($this->user(), $this->samplePost()))->render(),
+            PostPublishedMailable::class => (new PostPublishedMailable($this->user(), $this->samplePost()))->render(),
             VerifyEmailNotification::class => (new VerifyEmailNotification)->toMail($this->user())->render(),
             ResetPasswordNotification::class => (new ResetPasswordNotification('example-token'))->toMail($this->user())->render(),
             ProjectCreatedNotification::class => (new ProjectCreatedNotification($this->sampleProject()))->toMail($this->user())->render(),
@@ -147,7 +147,7 @@ class EmailTemplates extends Page
             EnvironmentDeletedNotification::class => (new EnvironmentDeletedNotification($this->sampleEnvironment()))->toMail($this->user())->render(),
             VariableUpdatedNotification::class => (new VariableUpdatedNotification($this->sampleEnvironmentVariable()))->toMail($this->user())->render(),
             SecretUpdatedNotification::class => (new SecretUpdatedNotification($this->sampleSecret()))->toMail($this->user())->render(),
-            CreateOrgOnboarding::class => (new CreateOrgOnboarding($this->user()))->render(),
+            OrganizationSetupNudgeMailable::class => (new OrganizationSetupNudgeMailable($this->user()))->render(),
             default => null,
         };
     }
