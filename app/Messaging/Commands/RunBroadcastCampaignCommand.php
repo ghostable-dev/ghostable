@@ -4,6 +4,7 @@ namespace App\Messaging\Commands;
 
 use App\Messaging\Actions\GetCampaignAudience;
 use App\Messaging\Contracts\Campaign;
+use App\Messaging\Jobs\RunBroadcastCampaign;
 use App\Messaging\Registry\CampaignRegistry;
 use Exception;
 use Illuminate\Console\Command;
