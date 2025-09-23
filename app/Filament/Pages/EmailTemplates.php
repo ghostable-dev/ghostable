@@ -11,8 +11,6 @@ use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Notifications\VariableUpdatedNotification;
-use App\Messaging\Campaigns\Drip\CliSetupNudge;
-use App\Messaging\Campaigns\Drip\OrganizationSetupReminder;
 use App\Messaging\Mail\Broadcast\PostPublishedMailable;
 use App\Messaging\Mail\Drip\CliSetupNudgeMailable;
 use App\Messaging\Mail\Drip\InviteMembersNudgeMailable;
@@ -47,11 +45,11 @@ class EmailTemplates extends Page
     protected string $view = 'filament.pages.email-templates';
 
     public string $notificationClass = PostPublishedMailable::class;
-    
+
     public ?string $previewPostId = null;
-    
+
     public bool $as_reminder = false;
-    
+
     #[Computed(persist: true)]
     public function notifications(): array
     {
@@ -83,7 +81,7 @@ class EmailTemplates extends Page
             ],
         ];
     }
-    
+
     #[Computed(persist: true)]
     public function publishedPosts(): Collection
     {
@@ -138,7 +136,7 @@ class EmailTemplates extends Page
         if ($this->previewPostId) {
             return Post::find($this->previewPostId);
         }
-        
+
         return Post::first();
     }
 
