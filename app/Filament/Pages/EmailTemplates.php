@@ -11,7 +11,11 @@ use App\Environment\Notifications\EnvironmentCreatedNotification;
 use App\Environment\Notifications\EnvironmentDeletedNotification;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Notifications\VariableUpdatedNotification;
+use App\Messaging\Campaigns\Drip\CliSetupNudge;
+use App\Messaging\Campaigns\Drip\OrganizationSetupReminder;
 use App\Messaging\Mail\Broadcast\PostPublishedMailable;
+use App\Messaging\Mail\Drip\CliSetupNudgeMailable;
+use App\Messaging\Mail\Drip\InviteMembersNudgeMailable;
 use App\Messaging\Mail\Drip\OrganizationSetupNudgeMailable;
 use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
@@ -29,6 +33,7 @@ use App\Secret\Models\Secret;
 use App\Secret\Notifications\SecretUpdatedNotification;
 use BackedEnum;
 use Filament\Pages\Page;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use UnitEnum;
@@ -42,29 +47,47 @@ class EmailTemplates extends Page
     protected string $view = 'filament.pages.email-templates';
 
     public string $notificationClass = PostPublishedMailable::class;
-
+    
+    public ?string $previewPostId = null;
+    
+    public bool $as_reminder = false;
+    
     #[Computed(persist: true)]
     public function notifications(): array
     {
         return [
-            PostPublishedMailable::class,
-            VerifyEmailNotification::class,
-            ResetPasswordNotification::class,
-            ProjectCreatedNotification::class,
-            ProjectDeletedNotification::class,
-            ProjectSettingsChangedNotification::class,
-            MemberInvitedNotification::class,
-            MemberJoinedNotification::class,
-            MemberRemovedNotification::class,
-            AccessChangeNotification::class,
-            OrganizationSettingsChangedNotification::class,
-            InviteNotification::class,
-            EnvironmentCreatedNotification::class,
-            EnvironmentDeletedNotification::class,
-            VariableUpdatedNotification::class,
-            SecretUpdatedNotification::class,
-            OrganizationSetupNudgeMailable::class,
+            'transactional' => [
+                VerifyEmailNotification::class,
+                ResetPasswordNotification::class,
+                ProjectCreatedNotification::class,
+                ProjectDeletedNotification::class,
+                ProjectSettingsChangedNotification::class,
+                MemberInvitedNotification::class,
+                MemberJoinedNotification::class,
+                MemberRemovedNotification::class,
+                AccessChangeNotification::class,
+                OrganizationSettingsChangedNotification::class,
+                InviteNotification::class,
+                EnvironmentCreatedNotification::class,
+                EnvironmentDeletedNotification::class,
+                VariableUpdatedNotification::class,
+                SecretUpdatedNotification::class,
+            ],
+            'broadcast' => [
+                PostPublishedMailable::class,
+            ],
+            'drip' => [
+                OrganizationSetupNudgeMailable::class,
+                CliSetupNudgeMailable::class,
+                InviteMembersNudgeMailable::class,
+            ],
         ];
+    }
+    
+    #[Computed(persist: true)]
+    public function publishedPosts(): Collection
+    {
+        return Post::published()->get();
     }
 
     #[Computed(persist: true)]
@@ -112,6 +135,10 @@ class EmailTemplates extends Page
 
     private function samplePost(): Post
     {
+        if ($this->previewPostId) {
+            return Post::find($this->previewPostId);
+        }
+        
         return Post::first();
     }
 
@@ -147,7 +174,9 @@ class EmailTemplates extends Page
             EnvironmentDeletedNotification::class => (new EnvironmentDeletedNotification($this->sampleEnvironment()))->toMail($this->user())->render(),
             VariableUpdatedNotification::class => (new VariableUpdatedNotification($this->sampleEnvironmentVariable()))->toMail($this->user())->render(),
             SecretUpdatedNotification::class => (new SecretUpdatedNotification($this->sampleSecret()))->toMail($this->user())->render(),
-            OrganizationSetupNudgeMailable::class => (new OrganizationSetupNudgeMailable($this->user()))->render(),
+            OrganizationSetupNudgeMailable::class => (new OrganizationSetupNudgeMailable($this->user(), $this->as_reminder))->render(),
+            CliSetupNudgeMailable::class => (new CliSetupNudgeMailable($this->user(), $this->as_reminder))->render(),
+            InviteMembersNudgeMailable::class => (new InviteMembersNudgeMailable($this->user(), $this->as_reminder))->render(),
             default => null,
         };
     }
