@@ -12,6 +12,10 @@
             'secrets management'
         ]"/>
 @endpush
+
+@pushIf($recaptchaEnabled, 'scripts')
+    <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
+@endPushIf
     
 <x-layouts.guest title="Contact" canonical="{{ route('contact') }}">
     <div class="px-6 lg:px-8 py-16 bg-white">
@@ -70,7 +74,3 @@
         </div>
     </div>
 </x-layouts.guest>
-
-@pushIf($recaptchaEnabled, 'scripts')
-    <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}"></script>
-@endPushIf
