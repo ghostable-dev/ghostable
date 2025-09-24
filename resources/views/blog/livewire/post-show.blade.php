@@ -11,6 +11,18 @@
     <x-blog-posting-schema :post="$post"/>
 @endpush --}}
 
+@push('head')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+@endpush
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+    <script>
+      hljs.highlightAll();
+    </script>
+@endpush
+
 <div>
     <div class="px-6 lg:px-8 bg-white pt-10">
         <div class="mt-4 mx-auto max-w-2xl lg:max-w-7xl">
