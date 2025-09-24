@@ -25,6 +25,14 @@ class MessagingServiceProvider extends ServiceProvider
 {
     public const MAIL_GLOBAL_LIMITER = 'mail-global';
 
+    public const MAILS_PER_SECOND = 2;
+
+    public const MAILS_PER_MINUTE = 110;
+
+    public const MAIL_SECOND_KEY = self::MAIL_GLOBAL_LIMITER.':sec';
+
+    public const MAIL_MINUTE_KEY = self::MAIL_GLOBAL_LIMITER.':min';
+
     protected $commands = [
         RunBroadcastCampaignCommand::class,
         RunSeriesCampaignCommand::class,
@@ -46,8 +54,8 @@ class MessagingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for(self::MAIL_GLOBAL_LIMITER, fn () => [
-            Limit::perSecond(2)->by(self::MAIL_GLOBAL_LIMITER.':sec'),
-            Limit::perMinute(110)->by(self::MAIL_GLOBAL_LIMITER.':min'),
+            Limit::perSecond(self::MAILS_PER_SECOND)->by(self::MAIL_SECOND_KEY),
+            Limit::perMinute(self::MAILS_PER_MINUTE)->by(self::MAIL_MINUTE_KEY),
         ]);
 
         Event::listen(MessageSent::class, MarkMessageAsSent::class);

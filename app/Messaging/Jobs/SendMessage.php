@@ -3,7 +3,7 @@
 namespace App\Messaging\Jobs;
 
 use App\Messaging\Enums\MessageStatus;
-use App\Messaging\MessagingServiceProvider;
+use App\Messaging\Middleware\ThrottleMailDelivery;
 use App\Messaging\Models\Message;
 use App\Messaging\Registry\CampaignRegistry;
 use Exception;
@@ -11,7 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
@@ -32,7 +31,7 @@ class SendMessage implements ShouldQueue
 
     public function middleware(): array
     {
-        return [(new RateLimited(MessagingServiceProvider::MAIL_GLOBAL_LIMITER))->releaseAfter(1)];
+        return [new ThrottleMailDelivery];
     }
 
     public function handle(CampaignRegistry $registry): void
