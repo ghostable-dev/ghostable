@@ -27,7 +27,7 @@ class PostsIndex extends Component
                 return $posts->ofCategory($this->category);
             })
             ->latest('posted_at')
-            ->paginate(2);
+            ->paginate(8);
     }
 
     #[Computed(persist: true)]
