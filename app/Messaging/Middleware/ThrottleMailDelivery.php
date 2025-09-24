@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class ThrottleMailDelivery
 {
-    public function __construct(private readonly int $sleepMilliseconds = 200)
-    {
-    }
+    public function __construct(private readonly int $sleepMilliseconds = 200) {}
 
     public function handle($job, Closure $next)
     {

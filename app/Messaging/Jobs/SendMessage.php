@@ -31,7 +31,7 @@ class SendMessage implements ShouldQueue
 
     public function middleware(): array
     {
-        return [new ThrottleMailDelivery()];
+        return [new ThrottleMailDelivery];
     }
 
     public function handle(CampaignRegistry $registry): void

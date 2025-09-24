@@ -24,9 +24,13 @@ use Illuminate\Support\ServiceProvider;
 class MessagingServiceProvider extends ServiceProvider
 {
     public const MAIL_GLOBAL_LIMITER = 'mail-global';
+
     public const MAILS_PER_SECOND = 2;
+
     public const MAILS_PER_MINUTE = 110;
+
     public const MAIL_SECOND_KEY = self::MAIL_GLOBAL_LIMITER.':sec';
+
     public const MAIL_MINUTE_KEY = self::MAIL_GLOBAL_LIMITER.':min';
 
     protected $commands = [
