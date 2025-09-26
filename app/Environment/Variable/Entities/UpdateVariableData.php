@@ -3,6 +3,7 @@
 namespace App\Environment\Variable\Entities;
 
 use App\Account\Models\User;
+use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Models\EnvironmentVariable;
 
 class UpdateVariableData
@@ -10,6 +11,7 @@ class UpdateVariableData
     public function __construct(
         public EnvironmentVariable $variable,
         public string $value,
+        public ?DeliveryMode $delivery_mode,
         public ?bool $is_commented = null,
         public ?bool $is_override = null,
         public ?User $updatedBy = null,

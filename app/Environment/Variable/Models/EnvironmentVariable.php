@@ -9,6 +9,7 @@ use App\Environment\Variable\Actions\LogVariableActivity;
 use App\Environment\Variable\Builders\VariableBuilder;
 use App\Environment\Variable\Casts\EncryptedVariableValue;
 use App\Environment\Variable\Concerns\HasSecretValues;
+use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Versioning\Actions\CreateVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use Database\Factories\EnvironmentVariableFactory;
@@ -80,6 +81,7 @@ class EnvironmentVariable extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'delivery_mode',
         'is_commented',
         'is_deleted',
         'is_override',
@@ -91,8 +93,9 @@ class EnvironmentVariable extends Model
     ];
 
     protected $casts = [
-        'value' => EncryptedVariableValue::class,
+        'delivery_mode' => DeliveryMode::class,
         'last_updated_at' => 'datetime',
+        'value' => EncryptedVariableValue::class,
     ];
 
     protected static function booted(): void

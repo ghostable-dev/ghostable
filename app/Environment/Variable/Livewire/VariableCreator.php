@@ -10,6 +10,7 @@ use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Actions\GetSuggestedVariableValues;
 use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Environment\Variable\Rules\VariableRules;
 use App\Organization\Enums\OrganizationPermission;
@@ -22,26 +23,16 @@ use Livewire\Component;
 
 class VariableCreator extends Component
 {
-    /**
-     * Events
-     */
     public const CREATED = 'variable-creator:created';
 
-    /**
-     * The ID of the environment currently being managed.
-     */
     #[Locked]
     public string $envId;
 
-    /**
-     * The key of the environment variable being created.
-     */
     public string $key = '';
 
-    /**
-     * The value of the environment variable being created.
-     */
     public string $value = '';
+
+    public DeliveryMode $delivery_mode = DeliveryMode::STANDARD;
 
     public function mount(Environment $environment): void
     {

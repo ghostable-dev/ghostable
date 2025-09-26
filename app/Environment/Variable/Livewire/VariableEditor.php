@@ -10,8 +10,10 @@ use App\Environment\Variable\Actions\LogVariableRevealed;
 use App\Environment\Variable\Actions\UpdateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Entities\UpdateVariableData;
+use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Rules\VariableRules;
+use App\Project\Enums\DeploymentProvider;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -34,6 +36,11 @@ class VariableEditor extends VariableModalComponent
     public string $value = '';
 
     /**
+     * The "delivery_mode" of the variable (only applies to Vapor deployment types.)
+     */
+    public DeliveryMode $delivery_mode;
+
+    /**
      * Livewire event listener to launch the environment variable modal.
      */
     #[On(self::LAUNCH)]
@@ -43,6 +50,8 @@ class VariableEditor extends VariableModalComponent
 
         $this->value = $variable->value;
 
+        $this->delivery_mode = $variable->delivery_mode;
+
         if ($variable->isSecret()) {
             app(LogVariableRevealed::class)->handle($variable);
         }
@@ -50,6 +59,18 @@ class VariableEditor extends VariableModalComponent
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
         parent::launchModal($variable, $targetEnvironment);
+    }
+
+    #[Computed(persist: false)]
+    public function isVaporProject(): bool
+    {
+        return $this->targetEnvironment()?->project->deployment_provider === DeploymentProvider::LARAVEL_VAPOR;
+    }
+
+    #[Computed(persist: true)]
+    public function deliveryModes(): array
+    {
+        return DeliveryMode::cases();
     }
 
     /**
@@ -102,7 +123,8 @@ class VariableEditor extends VariableModalComponent
     #[Computed]
     public function noChangesWereMade(): bool
     {
-        return $this->value === $this->variable?->value;
+        return $this->value === $this->variable?->value
+            && $this->delivery_mode === $this->variable?->delivery_mode;
     }
 
     /**
@@ -113,6 +135,7 @@ class VariableEditor extends VariableModalComponent
         resolve(UpdateVariable::class)->handle(
             new UpdateVariableData(
                 variable: $this->variable,
+                delivery_mode: $input['delivery_mode'],
                 value: $input['value'] ?? '',
                 updatedBy: Auth::user()
             )
@@ -131,6 +154,7 @@ class VariableEditor extends VariableModalComponent
                 environment: $this->targetEnvironment,
                 key: $this->variable->key,
                 value: $input['value'],
+                delivery_mode: $input['delivery_mode'],
                 is_override: true,
                 createdBy: Auth::user()
             )
@@ -147,7 +171,7 @@ class VariableEditor extends VariableModalComponent
      */
     protected function resetValues(): void
     {
-        $this->reset('value', 'environmentVariableId', 'targetEnvironmentId');
+        $this->reset('value', 'delivery_mode', 'environmentVariableId', 'targetEnvironmentId');
     }
 
     public function render()
@@ -178,6 +202,22 @@ class VariableEditor extends VariableModalComponent
                                 </flux:autocomplete.item>
                             @endforeach
                         </flux:autocomplete>
+                        @if($this->isVaporProject)
+                            <flux:radio.group 
+                                label="Delivery Mode" 
+                                wire:model.live="delivery_mode"
+                                variant="cards"
+                                class="flex-col">
+                                @foreach($this->deliveryModes as $mode)
+                                    <flux:radio
+                                        name="delivery_mode"
+                                        value="{{ $mode->value }}"
+                                        label="{{ $mode->label() }}"
+                                        description="{{ $mode->description() }}"
+                                    />
+                                @endforeach
+                            </flux:radio.group>
+                        @endif
                     </div>
                     <div class="flex gap-2">
                         <flux:spacer />

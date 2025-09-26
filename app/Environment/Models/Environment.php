@@ -91,17 +91,17 @@ class Environment extends Model implements SupportsOverrides
     use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'type',
-        'is_restricted',
         'file_format',
+        'is_restricted',
+        'name',
         'notifications',
+        'type',
     ];
 
     protected $casts = [
-        'type' => EnvironmentType::class,
         'file_format' => EnvFileFormat::class,
         'notifications' => EnvironmentNotificationsData::class.':default',
+        'type' => EnvironmentType::class,
     ];
 
     // protected static function booted(): void
