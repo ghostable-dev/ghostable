@@ -2,11 +2,10 @@
 
 namespace App\Environment\Validation\Actions;
 
-use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Models\Environment;
+use App\Environment\Resolvers\ResolveEnvironmentVariables;
 use App\Environment\Validation\Factories\EnvironmentValidationPlanFactory;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class ValidateEnvironment
 {
@@ -14,99 +13,77 @@ class ValidateEnvironment
         protected EnvironmentValidationPlanFactory $planFactory
     ) {}
 
-    /**
-     * Validate the given environment variables against the environment's rules.
-     *
-     * If no data is provided, the environment's current variables will be used.
-     *
-     * @param  array<string, mixed>|null  $data
-     *
-     * @throws ValidationException
-     */
     public function handle(Environment $environment, ?array $data = null): void
     {
-        $data ??= resolve(ResolveEnvironmentVariables::class)
+        // Use resolved effective vars if none supplied
+        $data ??= app(ResolveEnvironmentVariables::class)
             ->handle($environment)
-            ->mapWithKeys(fn ($v) => [$v->key => $v->value])
+            ->mapWithKeys(fn ($v) => [$v->variable->key => $v->variable->value])
             ->toArray();
 
-        $rules = $this->buildRules($environment, $data);
+        $plan = $this->planFactory->make($environment);
+
+        // Build field rules & messages
+        $fieldRules = $this->buildFieldRuleMap($plan->fields());
+        $messages = $this->buildMessages($plan->fields());
+
+        // Attach env-level rules under a dummy key so they run in the same validator
+        if (! empty($plan->env())) {
+            $data['__env__'] = true;
+            $fieldRules['__env__'] = $plan->env(); // array of ValidationRule
+            // Optional: nicer label
+            $messages['__env__.EnsureVaporBudgetNotExceeded'] ??= 'Environment configuration is invalid.';
+        }
 
         Validator::make(
             data: $data,
-            rules: $rules,
-            attributes: $this->attributeNames($rules),
-            messages: $this->buildMessages($environment),
+            rules: $fieldRules,
+            attributes: $this->attributeNames($fieldRules),
+            messages: $messages,
         )->validate();
     }
 
-    /**
-     * Convert FieldRules into a Laravel-compatible validation rule array.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, array<int, string|\Closure|\Illuminate\Contracts\Validation\ValidationRule>>
-     */
-    protected function buildRules(Environment $environment, array $data): array
+    /** @param \App\Environment\Validation\Entities\FieldRules[] $fieldRuleObjs */
+    protected function buildFieldRuleMap(array $fieldRuleObjs): array
     {
-        $fieldRules = $this->planFactory->make($environment);
-
-        $ruleMap = [];
-
-        foreach ($fieldRules as $field) {
-            $ruleMap[$field->key] = collect($field->providers)
+        $rules = [];
+        foreach ($fieldRuleObjs as $fr) {
+            $rules[$fr->key] = collect($fr->providers)
                 ->flatMap(fn ($provider) => (array) $provider->rule())
                 ->values()
                 ->all();
         }
 
-        return $ruleMap;
+        return $rules;
     }
 
-    /**
-     * Build a map of custom validation messages from the FieldRules.
-     *
-     * @return array<string, string>
-     */
-    protected function buildMessages(Environment $environment): array
+    /** @param \App\Environment\Validation\Entities\FieldRules[] $fieldRuleObjs */
+    protected function buildMessages(array $fieldRuleObjs): array
     {
-        $fieldRules = $this->planFactory->make($environment);
-
         $messages = [];
-
-        foreach ($fieldRules as $field) {
-            foreach ($field->providers as $provider) {
-                // We assume each provider handles a single rule
+        foreach ($fieldRuleObjs as $fr) {
+            foreach ($fr->providers as $provider) {
                 $rule = $provider->rule();
-
-                // If it's a string like "min:3", extract the rule name
                 if (is_string($rule)) {
-                    $ruleName = explode(':', $rule)[0];
+                    $name = explode(':', $rule)[0];
                 } elseif (is_object($rule)) {
-                    $ruleName = class_basename($rule);
-                } elseif ($rule instanceof \Closure) {
-                    continue; // Laravel doesn’t support named messages for closures
+                    $name = class_basename($rule);
                 } else {
                     continue;
                 }
-
-                $messages["{$field->key}.{$ruleName}"] = $provider->message();
+                $messages["{$fr->key}.{$name}"] = $provider->message();
             }
         }
 
         return $messages;
     }
 
-    /**
-     * Map rule keys back to human-readable attribute names for error messages.
-     *
-     * @param  array<string, mixed>  $rules
-     * @return array<string, string>
-     */
     private function attributeNames(array $rules): array
     {
-        return array_combine(
-            array_keys($rules),
-            array_keys($rules)
-        );
+        // Give the dummy key a human label
+        $names = array_keys($rules);
+        $labels = array_map(fn ($k) => $k === '__env__' ? 'environment' : $k, $names);
+
+        return array_combine($names, $labels);
     }
 }

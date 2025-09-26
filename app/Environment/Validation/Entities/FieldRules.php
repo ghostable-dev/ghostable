@@ -14,9 +14,9 @@ final class FieldRules extends Data
      * @param  KeyRuleProvider[]  $providers
      */
     public function __construct(
-        public readonly string $key,
+        public string $key,
 
         // #[DataCollectionOf(KeyRuleProvider::class)]
-        public readonly array $providers,
+        public array $providers,
     ) {}
 }

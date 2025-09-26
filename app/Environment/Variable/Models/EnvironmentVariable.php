@@ -4,6 +4,7 @@ namespace App\Environment\Variable\Models;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
+use App\Environment\Variable\Actions\CalculateLineBytes;
 use App\Environment\Variable\Actions\LogVariableActivity;
 use App\Environment\Variable\Builders\VariableBuilder;
 use App\Environment\Variable\Casts\EncryptedVariableValue;
@@ -79,13 +80,14 @@ class EnvironmentVariable extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'key',
-        'value',
         'is_commented',
-        'is_override',
         'is_deleted',
+        'is_override',
+        'key',
         'last_updated_at',
         'last_updated_by',
+        'line_bytes',
+        'value',
     ];
 
     protected $casts = [
@@ -99,6 +101,10 @@ class EnvironmentVariable extends Model
             if ($variable->value !== null) {
                 $variable->value = $variable->value;
             }
+        });
+
+        static::saving(function ($var) {
+            $var->line_bytes = resolve(CalculateLineBytes::class)->handle($var);
         });
     }
 

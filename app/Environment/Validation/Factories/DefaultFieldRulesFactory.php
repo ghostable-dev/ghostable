@@ -2,26 +2,23 @@
 
 namespace App\Environment\Validation\Factories;
 
-use App\Environment\Validation\Entities\FieldRules;
+use App\Environment\Models\Environment;
+use App\Environment\Validation\Contracts\MakesValidationPlan;
+use App\Environment\Validation\Entities\EnvironmentValidationPlan;
 use App\Environment\Variable\Registry\VariableDefinition;
 use App\Environment\Variable\Registry\VariableRegistry;
 
-final class DefaultFieldRulesFactory
+class DefaultFieldRulesFactory implements MakesValidationPlan
 {
-    public function __construct(
-        protected VariableRegistry $registry
-    ) {}
+    public function __construct(protected VariableRegistry $registry) {}
 
-    /**
-     * Build FieldRules for all known variable definitions.
-     *
-     * @return FieldRules[]
-     */
-    public function make(): array
+    public function make(Environment $environment): EnvironmentValidationPlan
     {
-        return collect($this->registry->all())
+        $fieldRules = collect($this->registry->all())
             ->map(fn (VariableDefinition $definition) => $definition->fieldRules())
             ->values()
             ->all();
+
+        return new EnvironmentValidationPlan(fieldRules: $fieldRules);
     }
 }
