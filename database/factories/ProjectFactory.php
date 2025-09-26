@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Organization\Models\Organization;
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,6 +18,7 @@ class ProjectFactory extends Factory
     {
         return [
             'name' => fake()->unique()->company(),
+            'deployment_provider' => DeploymentProvider::OTHER,
             'organization_id' => Organization::factory(),
         ];
     }

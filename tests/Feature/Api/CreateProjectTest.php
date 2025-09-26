@@ -1,6 +1,7 @@
 <?php
 
 use App\Organization\Enums\OrganizationRole;
+use App\Project\Enums\DeploymentProvider;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -17,7 +18,7 @@ test('unauthenticated users cannot create projects', function () {
 
 test('persists a new project record and returns JSON shape', function () {
     Sanctum::actingAs($this->ray);
-    $payload = ['name' => 'Website'];
+    $payload = ['name' => 'Website', 'deployment_provider' => DeploymentProvider::LARAVEL_CLOUD->value];
     $this->postJson($this->endpoint, $payload)
         ->assertStatus(201)
         ->assertJsonStructure([
@@ -26,6 +27,7 @@ test('persists a new project record and returns JSON shape', function () {
                 'name',
                 'slug',
                 'organization_id',
+                'deployment_provider',
                 'environments',
                 'created_at',
                 'updated_at',
@@ -33,6 +35,7 @@ test('persists a new project record and returns JSON shape', function () {
         ]);
 
     $project = $this->organization->fresh()->projects()->where($payload)->first();
+
     $this->assertNotNull($project);
 });
 

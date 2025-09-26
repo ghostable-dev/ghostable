@@ -3,7 +3,9 @@
 namespace App\Project\Rules;
 
 use App\Organization\Models\Organization;
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
+use Illuminate\Validation\Rule;
 
 class ProjectRules
 {
@@ -11,6 +13,7 @@ class ProjectRules
     {
         return [
             'name' => self::nameRules(),
+            'deployment_provider' => self::deploymentProviderRules(),
         ];
     }
 
@@ -19,6 +22,7 @@ class ProjectRules
         return [
             'name' => self::nameRules(),
             'description' => self::descriptionRules(),
+            'deployment_provider' => self::deploymentProviderRules(),
         ];
     }
 
@@ -30,5 +34,10 @@ class ProjectRules
     public static function descriptionRules(): array
     {
         return ['nullable', 'string', 'max:250'];
+    }
+
+    public static function deploymentProviderRules(): array
+    {
+        return [Rule::enum(DeploymentProvider::class)];
     }
 }
