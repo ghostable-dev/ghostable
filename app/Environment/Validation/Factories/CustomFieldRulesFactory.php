@@ -4,36 +4,27 @@ namespace App\Environment\Validation\Factories;
 
 use App\Environment\Models\Environment;
 use App\Environment\Validation\Actions\ResolveEnvironmentVariableRules;
+use App\Environment\Validation\Contracts\MakesValidationPlan;
+use App\Environment\Validation\Entities\EnvironmentValidationPlan;
 use App\Environment\Validation\Entities\FieldRules;
 use App\Environment\Validation\Entities\RuleParameters;
 use App\Environment\Validation\Models\EnvironmentVariableRule;
 
-final class CustomFieldRulesFactory
+class CustomFieldRulesFactory implements MakesValidationPlan
 {
-    public function __construct(
-        protected KeyRuleProviderCollectionFactory $providerFactory,
-    ) {}
+    public function __construct(protected KeyRuleProviderCollectionFactory $providerFactory) {}
 
-    /**
-     * Build FieldRules for all user-defined rules
-     * attached to the given environment.
-     *
-     * @return FieldRules[]
-     */
-    public function makeFromEnvironment(Environment $environment): array
+    public function make(Environment $environment): EnvironmentValidationPlan
     {
-        $rules = resolve(ResolveEnvironmentVariableRules::class)
+        $fieldRules = resolve(ResolveEnvironmentVariableRules::class)
             ->handle($environment)
-            ->reject(fn (EnvironmentVariableRule $rule) => $rule->is_deleted);
-
-        return $rules
+            ->reject(fn (EnvironmentVariableRule $rule) => $rule->is_deleted)
             ->map(fn (EnvironmentVariableRule $rule) => $this->makeFromRule($rule))
             ->all();
+
+        return new EnvironmentValidationPlan(fieldRules: $fieldRules);
     }
 
-    /**
-     * Build FieldRules from a single EnvironmentVariableRule.
-     */
     public function makeFromRule(EnvironmentVariableRule $rule): FieldRules
     {
         $parameters = RuleParameters::fromEnvironmentVariableRule($rule);

@@ -3,6 +3,7 @@
 namespace App\Core\Providers;
 
 use App\Account\Models\User;
+use App\Core\Commands\TempBackfillVariableLengths;
 use App\Core\Events\InquiryCreated;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\SeoMeta;
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([TempBackfillVariableLengths::class]);
+        }
+
         Blade::component('seo-meta', SeoMeta::class);
 
         RateLimiter::for('contact', function (Request $request) {

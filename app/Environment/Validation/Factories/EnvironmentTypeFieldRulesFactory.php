@@ -3,6 +3,9 @@
 namespace App\Environment\Validation\Factories;
 
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\Environment;
+use App\Environment\Validation\Contracts\MakesValidationPlan;
+use App\Environment\Validation\Entities\EnvironmentValidationPlan;
 use App\Environment\Validation\Entities\FieldRules;
 use App\Environment\Validation\Entities\RuleParameters;
 use App\Environment\Validation\Rules\EnumKeyRule;
@@ -12,21 +15,17 @@ use App\Environment\Validation\Rules\StringKeyRule;
 use App\Environment\Variable\Definitions\AppDebug;
 use App\Environment\Variable\Definitions\AppEnv;
 
-final class EnvironmentTypeFieldRulesFactory
+class EnvironmentTypeFieldRulesFactory implements MakesValidationPlan
 {
-    /**
-     * Get the default FieldRules for a given EnvironmentType.
-     *
-     * @return FieldRules[]
-     */
-    public function makeFromType(EnvironmentType $type): array
+    public function make(Environment $environment): EnvironmentValidationPlan
     {
-        return $this->defaultRuleMap()[$type->value] ?? [];
+        // dd($this->defaultRuleMap()[$environment->type->value] ?? []);
+        return new EnvironmentValidationPlan(
+            fieldRules: $this->defaultRuleMap()[$environment->type->value] ?? []
+        );
     }
 
     /**
-     * Returns default FieldRules by environment type.
-     *
      * @return array<string, FieldRules[]>
      */
     protected function defaultRuleMap(): array
