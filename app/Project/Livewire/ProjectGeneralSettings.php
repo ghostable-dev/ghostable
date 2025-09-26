@@ -3,7 +3,9 @@
 namespace App\Project\Livewire;
 
 use App\Organization\Enums\OrganizationPermission;
-use App\Project\Actions\UpdateProjectName;
+use App\Project\Actions\UpdateProjectSettings;
+use App\Project\Entities\UpdateProjectSettingsPayload;
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use App\Project\Rules\ProjectRules;
@@ -27,6 +29,11 @@ class ProjectGeneralSettings extends Component
      */
     public ?string $description;
 
+    /**
+     * The deployment provider for the given project.
+     */
+    public DeploymentProvider $deployment_provider;
+
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
@@ -34,6 +41,7 @@ class ProjectGeneralSettings extends Component
         $this->projectId = $project->id;
         $this->name = $project->name;
         $this->description = $project->description;
+        $this->deployment_provider = $project->deployment_provider;
     }
 
     /**
@@ -43,6 +51,12 @@ class ProjectGeneralSettings extends Component
     public function project(): Project
     {
         return ResolveProject::onceWithContext($this->projectId);
+    }
+
+    #[Computed(persist: true)]
+    public function deploymentProviders(): array
+    {
+        return DeploymentProvider::cases();
     }
 
     /**
@@ -72,10 +86,13 @@ class ProjectGeneralSettings extends Component
 
         $validated = $this->validate(ProjectRules::updateRules($this->project));
 
-        app(UpdateProjectName::class)->handle(
+        resolve(UpdateProjectSettings::class)->handle(
             project: $this->project,
-            name: $validated['name'],
-            description: $validated['description']
+            payload: new UpdateProjectSettingsPayload(
+                name: $validated['name'],
+                description: $validated['description'],
+                deploymentProvider: $validated['deployment_provider']
+            )
         );
 
         $this->project->refresh();

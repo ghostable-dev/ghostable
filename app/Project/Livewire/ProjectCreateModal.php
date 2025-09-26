@@ -4,6 +4,8 @@ namespace App\Project\Livewire;
 
 use App\Organization\Models\Organization;
 use App\Project\Actions\CreateProject;
+use App\Project\Entities\CreateProjectPayload;
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +17,29 @@ class ProjectCreateModal extends Component
 {
     public string $name = '';
 
+    public DeploymentProvider $deploymentProvider = DeploymentProvider::OTHER;
+
+    public bool $withDefaultEnvironments = true;
+
+    #[Computed(persist: true)]
+    public function deploymentProviders(): array
+    {
+        return DeploymentProvider::cases();
+    }
+
     public function create()
     {
         $this->authorize('create', [Project::class, $this->organization]);
 
         try {
-            app(CreateProject::class)->handle(name: $this->name, organization: $this->organization);
+            resolve(CreateProject::class)->handle(
+                new CreateProjectPayload(
+                    name: $this->name,
+                    organization: $this->organization,
+                    deploymentProvider: $this->deploymentProvider,
+                    withDefaultEnvironments: $this->withDefaultEnvironments
+                )
+            );
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('project_limit')) {
                 Flux::modal('upgrade-project-limit')->show();
@@ -49,13 +68,28 @@ class ProjectCreateModal extends Component
     {
         return <<<'BLADE'
             <div>
-                <flux:modal name="create-project" class="md:w-96">
+                <flux:modal name="create-project" class="md:w-lg">
                     <form wire:submit="create" class="space-y-6">
                         <div>
                             <flux:heading size="lg">Create Project</flux:heading>
                             <flux:text class="mt-2"></flux:text>
                         </div>
                         <flux:input label="Name" wire:model="name" required />
+                        <flux:switch 
+                            label="Create default environments?" 
+                            wire:model="withDefaultEnvironments" 
+                            description="Automatically set up common environments (production, staging, development, local) to get your project started quickly."
+                            required />
+                        <flux:select 
+                            variant="listbox" 
+                            label="Deployment Provider" 
+                            wire:model="deploymentProvider" 
+                            description:trailing="This helps Ghostable enable provider-specific controls and integrations for your project."
+                            required>
+                            @foreach($this->deploymentProviders as $provider)
+                                <flux:select.option value="{{ $provider->value }}">{{ $provider->label() }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
                         <div class="flex gap-2">
                             <flux:spacer />
                             <flux:modal.close>

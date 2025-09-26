@@ -8,6 +8,8 @@ use App\Api\Resources\Project\ProjectResource;
 use App\Core\Http\Controllers\Controller;
 use App\Organization\Models\Organization;
 use App\Project\Actions\CreateProject as CreateProjectAction;
+use App\Project\Entities\CreateProjectPayload;
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
 use App\Project\Rules\ProjectRules;
 use Illuminate\Http\Request;
@@ -26,9 +28,13 @@ final class CreateProject extends Controller
 
         $validated = $request->validate(ProjectRules::createRules($organization));
 
-        $project = app(CreateProjectAction::class)->handle(
-            name: $validated['name'],
-            organization: $organization
+        $project = resolve(CreateProjectAction::class)->handle(
+            new CreateProjectPayload(
+                name: $validated['name'],
+                organization: $organization,
+                deploymentProvider: DeploymentProvider::from($validated['deployment_provider']),
+                withDefaultEnvironments: true
+            )
         );
 
         return new ProjectResource($project->load('environments'));

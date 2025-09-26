@@ -1,5 +1,6 @@
 <?php
 
+use App\Project\Enums\DeploymentProvider;
 use App\Project\Livewire\ProjectGeneralSettings;
 use App\Project\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,11 +18,13 @@ test('project settings can be updated and deleted', function () {
     Livewire::test(ProjectGeneralSettings::class, ['project' => $project])
         ->set('name', 'New Name')
         ->set('description', 'Desc')
+        ->set('deployment_provider', DeploymentProvider::LARAVEL_CLOUD)
         ->call('updateProject');
 
     $project = $project->fresh();
     expect($project->name)->toBe('New Name');
     expect($project->description)->toBe('Desc');
+    expect($project->deployment_provider)->toBe(DeploymentProvider::LARAVEL_CLOUD);
 
     Livewire::test(ProjectGeneralSettings::class, ['project' => $project])
         ->call('deleteProject')

@@ -28,6 +28,16 @@
                 <form class="w-full space-y-6">
                     <flux:input wire:model="name" label="Name" :readonly="!$this->canEdit" required/>
                     <flux:textarea wire:model="description" label="Description" :readonly="!$this->canEdit"/>
+                    <flux:select 
+                        variant="listbox" 
+                        label="Deployment Provider" 
+                        wire:model="deployment_provider" 
+                        description:trailing="This helps Ghostable enable provider-specific controls and integrations for your project."
+                        required>
+                        @foreach($this->deploymentProviders as $provider)
+                            <flux:select.option value="{{ $provider->value }}">{{ $provider->label() }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
                 </form>
             </x-section>
 
