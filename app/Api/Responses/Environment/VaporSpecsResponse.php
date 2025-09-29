@@ -33,7 +33,7 @@ final class VaporSpecsResponse implements JsonSerializable
      */
     public static function build(iterable $variables, array $providerParams, callable $encryptor): self
     {
-        $response = new self();
+        $response = new self;
         $response->provider_params = $providerParams;
 
         $standard = [];
