@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Validation\ValidationException;
 
-final class DeployEnvironment extends Controller
+class DeployEnvironment extends Controller
 {
     /**
      * Validate and return environment variables for deployment.
@@ -23,14 +23,10 @@ final class DeployEnvironment extends Controller
     {
         $environment = $this->resolveEnvironmentFromToken();
 
-        // Validate
         try {
-            app(Validate::class)->handle($environment);
+            $this->validate($environment);
         } catch (ValidationException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->errors(),
-            ], 422);
+            return $this->validationErrors($e);
         }
 
         $vars = resolve(ResolveEnvironmentVariables::class)->handle($environment);
@@ -38,7 +34,7 @@ final class DeployEnvironment extends Controller
         return EnvironmentVariableResource::collection($vars);
     }
 
-    private function resolveEnvironmentFromToken(): Environment
+    protected function resolveEnvironmentFromToken(): Environment
     {
         $actor = request()->user();
 
@@ -49,5 +45,18 @@ final class DeployEnvironment extends Controller
         }
 
         return $actor;
+    }
+
+    protected function validate(Environment $environment): void
+    {
+        app(Validate::class)->handle($environment);
+    }
+
+    protected function validationErrors(ValidationException $e): JsonResponse
+    {
+        return response()->json([
+            'message' => $e->getMessage(),
+            'errors' => $e->errors(),
+        ], 422);
     }
 }

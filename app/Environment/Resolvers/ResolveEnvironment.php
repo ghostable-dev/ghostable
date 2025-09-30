@@ -13,6 +13,7 @@ class ResolveEnvironment
                 'base',
                 'derived',
                 'variables',
+                'project',
                 'project.environments',
                 'project.organization',
                 'project.organization.projects',

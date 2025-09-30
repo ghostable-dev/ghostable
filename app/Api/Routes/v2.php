@@ -3,6 +3,7 @@
 use App\Api\Http\Controllers\Auth\LoginViaCli;
 use App\Api\Http\Controllers\Environment\CreateEnvironment;
 use App\Api\Http\Controllers\Environment\DeployEnvironment;
+use App\Api\Http\Controllers\Environment\DeployProviderEnvironment;
 use App\Api\Http\Controllers\Environment\DiffEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\Http\Controllers\Environment\GetEnvironment;
@@ -50,6 +51,7 @@ Route::middleware('api.version:v2')->group(function () {
         Route::middleware(TrackUsage::class)->group(function () {
 
             Route::get('/ci/deploy', DeployEnvironment::class);
+            Route::get('/ci/deploy/provider', DeployProviderEnvironment::class);
 
             Route::get('/organizations/{organization}/projects', GetProjects::class);
             Route::post('/organizations/{organization}/projects', CreateProject::class);

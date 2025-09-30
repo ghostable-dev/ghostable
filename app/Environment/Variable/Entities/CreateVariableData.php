@@ -4,6 +4,7 @@ namespace App\Environment\Variable\Entities;
 
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
+use App\Environment\Variable\Enums\DeliveryMode;
 
 class CreateVariableData
 {
@@ -13,6 +14,7 @@ class CreateVariableData
         public Environment $environment,
         public string $key,
         public string $value,
+        public DeliveryMode $delivery_mode = DeliveryMode::STANDARD,
         public bool $is_commented = false,
         ?bool $is_override = null,
         public bool $is_deleted = false,
