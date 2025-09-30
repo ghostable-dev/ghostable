@@ -126,12 +126,12 @@ class VariableEditor extends VariableModalComponent
     private function update(array $input): void
     {
         resolve(UpdateVariable::class)->handle(
-                new UpdateVariableData(
-                    variable: $this->variable,
-                    vapor_secret: $input['vapor_secret'] ?? null,
-                    value: $input['value'] ?? '',
-                    updatedBy: Auth::user()
-                )
+            new UpdateVariableData(
+                variable: $this->variable,
+                vapor_secret: $input['vapor_secret'] ?? null,
+                value: $input['value'] ?? '',
+                updatedBy: Auth::user()
+            )
         );
 
         $this->successToast('Variable Updated', "“{$this->variable->key}” was successfully updated.");
@@ -143,14 +143,14 @@ class VariableEditor extends VariableModalComponent
     private function createOverride(array $input): void
     {
         resolve(CreateVariable::class)->handle(
-                new CreateVariableData(
-                    environment: $this->targetEnvironment,
-                    key: $this->variable->key,
-                    value: $input['value'],
-                    vapor_secret: (bool) ($input['vapor_secret'] ?? false),
-                    is_override: true,
-                    createdBy: Auth::user()
-                )
+            new CreateVariableData(
+                environment: $this->targetEnvironment,
+                key: $this->variable->key,
+                value: $input['value'],
+                vapor_secret: (bool) ($input['vapor_secret'] ?? false),
+                is_override: true,
+                createdBy: Auth::user()
+            )
         );
 
         $this->successToast(

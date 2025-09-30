@@ -7,5 +7,5 @@ use App\Environment\Models\Environment;
 
 interface DeploymentProviderHandler
 {
-    public function toData(Environment $environment): DeploymentData;
+    public function toData(Environment $environment, bool $encrypted = false): DeploymentData;
 }

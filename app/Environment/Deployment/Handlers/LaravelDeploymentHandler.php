@@ -3,28 +3,11 @@
 namespace App\Environment\Deployment\Handlers;
 
 use App\Environment\Actions\RenderEnvironmentVariables;
-use App\Environment\Models\Environment;
-use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Collection;
 
 abstract class LaravelDeploymentHandler extends DeploymentHandler
 {
     protected bool $useEncryptedDelivery = false;
-
-    protected ?string $encryptionKey = null;
-
-    protected ?Encrypter $encrypter = null;
-
-    public function setEnvironment(Environment $environment): static
-    {
-        parent::setEnvironment($environment);
-
-        $this->encryptionKey = $environment->encryptionKeyString();
-
-        $this->encrypter = $environment->encrypter();
-
-        return $this;
-    }
 
     public function useEncryptedDelivery(bool $shouldEncrypt): static
     {
@@ -35,7 +18,7 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler
 
     protected function standardVariables(): Collection
     {
-        if ($this->useEncryptedDelivery) {
+        if ($this->encrypted) {
             return collect([$this->encryptionKeyVariable()]);
         }
 
@@ -63,7 +46,7 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler
 
     protected function encryptedVariables(): Collection
     {
-        if (! $this->useEncryptedDelivery) {
+        if (! $this->encrypted) {
             return collect();
         }
 

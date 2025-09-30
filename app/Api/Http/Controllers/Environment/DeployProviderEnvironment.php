@@ -30,7 +30,10 @@ class DeployProviderEnvironment extends DeployEnvironment
         }
 
         try {
-            return $this->buildDeploymentResource($environment);
+            return $this->buildDeploymentResource(
+                environment: $environment,
+                encrypted: request()->boolean('encrypted', false)
+            );
         } catch (InvalidArgumentException $e) {
             return $this->unsupportedDeploymentProvider();
         } catch (Throwable $e) {
@@ -38,18 +41,14 @@ class DeployProviderEnvironment extends DeployEnvironment
         }
     }
 
-    protected function buildDeploymentResource(Environment $environment): DeploymentResource
+    protected function buildDeploymentResource(Environment $environment, bool $encrypted = false): DeploymentResource
     {
         $handler = app(DeploymentProviderResolver::class)
             ->resolve($environment->project->deployment_provider->value);
 
-        $handlerEncrypted = request()->boolean('encrypted');
-
-        if (method_exists($handler, 'useEncryptedDelivery')) {
-            $handler->useEncryptedDelivery($handlerEncrypted);
-        }
-
-        return new DeploymentResource($handler->toData($environment));
+        return new DeploymentResource(
+            $handler->toData(environment: $environment, encrypted: $encrypted)
+        );
     }
 
     protected function unsupportedDeploymentProvider(): JsonResponse

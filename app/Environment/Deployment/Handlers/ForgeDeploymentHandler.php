@@ -8,14 +8,14 @@ use App\Project\Enums\DeploymentProvider;
 
 class ForgeDeploymentHandler extends LaravelDeploymentHandler
 {
-    public function toData(Environment $environment): DeploymentData
+    public function toData(Environment $environment, bool $encrypted = false): DeploymentData
     {
-        $this->setEnvironment($environment);
+        $this->setEnvironment(environment: $environment, encrypted: $encrypted);
 
         return new DeploymentData(
             provider: DeploymentProvider::LARAVEL_FORGE,
             standard: $this->standardVariables(),
-            encrypted: $this->useEncryptedDelivery ? $this->encryptedEnvFile() : null
+            encrypted: $encrypted ? $this->encryptedEnvFile() : null
         );
     }
 }
