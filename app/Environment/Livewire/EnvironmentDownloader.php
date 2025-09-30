@@ -54,7 +54,7 @@ class EnvironmentDownloader extends EnvironmentComponent
     {
         $this->authorize('perform', [$this->environment, OrganizationPermission::ViewVariables]);
 
-        $content = RenderEnvFile::handle(env: $this->environment, format: $this->fileFormat);
+        $content = resolve(RenderEnvFile::class)->handle(env: $this->environment, format: $this->fileFormat);
 
         app(LogEnvironmentDownloaded::class)->handle(
             environment: $this->environment,

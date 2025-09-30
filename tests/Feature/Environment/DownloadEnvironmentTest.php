@@ -39,7 +39,7 @@ it('downloads environment file with selected format without changing environment
 
     $this->actingAs($user);
 
-    $expected = RenderEnvFile::handle(env: $env, format: EnvFileFormat::ALPHABETICAL);
+    $expected = resolve(RenderEnvFile::class)->handle(env: $env, format: EnvFileFormat::ALPHABETICAL);
 
     Livewire::test(EnvironmentDownloader::class, ['environment' => $env->id])
         ->set('fileFormat', EnvFileFormat::ALPHABETICAL)

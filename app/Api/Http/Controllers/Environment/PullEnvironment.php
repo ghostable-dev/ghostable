@@ -75,7 +75,7 @@ final class PullEnvironment extends Controller
     {
         $formatEnum = $format ? EnvFileFormat::from($format) : null;
 
-        $content = RenderEnvFile::handle(env: $env, format: $formatEnum);
+        $content = resolve(RenderEnvFile::class)->handle(env: $env, format: $formatEnum);
 
         return response($content, 200, ['Content-Type' => 'text/plain; charset=utf-8']);
     }
