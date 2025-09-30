@@ -5,7 +5,6 @@ namespace App\Environment\Deployment\Handlers;
 use App\Environment\Actions\ResolveEnvironmentVariables;
 use App\Environment\Deployment\Contracts\DeploymentProviderHandler;
 use App\Environment\Models\Environment;
-use App\Environment\Variable\Enums\DeliveryMode;
 use Illuminate\Support\Collection;
 
 abstract class DeploymentHandler implements DeploymentProviderHandler
@@ -25,13 +24,20 @@ abstract class DeploymentHandler implements DeploymentProviderHandler
 
     protected function standardVariables(): Collection
     {
-        return $this->filteredByDeliveryMode(DeliveryMode::STANDARD);
+        return $this->nonSecretVariables();
     }
 
-    protected function filteredByDeliveryMode(DeliveryMode $mode): Collection
+    protected function secretVariables(): Collection
     {
-        return $this->variables->filter(
-            fn ($var) => $var->delivery_mode === $mode
-        )->values();
+        return $this->variables
+            ->filter(fn ($var) => (bool) $var->vapor_secret)
+            ->values();
+    }
+
+    protected function nonSecretVariables(): Collection
+    {
+        return $this->variables
+            ->filter(fn ($var) => ! $var->vapor_secret)
+            ->values();
     }
 }

@@ -4,9 +4,7 @@ namespace App\Environment\Variable\Rules;
 
 use App\Environment\Models\Environment;
 use App\Environment\Rules\UniqueEnvKey;
-use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Models\EnvironmentVariable;
-use Illuminate\Validation\Rule;
 
 class VariableRules
 {
@@ -18,7 +16,7 @@ class VariableRules
         return [
             'key' => self::createKeyRules($environment),
             'value' => self::valueRules(),
-            'delivery_mode' => self::deliveryModeRules(),
+            'vapor_secret' => self::vaporSecretRules(),
         ];
     }
 
@@ -30,7 +28,7 @@ class VariableRules
     {
         return [
             'value' => self::valueRules(),
-            'delivery_mode' => self::deliveryModeRules(),
+            'vapor_secret' => self::vaporSecretRules(required: false),
         ];
     }
 
@@ -72,8 +70,8 @@ class VariableRules
         return ['required', 'string'];
     }
 
-    public static function deliveryModeRules(): array
+    public static function vaporSecretRules(bool $required = true): array
     {
-        return ['required', Rule::enum(DeliveryMode::class)];
+        return [$required ? 'required' : 'sometimes', 'boolean'];
     }
 }

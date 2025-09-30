@@ -15,7 +15,7 @@ class ForgeDeploymentHandler extends LaravelDeploymentHandler
         return new DeploymentData(
             provider: DeploymentProvider::LARAVEL_FORGE,
             standard: $this->standardVariables(),
-            encrypted: $this->usesEncryptedDelivery ? $this->encryptedEnvFile() : null
+            encrypted: $this->useEncryptedDelivery ? $this->encryptedEnvFile() : null
         );
     }
 }

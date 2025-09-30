@@ -20,11 +20,11 @@ class CreateVariable
     {
         $var = new EnvironmentVariable([
             'key' => $data->key,
-            'delivery_mode' => $data->delivery_mode,
             'is_commented' => $data->is_commented,
             'is_override' => $data->is_override,
             'is_deleted' => $data->is_deleted,
             'last_updated_at' => now(),
+            'vapor_secret' => $data->vapor_secret,
         ]);
 
         // The value cast requires the environment relationship in order to

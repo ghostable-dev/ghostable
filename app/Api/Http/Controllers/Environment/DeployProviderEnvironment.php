@@ -40,8 +40,14 @@ class DeployProviderEnvironment extends DeployEnvironment
 
     protected function buildDeploymentResource(Environment $environment): DeploymentResource
     {
-        $handler = $handler = app(DeploymentProviderResolver::class)
+        $handler = app(DeploymentProviderResolver::class)
             ->resolve($environment->project->deployment_provider->value);
+
+        $handlerEncrypted = request()->boolean('encrypted');
+
+        if (method_exists($handler, 'useEncryptedDelivery')) {
+            $handler->useEncryptedDelivery($handlerEncrypted);
+        }
 
         return new DeploymentResource($handler->toData($environment));
     }

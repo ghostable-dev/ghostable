@@ -10,10 +10,10 @@ use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Actions\GetSuggestedVariableValues;
 use App\Environment\Variable\Actions\NormalizeVariableKey;
 use App\Environment\Variable\Entities\CreateVariableData;
-use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Environment\Variable\Rules\VariableRules;
 use App\Organization\Enums\OrganizationPermission;
+use App\Project\Enums\DeploymentProvider;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -32,7 +32,7 @@ class VariableCreator extends Component
 
     public string $value = '';
 
-    public DeliveryMode $delivery_mode = DeliveryMode::STANDARD;
+    public bool $vapor_secret = false;
 
     public function mount(Environment $environment): void
     {
@@ -122,7 +122,11 @@ class VariableCreator extends Component
 
         $validated = $this->validate(
             rules: VariableRules::create($this->environment),
-            attributes: ['key' => $this->key, 'value' => $this->value]
+            attributes: [
+                'key' => $this->key,
+                'value' => $this->value,
+                'vapor_secret' => $this->vapor_secret,
+            ]
         );
 
         $variable = app(CreateVariable::class)
@@ -131,7 +135,7 @@ class VariableCreator extends Component
         $this->dispatch(self::CREATED);
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
-        $this->reset('key', 'value');
+        $this->reset('key', 'value', 'vapor_secret');
         $this->refresh();
         Flux::toast("New variable '{$variable->key}' added.");
     }
@@ -149,6 +153,7 @@ class VariableCreator extends Component
             environment: $this->environment,
             key: $input['key'],
             value: $input['value'],
+            vapor_secret: (bool) ($input['vapor_secret'] ?? false),
             createdBy: Auth::user()
         );
     }
@@ -158,6 +163,12 @@ class VariableCreator extends Component
     {
         $this->environment->refresh();
         $this->keySuggestions();
+    }
+
+    #[Computed]
+    public function isVaporProject(): bool
+    {
+        return $this->environment->project->deployment_provider === DeploymentProvider::LARAVEL_VAPOR;
     }
 
     public function render()
@@ -174,9 +185,9 @@ class VariableCreator extends Component
                             :groupedSuggestions="$this->keySuggestions"/>
                     </div>
                     <div class="basis-1/2 grow-0">
-                        <flux:autocomplete 
-                            wire:model.live="value" 
-                            label="Value" 
+                        <flux:autocomplete
+                            wire:model.live="value"
+                            label="Value"
                             placeholder="{{ empty($this->key) ? 'we_got_one' : '' }}"
                             required>
                             @foreach($this->valueSuggestions as $suggestion)
@@ -186,10 +197,19 @@ class VariableCreator extends Component
                             @endforeach
                         </flux:autocomplete>
                     </div>
+                    @if($this->isVaporProject)
+                        <div class="flex-none">
+                            <flux:switch
+                                label="Store as Vapor Secret"
+                                description="Secrets deploy via AWS Secrets Manager on Vapor."
+                                wire:model.live="vapor_secret"
+                                align="left"/>
+                        </div>
+                    @endif
                     <div class="flex-none">
-                        <flux:button 
-                            type="submit" 
-                            variant="primary" 
+                        <flux:button
+                            type="submit"
+                            variant="primary"
                             icon:trailing="plus">
                             Add Variable
                         </flux:button>

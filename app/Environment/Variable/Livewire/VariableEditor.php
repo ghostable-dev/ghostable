@@ -10,7 +10,6 @@ use App\Environment\Variable\Actions\LogVariableRevealed;
 use App\Environment\Variable\Actions\UpdateVariable;
 use App\Environment\Variable\Entities\CreateVariableData;
 use App\Environment\Variable\Entities\UpdateVariableData;
-use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Environment\Variable\Rules\VariableRules;
 use App\Project\Enums\DeploymentProvider;
@@ -36,9 +35,9 @@ class VariableEditor extends VariableModalComponent
     public string $value = '';
 
     /**
-     * The "delivery_mode" of the variable (only applies to Vapor deployment types.)
+     * Whether the variable should be stored as a Vapor Secret.
      */
-    public DeliveryMode $delivery_mode;
+    public bool $vapor_secret = false;
 
     /**
      * Livewire event listener to launch the environment variable modal.
@@ -50,7 +49,7 @@ class VariableEditor extends VariableModalComponent
 
         $this->value = $variable->value;
 
-        $this->delivery_mode = $variable->delivery_mode;
+        $this->vapor_secret = (bool) $variable->vapor_secret;
 
         if ($variable->isSecret()) {
             app(LogVariableRevealed::class)->handle($variable);
@@ -65,12 +64,6 @@ class VariableEditor extends VariableModalComponent
     public function isVaporProject(): bool
     {
         return $this->targetEnvironment()?->project->deployment_provider === DeploymentProvider::LARAVEL_VAPOR;
-    }
-
-    #[Computed(persist: true)]
-    public function deliveryModes(): array
-    {
-        return DeliveryMode::cases();
     }
 
     /**
@@ -124,7 +117,7 @@ class VariableEditor extends VariableModalComponent
     public function noChangesWereMade(): bool
     {
         return $this->value === $this->variable?->value
-            && $this->delivery_mode === $this->variable?->delivery_mode;
+            && $this->vapor_secret === (bool) $this->variable?->vapor_secret;
     }
 
     /**
@@ -133,12 +126,12 @@ class VariableEditor extends VariableModalComponent
     private function update(array $input): void
     {
         resolve(UpdateVariable::class)->handle(
-            new UpdateVariableData(
-                variable: $this->variable,
-                delivery_mode: $input['delivery_mode'],
-                value: $input['value'] ?? '',
-                updatedBy: Auth::user()
-            )
+                new UpdateVariableData(
+                    variable: $this->variable,
+                    vapor_secret: $input['vapor_secret'] ?? null,
+                    value: $input['value'] ?? '',
+                    updatedBy: Auth::user()
+                )
         );
 
         $this->successToast('Variable Updated', "“{$this->variable->key}” was successfully updated.");
@@ -150,14 +143,14 @@ class VariableEditor extends VariableModalComponent
     private function createOverride(array $input): void
     {
         resolve(CreateVariable::class)->handle(
-            new CreateVariableData(
-                environment: $this->targetEnvironment,
-                key: $this->variable->key,
-                value: $input['value'],
-                delivery_mode: $input['delivery_mode'],
-                is_override: true,
-                createdBy: Auth::user()
-            )
+                new CreateVariableData(
+                    environment: $this->targetEnvironment,
+                    key: $this->variable->key,
+                    value: $input['value'],
+                    vapor_secret: (bool) ($input['vapor_secret'] ?? false),
+                    is_override: true,
+                    createdBy: Auth::user()
+                )
         );
 
         $this->successToast(
@@ -171,7 +164,7 @@ class VariableEditor extends VariableModalComponent
      */
     protected function resetValues(): void
     {
-        $this->reset('value', 'delivery_mode', 'environmentVariableId', 'targetEnvironmentId');
+        $this->reset('value', 'vapor_secret', 'environmentVariableId', 'targetEnvironmentId');
     }
 
     public function render()
@@ -203,20 +196,11 @@ class VariableEditor extends VariableModalComponent
                             @endforeach
                         </flux:autocomplete>
                         @if($this->isVaporProject)
-                            <flux:radio.group 
-                                label="Delivery Mode" 
-                                wire:model.live="delivery_mode"
-                                variant="cards"
-                                class="flex-col">
-                                @foreach($this->deliveryModes as $mode)
-                                    <flux:radio
-                                        name="delivery_mode"
-                                        value="{{ $mode->value }}"
-                                        label="{{ $mode->label() }}"
-                                        description="{{ $mode->description() }}"
-                                    />
-                                @endforeach
-                            </flux:radio.group>
+                            <flux:switch
+                                label="Store as Vapor Secret"
+                                description="Secrets deploy via AWS Secrets Manager on Vapor."
+                                wire:model.live="vapor_secret"
+                                align="left"/>
                         @endif
                     </div>
                     <div class="flex gap-2">

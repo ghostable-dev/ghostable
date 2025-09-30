@@ -21,10 +21,12 @@ class UpdateVariable
     {
         $data->variable->update([
             'value' => $data->value,
-            'delivery_mode' => $data->delivery_mode,
             'is_commented' => is_null($data->is_commented)
                 ? $data->variable->is_commented
                 : $data->is_commented,
+            'vapor_secret' => is_null($data->vapor_secret)
+                ? $data->variable->vapor_secret
+                : $data->vapor_secret,
             'last_updated_at' => now(),
             'last_updated_by' => $data->updatedBy?->id,
         ]);

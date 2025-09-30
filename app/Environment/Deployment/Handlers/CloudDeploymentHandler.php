@@ -15,7 +15,7 @@ class CloudDeploymentHandler extends LaravelDeploymentHandler
         return new DeploymentData(
             provider: DeploymentProvider::LARAVEL_CLOUD,
             standard: $this->standardVariables(),
-            encrypted: $this->usesEncryptedDelivery ? $this->encryptedEnvFile() : null
+            encrypted: $this->useEncryptedDelivery ? $this->encryptedEnvFile() : null
         );
     }
 }

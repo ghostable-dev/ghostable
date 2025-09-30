@@ -16,7 +16,7 @@ class VaporDeploymentHandler extends LaravelDeploymentHandler
             provider: DeploymentProvider::LARAVEL_VAPOR,
             standard: $this->standardVariables(),
             secret: $this->secretVariables(),
-            encrypted: $this->usesEncryptedDelivery ? $this->encryptedEnvFile() : null
+            encrypted: $this->useEncryptedDelivery ? $this->encryptedEnvFile() : null
         );
     }
 }

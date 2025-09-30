@@ -4,7 +4,6 @@ namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironmentVariables;
-use App\Environment\Variable\Enums\DeliveryMode;
 
 class SumResolvedLineBytes
 {
@@ -21,8 +20,7 @@ class SumResolvedLineBytes
                 $var = $data->variable;
 
                 // if ($onlyVaporSecrets) {
-                //     // Make sure your model casts delivery_mode to the enum
-                //     if ($var->delivery_mode !== DeliveryMode::VaporSecret) {
+                //     if (! $var->vapor_secret) {
                 //         return false;
                 //     }
                 // }

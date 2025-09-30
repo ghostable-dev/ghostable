@@ -1,6 +1,5 @@
 <?php
 
-use App\Environment\Variable\Enums\DeliveryMode;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('environment_variables', function (Blueprint $t) {
             $t->string('delivery_mode', 32)
-                ->default(DeliveryMode::STANDARD->value)
+                ->default('standard')
                 ->after('key')
                 ->index();
         });
