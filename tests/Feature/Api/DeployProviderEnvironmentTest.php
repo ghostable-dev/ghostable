@@ -36,7 +36,8 @@ beforeEach(function () {
         ->handle(name: 'deploy', environment: $this->environment);
 });
 
-function getPlan(array $query = []) {
+function getPlan(array $query = [])
+{
     $url = test()->endpoint;
 
     if (! empty($query)) {
