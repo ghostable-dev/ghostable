@@ -156,10 +156,18 @@ class Environment extends Model implements SupportsOverrides
 
     public function encrypter(?string $kekSalt = null): EncrypterContract
     {
+        return new Encrypter(
+            key: $this->derivedEncryptionKey($kekSalt),
+            cipher: config('app.cipher'),
+        );
+    }
+
+    protected function derivedEncryptionKey(?string $kekSalt = null): string
+    {
         $salt = $kekSalt ?? $this->kek_salt;
 
         if (! $salt) {
-            throw new RuntimeException('Environment missing KEK salt');
+            throw new RuntimeException('Environment missing KEK salt.');
         }
 
         $appKey = config('app.key');
@@ -168,9 +176,18 @@ class Environment extends Model implements SupportsOverrides
             $appKey = base64_decode(substr($appKey, 7));
         }
 
-        $key = hash_hkdf('sha256', $appKey, 32, 'env-kek', base64_decode($salt));
+        return hash_hkdf(
+            algo: 'sha256',
+            key: $appKey,
+            length: 32,
+            info: 'env-kek',
+            salt: base64_decode($salt)
+        );
+    }
 
-        return new Encrypter($key, config('app.cipher'));
+    public function encryptionKeyString(): string
+    {
+        return 'base64:'.base64_encode($this->derivedEncryptionKey());
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool
