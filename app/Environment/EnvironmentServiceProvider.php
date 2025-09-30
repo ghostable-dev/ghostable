@@ -2,6 +2,7 @@
 
 namespace App\Environment;
 
+use App\Environment\Deployment\DeploymentServiceProvider;
 use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
@@ -22,11 +23,17 @@ use Illuminate\Support\ServiceProvider;
 
 class EnvironmentServiceProvider extends ServiceProvider
 {
+    protected $providers = [
+        DeploymentServiceProvider::class,
+        VariableServiceProvider::class,
+        ValidationServiceProvider::class,
+    ];
+
     public function register(): void
     {
-        $this->app->register(VariableServiceProvider::class);
-
-        $this->app->register(ValidationServiceProvider::class);
+        foreach ($this->providers as $provider) {
+            $this->app->register($provider);
+        }
     }
 
     public function boot(): void
