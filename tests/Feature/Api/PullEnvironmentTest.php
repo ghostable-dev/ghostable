@@ -37,7 +37,7 @@ test('unauthenticated users cannot pull environment', function () {
 test('returns environment using default format when not specified', function () {
     Sanctum::actingAs($this->ray);
     $response = $this->get($this->endpoint);
-    $expected = RenderEnvFile::handle(env: $this->env, format: EnvFileFormat::GROUPED);
+    $expected = resolve(RenderEnvFile::class)->handle(env: $this->env, format: EnvFileFormat::GROUPED);
     $response->assertOk();
     expect($response->getContent())->toBe($expected);
 });
@@ -45,7 +45,7 @@ test('returns environment using default format when not specified', function () 
 test('returns environment using provided format', function () {
     Sanctum::actingAs($this->ray);
     $response = $this->get("{$this->endpoint}?format=".EnvFileFormat::ALPHABETICAL->value);
-    $expected = RenderEnvFile::handle(env: $this->env, format: EnvFileFormat::ALPHABETICAL);
+    $expected = resolve(RenderEnvFile::class)->handle(env: $this->env, format: EnvFileFormat::ALPHABETICAL);
     $response->assertOk();
     expect($response->getContent())->toBe($expected);
 });
