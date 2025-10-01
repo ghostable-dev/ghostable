@@ -5,7 +5,8 @@
     x-data="{ selected: '{{ $project->id }}' }" 
     x-init="$watch('selected', id => {
         if (id !== '{{ $project->id }}') {
-            window.location.href = `/projects/${id}`;
+            
+            window.location.href = `/projects/${id}/environments`;
         }
      })">
     <span class="block max-w-[8rem] truncate text-left">
