@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $is_commented
  * @property int $is_override
  * @property int $is_deleted
- * @property bool $vapor_secret
+ * @property bool $is_vapor_secret
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -89,13 +89,13 @@ class EnvironmentVariable extends Model
         'last_updated_by',
         'line_bytes',
         'value',
-        'vapor_secret',
+        'is_vapor_secret',
     ];
 
     protected $casts = [
         'last_updated_at' => 'datetime',
         'value' => EncryptedVariableValue::class,
-        'vapor_secret' => 'boolean',
+        'is_vapor_secret' => 'boolean',
     ];
 
     protected static function booted(): void

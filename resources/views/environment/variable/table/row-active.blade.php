@@ -1,5 +1,10 @@
 <flux:table.row wire:key="var-{{ $var }}">
     <flux:table.cell>
+        @if($var->is_vapor_secret)
+            <flux:tooltip position="left" content="Secrets sync back to Vapor using AWS Secrets Manager.">
+                <flux:button variant="subtle" size="xs" icon="aws"/>
+            </flux:tooltip>
+        @endif
         @if($var->inherited)
             <flux:tooltip content="{{ $var->origin }}">
                 <flux:button variant="subtle" icon="git-branch" size="xs" class="!text-brand"/>

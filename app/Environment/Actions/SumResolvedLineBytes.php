@@ -16,14 +16,14 @@ class SumResolvedLineBytes
         $resolved = $this->resolver->handle($env); // Collection<ResolvedVariableData>
 
         return $resolved
-            ->filter(function ($data) {
+            ->filter(function ($data) use ($onlyVaporSecrets) {
                 $var = $data->variable;
 
-                // if ($onlyVaporSecrets) {
-                //     if (! $var->vapor_secret) {
-                //         return false;
-                //     }
-                // }
+                if ($onlyVaporSecrets) {
+                    if (! $var->is_vapor_secret) {
+                        return false;
+                    }
+                }
 
                 // Skip null values (treat as empty string if you prefer to count them)
                 return $var->value !== null;

@@ -16,7 +16,7 @@ class VariableRules
         return [
             'key' => self::createKeyRules($environment),
             'value' => self::valueRules(),
-            'vapor_secret' => self::vaporSecretRules(),
+            'is_vapor_secret' => self::vaporSecretRules(),
         ];
     }
 
@@ -28,7 +28,7 @@ class VariableRules
     {
         return [
             'value' => self::valueRules(),
-            'vapor_secret' => self::vaporSecretRules(required: false),
+            'is_vapor_secret' => self::vaporSecretRules(required: false),
         ];
     }
 

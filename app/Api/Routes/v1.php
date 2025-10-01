@@ -51,7 +51,7 @@ Route::middleware('api.version:v1')->group(function () {
         Route::middleware(TrackUsage::class)->group(function () {
 
             Route::get('/ci/deploy', DeployEnvironment::class);
-            Route::get('/ci/deploy/provider', DeployProviderEnvironment::class);
+            Route::post('/ci/deploy/provider', DeployProviderEnvironment::class);
 
             Route::get('/organizations/{organization}/projects', GetProjects::class);
             Route::post('/organizations/{organization}/projects', CreateProject::class);

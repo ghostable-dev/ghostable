@@ -3,6 +3,7 @@
 namespace App\Environment\Deployment;
 
 use App\Environment\Deployment\Handlers\CloudDeploymentHandler;
+use App\Environment\Deployment\Handlers\DefaultDeploymentHandler;
 use App\Environment\Deployment\Handlers\ForgeDeploymentHandler;
 use App\Environment\Deployment\Handlers\VaporDeploymentHandler;
 use App\Project\Enums\DeploymentProvider;
@@ -14,6 +15,7 @@ class DeploymentServiceProvider extends ServiceProvider
     {
         $this->app->bind(DeploymentProviderResolver::class, function ($app) {
             return new DeploymentProviderResolver([
+                DeploymentProvider::OTHER->value => $app->make(DefaultDeploymentHandler::class),
                 DeploymentProvider::LARAVEL_CLOUD->value => $app->make(CloudDeploymentHandler::class),
                 DeploymentProvider::LARAVEL_FORGE->value => $app->make(ForgeDeploymentHandler::class),
                 DeploymentProvider::LARAVEL_VAPOR->value => $app->make(VaporDeploymentHandler::class),

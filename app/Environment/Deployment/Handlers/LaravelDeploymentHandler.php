@@ -3,33 +3,36 @@
 namespace App\Environment\Deployment\Handlers;
 
 use App\Environment\Actions\RenderEnvironmentVariables;
+use App\Environment\Deployment\Contracts\SupportsEncryptedDeployment;
+use App\Environment\Models\Environment;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Collection;
 
-abstract class LaravelDeploymentHandler extends DeploymentHandler
+abstract class LaravelDeploymentHandler extends DeploymentHandler implements SupportsEncryptedDeployment
 {
-    protected bool $useEncryptedDelivery = false;
+    protected bool $encrypted = false;
 
-    public function useEncryptedDelivery(bool $shouldEncrypt): static
+    protected ?string $encryptionKey = null;
+
+    protected ?Encrypter $encrypter = null;
+
+    public function enableEncryption(Environment $environment): void
     {
-        $this->useEncryptedDelivery = $shouldEncrypt;
-
-        return $this;
+        $this->encrypted = true;
+        $this->encryptionKey = $environment->encryptionKeyString();
+        $this->encrypter = $environment->encrypter();
     }
 
     protected function standardVariables(): Collection
     {
-        if ($this->encrypted) {
-            return collect([$this->encryptionKeyVariable()]);
-        }
-
-        return $this->nonSecretVariables();
+        return $this->encrypted ? collect([$this->encryptionKeyVariable()]) : $this->variables;
     }
 
-    protected function encryptionKeyVariable(): object
+    protected function encryptionKeyVariable(string $key = 'LARAVEL_ENV_ENCRYPTION_KEY'): object
     {
         return (object) [
             'id' => uniqid(),
-            'key' => 'LARAVEL_ENV_ENCRYPTION_KEY',
+            'key' => $key,
             'value' => $this->encryptionKey,
             'is_commented' => 0,
             'created_at' => now(),
@@ -37,19 +40,10 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler
         ];
     }
 
-    protected function encryptedEnvFile(): string
+    protected function toEncryptedEnvString(Collection $variables): string
     {
-        $plaintext = resolve(RenderEnvironmentVariables::class)->handle($this->encryptedVariables());
+        $plaintext = resolve(RenderEnvironmentVariables::class)->handle($variables);
 
         return $this->encrypter->encryptString($plaintext);
-    }
-
-    protected function encryptedVariables(): Collection
-    {
-        if (! $this->encrypted) {
-            return collect();
-        }
-
-        return $this->nonSecretVariables();
     }
 }

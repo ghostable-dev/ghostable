@@ -32,7 +32,7 @@ class VariableCreator extends Component
 
     public string $value = '';
 
-    public bool $vapor_secret = false;
+    public bool $is_vapor_secret = false;
 
     public function mount(Environment $environment): void
     {
@@ -125,7 +125,7 @@ class VariableCreator extends Component
             attributes: [
                 'key' => $this->key,
                 'value' => $this->value,
-                'vapor_secret' => $this->vapor_secret,
+                'is_vapor_secret' => $this->is_vapor_secret,
             ]
         );
 
@@ -135,7 +135,7 @@ class VariableCreator extends Component
         $this->dispatch(self::CREATED);
         $this->dispatch(EnvironmentActivity::ACTIVITY_UPDATED);
 
-        $this->reset('key', 'value', 'vapor_secret');
+        $this->reset('key', 'value', 'is_vapor_secret');
         $this->refresh();
         Flux::toast("New variable '{$variable->key}' added.");
     }
@@ -153,7 +153,7 @@ class VariableCreator extends Component
             environment: $this->environment,
             key: $input['key'],
             value: $input['value'],
-            vapor_secret: (bool) ($input['vapor_secret'] ?? false),
+            is_vapor_secret: (bool) ($input['is_vapor_secret'] ?? false),
             createdBy: Auth::user()
         );
     }
@@ -197,15 +197,6 @@ class VariableCreator extends Component
                             @endforeach
                         </flux:autocomplete>
                     </div>
-                    @if($this->isVaporProject)
-                        <div class="flex-none">
-                            <flux:switch
-                                label="Store as Vapor Secret"
-                                description="Secrets deploy via AWS Secrets Manager on Vapor."
-                                wire:model.live="vapor_secret"
-                                align="left"/>
-                        </div>
-                    @endif
                     <div class="flex-none">
                         <flux:button
                             type="submit"

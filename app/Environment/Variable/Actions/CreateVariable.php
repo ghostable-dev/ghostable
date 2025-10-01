@@ -24,7 +24,7 @@ class CreateVariable
             'is_override' => $data->is_override,
             'is_deleted' => $data->is_deleted,
             'last_updated_at' => now(),
-            'vapor_secret' => $data->vapor_secret,
+            'is_vapor_secret' => $data->is_vapor_secret,
         ]);
 
         // The value cast requires the environment relationship in order to

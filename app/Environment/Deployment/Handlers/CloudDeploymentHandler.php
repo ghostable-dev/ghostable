@@ -8,14 +8,14 @@ use App\Project\Enums\DeploymentProvider;
 
 class CloudDeploymentHandler extends LaravelDeploymentHandler
 {
-    public function toData(Environment $environment, bool $encrypted = false): DeploymentData
+    public function toData(Environment $environment): DeploymentData
     {
-        $this->setEnvironment(environment: $environment, encrypted: $encrypted);
+        $this->setEnvironment(environment: $environment);
 
         return new DeploymentData(
             provider: DeploymentProvider::LARAVEL_CLOUD,
             standard: $this->standardVariables(),
-            encrypted: $encrypted ? $this->encryptedEnvFile() : null
+            encrypted: $this->encrypted ? $this->toEncryptedEnvString($this->variables) : null
         );
     }
 }

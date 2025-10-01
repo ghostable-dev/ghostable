@@ -25,7 +25,7 @@ trait HasSecretValues
      */
     public function isSecret(): bool
     {
-        if (property_exists($this, 'vapor_secret') && (bool) $this->vapor_secret) {
+        if (property_exists($this, 'is_vapor_secret') && (bool) $this->is_vapor_secret) {
             return true;
         }
 

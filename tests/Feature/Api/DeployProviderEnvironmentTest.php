@@ -15,6 +15,7 @@ beforeEach(function () {
     $this->project = $this->createProject('Containment', $this->organization);
     $this->environment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $this->project);
     $this->endpoint = '/api/v1/ci/deploy/provider';
+    $this->authHeaders = fn () => ['Authorization' => 'Bearer '.$this->token->plainTextToken];
 
     $this->variables = [
         'APP_NAME' => 'Ghostable',
@@ -36,23 +37,29 @@ beforeEach(function () {
         ->handle(name: 'deploy', environment: $this->environment);
 });
 
-function getPlan(array $query = [])
+function postPlan(array $body = [])
 {
-    $url = test()->endpoint;
-
-    if (! empty($query)) {
-        $url .= '?'.http_build_query($query);
-    }
-
-    return test()->withHeaders([
-        'Authorization' => 'Bearer '.test()->token->plainTextToken,
-    ])->getJson($url);
+    return test()->withHeaders((test()->authHeaders)())
+        ->postJson(test()->endpoint, $body);
 }
+
+// function postPlan(array $query = [])
+// {
+//     $url = test()->endpoint;
+
+//     if (! empty($query)) {
+//         $url .= '?'.http_build_query($query);
+//     }
+
+//     return test()->withHeaders([
+//         'Authorization' => 'Bearer '.test()->token->plainTextToken,
+//     ])->getJson($url);
+// }
 
 it('returns plain variables when encryption flag is absent', function () {
     $this->project->update(['deployment_provider' => DeploymentProvider::LARAVEL_FORGE]);
 
-    $response = getPlan();
+    $response = postPlan();
 
     $response->assertOk();
 
@@ -69,7 +76,7 @@ it('returns plain variables when encryption flag is absent', function () {
 it('encrypts forge payload when requested via query flag', function () {
     $this->project->update(['deployment_provider' => DeploymentProvider::LARAVEL_FORGE]);
 
-    $response = getPlan(['encrypted' => 1]);
+    $response = postPlan(['encrypted' => 1]);
 
     $response->assertOk();
 
@@ -90,10 +97,10 @@ it('includes vapor secrets flagged on variables', function () {
         environment: $this->environment,
         key: 'STRIPE_SECRET',
         value: 'sk_test_123',
-        vapor_secret: true,
+        is_vapor_secret: true,
     ));
 
-    $response = getPlan();
+    $response = postPlan();
 
     $response->assertOk();
 
@@ -113,10 +120,10 @@ it('excludes vapor secrets from encrypted bundle', function () {
         environment: $this->environment,
         key: 'STRIPE_SECRET',
         value: 'sk_test_123',
-        vapor_secret: true,
+        is_vapor_secret: true,
     ));
 
-    $response = getPlan(['encrypted' => 1]);
+    $response = postPlan(['encrypted' => 1]);
 
     $response->assertOk();
 

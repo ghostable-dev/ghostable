@@ -37,7 +37,7 @@ class VariableEditor extends VariableModalComponent
     /**
      * Whether the variable should be stored as a Vapor Secret.
      */
-    public bool $vapor_secret = false;
+    public bool $is_vapor_secret = false;
 
     /**
      * Livewire event listener to launch the environment variable modal.
@@ -49,7 +49,7 @@ class VariableEditor extends VariableModalComponent
 
         $this->value = $variable->value;
 
-        $this->vapor_secret = (bool) $variable->vapor_secret;
+        $this->is_vapor_secret = (bool) $variable->is_vapor_secret;
 
         if ($variable->isSecret()) {
             app(LogVariableRevealed::class)->handle($variable);
@@ -117,7 +117,7 @@ class VariableEditor extends VariableModalComponent
     public function noChangesWereMade(): bool
     {
         return $this->value === $this->variable?->value
-            && $this->vapor_secret === (bool) $this->variable?->vapor_secret;
+            && $this->is_vapor_secret === (bool) $this->variable?->is_vapor_secret;
     }
 
     /**
@@ -128,7 +128,7 @@ class VariableEditor extends VariableModalComponent
         resolve(UpdateVariable::class)->handle(
             new UpdateVariableData(
                 variable: $this->variable,
-                vapor_secret: $input['vapor_secret'] ?? null,
+                is_vapor_secret: $input['is_vapor_secret'] ?? null,
                 value: $input['value'] ?? '',
                 updatedBy: Auth::user()
             )
@@ -147,7 +147,7 @@ class VariableEditor extends VariableModalComponent
                 environment: $this->targetEnvironment,
                 key: $this->variable->key,
                 value: $input['value'],
-                vapor_secret: (bool) ($input['vapor_secret'] ?? false),
+                is_vapor_secret: (bool) ($input['is_vapor_secret'] ?? false),
                 is_override: true,
                 createdBy: Auth::user()
             )
@@ -164,7 +164,7 @@ class VariableEditor extends VariableModalComponent
      */
     protected function resetValues(): void
     {
-        $this->reset('value', 'vapor_secret', 'environmentVariableId', 'targetEnvironmentId');
+        $this->reset('value', 'is_vapor_secret', 'environmentVariableId', 'targetEnvironmentId');
     }
 
     public function render()
@@ -196,11 +196,14 @@ class VariableEditor extends VariableModalComponent
                             @endforeach
                         </flux:autocomplete>
                         @if($this->isVaporProject)
-                            <flux:switch
-                                label="Store as Vapor Secret"
-                                description="Secrets deploy via AWS Secrets Manager on Vapor."
-                                wire:model.live="vapor_secret"
-                                align="left"/>
+                            <div>
+                                <flux:switch
+                                    label="Store as Vapor Secret"
+                                    description="Secrets sync back to Vapor using AWS Secrets Manager."
+                                    wire:model.live="is_vapor_secret"
+                                    align="left">
+                                </flux:switch>
+                            </div>
                         @endif
                     </div>
                     <div class="flex gap-2">

@@ -10,11 +10,11 @@ class DefaultDeploymentHandler extends DeploymentHandler
 {
     public function toData(Environment $environment): DeploymentData
     {
-        $this->setEnvironment($environment);
+        $this->setEnvironment(environment: $environment);
 
         return new DeploymentData(
             provider: DeploymentProvider::OTHER,
-            standard: $this->standardVariables(),
+            standard: $this->variables,
         );
     }
 }

@@ -14,7 +14,7 @@ class CreateVariableData
         public string $key,
         public string $value,
         public bool $is_commented = false,
-        public bool $vapor_secret = false,
+        public bool $is_vapor_secret = false,
         ?bool $is_override = null,
         public bool $is_deleted = false,
         public ?User $createdBy = null,
