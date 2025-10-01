@@ -10,12 +10,12 @@ class ForgeDeploymentHandler extends LaravelDeploymentHandler
 {
     public function toData(Environment $environment): DeploymentData
     {
-        $this->setEnvironment($environment);
+        $this->setEnvironment(environment: $environment);
 
         return new DeploymentData(
             provider: DeploymentProvider::LARAVEL_FORGE,
             standard: $this->standardVariables(),
-            encrypted: $this->usesEncryptedDelivery ? $this->encryptedEnvFile() : null
+            encrypted: $this->encrypted ? $this->toEncryptedEnvString($this->variables) : null
         );
     }
 }

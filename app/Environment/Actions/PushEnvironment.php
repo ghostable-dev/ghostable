@@ -181,7 +181,7 @@ class PushEnvironment
                 new UpdateVariableData(
                     variable: $varToUpdate,
                     value: $line->value ?? '',
-                    delivery_mode: $varToUpdate->delivery_mode,
+                    is_vapor_secret: $varToUpdate->is_vapor_secret,
                     is_commented: $line->commented ?? false,
                     updatedBy: Auth::user(),
                 )

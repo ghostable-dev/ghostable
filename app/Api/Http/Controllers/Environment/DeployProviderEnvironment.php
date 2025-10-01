@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Http\Controllers\Environment;
 
 use App\Api\Resources\Environment\DeploymentResource;
+use App\Environment\Deployment\Contracts\SupportsEncryptedDeployment;
 use App\Environment\Deployment\DeploymentProviderResolver;
 use App\Environment\Models\Environment;
 use Illuminate\Http\JsonResponse;
@@ -40,10 +41,16 @@ class DeployProviderEnvironment extends DeployEnvironment
 
     protected function buildDeploymentResource(Environment $environment): DeploymentResource
     {
-        $handler = $handler = app(DeploymentProviderResolver::class)
+        $handler = app(DeploymentProviderResolver::class)
             ->resolve($environment->project->deployment_provider->value);
 
-        return new DeploymentResource($handler->toData($environment));
+        if (request()->boolean('encrypted', false) && $handler instanceof SupportsEncryptedDeployment) {
+            $handler->enableEncryption($environment);
+        }
+
+        return new DeploymentResource(
+            $handler->toData(environment: $environment)
+        );
     }
 
     protected function unsupportedDeploymentProvider(): JsonResponse

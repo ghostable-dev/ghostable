@@ -14,6 +14,7 @@ class EnvironmentVariableResource extends JsonResource
             'key' => $this->key,
             'value' => $this->value,
             'is_commented' => $this->is_commented,
+            'is_vapor_secret' => (bool) data_get($this->resource, 'is_vapor_secret', false),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

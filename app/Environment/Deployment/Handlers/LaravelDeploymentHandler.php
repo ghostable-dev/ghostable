@@ -3,48 +3,36 @@
 namespace App\Environment\Deployment\Handlers;
 
 use App\Environment\Actions\RenderEnvironmentVariables;
+use App\Environment\Deployment\Contracts\SupportsEncryptedDeployment;
 use App\Environment\Models\Environment;
-use App\Environment\Variable\Enums\DeliveryMode;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Collection;
 
-abstract class LaravelDeploymentHandler extends DeploymentHandler
+abstract class LaravelDeploymentHandler extends DeploymentHandler implements SupportsEncryptedDeployment
 {
-    protected bool $usesEncryptedDelivery;
+    protected bool $encrypted = false;
 
     protected ?string $encryptionKey = null;
 
     protected ?Encrypter $encrypter = null;
 
-    public function setEnvironment(Environment $environment): static
+    public function enableEncryption(Environment $environment): void
     {
-        parent::setEnvironment($environment);
-
-        $this->usesEncryptedDelivery = $this->variables->contains('delivery_mode', DeliveryMode::ENCRYPTED);
-
+        $this->encrypted = true;
         $this->encryptionKey = $environment->encryptionKeyString();
-
         $this->encrypter = $environment->encrypter();
-
-        return $this;
     }
 
     protected function standardVariables(): Collection
     {
-        $variables = parent::standardVariables();
-
-        if ($this->usesEncryptedDelivery) {
-            $variables->prepend($this->encryptionKeyVariable());
-        }
-
-        return $variables;
+        return $this->encrypted ? collect([$this->encryptionKeyVariable()]) : $this->variables;
     }
 
-    protected function encryptionKeyVariable(): object
+    protected function encryptionKeyVariable(string $key = 'LARAVEL_ENV_ENCRYPTION_KEY'): object
     {
         return (object) [
             'id' => uniqid(),
-            'key' => 'LARAVEL_ENV_ENCRYPTION_KEY',
+            'key' => $key,
             'value' => $this->encryptionKey,
             'is_commented' => 0,
             'created_at' => now(),
@@ -52,20 +40,10 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler
         ];
     }
 
-    protected function secretVariables(): Collection
+    protected function toEncryptedEnvString(Collection $variables): string
     {
-        return $this->filteredByDeliveryMode(DeliveryMode::SECRET);
-    }
-
-    protected function encryptedEnvFile(): string
-    {
-        $plaintext = resolve(RenderEnvironmentVariables::class)->handle($this->encryptedVariables());
+        $plaintext = resolve(RenderEnvironmentVariables::class)->handle($variables);
 
         return $this->encrypter->encryptString($plaintext);
-    }
-
-    protected function encryptedVariables(): Collection
-    {
-        return $this->filteredByDeliveryMode(DeliveryMode::ENCRYPTED);
     }
 }

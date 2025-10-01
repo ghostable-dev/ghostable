@@ -9,7 +9,6 @@ use App\Environment\Variable\Actions\LogVariableActivity;
 use App\Environment\Variable\Builders\VariableBuilder;
 use App\Environment\Variable\Casts\EncryptedVariableValue;
 use App\Environment\Variable\Concerns\HasSecretValues;
-use App\Environment\Variable\Enums\DeliveryMode;
 use App\Environment\Versioning\Actions\CreateVariableVersion;
 use App\Environment\Versioning\Models\EnvironmentVariableVersion;
 use Database\Factories\EnvironmentVariableFactory;
@@ -31,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $is_commented
  * @property int $is_override
  * @property int $is_deleted
+ * @property bool $is_vapor_secret
  * @property \Illuminate\Support\Carbon|null $last_updated_at
  * @property string|null $last_updated_by
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -81,7 +81,6 @@ class EnvironmentVariable extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'delivery_mode',
         'is_commented',
         'is_deleted',
         'is_override',
@@ -90,12 +89,13 @@ class EnvironmentVariable extends Model
         'last_updated_by',
         'line_bytes',
         'value',
+        'is_vapor_secret',
     ];
 
     protected $casts = [
-        'delivery_mode' => DeliveryMode::class,
         'last_updated_at' => 'datetime',
         'value' => EncryptedVariableValue::class,
+        'is_vapor_secret' => 'boolean',
     ];
 
     protected static function booted(): void
