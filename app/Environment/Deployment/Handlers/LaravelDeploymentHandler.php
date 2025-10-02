@@ -20,7 +20,7 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler implements Sup
     {
         $this->encrypted = true;
         $this->encryptionKey = $environment->encryptionKeyString();
-        $this->encrypter = $environment->encrypter();
+        $this->encrypter = $environment->encrypter(cipher: 'AES-256-CBC');
     }
 
     protected function standardVariables(): Collection

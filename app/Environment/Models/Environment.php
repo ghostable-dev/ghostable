@@ -154,11 +154,11 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariableRule::class);
     }
 
-    public function encrypter(?string $kekSalt = null): EncrypterContract
+    public function encrypter(?string $kekSalt = null, ?string $cipher = null): EncrypterContract
     {
         return new Encrypter(
             key: $this->derivedEncryptionKey($kekSalt),
-            cipher: config('app.cipher'),
+            cipher: $cipher ?? config('app.cipher'),
         );
     }
 
