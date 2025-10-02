@@ -44,6 +44,6 @@ abstract class LaravelDeploymentHandler extends DeploymentHandler implements Sup
     {
         $plaintext = resolve(RenderEnvironmentVariables::class)->handle($variables);
 
-        return $this->encrypter->encryptString($plaintext);
+        return $this->encrypter->encrypt(value: $plaintext, serialize: true);
     }
 }
