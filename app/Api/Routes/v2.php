@@ -2,13 +2,10 @@
 
 use App\Api\Http\Controllers\Auth\LoginViaCli;
 use App\Api\Http\Controllers\Environment\CreateEnvironment;
-use App\Api\Http\Controllers\Environment\DeployEnvironment;
-use App\Api\Http\Controllers\Environment\DeployProviderEnvironment;
 use App\Api\Http\Controllers\Environment\DiffEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\Http\Controllers\Environment\GetEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
-use App\Api\Http\Controllers\Environment\PullEnvironment;
 use App\Api\Http\Controllers\Environment\PushEnvironment;
 use App\Api\Http\Controllers\Environment\ValidateEnvironment;
 use App\Api\Http\Controllers\Organization\GetOrganization;
@@ -16,17 +13,18 @@ use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
 use App\Api\Http\Controllers\Organization\GetOrganizations;
 use App\Api\Http\Controllers\Organization\GetOwnedOrganizations;
 use App\Api\Http\Controllers\Organization\InviteMember;
-use App\Api\Http\Controllers\Project\CreateProject;
 use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
 use App\Api\Http\Controllers\Project\GetEnvironments;
-use App\Api\Http\Controllers\Project\GetProject;
 use App\Api\Http\Controllers\Project\GetProjects;
-use App\Api\Http\Controllers\Secret\CreateEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
 use App\Api\Http\Controllers\Secret\GetSecretTypes;
 use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
 use App\Api\Http\Middleware\TrackUsage;
+use App\Api\Http\V2\Controllers\Environment\CreateEnvironmentSecret;
+use App\Api\Http\V2\Controllers\Environment\DeployEnvironment;
+use App\Api\Http\V2\Controllers\Environment\PullEnvironment;
+use App\Api\Http\V2\Controllers\Project\CreateProject;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,11 +49,11 @@ Route::middleware('api.version:v2')->group(function () {
         Route::middleware(TrackUsage::class)->group(function () {
 
             Route::get('/ci/deploy', DeployEnvironment::class);
-            Route::post('/ci/deploy/provider', DeployProviderEnvironment::class);
+            Route::post('/ci/deploy/provider', DeployEnvironment::class);
 
             Route::get('/organizations/{organization}/projects', GetProjects::class);
             Route::post('/organizations/{organization}/projects', CreateProject::class);
-            Route::get('/projects/{project}', GetProject::class);
+            Route::get('/projects/{project}', CreateProject::class);
             Route::get('/projects/{project}/environments', GetEnvironments::class);
             Route::post('projects/{project}/environments', CreateEnvironment::class);
 
@@ -69,6 +67,7 @@ Route::middleware('api.version:v2')->group(function () {
                     Route::get('/secrets', GetEnvironmentSecrets::class);
                     Route::post('/secrets', CreateEnvironmentSecret::class);
                     Route::get('/secrets/{secret}', GetEnvironmentSecret::class);
+
                     Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
                 });
         });

@@ -45,6 +45,8 @@ class CreateProject
 
         $this->project->name = $payload->name;
 
+        $this->project->is_legacy = $payload->isLegacy;
+
         $this->project->organization()->associate($payload->organization);
 
         $this->project->deployment_provider = $payload->deploymentProvider;
