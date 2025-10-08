@@ -30,9 +30,9 @@ final class PullEnvironment extends Controller
 
         $this->authorize('perform', [$env, OrganizationPermission::ViewVariables]);
 
-        $only             = (array) $request->query('only', []);
-        $includeMeta      = (bool) filter_var($request->query('include_meta', false), FILTER_VALIDATE_BOOLEAN);
-        $includeVersions  = (bool) filter_var($request->query('include_versions', false), FILTER_VALIDATE_BOOLEAN);
+        $only = (array) $request->query('only', []);
+        $includeMeta = (bool) filter_var($request->query('include_meta', false), FILTER_VALIDATE_BOOLEAN);
+        $includeVersions = (bool) filter_var($request->query('include_versions', false), FILTER_VALIDATE_BOOLEAN);
 
         $bundle = app(BuildEncryptedProjection::class)->handle(
             environment: $env,

@@ -143,7 +143,7 @@ class Environment extends Model implements SupportsOverrides
     {
         return $this->hasMany(EnvironmentVariable::class);
     }
-    
+
     public function envSecrets(): HasMany
     {
         return $this->hasMany(EnvironmentSecret::class, 'environment_id');
