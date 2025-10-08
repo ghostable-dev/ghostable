@@ -131,15 +131,14 @@ trait CreatesAccountData
             );
         }
     }
-    
+
     protected function createEnvToken(
         Environment $env,
         User $createdBy,
-    ): NewAccessToken
-    {
+    ): NewAccessToken {
         return resolve(CreateEnvToken::class)->handle(
-            name: 'test-token', 
-            environment: $env, 
+            name: 'test-token',
+            environment: $env,
             user: $createdBy
         );
     }

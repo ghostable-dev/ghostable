@@ -25,7 +25,7 @@ final class CreateProject extends Controller
     public function __invoke(Request $request, Organization $organization): JsonResource
     {
         $this->authorize('create', [Project::class, $organization]);
-        
+
         $request->merge(['deployment_provider' => DeploymentProvider::OTHER->value]);
 
         $validated = $request->validate(ProjectRules::createRules($organization));

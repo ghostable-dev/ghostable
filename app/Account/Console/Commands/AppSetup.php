@@ -69,9 +69,9 @@ class AppSetup extends Command
         $this->createSecrets(env: $local, amount: 1, createdBy: $joe);
 
         $this->createInvite(organization: $ghostable, sender: $joe, email: 'admin@ghostable.com');
-        
+
         $localCliToken = $this->createEnvToken(env: $local, createdBy: $joe);
-        $this->info('Token for local deploys: ' . $localCliToken->plainTextToken);
+        $this->info('Token for local deploys: '.$localCliToken->plainTextToken);
     }
 
     protected function seedPiedPiper(): void
