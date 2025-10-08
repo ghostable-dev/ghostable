@@ -5,6 +5,7 @@ namespace App\Core\Concerns;
 use App\Account\Actions\RegisterUser;
 use App\Account\Models\User;
 use App\Environment\Actions\CreateEnv;
+use App\Environment\Actions\Token\CreateEnvToken;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\Environment;
 use App\Environment\Variable\Actions\CreateVariable;
@@ -18,6 +19,7 @@ use App\Project\Models\Project;
 use App\Secret\Actions\CreateSecret;
 use App\Secret\Enums\SecretType;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\NewAccessToken;
 
 trait CreatesAccountData
 {
@@ -128,5 +130,17 @@ trait CreatesAccountData
                 createdBy: $createdBy,
             );
         }
+    }
+    
+    protected function createEnvToken(
+        Environment $env,
+        User $createdBy,
+    ): NewAccessToken
+    {
+        return resolve(CreateEnvToken::class)->handle(
+            name: 'test-token', 
+            environment: $env, 
+            user: $createdBy
+        );
     }
 }
