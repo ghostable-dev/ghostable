@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Api\Http\Controllers\Environment\V2;
+namespace App\Api\Http\V2\Controllers\Environment;
 
-use App\Api\Http\Requests\StoreEnvironmentSecretRequest;
+use App\Api\Http\V2\Requests\StoreEnvironmentSecretRequest;
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\StoreEnvironmentSecret;
 use App\Organization\Enums\OrganizationPermission;

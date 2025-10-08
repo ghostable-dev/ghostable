@@ -13,6 +13,7 @@ class CreateProjectPayload extends Data
         public Organization $organization,
         public DeploymentProvider $deploymentProvider = DeploymentProvider::OTHER,
         public ?string $description = null,
-        public bool $withDefaultEnvironments = true
+        public bool $withDefaultEnvironments = true,
+        public bool $isLegacy = true
     ) {}
 }

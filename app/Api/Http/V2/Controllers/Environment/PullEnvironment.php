@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Api\Http\Controllers\Environment\V2;
+namespace App\Api\Http\V2\Controllers\Environment;
 
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\BuildEncryptedProjection;
