@@ -8,8 +8,9 @@ use App\Api\Http\Controllers\Environment\DiffEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\Http\Controllers\Environment\GetEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
-use App\Api\Http\Controllers\Environment\PullEnvironment;
 use App\Api\Http\Controllers\Environment\PushEnvironment;
+use App\Api\Http\Controllers\Environment\V2\CreateEnvironmentSecret;
+use App\Api\Http\Controllers\Environment\V2\PullEnvironment;
 use App\Api\Http\Controllers\Environment\ValidateEnvironment;
 use App\Api\Http\Controllers\Organization\GetOrganization;
 use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
@@ -21,7 +22,6 @@ use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
 use App\Api\Http\Controllers\Project\GetEnvironments;
 use App\Api\Http\Controllers\Project\GetProject;
 use App\Api\Http\Controllers\Project\GetProjects;
-use App\Api\Http\Controllers\Secret\CreateEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecret;
 use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
 use App\Api\Http\Controllers\Secret\GetSecretTypes;
@@ -69,6 +69,7 @@ Route::middleware('api.version:v2')->group(function () {
                     Route::get('/secrets', GetEnvironmentSecrets::class);
                     Route::post('/secrets', CreateEnvironmentSecret::class);
                     Route::get('/secrets/{secret}', GetEnvironmentSecret::class);
+
                     Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
                 });
         });
