@@ -40,6 +40,63 @@
                     </flux:select>
                 </form>
             </x-section>
+            
+            @if($this->project->is_legacy)
+            <x-section>
+                <x-slot:title>{{ __('Zero-Knowledge Storage') }}</x-slot:title>
+                <x-slot:subheading>
+                    {{ __('Ghostable can store your configuration using fully encrypted, zero-knowledge secrets. You can migrate any time — your existing data stays safe.') }}
+                </x-slot:subheading>
+
+                <x-slot:actions>
+                    @if($this->canEdit)
+                        <div class="flex items-center justify-end gap-4">
+                            <flux:button variant="primary" wire:click="updateLegacy" class="w-full">
+                                {{ __('Save') }}
+                            </flux:button>
+                            <x-action-message class="me-3" on="updated-updated">
+                                {{ __('Saved.') }}
+                            </x-action-message>
+                        </div>
+                    @endif
+                </x-slot:actions>
+
+                <form class="w-full space-y-6">
+                    <flux:switch
+                        wire:model.live="is_zero_knowledge"
+                        label="Zero-Knowledge Mode"
+                        help="Enable full client-side encryption for secrets storage (V2)."
+                        :readonly="!$this->canEdit"
+                        required
+                    />
+
+                    @if($this->project->is_legacy)
+                        <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                            <div class="flex items-start gap-2">
+                                <p>
+                                    This project is currently using the legacy variable store.
+                                    Learn how to migrate to Zero-Knowledge (V2) in the
+                                    <a href="https://docs.ghostable.dev/migration/zero-knowledge"
+                                       target="_blank"
+                                       class="underline font-medium text-amber-800 hover:text-amber-900">
+                                       migration guide
+                                    </a>.
+                                </p>
+                            </div>
+                        </div>
+                    @else
+                        <div class="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                            <div class="flex items-start gap-2">
+                                <p>
+                                    This project uses <strong>Zero-Knowledge Secrets (V2)</strong>.
+                                    All encryption happens locally, and Ghostable never stores plaintext values.
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+                </form>
+            </x-section>
+            @endif
 
             {{-- Delete project callout --}}
             @can('delete', $this->project)

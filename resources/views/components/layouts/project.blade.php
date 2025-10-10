@@ -10,6 +10,28 @@
 </x-slot>
         
 <x-slot name="subheader">
+    
+   @if ($project->is_legacy)
+        <div class="flex items-center bg-indigo-600 px-6 py-2.5 sm:px-3.5">
+            <p class="mx-auto text-sm font-medium text-white text-center">
+                <span class="inline-flex items-center gap-1.5">
+                    <span>This project uses the <strong>legacy variable storage</strong>.</span>
+                </span>
+                <span class="block sm:inline ml-2">
+                    Consider upgrading to the latest version that uses <strong class="underline">Zero-Knowledge</strong> storage.
+                </span>
+            </p>
+        </div>
+    @else
+        <div class="flex items-center bg-emerald-600 px-6 py-2.5 sm:px-3.5">
+            <p class="mx-auto text-sm font-medium text-white text-center">
+                <span class="inline-flex items-center gap-1.5">
+                    <span>This project uses the latest <strong>Zero-Knowledge</strong> storage.</span>
+                </span>
+            </p>
+        </div>
+    @endif
+
     <div class="w-full block border-b pt-6">
         <div class="mx-auto w-full [:where(&)]:max-w-7xl px-6 lg:px-8">
             

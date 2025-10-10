@@ -62,6 +62,7 @@ class BuildEncryptedProjection
 
             foreach ($secrets as $s) {
                 $entry = [
+                    'id' => $s->id,
                     'env' => $envLayer->name,
                     'name' => $s->name,
                     'ciphertext' => $s->ciphertext,
@@ -69,6 +70,9 @@ class BuildEncryptedProjection
                     'alg' => $s->alg,
                     'aad' => $s->aad,
                     'claims' => $s->claims,
+                    'line_bytes' => $s->line_bytes,
+                    'updated_at' => $s->updated_at,
+                    'updated_by' => $s->lastUpdatedBy->email,
                 ];
 
                 if ($includeVersions) {

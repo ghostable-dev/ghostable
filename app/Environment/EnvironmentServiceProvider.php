@@ -44,6 +44,7 @@ class EnvironmentServiceProvider extends ServiceProvider
 
         Relation::enforceMorphMap([
             'environment' => 'App\Environment\Models\Environment',
+            'enviroment_secret' => 'App\Environment\Models\EnvironmentSecret',
         ]);
 
         // Send activity notification
