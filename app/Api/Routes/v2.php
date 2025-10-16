@@ -23,6 +23,7 @@ use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
 use App\Api\Http\Middleware\TrackUsage;
 use App\Api\Http\V2\Controllers\Environment\CreateEnvironmentSecret;
 use App\Api\Http\V2\Controllers\Environment\DeployEnvironment;
+use App\Api\Http\V2\Controllers\Environment\GetEnvironmentKeys;
 use App\Api\Http\V2\Controllers\Environment\PullEnvironment;
 use App\Api\Http\V2\Controllers\Project\CreateProject;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,7 @@ Route::middleware('api.version:v2')->group(function () {
                     Route::post('/push', PushEnvironment::class);
                     Route::post('/diff', DiffEnvironment::class);
                     Route::get('/pull', PullEnvironment::class);
+                    Route::get('/keys', GetEnvironmentKeys::class);
                     Route::post('/validate', ValidateEnvironment::class);
                     Route::get('/secrets', GetEnvironmentSecrets::class);
                     Route::post('/secrets', CreateEnvironmentSecret::class);
