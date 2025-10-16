@@ -2,6 +2,7 @@
 
 namespace App\Environment\Actions;
 
+use App\Environment\Entities\PushEnvironmentStrategy;
 use App\Environment\Entities\PushResultData;
 use App\Environment\Models\Environment;
 use App\Environment\Validation\Actions\ValidateEnvironment;
@@ -12,12 +13,17 @@ class PushAndValidateEnvironment
     /**
      * Apply the incoming vars, then validate the new state, all in one atomic transaction.
      */
-    public function handle(Environment $env, array $incomingRaw): PushResultData
+    public function handle(
+        Environment $env,
+        array $incomingRaw,
+        ?PushEnvironmentStrategy $strategy = null
+    ): PushResultData
     {
-        return DB::transaction(function () use ($env, $incomingRaw) {
+        return DB::transaction(function () use ($env, $incomingRaw, $strategy) {
             $result = app(PushEnvironment::class)->handle(
                 env: $env,
                 incomingRaw: $incomingRaw,
+                strategy: $strategy,
             );
 
             // Will throw ValidationException and rollback if invalid
