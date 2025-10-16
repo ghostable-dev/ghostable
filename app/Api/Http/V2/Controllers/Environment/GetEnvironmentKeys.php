@@ -35,11 +35,11 @@ final class GetEnvironmentKeys extends Controller
         $data = collect($bundle['secrets'] ?? [])
             ->map(function (array $secret) {
                 return [
-                    'name'             => $secret['name'],
-                    'version'          => $secret['version'] ?? null,     // only present if includeVersions=true
+                    'name' => $secret['name'],
+                    'version' => $secret['version'] ?? null,     // only present if includeVersions=true
                     // You did select 'updated_at' in the query, but you never added it to $entry.
                     // Add it in BuildEncryptedProjection if you want it here.
-                    'updated_at'       => $secret['updated_at'] ?? null,
+                    'updated_at' => $secret['updated_at'] ?? null,
                     // Not available in the current projection — will be null unless you add it there.
                     'updated_by_email' => $secret['updated_by_email'] ?? null,
                 ];
