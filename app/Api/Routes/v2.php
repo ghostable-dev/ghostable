@@ -6,7 +6,6 @@ use App\Api\Http\Controllers\Environment\DiffEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\Http\Controllers\Environment\GetEnvironment;
 use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
-use App\Api\Http\Controllers\Environment\PushEnvironment;
 use App\Api\Http\Controllers\Environment\ValidateEnvironment;
 use App\Api\Http\Controllers\Organization\GetOrganization;
 use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
@@ -25,6 +24,7 @@ use App\Api\Http\V2\Controllers\Environment\CreateEnvironmentSecret;
 use App\Api\Http\V2\Controllers\Environment\DeployEnvironment;
 use App\Api\Http\V2\Controllers\Environment\GetEnvironmentKeys;
 use App\Api\Http\V2\Controllers\Environment\PullEnvironment;
+use App\Api\Http\V2\Controllers\Environment\PushEnvironment;
 use App\Api\Http\V2\Controllers\Project\CreateProject;
 use Illuminate\Support\Facades\Route;
 
