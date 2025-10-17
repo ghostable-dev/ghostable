@@ -14,8 +14,9 @@ class PushEnvironmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'vars' => ['sometimes', 'array'],
-            'vars.*' => ['string'],
+            'secrets' => ['required', 'array'],
+            'secrets.*' => ['required', 'array'],
+
             'sync' => ['sometimes', 'boolean'],
         ];
     }

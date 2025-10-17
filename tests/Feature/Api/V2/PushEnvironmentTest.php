@@ -11,53 +11,103 @@ beforeEach(function () {
     $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
     $this->endpoint = "/api/v2/projects/{$project->id}/environments/{$this->env->name}/push";
+
+    $this->makeSecretPayload = function (string $name, array $overrides = []): array {
+        $base = [
+            'name' => $name,
+            'ciphertext' => "ciphertext-{$name}-v1",
+            'nonce' => "nonce-{$name}-v1",
+            'alg' => 'xchacha20-poly1305',
+            'aad' => [
+                'org' => (string) $this->organization->id,
+                'project' => (string) $this->env->project->id,
+                'env' => (string) $this->env->id,
+                'name' => $name,
+            ],
+            'claims' => [
+                'hmac' => "hmac-{$name}-v1",
+                'validators' => [],
+                'meta' => [
+                    'value_length' => 12,
+                    'is_vapor_secret' => false,
+                    'is_commented' => false,
+                    'is_override' => false,
+                ],
+            ],
+            'client_sig' => "sig-{$name}-v1",
+        ];
+
+        return array_replace_recursive($base, $overrides);
+    };
 });
 
-test('push does not remove variables by default', function () {
+test('push does not remove secrets by default', function () {
     Sanctum::actingAs($this->ray);
 
-    $this->postJson($this->endpoint, ['vars' => [
-        'APP_DEBUG=TRUE',
-        'APP_ENV=development',
-        'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
-        'APP_URL=https://www.raysoccultbooks.com',
-        'CACHE_DRIVER=array',
-    ]])->assertOk();
+    $initial = [
+        ($this->makeSecretPayload)('APP_DEBUG'),
+        ($this->makeSecretPayload)('APP_ENV'),
+        ($this->makeSecretPayload)('APP_KEY'),
+        ($this->makeSecretPayload)('APP_URL'),
+        ($this->makeSecretPayload)('CACHE_DRIVER'),
+    ];
 
-    $this->postJson($this->endpoint, ['vars' => [
-        'APP_DEBUG=FALSE',
-        'APP_ENV=development',
-        'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
-        'APP_URL=https://www.raysoccultbooks.com',
-    ]])
+    $this->postJson($this->endpoint, ['secrets' => $initial])->assertOk();
+
+    $second = [
+        ($this->makeSecretPayload)('APP_DEBUG', [
+            'ciphertext' => 'ciphertext-APP_DEBUG-v2',
+            'nonce' => 'nonce-APP_DEBUG-v2',
+            'claims' => [
+                'hmac' => 'hmac-APP_DEBUG-v2',
+            ],
+            'client_sig' => 'sig-APP_DEBUG-v2',
+        ]),
+        ($this->makeSecretPayload)('APP_ENV'),
+        ($this->makeSecretPayload)('APP_KEY'),
+        ($this->makeSecretPayload)('APP_URL'),
+    ];
+
+    $this->postJson($this->endpoint, ['secrets' => $second])
         ->assertOk()
         ->assertJsonFragment(['removed' => 0]);
 
     $this->env->refresh();
 
     expect(
-        $this->env->variables()->where('key', 'CACHE_DRIVER')->exists()
+        $this->env->envSecrets()->where('name', 'CACHE_DRIVER')->exists()
     )->toBeTrue();
 });
 
-test('push removes variables when sync is true', function () {
+test('push removes secrets when sync is true', function () {
     Sanctum::actingAs($this->ray);
 
-    $this->postJson($this->endpoint, ['vars' => [
-        'APP_DEBUG=TRUE',
-        'APP_ENV=development',
-        'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
-        'APP_URL=https://www.raysoccultbooks.com',
-        'CACHE_DRIVER=array',
-    ]])->assertOk();
+    $initial = [
+        ($this->makeSecretPayload)('APP_DEBUG'),
+        ($this->makeSecretPayload)('APP_ENV'),
+        ($this->makeSecretPayload)('APP_KEY'),
+        ($this->makeSecretPayload)('APP_URL'),
+        ($this->makeSecretPayload)('CACHE_DRIVER'),
+    ];
+
+    $this->postJson($this->endpoint, ['secrets' => $initial])->assertOk();
+
+    $second = [
+        ($this->makeSecretPayload)('APP_DEBUG', [
+            'ciphertext' => 'ciphertext-APP_DEBUG-v2',
+            'nonce' => 'nonce-APP_DEBUG-v2',
+            'claims' => [
+                'hmac' => 'hmac-APP_DEBUG-v2',
+            ],
+            'client_sig' => 'sig-APP_DEBUG-v2',
+        ]),
+        ($this->makeSecretPayload)('APP_ENV'),
+        ($this->makeSecretPayload)('APP_KEY'),
+        ($this->makeSecretPayload)('APP_URL'),
+    ];
 
     $this->postJson($this->endpoint, [
-        'vars' => [
-            'APP_DEBUG=FALSE',
-            'APP_ENV=development',
-            'APP_KEY=base64:bjlneWNjZmhyYmJqN2l6eWozaDNtdG1tdWZ1aHljZzU=',
-            'APP_URL=https://www.raysoccultbooks.com',
-        ],
+        'secrets' => $second,
         'sync' => true,
     ])
         ->assertOk()
@@ -66,6 +116,6 @@ test('push removes variables when sync is true', function () {
     $this->env->refresh();
 
     expect(
-        $this->env->variables()->where('key', 'CACHE_DRIVER')->exists()
+        $this->env->envSecrets()->where('name', 'CACHE_DRIVER')->exists()
     )->toBeFalse();
 });
