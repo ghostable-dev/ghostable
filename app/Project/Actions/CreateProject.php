@@ -56,13 +56,13 @@ class CreateProject
 
     protected function createDefaultEnvironments(): void
     {
-        $production = $this->createEnvironment(name: 'production', type: EnvironmentType::PRODUCTION);
+        $this->createEnvironment(name: 'production', type: EnvironmentType::PRODUCTION);
 
-        $testing = $this->createEnvironment(name: 'testing', type: EnvironmentType::TESTING, base: $production);
+        $this->createEnvironment(name: 'testing', type: EnvironmentType::TESTING);
 
-        $development = $this->createEnvironment(name: 'development', type: EnvironmentType::DEVELOPMENT, base: $testing);
+        $this->createEnvironment(name: 'development', type: EnvironmentType::DEVELOPMENT);
 
-        $this->createEnvironment(name: 'local', type: EnvironmentType::LOCAL, base: $development);
+        $this->createEnvironment(name: 'local', type: EnvironmentType::LOCAL);
     }
 
     protected function createEnvironment(
