@@ -10,16 +10,29 @@ class EnvironmentRules
 {
     public static function createRules(Project $project): array
     {
-        return [
-            'base_id' => [
+        $rules = [
+            'name' => self::nameRules($project),
+            'type' => self::typeRules(),
+        ];
+
+        $rules['base_id'] = $project->is_legacy
+            ? [
                 'nullable',
                 'sometimes',
                 Rule::exists('environments', 'id')
                     ->where(fn ($query) => $query->where('project_id', $project->id)),
-            ],
-            'name' => self::nameRules($project),
-            'type' => self::typeRules(),
-        ];
+            ]
+            : [
+                'nullable',
+                'sometimes',
+                function (string $attribute, $value, $fail) {
+                    if (filled($value)) {
+                        $fail('Base environments are not supported for this project.');
+                    }
+                },
+            ];
+
+        return $rules;
     }
 
     public static function updateRules(Environment $environment): array
@@ -33,6 +46,20 @@ class EnvironmentRules
 
     public static function updateBaseRules(Environment $environment): array
     {
+        if (! $environment->project->is_legacy) {
+            return [
+                'base_id' => [
+                    'nullable',
+                    'sometimes',
+                    function (string $attribute, $value, $fail) {
+                        if (filled($value)) {
+                            $fail('Base environments are not supported for this project.');
+                        }
+                    },
+                ],
+            ];
+        }
+
         return [
             'base_id' => [
                 'nullable',

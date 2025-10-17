@@ -102,23 +102,26 @@
                 </flux:description>
             </div>
             
-            <flux:select 
-                variant="listbox"
-                wire:model="base_id"
-                label="Base Environment"
-                searchable
-                description-trailing="Dynamically link from a base environment, with support for overrides and custom variables.">
-                <flux:select.option wire:key="base-none" value="">
-                    None (standalone)
-                </flux:select.option>
-                @foreach($this->environments as $env)
-                    <flux:select.option 
-                        wire:key="base-{{ $env->id }}" 
-                        value="{{ $env->id }}">
-                        <x-icon.git-branch class="inline size-4 mr-2 opacity-60"/> {{ $env->name }}
+            @if($this->project->is_legacy)
+                <flux:select
+                    variant="listbox"
+                    wire:model="base_id"
+                    label="Base Environment"
+                    searchable
+                    description-trailing="Dynamically link from a base environment, with support for overrides and custom variables."
+                >
+                    <flux:select.option wire:key="base-none" value="">
+                        None (standalone)
                     </flux:select.option>
-                @endforeach
-            </flux:select>
+                    @foreach($this->environments as $env)
+                        <flux:select.option
+                            wire:key="base-{{ $env->id }}"
+                            value="{{ $env->id }}">
+                            <x-icon.git-branch class="inline size-4 mr-2 opacity-60"/> {{ $env->name }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
             
             <div class="flex gap-2">
                 <flux:spacer />

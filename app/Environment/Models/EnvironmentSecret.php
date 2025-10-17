@@ -28,7 +28,6 @@ class EnvironmentSecret extends Model
         'line_bytes',
         'is_vapor_secret',
         'is_commented',
-        'is_override',
         'version',
         'last_updated_by',
         'last_updated_at',
@@ -39,7 +38,6 @@ class EnvironmentSecret extends Model
         'claims' => 'array',
         'is_vapor_secret' => 'boolean',
         'is_commented' => 'boolean',
-        'is_override' => 'boolean',
         'last_updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];

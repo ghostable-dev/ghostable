@@ -30,7 +30,11 @@ class CreateEnv
         $env->kek_salt = base64_encode(random_bytes(32));
 
         $env->project()->associate($project);
-        $env->base()->associate($base);
+
+        if ($project->is_legacy) {
+            $env->base()->associate($base);
+        }
+
         $env->save();
 
         return $env;

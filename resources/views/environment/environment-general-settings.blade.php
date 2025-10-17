@@ -16,42 +16,44 @@
                 <flux:input wire:model="environmentId" readonly copyable/>
             </x-section>
             
-            {{-- Base Environment --}}
-            <x-section>
-                <x-slot:title>{{ __('Base Enviromment') }}</x-slot:title>
-                <x-slot:subheading>
-                    <div class="max-w-2xl">
-                        The enviromment for which this environment will 
-                        inherit it's variables and validation from.
+            @if($this->environment->project->is_legacy)
+                {{-- Base Environment --}}
+                <x-section>
+                    <x-slot:title>{{ __('Base Enviromment') }}</x-slot:title>
+                    <x-slot:subheading>
+                        <div class="max-w-2xl">
+                            The enviromment for which this environment will
+                            inherit it's variables and validation from.
+                        </div>
+                    </x-slot:subheading>
+                    <flux:select wire:model.live="base_id" :readonly="!$this->canEdit">
+                        <flux:select.option wire:key="base-none" value="">None (standalone)</flux:select.option>
+                        @foreach($this->baseOptions as $env)
+                            <flux:select.option wire:key="base-{{ $env->id }}" value="{{ $env->id }}">
+                                {{ $env->name }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </x-section>
+
+                {{-- Base change confirmation modal --}}
+                <flux:modal name="confirm-base-change" focusable class="max-w-lg">
+                    <div class="space-y-6">
+                        <div>
+                            <flux:heading size="lg">{{ __('Change Base Environment') }}</flux:heading>
+                            <flux:subheading>{{ __('Changing the base will update inherited variables and validation rules
+                            for this environment.') }}</flux:subheading>
+                        </div>
+                        <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                            <flux:modal.close>
+                                <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                            </flux:modal.close>
+                            <flux:button variant="danger" wire:click="updateBaseEnvironment">{{ __('Change') }}</flux:button>
+                        </div>
                     </div>
-                </x-slot:subheading>
-                <flux:select wire:model.live="base_id" :readonly="!$this->canEdit">
-                    <flux:select.option wire:key="base-none" value="">None (standalone)</flux:select.option>
-                    @foreach($this->baseOptions as $env)
-                        <flux:select.option wire:key="base-{{ $env->id }}" value="{{ $env->id }}">
-                            {{ $env->name }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
-            </x-section>
-            
-            {{-- Base change confirmation modal --}}
-            <flux:modal name="confirm-base-change" focusable class="max-w-lg">
-                <div class="space-y-6">
-                    <div>
-                        <flux:heading size="lg">{{ __('Change Base Environment') }}</flux:heading>
-                        <flux:subheading>{{ __('Changing the base will update inherited variables and validation rules 
-                        for this environment.') }}</flux:subheading>
-                    </div>
-                    <div class="flex justify-end space-x-2 rtl:space-x-reverse">
-                        <flux:modal.close>
-                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
-                        </flux:modal.close>
-                        <flux:button variant="danger" wire:click="updateBaseEnvironment">{{ __('Change') }}</flux:button>
-                    </div>
-                </div>
-            </flux:modal>
-            
+                </flux:modal>
+            @endif
+
             {{-- Environment name/type editor --}}
             <x-section>
                 <x-slot:title>{{ __('General Settings') }}</x-slot:title>
