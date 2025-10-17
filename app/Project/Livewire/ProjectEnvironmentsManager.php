@@ -103,8 +103,17 @@ class ProjectEnvironmentsManager extends Component
 
         $validated = $this->validate(EnvironmentRules::createRules($this->project));
 
-        $validated['base_id'] = $validated['base_id'] ?: null;
-        $base = $this->project->environments()->where('id', $validated['base_id'])->first();
+        if (! $this->project->is_legacy && filled($validated['base_id'] ?? null)) {
+            throw ValidationException::withMessages([
+                'base_id' => 'Base environments are not supported for this project.',
+            ]);
+        }
+
+        $base = null;
+
+        if ($this->project->is_legacy && filled($validated['base_id'] ?? null)) {
+            $base = $this->project->environments()->where('id', $validated['base_id'])->first();
+        }
 
         try {
             app(CreateEnv::class)->handle(
@@ -124,6 +133,12 @@ class ProjectEnvironmentsManager extends Component
         }
 
         $this->reset('type', 'name');
+
+        if ($this->project->is_legacy) {
+            $this->base_id = '';
+        } else {
+            $this->base_id = null;
+        }
 
         Flux::modal('create-env')->close();
         Flux::toast('The new environment has been created.');

@@ -27,7 +27,6 @@ return new class extends Migration
             $table->unsignedInteger('line_bytes')->nullable();
             $table->boolean('is_vapor_secret')->default(false);
             $table->boolean('is_commented')->default(false);
-            $table->boolean('is_override')->default(false);
 
             $table->unsignedBigInteger('version')->default(1);
 
@@ -60,7 +59,6 @@ return new class extends Migration
             $table->unsignedInteger('line_bytes')->nullable();
             $table->boolean('is_vapor_secret')->default(false);
             $table->boolean('is_commented')->default(false);
-            $table->boolean('is_override')->default(false);
 
             $table->uuid('changed_by')->nullable();
             $table->timestamp('created_at')->useCurrent();

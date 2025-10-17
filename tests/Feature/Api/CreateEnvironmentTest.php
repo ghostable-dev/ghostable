@@ -57,6 +57,32 @@ test('can set a base environment when creating', function () {
     expect($env->base_id)->toBe($base->id);
 });
 
+test('zero-knowledge projects cannot set a base environment when creating', function () {
+    $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
+    $organization = $this->createOrganization(name: 'Ray’s Occult Books', owner: $ray);
+    $project = $this->createZeroKnowledgeProject(name: 'Website', organization: $organization);
+    $base = $this->createEnvironment(
+        name: 'production',
+        type: EnvironmentType::PRODUCTION,
+        project: $project,
+    );
+
+    Sanctum::actingAs($ray);
+
+    $payload = [
+        'name' => 'staging',
+        'type' => EnvironmentType::STAGING->value,
+        'base_id' => $base->id,
+    ];
+
+    $this->postJson("/api/v1/projects/{$project->id}/environments", $payload)
+        ->assertStatus(422)
+        ->assertJsonPath('error.fields.base_id.0', 'Base environments are not supported for this project.');
+
+    $env = $project->fresh()->environments()->where('name', 'staging')->first();
+    expect($env)->toBeNull();
+});
+
 describe('validation', function () {
     beforeEach(function () {
         $ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');

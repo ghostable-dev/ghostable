@@ -163,7 +163,6 @@ trait CreatesAccountData
             'alg' => 'xchacha20poly1305',
             'is_vapor_secret' => false,
             'is_commented' => false,
-            'is_override' => false,
             // Dev-only HMAC key used to make seed runs idempotent without leaking any real keys:
             'dev_hmac_key' => 'ghostable-dev-seed-hmac',
         ],
@@ -213,7 +212,6 @@ trait CreatesAccountData
                     'value_length' => strlen($plaintext),
                     'is_vapor_secret' => (bool) ($defaults['is_vapor_secret'] ?? false),
                     'is_commented' => (bool) ($defaults['is_commented'] ?? false),
-                    'is_override' => (bool) ($defaults['is_override'] ?? false),
                 ],
             ];
 
@@ -232,12 +230,11 @@ trait CreatesAccountData
                 // 'line_bytes'     => strlen($plaintext),
                 // 'is_vapor_secret'=> true/false,
                 // 'is_commented'   => true/false,
-                // 'is_override'    => true/false,
                 // 'if_version'     => int|null,
             ];
 
             // Mirror defaults into packet only if explicitly provided in $defaults (keeps action’s normalization).
-            foreach (['line_bytes', 'is_vapor_secret', 'is_commented', 'is_override', 'if_version'] as $k) {
+            foreach (['line_bytes', 'is_vapor_secret', 'is_commented', 'if_version'] as $k) {
                 if (Arr::has($defaults, $k)) {
                     $packet[$k] = $defaults[$k];
                 }

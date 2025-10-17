@@ -49,7 +49,6 @@ class CreateEnvironmentSecretVersion
                 'line_bytes' => $secret->line_bytes,
                 'is_vapor_secret' => (bool) $secret->is_vapor_secret,
                 'is_commented' => (bool) $secret->is_commented,
-                'is_override' => (bool) $secret->is_override,
                 'changed_by' => $changedBy?->id,
                 'created_at' => now(),
             ]);

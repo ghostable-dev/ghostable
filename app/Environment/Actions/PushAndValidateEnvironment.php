@@ -17,8 +17,7 @@ class PushAndValidateEnvironment
         Environment $env,
         array $incomingRaw,
         ?PushEnvironmentStrategy $strategy = null
-    ): PushResultData
-    {
+    ): PushResultData {
         return DB::transaction(function () use ($env, $incomingRaw, $strategy) {
             $result = app(PushEnvironment::class)->handle(
                 env: $env,
