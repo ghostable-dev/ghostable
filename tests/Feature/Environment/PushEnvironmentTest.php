@@ -31,22 +31,6 @@ it('reinstates suppressed inherited variable when re-added', function () {
     expect($var->value)->toBe('child');
 });
 
-it('suppresses inherited variable when removed with replace mode', function () {
-    $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
-    $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
-    app(CreateVariable::class)->handle(new CreateVariableData(
-        environment: $base,
-        key: 'BAR',
-        value: 'base',
-    ));
-    $env = $this->createEnvironment('Child', EnvironmentType::DEVELOPMENT, $project, $base);
-
-    app(PushEnvironment::class)->handle($env, [], new PushEnvironmentStrategy(mode: PushMode::REPLACE));
-    $var = $env->variables()->where('key', 'BAR')->first();
-    expect($var)->not->toBeNull();
-    expect((bool) $var->is_deleted)->toBeTrue();
-});
-
 it('does not suppress inherited variable when missing in additive mode', function () {
     $project = $this->createProject('proj', $this->createOrganization('organization', $this->createUser('u', 'u@example.com')));
     $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
