@@ -37,7 +37,8 @@ class ProjectCreateModal extends Component
                     name: $this->name,
                     organization: $this->organization,
                     deploymentProvider: $this->deploymentProvider,
-                    withDefaultEnvironments: $this->withDefaultEnvironments
+                    withDefaultEnvironments: $this->withDefaultEnvironments,
+                    isLegacy: false
                 )
             );
         } catch (ValidationException $e) {

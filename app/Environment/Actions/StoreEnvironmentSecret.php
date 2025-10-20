@@ -20,7 +20,7 @@ class StoreEnvironmentSecret
      * @param  array{
      *   name:string, ciphertext:string, nonce:string, alg:string,
      *   aad:array, claims:array, client_sig:string,
-     *   line_bytes?:int, is_vapor_secret?:bool, is_commented?:bool, is_override?:bool,
+     *   line_bytes?:int, is_vapor_secret?:bool, is_commented?:bool,
      *   if_version?:int|null
      * }  $data
      */
@@ -43,14 +43,12 @@ class StoreEnvironmentSecret
             $lineBytes = $data['line_bytes'] ?? data_get($data, 'claims.meta.value_length');
             $isVaporSecret = $data['is_vapor_secret'] ?? data_get($data, 'claims.meta.is_vapor_secret', false);
             $isCommented = $data['is_commented'] ?? data_get($data, 'claims.meta.is_commented', false);
-            $isOverride = $data['is_override'] ?? data_get($data, 'claims.meta.is_override', false);
 
             if ($existing) {
                 $metaUnchanged =
                     ((int) ($lineBytes ?? $existing->line_bytes) === (int) $existing->line_bytes) &&
                     ((bool) $isVaporSecret === (bool) $existing->is_vapor_secret) &&
-                    ((bool) $isCommented === (bool) $existing->is_commented) &&
-                    ((bool) $isOverride === (bool) $existing->is_override);
+                    ((bool) $isCommented === (bool) $existing->is_commented);
 
                 $valueUnchanged = $incomingHmac && $incomingHmac === $existingHmac;
 
@@ -76,7 +74,6 @@ class StoreEnvironmentSecret
             $lineBytes = $data['line_bytes'] ?? ($meta['value_length'] ?? null);
             $isVaporSecret = $data['is_vapor_secret'] ?? ($meta['is_vapor_secret'] ?? false);
             $isCommented = $data['is_commented'] ?? ($meta['is_commented'] ?? false);
-            $isOverride = $data['is_override'] ?? ($meta['is_override'] ?? false);
 
             if ($existing === null) {
                 $secret = new EnvironmentSecret([
@@ -90,7 +87,6 @@ class StoreEnvironmentSecret
                     'line_bytes' => $lineBytes,
                     'is_vapor_secret' => (bool) $isVaporSecret,
                     'is_commented' => (bool) $isCommented,
-                    'is_override' => (bool) $isOverride,
                     'version' => 0, // will be bumped by versioner
                     'last_updated_by' => $actor?->id,
                     'last_updated_at' => now(),
@@ -108,7 +104,6 @@ class StoreEnvironmentSecret
                     'line_bytes' => $lineBytes ?? $existing->line_bytes,
                     'is_vapor_secret' => (bool) $isVaporSecret,
                     'is_commented' => (bool) $isCommented,
-                    'is_override' => (bool) $isOverride,
                     'last_updated_by' => $actor?->id,
                     'last_updated_at' => now(),
                 ])->save();

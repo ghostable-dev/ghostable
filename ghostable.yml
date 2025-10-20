@@ -1,9 +1,0 @@
-id: 019813b0-6b7a-70ef-96c1-4e463d043556
-name: App
-environments:
-    -
-        name: jr-local
-        type: local
-    -
-        name: local
-        type: local

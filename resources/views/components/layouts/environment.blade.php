@@ -18,14 +18,24 @@
             
             @include('environment.header')
             
-            <flux:navbar>
-                @foreach([
+            @php
+                $legacy = $this->environment->project->is_legacy;
+                
+                $links = [
                     ['route' => 'environment.variables', 'label' => 'Variables', 'current' => null],
-                    //['route' => 'environment.validation', 'label' => 'Validation', 'current' => null],
-                    ['route' => 'environment.secrets', 'label' => 'Secrets', 'current' => null],
-                    ['route' => 'environment.activity', 'label' => 'Activity', 'current' => null], 
-                    ['route' => 'environment.settings.general', 'label' => 'Settings', 'current' => request()->routeIs('environment.settings.*')],
-                ] as $item)
+                ];
+                
+                if ($legacy) {
+                    array_push($links, ['route' => 'environment.secrets', 'label' => 'Secrets', 'current' => null]);
+                }
+                
+                array_push($links, ['route' => 'environment.activity', 'label' => 'Activity', 'current' => null]);
+                array_push($links, ['route' => 'environment.settings.general', 'label' => 'Settings', 'current' => request()->routeIs('environment.settings.*')]);
+                
+            @endphp
+            
+            <flux:navbar>
+                @foreach($links as $item)
                     <flux:navbar.item
                         wire:key="nbi-{{ $item['route'] }}" 
                         :href="route($item['route'], $environment->id)" 

@@ -3,10 +3,12 @@
 namespace App\Environment\Models;
 
 use App\Account\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EnvironmentSecret extends Model
@@ -26,7 +28,6 @@ class EnvironmentSecret extends Model
         'line_bytes',
         'is_vapor_secret',
         'is_commented',
-        'is_override',
         'version',
         'last_updated_by',
         'last_updated_at',
@@ -37,10 +38,32 @@ class EnvironmentSecret extends Model
         'claims' => 'array',
         'is_vapor_secret' => 'boolean',
         'is_commented' => 'boolean',
-        'is_override' => 'boolean',
         'last_updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    protected function displayLineBytes(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $bytes = $this->line_bytes;
+
+                if ($bytes === null) {
+                    return null;
+                }
+
+                // Round to nearest meaningful size
+                return match (true) {
+                    $bytes < 1024 => "~{$bytes} bytes",
+                    $bytes < 10 * 1024 => '~1 KB',
+                    $bytes < 100 * 1024 => sprintf('~%d KB', round($bytes / 1024, -1)), // round to nearest 10 KB
+                    $bytes < 1024 * 1024 => sprintf('~%d KB', round($bytes / 1024)), // nearest KB
+                    $bytes < 10 * 1024 * 1024 => sprintf('~%d MB', round($bytes / (1024 * 1024), 1)), // nearest tenth of MB
+                    default => sprintf('~%d MB', round($bytes / (1024 * 1024))), // nearest MB
+                };
+            }
+        );
+    }
 
     /**
      * Current secret belongs to an Environment.
@@ -64,6 +87,12 @@ class EnvironmentSecret extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(EnvironmentSecretVersion::class, 'environment_secret_id');
+    }
+
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(EnvironmentSecretVersion::class)
+            ->orderByDesc('version');
     }
 
     /**

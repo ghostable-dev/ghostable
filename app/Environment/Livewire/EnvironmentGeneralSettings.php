@@ -52,7 +52,7 @@ class EnvironmentGeneralSettings extends Component
 
         $this->type = $environment->type;
         $this->fileFormat = $environment->file_format;
-        $this->base_id = $environment->base_id;
+        $this->base_id = $environment->project->is_legacy ? $environment->base_id : null;
     }
 
     /**
@@ -102,6 +102,10 @@ class EnvironmentGeneralSettings extends Component
     #[Computed]
     public function baseOptions(): Collection
     {
+        if (! $this->environment->project->is_legacy) {
+            return collect();
+        }
+
         return $this->environment->project->environments
             ->reject(fn (Environment $env) => $env->id === $this->environment->id || $env->isDescendantOf($this->environment));
     }
@@ -149,6 +153,12 @@ class EnvironmentGeneralSettings extends Component
      */
     public function updatedBaseId(): void
     {
+        if (! $this->environment->project->is_legacy) {
+            $this->base_id = null;
+
+            return;
+        }
+
         if (! $this->base_id !== $this->environment->base_id) {
             Flux::modal('confirm-base-change')->show();
 
@@ -169,6 +179,12 @@ class EnvironmentGeneralSettings extends Component
      */
     public function updateBaseEnvironment(): void
     {
+        if (! $this->environment->project->is_legacy) {
+            $this->base_id = null;
+
+            return;
+        }
+
         $validated = $this->validate(EnvironmentRules::updateBaseRules($this->environment));
 
         $base = $this->environment->project->environments()

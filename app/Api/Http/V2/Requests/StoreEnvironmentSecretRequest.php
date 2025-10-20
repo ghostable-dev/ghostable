@@ -37,7 +37,6 @@ class StoreEnvironmentSecretRequest extends FormRequest
             'line_bytes' => ['nullable', 'integer', 'min:0'],
             'is_vapor_secret' => ['sometimes', 'boolean'],
             'is_commented' => ['sometimes', 'boolean'],
-            'is_override' => ['sometimes', 'boolean'],
         ];
     }
 }
