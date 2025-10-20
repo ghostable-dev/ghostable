@@ -7,7 +7,7 @@
         Enforced Validation, No Surprises
       </flux:heading>
       <flux:subheading size="xl">
-        Automatically validate environment variables before deploys — so you never push broken config again.
+        Validate environment variables before deploys — so you never push broken config again.
       </flux:subheading>
     </div>
 

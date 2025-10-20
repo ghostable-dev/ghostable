@@ -10,7 +10,7 @@
             The Complete <span class="bg-gradient-to-r from-brand-light from-10% via-brand via-30% to-brand-light to-90% shadow-xl bg-clip-text text-transparent">.env Suite</span> for Laravel Teams
         </h1>
         <p class="mt-8 text-lg text-gray-400 sm:text-xl/8">
-            Securely manage, effortlessly sync, automatically validate, audit changes, and confidently deploy your Laravel environment variables and secrets—all within one unified platform.
+            Securely manage, effortlessly sync, validate, audit changes, and confidently deploy your Laravel environment variables and secrets—all within one unified platform.
         </p>
         <div class="mt-10 flex items-center justify-center gap-x-4">
             <flux:button 

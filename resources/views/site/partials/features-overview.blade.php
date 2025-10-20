@@ -1,13 +1,13 @@
 @php
 $features = [
     [
-        'title' => 'Security & Privacy',
-        'description' => 'All secrets & environment files are encrypted in transit and at rest—keeping sensitive configs safe by default.',
+        'title' => 'Zero-knowledge',
+        'description' => 'Your environment data is encrypted locally before it ever leaves your machine.',
         'icon' => 'lock-closed',
     ],
     [
-        'title' => 'Automatic Validation',
-        'description' => 'Instantly validate your .env files to catch errors before deployment—no manual checks required.',
+        'title' => 'Validation',
+        'description' => 'Locally validate your .env files to catch errors before deployment without touching third-party servers.',
         'icon' => 'check-circle',
     ],
     [
