@@ -3,7 +3,7 @@
 namespace App\Organization\Models;
 
 use App\Account\Models\User;
-use App\Api\Models\ApiUsageDaily;
+use App\Api\Usage\Models\ApiUsageDaily;
 use App\Billing\Concerns\Billable;
 use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;

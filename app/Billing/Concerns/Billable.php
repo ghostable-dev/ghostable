@@ -44,4 +44,12 @@ trait Billable
             ->filter(fn (?Subscription $sub) => $sub?->valid())
             ->first();
     }
+
+    /**
+     * Determine if the entity effectively has access to paid plan features.
+     */
+    public function hasPaidPlan(): bool
+    {
+        return ! $this->plan->isFree();
+    }
 }

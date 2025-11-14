@@ -126,7 +126,7 @@ return [
     ],
 
     'providers' => ServiceProvider::defaultProviders()->merge([
-        App\Api\Providers\ApiServiceProvider::class,
+        App\Api\ApiServiceProvider::class,
     ])->toArray(),
 
 ];

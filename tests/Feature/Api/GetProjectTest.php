@@ -39,6 +39,8 @@ test('returns project in the correct format', function () {
                 'name',
                 'slug',
                 'organization_id',
+                'deployment_provider',
+                'stack',
                 'environments',
                 'created_at',
                 'updated_at',

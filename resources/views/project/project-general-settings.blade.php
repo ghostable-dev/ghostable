@@ -30,14 +30,46 @@
                     <flux:textarea wire:model="description" label="Description" :readonly="!$this->canEdit"/>
                     <flux:select 
                         variant="listbox" 
-                        label="Deployment Provider" 
-                        wire:model="deployment_provider" 
-                        description:trailing="This helps Ghostable enable provider-specific controls and integrations for your project."
+                        label="Language" 
+                        wire:model.live="stack.language" 
+                        placeholder="Select language..."
+                        description:trailing="We’ll tailor recommendations based on your stack."
+                        :disabled="!$this->canEdit"
                         required>
-                        @foreach($this->deploymentProviders as $provider)
-                            <flux:select.option value="{{ $provider->value }}">{{ $provider->label() }}</flux:select.option>
+                        @foreach($this->languageOptions as $option)
+                            <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
                         @endforeach
                     </flux:select>
+
+                    @if($this->stack['language'])
+                        <flux:select 
+                            variant="listbox" 
+                            label="Framework" 
+                            wire:model.live="stack.framework" 
+                            placeholder="Select framework..."
+                            description:trailing="Choose the framework or runtime that best matches your project."
+                            :disabled="!$this->canEdit"
+                            required>
+                            @foreach($this->frameworkOptions as $option)
+                                <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @endif
+
+                    @if($this->stack['framework'])
+                        <flux:select 
+                            variant="listbox" 
+                            label="Provider" 
+                            wire:model.live="stack.platform" 
+                            placeholder="Select provider..."
+                            description:trailing="Tell us where this project is running so we can enable the right integrations."
+                            :disabled="!$this->canEdit"
+                            required>
+                            @foreach($this->platformOptions as $option)
+                                <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @endif
                 </form>
             </x-section>
             
@@ -154,4 +186,3 @@
         <x-access-restricted/>
     @endperform
 </x-layouts.project-settings>
-

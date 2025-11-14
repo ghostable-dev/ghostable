@@ -60,6 +60,10 @@ class EnvironmentDownloader extends EnvironmentComponent
             environment: $this->environment,
             user: Auth::user(),
             source: 'ui',
+            context: [
+                'format' => $this->fileFormat->value,
+                'ip_address' => request()->ip(),
+            ],
         );
 
         $filename = 'environment-'.str($this->environment->name)->slug().'.env';

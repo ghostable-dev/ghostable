@@ -14,6 +14,7 @@ class CreateProjectPayload extends Data
         public DeploymentProvider $deploymentProvider = DeploymentProvider::OTHER,
         public ?string $description = null,
         public bool $withDefaultEnvironments = true,
-        public bool $isLegacy = true
+        public bool $isLegacy = true,
+        public ?ProjectStackData $stack = null
     ) {}
 }

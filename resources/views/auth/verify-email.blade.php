@@ -9,11 +9,14 @@
 
 <div class="mt-4 flex flex-col gap-6">
     
-    <x-mail.simple.title size="sm">Verify your email</x-mail.simple.title>
-    
-    <flux:text class="text-center">
-        {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
-    </flux:text>
+    <div class="text-center">
+        <flux:heading class="!text-5xl font-medium tracking-tighter text-pretty">
+            Verify your email
+        </flux:heading>
+        <flux:subheading>
+            Please verify your email address by clicking the verification link we just emailed to you.
+        </flux:subheading>
+    </div>
 
     @if (session('status') == 'verification-link-sent')
         <flux:text class="text-center font-medium !dark:text-green-400 !text-green-600">

@@ -4,6 +4,7 @@ namespace App\Core\Concerns;
 
 use App\Account\Actions\RegisterUser;
 use App\Account\Models\User;
+use App\Billing\Enums\Plan;
 use App\Environment\Actions\CreateEnv;
 use App\Environment\Actions\StoreEnvironmentSecret;
 use App\Environment\Actions\Token\CreateEnvToken;
@@ -42,12 +43,14 @@ trait CreatesAccountData
     protected function createOrganization(
         string $name,
         User $owner,
-        array $members = []
+        array $members = [],
+        ?Plan $planOverride = null
     ): Organization {
 
         $organization = app(CreateOrganization::class)->handle(
             name: $name,
-            owner: $owner
+            owner: $owner,
+            planOverride: $planOverride
         );
 
         foreach ($members as $member) {

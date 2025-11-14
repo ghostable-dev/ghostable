@@ -5,6 +5,7 @@ return [
     App\Auth\AuthServiceProdivder::class,
     App\Billing\BillingServiceProvider::class,
     App\Blog\BlogServiceProvider::class,
+    \App\Crypto\CryptoServiceProvider::class,
     App\Core\Providers\AppServiceProvider::class,
     App\Environment\EnvironmentServiceProvider::class,
     App\Integration\Integrations\Drata\DrataServiceProvider::class,

@@ -14,6 +14,7 @@ class UpdateProjectSettings
             'name' => $payload->name,
             'description' => $payload->description,
             'deployment_provider' => $payload->deploymentProvider,
+            'stack' => $payload->stack,
         ]);
 
         ProjectSettingsChanged::dispatch($project);

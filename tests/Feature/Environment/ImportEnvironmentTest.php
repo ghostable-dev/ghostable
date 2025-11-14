@@ -21,5 +21,13 @@ it('imports environment file and logs activity', function () {
         ->call('import');
 
     expect($env->fresh()->variables()->where('key', 'FOO')->exists())->toBeTrue();
-    expect(Activity::query()->where('event', 'imported')->where('subject_id', $env->id)->exists())->toBeTrue();
+
+    $activity = Activity::query()
+        ->where('event', 'imported')
+        ->where('subject_id', $env->id)
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
 });

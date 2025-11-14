@@ -2,8 +2,8 @@
 
 namespace App\Filament\Widgets;
 
-use App\Api\Models\ApiUsageDaily;
-use App\Api\Models\ApiUsageHourly;
+use App\Api\Usage\Models\ApiUsageDaily;
+use App\Api\Usage\Models\ApiUsageHourly;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

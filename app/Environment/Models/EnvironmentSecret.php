@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 
 class EnvironmentSecret extends Model
 {
@@ -25,6 +26,9 @@ class EnvironmentSecret extends Model
         'aad',
         'claims',
         'client_sig',
+        'env_kek_version',
+        'env_kek_fingerprint',
+        'metadata',
         'line_bytes',
         'is_vapor_secret',
         'is_commented',
@@ -36,11 +40,38 @@ class EnvironmentSecret extends Model
     protected $casts = [
         'aad' => 'array',
         'claims' => 'array',
-        'is_vapor_secret' => 'boolean',
+        'metadata' => 'array',
         'is_commented' => 'boolean',
+        'env_kek_version' => 'integer',
         'last_updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    protected $appends = [
+        'is_vapor_secret',
+    ];
+
+    protected function isVaporSecret(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => (bool) Arr::get($this->metadata ?? [], 'laravel.is_vapor_secret', false),
+            set: function ($value) {
+                $metadata = $this->attributes['metadata'] ?? null;
+
+                if (is_string($metadata)) {
+                    $metadata = json_decode($metadata, true) ?? [];
+                } elseif (! is_array($metadata)) {
+                    $metadata = [];
+                }
+
+                Arr::set($metadata, 'laravel.is_vapor_secret', (bool) $value);
+
+                return [
+                    'metadata' => $this->castAttributeAsJson('metadata', $metadata),
+                ];
+            }
+        );
+    }
 
     protected function displayLineBytes(): Attribute
     {

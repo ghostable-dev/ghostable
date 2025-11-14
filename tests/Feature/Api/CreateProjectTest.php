@@ -2,6 +2,7 @@
 
 use App\Organization\Enums\OrganizationRole;
 use App\Project\Enums\DeploymentProvider;
+use App\Project\Enums\ProjectStackTag;
 use Laravel\Sanctum\Sanctum;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -28,6 +29,7 @@ test('persists a new project record and returns JSON shape', function () {
                 'slug',
                 'organization_id',
                 'deployment_provider',
+                'stack',
                 'environments',
                 'created_at',
                 'updated_at',
@@ -37,6 +39,30 @@ test('persists a new project record and returns JSON shape', function () {
     $project = $this->organization->fresh()->projects()->where($payload)->first();
 
     $this->assertNotNull($project);
+});
+
+test('captures optional stack metadata when provided', function () {
+    Sanctum::actingAs($this->ray);
+
+    $payload = [
+        'name' => 'CLI Website',
+        'deployment_provider' => DeploymentProvider::LARAVEL_CLOUD->value,
+        'stack' => [
+            'language' => ProjectStackTag::LanguagePHP->value,
+            'framework' => ProjectStackTag::FrameworkLaravel->value,
+            'platform' => ProjectStackTag::PlatformLaravelForge->value,
+        ],
+    ];
+
+    $this->postJson($this->endpoint, $payload)
+        ->assertStatus(201)
+        ->assertJsonPath('data.stack.language', 'php')
+        ->assertJsonPath('data.stack.framework', 'laravel')
+        ->assertJsonPath('data.stack.platform', 'laravel_forge');
+
+    $project = $this->organization->projects()->where('name', 'CLI Website')->first();
+
+    expect($project?->stack?->toArray())->toMatchArray($payload['stack']);
 });
 
 describe('authorization', function () {

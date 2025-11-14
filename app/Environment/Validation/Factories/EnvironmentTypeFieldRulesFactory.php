@@ -19,7 +19,6 @@ class EnvironmentTypeFieldRulesFactory implements MakesValidationPlan
 {
     public function make(Environment $environment): EnvironmentValidationPlan
     {
-        // dd($this->defaultRuleMap()[$environment->type->value] ?? []);
         return new EnvironmentValidationPlan(
             fieldRules: $this->defaultRuleMap()[$environment->type->value] ?? []
         );

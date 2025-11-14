@@ -1,7 +1,7 @@
 <x-layouts.environment :environment="$this->environment">
     <div>
         
-        @if($this->environment->owningOrganization()->activeSubscription())
+        @if($this->environment->owningOrganization()->hasPaidPlan())
             @can('viewAuditLogs', $this->environment->owningOrganization())
                 <x-section>
                     <x-slot:title>Activity History</x-slot:title>

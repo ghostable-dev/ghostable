@@ -1,6 +1,6 @@
 <?php
 
-use App\Api\Http\Controllers\Secret\GetSecretTypes;
+use App\Api\V1\Http\Controllers\Secret\GetSecretTypes;
 use App\Secret\Enums\SecretType;
 use Tests\TestCase;
 

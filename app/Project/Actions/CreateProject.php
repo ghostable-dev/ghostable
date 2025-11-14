@@ -44,12 +44,15 @@ class CreateProject
         $this->project = new Project;
 
         $this->project->name = $payload->name;
+        $this->project->description = $payload->description;
 
         $this->project->is_legacy = $payload->isLegacy;
 
         $this->project->organization()->associate($payload->organization);
 
         $this->project->deployment_provider = $payload->deploymentProvider;
+
+        $this->project->stack = $payload->stack;
 
         $this->project->save();
     }

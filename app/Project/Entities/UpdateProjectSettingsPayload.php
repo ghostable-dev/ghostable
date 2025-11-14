@@ -11,5 +11,6 @@ class UpdateProjectSettingsPayload extends Data
         public string $name,
         public ?string $description,
         public DeploymentProvider $deploymentProvider,
+        public ?ProjectStackData $stack = null,
     ) {}
 }

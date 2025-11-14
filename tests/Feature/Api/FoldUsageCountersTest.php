@@ -1,8 +1,8 @@
 <?php
 
-use App\Api\Helpers\UsageCacheKey;
-use App\Api\Helpers\UsageDate;
-use App\Api\Jobs\FoldUsageCounters;
+use App\Api\Usage\Jobs\FoldUsageCounters;
+use App\Api\Usage\Support\UsageCacheKey;
+use App\Api\Usage\Support\UsageDate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;

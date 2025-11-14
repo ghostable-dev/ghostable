@@ -16,8 +16,6 @@ class SlackChannel
 
         $webhookUrl = $notification->forOrganization()->routeNotificationForSlack();
 
-        // dd($notification, $notifiable);
-
         if (! $webhookUrl) {
             return;
         }

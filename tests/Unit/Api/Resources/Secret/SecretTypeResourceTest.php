@@ -1,6 +1,6 @@
 <?php
 
-use App\Api\Resources\Secret\SecretTypeResource;
+use App\Api\Core\Resources\Secret\SecretTypeResource;
 use App\Secret\Enums\SecretType;
 use Tests\TestCase;
 

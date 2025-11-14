@@ -2,6 +2,7 @@
 
 namespace App\Account\Console\Commands;
 
+use App\Billing\Enums\Plan;
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
 use App\Organization\Enums\OrganizationRole;
@@ -31,11 +32,11 @@ class AppSetup extends Command
 
         $this->seedPiedPiper();
 
-        $this->seedHooli();
+        // $this->seedHooli();
 
-        $this->seedAviato();
+        // $this->seedAviato();
 
-        $this->seedLeeds();
+        // $this->seedLeeds();
     }
 
     protected function resetDatabase(): void
@@ -51,15 +52,19 @@ class AppSetup extends Command
     protected function seedGhostable(): void
     {
         $joe = $this->createUser(name: 'Joe Rucci', email: 'rucci.joe@gmail.com');
+        $nick = $this->createUser(name: 'Nick', email: 'nick@gmail.com');
 
         $ghostable = $this->createOrganization(
             name: 'Ghostable',
             owner: $joe,
+            planOverride: Plan::ENTERPRISE,
         );
+
+        $nick->organizationMembership()->assignToOrganization(organization: $ghostable, role: OrganizationRole::ADMIN);
 
         $primary = $this->createZeroKnowledgeProject('Primary', $ghostable);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
-        $this->createZeroKnowledgeVariables(env: $production, amount: 20, createdBy: $joe);
+        // $this->createZeroKnowledgeVariables(env: $production, amount: 0, createdBy: $joe);
 
         // $this->createVariables(env: $production, amount: 10, createdBy: $joe);
         // $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
@@ -71,7 +76,7 @@ class AppSetup extends Command
         // $this->createVariables(env: $local, amount: 3, createdBy: $joe);
         // $this->createSecrets(env: $local, amount: 1, createdBy: $joe);
 
-        $this->createInvite(organization: $ghostable, sender: $joe, email: 'admin@ghostable.com');
+        // $this->createInvite(organization: $ghostable, sender: $joe, email: 'admin@ghostable.com');
 
         // $localCliToken = $this->createEnvToken(env: $local, createdBy: $joe);
         // $this->info('Token for local deploys: ' . $localCliToken->plainTextToken);

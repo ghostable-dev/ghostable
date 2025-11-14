@@ -9,6 +9,7 @@ use App\Environment\Enums\PushMode;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironmentVariables;
 use App\Environment\Services\EnvParser;
+use App\Environment\Support\EnvironmentAuditProperties;
 use App\Environment\Variable\Actions\CreateVariable;
 use App\Environment\Variable\Actions\DeleteVariable;
 use App\Environment\Variable\Actions\NormalizeVariableKey;
@@ -90,16 +91,42 @@ class PushEnvironment
 
         $this->applyChanges($env, $added, $updated, $removed, $strategy, $ancestor);
 
+        $actor = Auth::user();
+
         if (! $strategy->silently) {
-            activity('variable')
-                ->performedOn($env)
-                ->causedBy(Auth::user())
-                ->event('push')
-                ->withProperties([
+            $properties = [
+                'source' => 'ui',
+                'environment' => EnvironmentAuditProperties::make($env),
+                'result' => [
                     'added' => $added->count(),
                     'updated' => $updated->count(),
                     'removed' => $removed->count(),
-                ])->log("Pushed environment file to \"{$env->name}\"");
+                ],
+                'strategy' => [
+                    'mode' => $strategy->mode->value,
+                    'reinstate_deleted' => $strategy->reinstateDeleted,
+                    'suppress_inherited_on_removal' => $strategy->suppressInheritedOnRemoval,
+                    'suppress_override_on_removal' => $strategy->suppressOverrideOnRemoval,
+                ],
+                'payload' => [
+                    'incoming_keys' => $incoming->count(),
+                ],
+                'ip_address' => request()?->ip(),
+            ];
+
+            if ($actor) {
+                $properties['requested_by'] = [
+                    'id' => (string) $actor->id,
+                    'email' => $actor->email,
+                ];
+            }
+
+            activity('variable')
+                ->performedOn($env)
+                ->causedBy($actor)
+                ->event('push')
+                ->withProperties($properties)
+                ->log("Pushed \"{$env->name}\" environment via ui.");
         }
 
         return new PushResultData(

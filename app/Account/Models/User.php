@@ -6,6 +6,7 @@ use App\Account\Builders\UserBuilder;
 use App\Account\Entities\NotificationSettings;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
+use App\Crypto\Models\Device;
 use App\Messaging\Concerns\ReceivesMessages;
 use App\Organization\Concerns\BelongsToOrganizations;
 use App\Organization\Models\Invite;
@@ -17,6 +18,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -165,6 +167,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->morphMany(
             ActivitylogServiceProvider::determineActivityModel(), 'subject'
         )->whereIn('event', ['created', 'updated', 'deleted']);
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class);
     }
 
     public static function newFactory(): UserFactory

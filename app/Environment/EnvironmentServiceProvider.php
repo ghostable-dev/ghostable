@@ -43,8 +43,10 @@ class EnvironmentServiceProvider extends ServiceProvider
         Gate::policy(Environment::class, EnvironmentPolicy::class);
 
         Relation::enforceMorphMap([
-            'environment' => 'App\Environment\Models\Environment',
+            'deployment_token' => 'App\Environment\Models\DeploymentToken',
             'enviroment_secret' => 'App\Environment\Models\EnvironmentSecret',
+            'environment' => 'App\Environment\Models\Environment',
+            'environment_key' => 'App\Environment\Models\EnvironmentKey',
         ]);
 
         // Send activity notification

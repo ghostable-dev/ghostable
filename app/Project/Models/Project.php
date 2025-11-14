@@ -8,6 +8,7 @@ use App\Organization\Contracts\SupportsOverrides;
 use App\Organization\Models\Organization;
 use App\Organization\Resolvers\ResolveOrganization;
 use App\Project\Entities\ProjectNotificationsData;
+use App\Project\Entities\ProjectStackData;
 use App\Project\Enums\DeploymentProvider;
 use App\Project\Events\ProjectCreated;
 use App\Project\Events\ProjectDeleted;
@@ -73,11 +74,13 @@ class Project extends Model implements SupportsOverrides
         'name',
         'notifications',
         'is_legacy',
+        'stack',
     ];
 
     protected $casts = [
         'deployment_provider' => DeploymentProvider::class,
         'notifications' => ProjectNotificationsData::class.':default',
+        'stack' => ProjectStackData::class.':default',
     ];
 
     protected $dispatchesEvents = [

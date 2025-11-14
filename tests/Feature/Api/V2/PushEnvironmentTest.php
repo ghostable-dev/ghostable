@@ -1,5 +1,6 @@
 <?php
 
+use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
 use Laravel\Sanctum\Sanctum;
 
@@ -11,6 +12,32 @@ beforeEach(function () {
     $project = $this->createProject(name: 'Website', organization: $this->organization);
     $this->env = $this->createEnvironment(name: 'Website', type: EnvironmentType::DEVELOPMENT, project: $project);
     $this->endpoint = "/api/v2/projects/{$project->id}/environments/{$this->env->name}/push";
+
+    $deviceKeypair = sodium_crypto_sign_keypair();
+    $this->deviceSecretKey = sodium_crypto_sign_secretkey($deviceKeypair);
+    $devicePublicKey = sodium_crypto_sign_publickey($deviceKeypair);
+
+    $this->device = Device::factory()->for($this->ray)->create([
+        'active' => true,
+        'revoked_at' => null,
+        'public_signing_key' => base64_encode($devicePublicKey),
+    ]);
+
+    $this->signSecretPayload = function (array $payload): array {
+        $payloadToSign = $payload;
+        unset($payloadToSign['client_sig']);
+
+        $payloadJson = json_encode(
+            $payloadToSign,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+        );
+
+        $payload['client_sig'] = base64_encode(
+            sodium_crypto_sign_detached($payloadJson, $this->deviceSecretKey)
+        );
+
+        return $payload;
+    };
 
     $this->makeSecretPayload = function (string $name, array $overrides = []): array {
         $base = [
@@ -26,7 +53,6 @@ beforeEach(function () {
             ],
             'claims' => [
                 'hmac' => "hmac-{$name}-v1",
-                'validators' => [],
                 'meta' => [
                     'value_length' => 12,
                     'is_vapor_secret' => false,
@@ -37,7 +63,9 @@ beforeEach(function () {
             'client_sig' => "sig-{$name}-v1",
         ];
 
-        return array_replace_recursive($base, $overrides);
+        $payload = array_replace_recursive($base, $overrides);
+
+        return ($this->signSecretPayload)($payload);
     };
 });
 
@@ -52,7 +80,10 @@ test('push does not remove secrets by default', function () {
         ($this->makeSecretPayload)('CACHE_DRIVER'),
     ];
 
-    $this->postJson($this->endpoint, ['secrets' => $initial])->assertOk();
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => $initial,
+    ])->assertOk();
 
     $second = [
         ($this->makeSecretPayload)('APP_DEBUG', [
@@ -61,14 +92,16 @@ test('push does not remove secrets by default', function () {
             'claims' => [
                 'hmac' => 'hmac-APP_DEBUG-v2',
             ],
-            'client_sig' => 'sig-APP_DEBUG-v2',
         ]),
         ($this->makeSecretPayload)('APP_ENV'),
         ($this->makeSecretPayload)('APP_KEY'),
         ($this->makeSecretPayload)('APP_URL'),
     ];
 
-    $this->postJson($this->endpoint, ['secrets' => $second])
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => $second,
+    ])
         ->assertOk()
         ->assertJsonFragment(['removed' => 0]);
 
@@ -90,7 +123,10 @@ test('push removes secrets when sync is true', function () {
         ($this->makeSecretPayload)('CACHE_DRIVER'),
     ];
 
-    $this->postJson($this->endpoint, ['secrets' => $initial])->assertOk();
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => $initial,
+    ])->assertOk();
 
     $second = [
         ($this->makeSecretPayload)('APP_DEBUG', [
@@ -99,7 +135,6 @@ test('push removes secrets when sync is true', function () {
             'claims' => [
                 'hmac' => 'hmac-APP_DEBUG-v2',
             ],
-            'client_sig' => 'sig-APP_DEBUG-v2',
         ]),
         ($this->makeSecretPayload)('APP_ENV'),
         ($this->makeSecretPayload)('APP_KEY'),
@@ -107,6 +142,7 @@ test('push removes secrets when sync is true', function () {
     ];
 
     $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
         'secrets' => $second,
         'sync' => true,
     ])

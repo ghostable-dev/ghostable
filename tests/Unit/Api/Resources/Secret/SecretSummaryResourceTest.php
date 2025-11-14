@@ -1,6 +1,6 @@
 <?php
 
-use App\Api\Resources\Secret\SecretSummaryResource;
+use App\Api\Core\Resources\Secret\SecretSummaryResource;
 use App\Secret\Enums\SecretType;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

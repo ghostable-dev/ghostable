@@ -5,8 +5,10 @@ namespace App\Project\Livewire;
 use App\Organization\Models\Organization;
 use App\Project\Actions\CreateProject;
 use App\Project\Entities\CreateProjectPayload;
+use App\Project\Entities\ProjectStackData;
 use App\Project\Enums\DeploymentProvider;
 use App\Project\Models\Project;
+use App\Project\Support\ProjectStackOptions;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -19,12 +21,56 @@ class ProjectCreateModal extends Component
 
     public DeploymentProvider $deploymentProvider = DeploymentProvider::OTHER;
 
+    public ?string $language = null;
+
+    public ?string $framework = null;
+
+    public ?string $platform = null;
+
     public bool $withDefaultEnvironments = true;
 
-    #[Computed(persist: true)]
-    public function deploymentProviders(): array
+    #[Computed]
+    public function languageOptions(): array
     {
-        return DeploymentProvider::cases();
+        return ProjectStackOptions::languageOptions();
+    }
+
+    #[Computed]
+    public function frameworkOptions(): array
+    {
+        if ($this->language === null) {
+            return [];
+        }
+
+        return ProjectStackOptions::frameworksFor($this->language);
+    }
+
+    #[Computed]
+    public function platformOptions(): array
+    {
+        if ($this->language === null) {
+            return [];
+        }
+
+        return ProjectStackOptions::platformsFor($this->language);
+    }
+
+    public function updatedLanguage(?string $value = null): void
+    {
+        $this->framework = null;
+        $this->platform = null;
+        $this->deploymentProvider = DeploymentProvider::OTHER;
+    }
+
+    public function updatedFramework(?string $value = null): void
+    {
+        $this->platform = null;
+        $this->deploymentProvider = DeploymentProvider::OTHER;
+    }
+
+    public function updatedPlatform(?string $value): void
+    {
+        $this->deploymentProvider = ProjectStackOptions::providerForPlatform($value);
     }
 
     public function create()
@@ -38,7 +84,8 @@ class ProjectCreateModal extends Component
                     organization: $this->organization,
                     deploymentProvider: $this->deploymentProvider,
                     withDefaultEnvironments: $this->withDefaultEnvironments,
-                    isLegacy: false
+                    isLegacy: false,
+                    stack: $this->stackPayload()
                 )
             );
         } catch (ValidationException $e) {
@@ -51,12 +98,21 @@ class ProjectCreateModal extends Component
             throw $e;
         }
 
-        $this->reset('name');
+        $this->reset('name', 'language', 'framework', 'platform');
 
         $this->dispatch('project-created');
 
         Flux::modal('create-project')->close();
         Flux::toast('New project has been created.');
+    }
+
+    protected function stackPayload(): ?ProjectStackData
+    {
+        if (! $this->language && ! $this->framework && ! $this->platform) {
+            return null;
+        }
+
+        return ProjectStackOptions::stackData($this->language, $this->framework, $this->platform);
     }
 
     #[Computed(persist: true)]
@@ -83,14 +139,43 @@ class ProjectCreateModal extends Component
                             required />
                         <flux:select 
                             variant="listbox" 
-                            label="Deployment Provider" 
-                            wire:model="deploymentProvider" 
-                            description:trailing="This helps Ghostable enable provider-specific controls and integrations for your project."
+                            label="Language" 
+                            wire:model.live="language" 
+                            placeholder="Select language..."
+                            description:trailing="We’ll tailor recommendations based on your stack."
                             required>
-                            @foreach($this->deploymentProviders as $provider)
-                                <flux:select.option value="{{ $provider->value }}">{{ $provider->label() }}</flux:select.option>
+                            @foreach($this->languageOptions as $option)
+                                <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
                             @endforeach
                         </flux:select>
+
+                        @if($this->language)
+                            <flux:select 
+                                variant="listbox" 
+                                label="Framework" 
+                                wire:model.live="framework" 
+                                placeholder="Select framework..."
+                                description:trailing="Choose the framework or runtime that best matches your project."
+                                required>
+                                @foreach($this->frameworkOptions as $option)
+                                    <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                        @endif
+
+                        @if($this->framework)
+                            <flux:select 
+                                variant="listbox" 
+                                label="Provider" 
+                                wire:model.live="platform" 
+                                placeholder="Select provider..."
+                                description:trailing="Tell us where this project is running so we can enable the right integrations."
+                                required>
+                                @foreach($this->platformOptions as $option)
+                                    <flux:select.option value="{{ $option->value }}">{{ $option->label() }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                        @endif
                         <div class="flex gap-2">
                             <flux:spacer />
                             <flux:modal.close>

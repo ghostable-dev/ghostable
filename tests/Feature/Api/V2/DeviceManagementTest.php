@@ -1,0 +1,168 @@
+<?php
+
+use App\Crypto\Models\Device;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Activitylog\Models\Activity;
+
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->user = $this->createUser('Ray', 'ray@ghostbusters.com');
+    $this->endpoint = '/api/v2/devices';
+});
+
+test('unauthenticated users cannot register devices', function () {
+    $this->postJson($this->endpoint, [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'ios',
+    ])->assertUnauthorized();
+});
+
+test('can register a device', function () {
+    Sanctum::actingAs($this->user);
+
+    $payload = [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'macos',
+    ];
+
+    $response = $this->postJson($this->endpoint, $payload);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.type', 'devices')
+        ->assertJsonPath('data.attributes.public_key', $payload['public_key'])
+        ->assertJsonPath('data.attributes.platform', $payload['platform']);
+
+    $this->assertDatabaseHas('devices', [
+        'public_key' => $payload['public_key'],
+        'public_signing_key' => $payload['public_signing_key'],
+        'user_id' => $this->user->id,
+    ]);
+
+    $device = Device::query()->where('public_key', $payload['public_key'])->firstOrFail();
+
+    $activity = Activity::query()
+        ->where('log_name', 'device')
+        ->where('event', 'created')
+        ->where('subject_id', $device->id)
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'device.platform'))->toBe('macos');
+    expect(data_get($activity->properties, 'requested_by.email'))->toBe($this->user->email);
+    expect(data_get($activity->properties, 'source'))->toBe('cli');
+    expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
+});
+
+test('public key must be base64 and unique', function () {
+    Sanctum::actingAs($this->user);
+
+    $existingKey = base64_encode(random_bytes(32));
+    Device::factory()->for($this->user)->create([
+        'public_key' => $existingKey,
+        'platform' => 'ios',
+    ]);
+
+    $response = $this->postJson($this->endpoint, [
+        'public_key' => 'not-base64',
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'ios',
+    ]);
+
+    $response->assertStatus(422);
+    expect($response->json('error.fields.public_key'))->toBeArray();
+
+    $signingKeyResponse = $this->postJson($this->endpoint, [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => 'not-base64',
+        'platform' => 'ios',
+    ]);
+
+    $signingKeyResponse->assertStatus(422);
+    expect($signingKeyResponse->json('error.fields.public_signing_key'))->toBeArray();
+
+    $uniqueResponse = $this->postJson($this->endpoint, [
+        'public_key' => $existingKey,
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'ios',
+    ]);
+
+    $uniqueResponse->assertStatus(422);
+    expect($uniqueResponse->json('error.fields.public_key'))->toBeArray();
+});
+
+test('can fetch device info', function () {
+    Sanctum::actingAs($this->user);
+
+    $device = Device::factory()->for($this->user)->create([
+        'public_key' => base64_encode(random_bytes(32)),
+        'platform' => 'linux',
+        'last_seen_at' => now()->subMinutes(5),
+    ]);
+
+    $response = $this->getJson("{$this->endpoint}/{$device->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('data.id', (string) $device->id)
+        ->assertJsonPath('data.attributes.status', 'active')
+        ->assertJsonPath('data.attributes.public_key', $device->public_key);
+});
+
+test('cannot fetch device for another user', function () {
+    Sanctum::actingAs($this->user);
+
+    $peter = $this->createUser('Peter', 'peter@ghostbusters.com');
+    $device = Device::factory()->for($peter)->create([
+        'public_key' => base64_encode(random_bytes(32)),
+        'platform' => 'other',
+    ]);
+
+    $this->getJson("{$this->endpoint}/{$device->id}")->assertForbidden();
+});
+
+test('can revoke a device', function () {
+    Sanctum::actingAs($this->user);
+
+    $device = Device::factory()->for($this->user)->create([
+        'public_key' => base64_encode(random_bytes(32)),
+        'platform' => 'windows',
+    ]);
+
+    $response = $this->deleteJson("{$this->endpoint}/{$device->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('meta.success', true)
+        ->assertJsonPath('data.attributes.status', 'revoked');
+
+    $this->assertDatabaseHas('devices', [
+        'id' => $device->id,
+        'active' => false,
+    ]);
+
+    $activity = Activity::query()
+        ->where('log_name', 'device')
+        ->where('event', 'revoked')
+        ->where('subject_id', $device->id)
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'device.status'))->toBe('revoked');
+    expect(data_get($activity->properties, 'requested_by.email'))->toBe($this->user->email);
+    expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
+});
+
+test('cannot revoke device for another user', function () {
+    Sanctum::actingAs($this->user);
+
+    $peter = $this->createUser('Peter', 'peter@ghostbusters.com');
+    $device = Device::factory()->for($peter)->create([
+        'public_key' => base64_encode(random_bytes(32)),
+        'platform' => 'other',
+    ]);
+
+    $this->deleteJson("{$this->endpoint}/{$device->id}")->assertForbidden();
+});

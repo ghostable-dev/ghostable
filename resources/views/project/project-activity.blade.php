@@ -1,6 +1,6 @@
 <x-layouts.project :project="$this->project">
     
-    @if($this->project->owningOrganization()->activeSubscription())
+    @if($this->project->owningOrganization()->hasPaidPlan())
         @can('viewAuditLogs', $this->project->owningOrganization())
             <flux:table :paginate="$this->activities">
                 <flux:table.columns>

@@ -1,9 +1,13 @@
 <?php
 
 use App\Account\Models\User;
+use App\Auth\Enums\CliLoginSessionStatus;
+use App\Auth\Models\CliLoginSession;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -46,4 +50,30 @@ test('email is not verified with invalid hash', function () {
     $this->actingAs($user)->get($verificationUrl);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('verifying email approves pending cli registration session', function () {
+    $user = User::factory()->unverified()->create();
+
+    $session = CliLoginSession::create([
+        'user_id' => $user->id,
+        'status' => CliLoginSessionStatus::VerificationRequired,
+        'browser_token' => Str::random(64),
+        'expires_at' => now()->addMinute(),
+    ]);
+
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)]
+    );
+
+    $this->actingAs($user)->get($verificationUrl);
+
+    $session->refresh();
+
+    expect($session->status)->toBe(CliLoginSessionStatus::Approved)
+        ->and($session->approved_at)->not->toBeNull();
+
+    expect(Cache::get($session->cacheKey()))->not->toBeNull();
 });

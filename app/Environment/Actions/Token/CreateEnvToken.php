@@ -12,7 +12,8 @@ class CreateEnvToken
         string $name,
         Environment $environment,
         int $expiresAfter = 90,
-        ?User $user = null
+        ?User $user = null,
+        array $abilities = ['*']
     ): NewAccessToken {
         $expires = now()->addDays($expiresAfter);
 
@@ -22,7 +23,7 @@ class CreateEnvToken
             'name' => $name,
             'token' => hash('sha256', $plainTextToken),
             'token_suffix' => str($plainTextToken)->substr(-8),
-            'abilities' => ['*'],
+            'abilities' => $abilities,
             'expires_at' => $expires,
         ]);
 

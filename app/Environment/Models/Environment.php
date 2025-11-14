@@ -159,6 +159,16 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(EnvironmentVariableRule::class);
     }
 
+    public function keys(): HasMany
+    {
+        return $this->hasMany(EnvironmentKey::class, 'environment_id');
+    }
+
+    public function deploymentTokens(): HasMany
+    {
+        return $this->hasMany(DeploymentToken::class, 'environment_id');
+    }
+
     public function encrypter(?string $kekSalt = null, ?string $cipher = null): EncrypterContract
     {
         return new Encrypter(

@@ -45,6 +45,8 @@ test('returns organization projects in correct structure', function () {
                     'name',
                     'slug',
                     'organization_id',
+                    'deployment_provider',
+                    'stack',
                     'environments',
                     'created_at',
                     'updated_at',

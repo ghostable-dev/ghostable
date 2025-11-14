@@ -1,6 +1,6 @@
 <x-layouts.project-settings :project="$this->project">
 
-    @if($this->project->owningOrganization()->activeSubscription())
+    @if($this->project->owningOrganization()->hasPaidPlan())
         @can('manageAccessControls', $this->project->owningOrganization())
             <div class="space-y-6 max-w-4xl">
 
@@ -195,4 +195,3 @@
     @endif
 
 </x-layouts.project-settings>
-

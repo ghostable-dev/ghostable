@@ -33,6 +33,18 @@ test('fails with invalid credentials', function () {
         ]);
 });
 
+test('fails when email address is not verified', function () {
+    $this->ray->forceFill(['email_verified_at' => null])->save();
+
+    $this->postJson('/api/v1/cli/login', [
+        'email' => $this->ray->email,
+        'password' => 'password',
+    ])->assertStatus(403)
+        ->assertJson([
+            'message' => 'Email address not verified.',
+        ]);
+});
+
 test('returns token, user and organizations on successful login', function () {
     $response = $this->postJson('/api/v1/cli/login', [
         'email' => $this->ray->email,

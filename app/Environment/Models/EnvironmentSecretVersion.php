@@ -24,8 +24,10 @@ class EnvironmentSecretVersion extends Model
         'aad',
         'claims',
         'client_sig',
+        'env_kek_version',
+        'env_kek_fingerprint',
+        'metadata',
         'line_bytes',
-        'is_vapor_secret',
         'is_commented',
         'changed_by',
         'created_at',
@@ -34,7 +36,8 @@ class EnvironmentSecretVersion extends Model
     protected $casts = [
         'aad' => 'array',
         'claims' => 'array',
-        'is_vapor_secret' => 'boolean',
+        'metadata' => 'array',
+        'env_kek_version' => 'integer',
         'is_commented' => 'boolean',
         'created_at' => 'datetime',
     ];

@@ -29,9 +29,19 @@
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach($this->variables as $secret)
-                        <flux:table.row wire:key="secret-{{ $secret->id }}">
+                        <flux:table.row
+                            wire:key="secret-{{ $secret->id }}"
+                            @class(['opacity-50' => $secret->is_commented])
+                        >
                             <flux:table.cell variant="strong">
-                                {{ $secret->name }}
+                                <div class="flex items-center gap-2">
+                                    {{ $secret->name }}
+                                    @if($secret->is_commented)
+                                        <flux:badge size="sm" color="slate" icon="hashtag">
+                                            Commented
+                                        </flux:badge>
+                                    @endif
+                                </div>
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ $secret->displayLineBytes }}
@@ -45,7 +55,7 @@
                             <flux:table.cell variant="strong">
                                 {{ $secret->lastUpdatedBy->email }}
                             </flux:table.cell>
-                            <flux:table.cell align="end">
+                            <flux:table.cell align="end" class="flex items-center gap-2 justify-end">
                                 <flux:dropdown position="left">
                                     <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
                                     <flux:menu>

@@ -1,6 +1,6 @@
 <?php
 
-use App\Api\Jobs\FoldUsageCounters;
+use App\Api\Usage\Jobs\FoldUsageCounters;
 use App\Environment\Enums\EnvironmentType;
 use App\Organization\Entities\OrganizationLimits;
 use Illuminate\Support\Carbon;

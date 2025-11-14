@@ -1,6 +1,7 @@
 <?php
 
 use App\Account\AccountRoutes;
+use App\Api\V2\Http\Controllers\CliLogin\ApproveCliLogin;
 use App\Auth\AuthRoutes;
 use App\Billing\BillingRoutes;
 use App\Blog\Http\Controllers\GenerateBlogSitemap;
@@ -22,6 +23,8 @@ Route::get('sitemap-blog.xml', GenerateBlogSitemap::class);
 Route::get('sitemap-pages.xml', GeneratePagesSitemap::class);
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->get('cli-login/{browserToken}', ApproveCliLogin::class)->name('cli-login.approve');
 
 AccountRoutes::web();
 OrganizationRoutes::web();

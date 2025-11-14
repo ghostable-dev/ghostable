@@ -1,82 +1,129 @@
 <?php
 
-use App\Api\Http\Controllers\Auth\LoginViaCli;
-use App\Api\Http\Controllers\Environment\CreateEnvironment;
-use App\Api\Http\Controllers\Environment\DiffEnvironment;
-use App\Api\Http\Controllers\Environment\GetEnvFileFormats;
-use App\Api\Http\Controllers\Environment\GetEnvironment;
-use App\Api\Http\Controllers\Environment\GetEnvironmentTypes;
-use App\Api\Http\Controllers\Environment\ValidateEnvironment;
-use App\Api\Http\Controllers\Organization\GetOrganization;
-use App\Api\Http\Controllers\Organization\GetOrganizationRoles;
-use App\Api\Http\Controllers\Organization\GetOrganizations;
-use App\Api\Http\Controllers\Organization\GetOwnedOrganizations;
-use App\Api\Http\Controllers\Organization\InviteMember;
-use App\Api\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
-use App\Api\Http\Controllers\Project\GetEnvironments;
-use App\Api\Http\Controllers\Project\GetProjects;
-use App\Api\Http\Controllers\Secret\GetEnvironmentSecret;
-use App\Api\Http\Controllers\Secret\GetEnvironmentSecrets;
-use App\Api\Http\Controllers\Secret\GetSecretTypes;
-use App\Api\Http\Controllers\Secret\UpdateEnvironmentSecret;
-use App\Api\Http\Middleware\TrackUsage;
-use App\Api\Http\V2\Controllers\Environment\CreateEnvironmentSecret;
-use App\Api\Http\V2\Controllers\Environment\DeployEnvironment;
-use App\Api\Http\V2\Controllers\Environment\GetEnvironmentKeys;
-use App\Api\Http\V2\Controllers\Environment\PullEnvironment;
-use App\Api\Http\V2\Controllers\Environment\PushEnvironment;
-use App\Api\Http\V2\Controllers\Project\CreateProject;
+use App\Api\Core\Http\Middleware\TrackUsage;
+use App\Api\V1\Http\Controllers\Auth\LoginViaCli;
+use App\Api\V1\Http\Controllers\Environment\CreateEnvironment;
+use App\Api\V1\Http\Controllers\Environment\GetEnvFileFormats;
+use App\Api\V1\Http\Controllers\Environment\GetEnvironmentTypes;
+use App\Api\V1\Http\Controllers\Organization\GetOrganization;
+use App\Api\V1\Http\Controllers\Organization\GetOrganizationRoles;
+use App\Api\V1\Http\Controllers\Organization\GetOrganizations;
+use App\Api\V1\Http\Controllers\Organization\GetOwnedOrganizations;
+use App\Api\V1\Http\Controllers\Organization\InviteMember;
+use App\Api\V1\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
+use App\Api\V1\Http\Controllers\Project\GetEnvironments;
+use App\Api\V1\Http\Controllers\Project\GetProjects;
+use App\Api\V1\Http\Controllers\Secret\GetSecretTypes;
+use App\Api\V2\Http\Controllers\CliLogin\PollCliLogin;
+use App\Api\V2\Http\Controllers\CliLogin\StartCliLogin;
+use App\Api\V2\Http\Controllers\CliRegister\PollCliRegister;
+use App\Api\V2\Http\Controllers\CliRegister\StartCliRegister;
+use App\Api\V2\Http\Controllers\Device\RegisterDevice;
+use App\Api\V2\Http\Controllers\Device\RevokeDevice;
+use App\Api\V2\Http\Controllers\Device\ShowDevice;
+use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKey;
+use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKeyEnvelope;
+use App\Api\V2\Http\Controllers\Environment\DeployEnvironment;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentDevices;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentHistory;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentKey;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentKeys;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentVariableHistory;
+use App\Api\V2\Http\Controllers\Environment\PullEnvironment;
+use App\Api\V2\Http\Controllers\Environment\PushEnvironment;
+use App\Api\V2\Http\Controllers\Environment\RollbackEnvironmentVariable;
+use App\Api\V2\Http\Controllers\Project\CreateProject;
+use App\Api\V2\Http\Controllers\Project\DeploymentToken\CreateDeploymentToken;
+use App\Api\V2\Http\Controllers\Project\DeploymentToken\ListDeploymentTokens;
+use App\Api\V2\Http\Controllers\Project\DeploymentToken\RevokeDeploymentToken;
+use App\Api\V2\Http\Controllers\Project\DeploymentToken\RotateDeploymentToken;
+use App\Api\V2\Http\Controllers\Project\GetProjectHistory;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API v2 Routes
+| API v2.x Routes
 |--------------------------------------------------------------------------
 |
-| Per-domain routes for API version v2 will be defined here.
+| Per-domain routes for API version v2.x will be defined here.
 |
 */
 
 Route::middleware('api.version:v2')->group(function () {
-    Route::post('/cli/login', LoginViaCli::class);
-
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/organization-roles', GetOrganizationRoles::class);
-        Route::get('/organizations', GetOrganizations::class);
-        Route::get('/owned-organizations', GetOwnedOrganizations::class);
-        Route::get('/organizations/{organization}', GetOrganization::class);
-        Route::post('/organizations/{organization}/invite', InviteMember::class);
-
-        Route::middleware(TrackUsage::class)->group(function () {
-
-            Route::get('/ci/deploy', DeployEnvironment::class);
-            Route::post('/ci/deploy/provider', DeployEnvironment::class);
-
-            Route::get('/organizations/{organization}/projects', GetProjects::class);
-            Route::post('/organizations/{organization}/projects', CreateProject::class);
-            Route::get('/projects/{project}', CreateProject::class);
-            Route::get('/projects/{project}/environments', GetEnvironments::class);
-            Route::post('projects/{project}/environments', CreateEnvironment::class);
-
-            Route::prefix('projects/{project}/environments/{name}')
-                ->group(function () {
-                    Route::get('/', GetEnvironment::class);
-                    Route::post('/push', PushEnvironment::class);
-                    Route::post('/diff', DiffEnvironment::class);
-                    Route::get('/pull', PullEnvironment::class);
-                    Route::get('/keys', GetEnvironmentKeys::class);
-                    Route::post('/validate', ValidateEnvironment::class);
-                    Route::get('/secrets', GetEnvironmentSecrets::class);
-                    Route::post('/secrets', CreateEnvironmentSecret::class);
-                    Route::get('/secrets/{secret}', GetEnvironmentSecret::class);
-
-                    Route::put('/secrets/{secret}', UpdateEnvironmentSecret::class);
-                });
+    Route::prefix('cli')->group(function () {
+        Route::prefix('login')->group(function () {
+            Route::post('start', StartCliLogin::class);
+            Route::post('poll', PollCliLogin::class);
+            Route::post('/', LoginViaCli::class);
         });
 
-        Route::post('/projects/{project}/generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
-        Route::get('/environment-types', GetEnvironmentTypes::class);
-        Route::get('/environment-formats', GetEnvFileFormats::class);
-        Route::get('/secret-types', GetSecretTypes::class);
+        Route::prefix('register')->group(function () {
+            Route::post('start', StartCliRegister::class);
+            Route::post('poll', PollCliRegister::class);
+        });
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('organization-roles', GetOrganizationRoles::class);
+        Route::get('owned-organizations', GetOwnedOrganizations::class);
+
+        Route::prefix('organizations')->group(function () {
+            Route::get('/', GetOrganizations::class);
+            Route::get('{organization}', GetOrganization::class);
+            Route::post('{organization}/invite', InviteMember::class);
+
+            Route::middleware(TrackUsage::class)->group(function () {
+                Route::get('{organization}/projects', GetProjects::class);
+                Route::post('{organization}/projects', CreateProject::class);
+            });
+        });
+
+        Route::prefix('devices')->group(function () {
+            Route::post('/', RegisterDevice::class);
+            Route::get('{device}', ShowDevice::class);
+            Route::delete('{device}', RevokeDevice::class);
+        });
+
+        Route::prefix('projects/{project}')->group(function () {
+            Route::post('generate-suggested-environment-names', GenerateSuggestedEnvironmentNames::class);
+
+            Route::middleware(TrackUsage::class)->group(function () {
+                Route::get('environments', GetEnvironments::class);
+                Route::post('environments', CreateEnvironment::class);
+                Route::get('history', GetProjectHistory::class);
+
+                Route::prefix('deploy-tokens')->group(function () {
+                    Route::get('/', ListDeploymentTokens::class);
+                    Route::post('/', CreateDeploymentToken::class);
+                    Route::post('{deploymentToken}/rotate', RotateDeploymentToken::class);
+                    Route::post('{deploymentToken}/revoke', RevokeDeploymentToken::class);
+                });
+
+                Route::prefix('environments/{name}')->group(function () {
+                    Route::post('push', PushEnvironment::class);
+                    Route::get('pull', PullEnvironment::class);
+                    Route::get('history', GetEnvironmentHistory::class);
+                    Route::get('variables/{variable}/history', GetEnvironmentVariableHistory::class);
+                    Route::post('variables/{variable}/rollback', RollbackEnvironmentVariable::class);
+
+                    // kek management
+                    Route::post('key', CreateEnvironmentKey::class);
+                    Route::post('key/envelopes', CreateEnvironmentKeyEnvelope::class);
+                    Route::get('key', GetEnvironmentKey::class);
+
+                    // This was getting just an array of variable "key" names.
+                    Route::get('keys', GetEnvironmentKeys::class);
+                    Route::get('devices', GetEnvironmentDevices::class);
+                });
+            });
+        });
+
+        Route::middleware(TrackUsage::class)->group(function () {
+            Route::get('ci/deploy', DeployEnvironment::class);
+        });
+
+        Route::get('environment-types', GetEnvironmentTypes::class);
+        Route::get('environment-formats', GetEnvFileFormats::class);
+        Route::get('secret-types', GetSecretTypes::class);
     });
 });

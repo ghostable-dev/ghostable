@@ -11,6 +11,7 @@
         "aos": "^3.0.0-beta.6",
         "autoprefixer": "^10.4.20",
         "axios": "^1.7.4",
+        "codex-monorepo": "github:openai/codex",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",
         "tailwindcss": "^4.0.7",

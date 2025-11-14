@@ -10,7 +10,7 @@
                 <livewire:environment.livewire.environment-access-token-manager 
                     :environment="$this->environment"/>
                 
-                @if($this->environment->owningOrganization()->activeSubscription())
+                @if($this->environment->owningOrganization()->hasPaidPlan())
                     
                     {{-- User Override Access Restrictions --}}
                     <x-section>

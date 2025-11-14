@@ -5,6 +5,7 @@ namespace App\Environment\Actions;
 use App\Account\Models\User;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class StoreEnvironmentSecret
@@ -35,6 +36,9 @@ class StoreEnvironmentSecret
                 ->where('name', $data['name'])
                 ->lockForUpdate() // ensure race-free version bump
                 ->first();
+
+            // Validators are client-side only; strip them so we stop persisting unused payload.
+            $data['claims'] = Arr::except($data['claims'], ['validators']);
 
             $incomingHmac = data_get($data, 'claims.hmac');
             $existingHmac = $existing ? data_get($existing->claims, 'hmac') : null;
