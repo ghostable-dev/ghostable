@@ -26,8 +26,7 @@ final class CreateEnvironment extends Controller
         $env = app(CreateEnv::class)->handle(
             name: $validated['name'],
             type: EnvironmentType::from($validated['type']),
-            project: $project,
-            base: null
+            project: $project
         );
 
         return new EnvironmentResource($env);

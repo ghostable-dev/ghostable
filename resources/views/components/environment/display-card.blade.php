@@ -12,9 +12,6 @@
 
             {{-- Name + Type + Lock badge --}}
             <div class="flex items-center gap-2">
-                @if($env->base_id)
-                    <x-environment.ancestry-chain :$env/>
-                @endif
                 <h2 class="text-lg font-semibold text-gray-900">
                     {{ $env->name }}
                 </h2>
@@ -38,10 +35,6 @@
                 @isset($env->updated_at)
                     <span>Updated {{ $env->updated_at->timezone(timezone())->diffForHumans() }}</span>
                 @endisset
-
-                @if($env->base_id && isset($env->inherited_count, $env->overridden_count))
-                    <span>{{ $env->inherited_count }} inherited, {{ $env->overridden_count }} overridden</span>
-                @endif
             </div>
         </div>
     </flux:callout.heading>

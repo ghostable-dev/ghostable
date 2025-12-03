@@ -10,7 +10,7 @@
                 <flux:button variant="subtle" icon="git-branch" size="xs" class="!text-brand"/>
             </flux:tooltip>
         @elseif($var->is_override)
-            <flux:tooltip content="{{ $this->environment->base->name }}">
+            <flux:tooltip content="Overrides another value">
                 <flux:button variant="subtle" icon="arrow-path" size="xs" class="!text-brand"/>
             </flux:tooltip>
         @endif

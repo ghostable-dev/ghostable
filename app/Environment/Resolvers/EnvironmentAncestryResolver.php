@@ -18,40 +18,11 @@ class EnvironmentAncestryResolver
     public function bust(Environment $env): void
     {
         Cache::forget($this->key($env->id));
-
-        foreach ($this->descendantsOf($env) as $child) {
-            Cache::forget($this->key($child->id));
-        }
     }
 
     protected function buildChain(Environment $env): Collection
     {
-        $chain = collect();
-        $cursor = $env->withoutRelations();
-
-        while ($cursor) {
-            $chain->prepend($cursor);
-            $cursor = $cursor->base;
-        }
-
-        return $chain->values();
-    }
-
-    protected function descendantsOf(Environment $env): Collection
-    {
-        $descendants = collect();
-        $queue = $env->derived()->get(); // empty if none
-
-        while ($queue->isNotEmpty()) {
-            /** @var Environment $node */
-            $node = $queue->shift();
-            $descendants->push($node);
-
-            // enqueue this node’s derived
-            $queue = $queue->concat($node->derived()->get());
-        }
-
-        return $descendants;
+        return collect([$env->withoutRelations()]);
     }
 
     protected function key(string $envId): string

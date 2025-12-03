@@ -68,14 +68,12 @@ class CreateProject
 
     protected function createEnvironment(
         string $name,
-        EnvironmentType $type,
-        ?Environment $base = null
+        EnvironmentType $type
     ): Environment {
         return resolve(CreateEnv::class)->handle(
             name: $name,
             type: $type,
-            project: $this->project,
-            base: $base
+            project: $this->project
         );
     }
 }

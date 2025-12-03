@@ -80,18 +80,6 @@
                         <flux:subheading>
                             {{ __('This action will permanently delete the environment and all of its variables. This cannot be undone.') }}
                         </flux:subheading>
-                        @if ($this->environment->derived->isNotEmpty())
-                            <div class="mt-4 space-y-2">
-                                <flux:text>
-                                    {{ __('The following environments inherit from this one and will become standalone:') }}
-                                </flux:text>
-                                <ul class="list-disc list-inside">
-                                    @foreach ($this->environment->derived as $env)
-                                        <li>{{ $env->name }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
                     </div>
                     <div class="space-y-4">
                         <flux:text>

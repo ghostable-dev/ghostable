@@ -2,7 +2,6 @@
 
 namespace App\Environment;
 
-use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentEvent;
@@ -56,7 +55,6 @@ class EnvironmentServiceProvider extends ServiceProvider
             [
                 EnvironmentCreated::class,
                 EnvironmentDeleted::class,
-                EnvironmentBaseChanged::class,
                 EnvironmentNameChanged::class,
             ],
             function (EnvironmentEvent $event) {

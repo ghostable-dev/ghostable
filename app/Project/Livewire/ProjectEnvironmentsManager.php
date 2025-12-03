@@ -31,11 +31,6 @@ class ProjectEnvironmentsManager extends Component
     public string $name = '';
 
     /**
-     * Legacy placeholder to satisfy validation signature; base environments are no longer supported.
-     */
-    public ?string $base_id = null;
-
-    /**
      * The default environment display tab.
      */
     public string $tab = 'board';
@@ -110,8 +105,7 @@ class ProjectEnvironmentsManager extends Component
             app(CreateEnv::class)->handle(
                 name: $this->name,
                 type: $this->type,
-                project: $this->project,
-                base: null
+                project: $this->project
             );
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('environment_limit')) {

@@ -12,15 +12,6 @@ class EnvironmentRules
         return [
             'name' => self::nameRules($project),
             'type' => self::typeRules(),
-            'base_id' => [
-                'nullable',
-                'sometimes',
-                function (string $attribute, $value, $fail) {
-                    if (filled($value)) {
-                        $fail('Base environments are not supported.');
-                    }
-                },
-            ],
         ];
     }
 
@@ -30,21 +21,6 @@ class EnvironmentRules
             'name' => self::nameRules($environment->project, $environment),
             'type' => self::typeRules(),
             'fileFormat' => self::formatRules(),
-        ];
-    }
-
-    public static function updateBaseRules(Environment $environment): array
-    {
-        return [
-            'base_id' => [
-                'nullable',
-                'sometimes',
-                function (string $attribute, $value, $fail) {
-                    if (filled($value)) {
-                        $fail('Base environments are not supported.');
-                    }
-                },
-            ],
         ];
     }
 

@@ -14,8 +14,7 @@ class CreateEnv
     public function handle(
         string $name,
         EnvironmentType $type,
-        Project $project,
-        ?Environment $base = null
+        Project $project
     ): Environment {
         Validator::make(
             ['environment_limit' => null],

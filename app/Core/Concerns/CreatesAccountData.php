@@ -98,14 +98,12 @@ trait CreatesAccountData
     protected function createEnvironment(
         string $name,
         EnvironmentType $type,
-        Project $project,
-        ?Environment $base = null
+        Project $project
     ): Environment {
         return app(CreateEnv::class)->handle(
             name: $name,
             type: $type,
-            project: $project,
-            base: $base
+            project: $project
         );
     }
 

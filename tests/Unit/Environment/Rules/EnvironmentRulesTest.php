@@ -14,8 +14,7 @@ it('provides create rules', function () {
 
     $rules = EnvironmentRules::createRules($project);
 
-    expect($rules)->toHaveKeys(['base_id', 'name', 'type'])
-        ->and($rules['base_id'])->toContain('nullable', 'sometimes');
+    expect($rules)->toHaveKeys(['name', 'type']);
 });
 
 it('provides update rules', function () {
@@ -24,14 +23,6 @@ it('provides update rules', function () {
     $rules = EnvironmentRules::updateRules($env);
 
     expect($rules)->toHaveKeys(['name', 'type', 'fileFormat']);
-});
-
-it('provides update base rules', function () {
-    $env = Environment::factory()->forProject(Project::factory()->create())->create();
-
-    $rules = EnvironmentRules::updateBaseRules($env);
-
-    expect($rules)->toHaveKey('base_id');
 });
 
 it('name rules include uniqueness', function () {

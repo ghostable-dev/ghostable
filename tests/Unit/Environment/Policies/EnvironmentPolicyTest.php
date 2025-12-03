@@ -51,27 +51,6 @@ test('manage tokens limited to admins', function () {
     expect($policy->manageTokens($dev, $env))->toBeFalse();
 });
 
-test('update base enforces project and permission rules', function () {
-    $user = $this->createUser('User', 'user@example.com');
-    $org = $this->createOrganization('Org', $user);
-    $project = $this->createProject('Proj', $org);
-    $base = $this->createEnvironment('Base', EnvironmentType::PRODUCTION, $project);
-    $env = $this->createEnvironment('Child', EnvironmentType::DEVELOPMENT, $project);
-
-    $policy = new EnvironmentPolicy;
-    expect($policy->updateBase($user, $env, $base))->toBeTrue();
-    expect($policy->updateBase($user, $env, null))->toBeTrue();
-
-    $otherProject = $this->createProject('Other', $org);
-    $otherEnv = $this->createEnvironment('OtherEnv', EnvironmentType::STAGING, $otherProject);
-    expect($policy->updateBase($user, $env, $otherEnv))->toBeFalse();
-    expect($policy->updateBase($user, $env, $env))->toBeFalse();
-
-    $reader = $this->createUser('Reader', 'reader@example.com');
-    $reader->organizationMembership()->assignToOrganization($org, OrganizationRole::DEVELOPER_READ_ONLY);
-    expect($policy->updateBase($reader, $env, $base))->toBeFalse();
-});
-
 test('perform checks environment permissions', function () {
     $owner = $this->createUser('Owner', 'owner@example.com');
     $org = $this->createOrganization('Org', $owner);

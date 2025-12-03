@@ -32,11 +32,4 @@ class EnvironmentFactory extends Factory
             'project_id' => $project->id,
         ]);
     }
-
-    public function basedOn(Environment $environment): static
-    {
-        return $this->state([
-            'base_id' => $environment->id,
-        ]);
-    }
 }

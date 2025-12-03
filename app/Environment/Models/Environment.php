@@ -2,7 +2,6 @@
 
 namespace App\Environment\Models;
 
-use App\Environment\Actions\BuildEnvironmentAncestryChain;
 use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
@@ -26,7 +25,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
- * @property string|null $base_id
  * @property int $is_restricted
  * @property string $project_id
  * @property string $name
@@ -38,9 +36,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
- * @property-read Environment|null $base
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $derived
- * @property-read int|null $derived_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
@@ -52,7 +47,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereBaseId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment whereFileFormat($value)
@@ -117,16 +111,6 @@ class Environment extends Model implements SupportsOverrides
         return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function base(): BelongsTo
-    {
-        return $this->belongsTo(Environment::class, 'base_id');
-    }
-
-    public function derived(): HasMany
-    {
-        return $this->hasMany(Environment::class, 'base_id');
-    }
-
     public function envSecrets(): HasMany
     {
         return $this->hasMany(EnvironmentSecret::class, 'environment_id');
@@ -145,23 +129,6 @@ class Environment extends Model implements SupportsOverrides
     public function deploymentTokens(): HasMany
     {
         return $this->hasMany(DeploymentToken::class, 'environment_id');
-    }
-
-    public function isDescendantOf(Environment $possibleAncestor): bool
-    {
-        return $possibleAncestor->isAncestorOf($this);
-    }
-
-    public function isAncestorOf(Environment $possibleDescendant): bool
-    {
-        $chain = BuildEnvironmentAncestryChain::handle($possibleDescendant);
-
-        return collect($chain)->contains(fn (Environment $env) => $env->id === $this->id);
-    }
-
-    public function ancestryChain(): array
-    {
-        return BuildEnvironmentAncestryChain::handle($this);
     }
 
     public function getActivitylogOptions(): LogOptions

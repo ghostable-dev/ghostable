@@ -8,19 +8,6 @@
             {{ $environment->project->name }}
             <span class="text-zinc-400">/ {{ $environment->name }}</span>
         </flux:heading>
-
-        {{-- Base environment --}}
-        <div class="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
-            @if ($environment->base)
-                <div class="flex items-center gap-1">
-                    <flux:icon.git-branch variant="micro" class="text-brand"/>
-                    <flux:text>
-                        Derived from
-                        <span class="text-brand font-semibold">{{ $environment->base->name }}</span>
-                    </flux:text>
-                </div>
-            @endif
-        </div>
     </div>
     
     {{-- Right: Meta --}}

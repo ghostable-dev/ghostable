@@ -10,8 +10,6 @@ class ResolveEnvironment
     {
         return once(function () use ($envId) {
             return Environment::with([
-                'base',
-                'derived',
                 'envSecrets',
                 'project',
                 'project.environments',
