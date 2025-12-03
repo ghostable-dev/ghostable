@@ -18,6 +18,20 @@ beforeEach(function () {
     );
 
     $this->endpoint = '/api/v2/ci/deploy';
+
+    $this->makeDeploymentRecipient = static function (): array {
+        $payload = [
+            'ciphertext_b64' => 'b64:'.base64_encode(random_bytes(32)),
+            'nonce_b64' => 'b64:'.base64_encode(random_bytes(24)),
+            'alg' => 'xchacha20-poly1305',
+            'aad_b64' => null,
+            'from_ephemeral_public_key' => 'b64:'.base64_encode(random_bytes(32)),
+        ];
+
+        return [
+            'edek_b64' => 'b64:'.base64_encode(json_encode($payload, JSON_THROW_ON_ERROR)),
+        ];
+    };
 });
 
 test('deployment token receives environment key envelope in v2 deploy bundle', function () {
@@ -45,6 +59,7 @@ test('deployment token receives environment key envelope in v2 deploy bundle', f
         environment: $this->environment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     /** @var DeploymentToken $deploymentToken */

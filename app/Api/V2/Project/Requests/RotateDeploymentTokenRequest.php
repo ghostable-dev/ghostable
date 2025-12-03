@@ -29,6 +29,8 @@ final class RotateDeploymentTokenRequest extends FormRequest
                 Rule::unique('deployment_tokens', 'public_key')->ignore($ignoreId),
             ],
             'expires_after' => ['nullable', 'integer', 'min:7', 'max:365'],
+            'recipient' => ['nullable', 'array'],
+            'recipient.edek_b64' => ['required_with:recipient', 'string', new Base64Encoded],
         ];
     }
 }

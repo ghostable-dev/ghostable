@@ -18,7 +18,8 @@ class CreateDeploymentToken
         Environment $environment,
         string $publicKey,
         ?User $user = null,
-        int $expiresAfter = 90
+        int $expiresAfter = 90,
+        ?array $recipient = null,
     ): DeploymentTokenResult {
         $newToken = $this->createEnvToken->handle(
             name: $name,
@@ -41,7 +42,7 @@ class CreateDeploymentToken
 
         $deploymentToken->load('environment');
 
-        $this->shareEnvironmentKeyWithDeploymentToken->handle($deploymentToken);
+        $this->shareEnvironmentKeyWithDeploymentToken->handle($deploymentToken, $recipient);
 
         return new DeploymentTokenResult(
             token: $deploymentToken->fresh(),

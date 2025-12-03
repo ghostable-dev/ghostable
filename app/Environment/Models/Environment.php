@@ -14,16 +14,13 @@ use App\Organization\Contracts\SupportsOverrides;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
 use Database\Factories\EnvironmentFactory;
-use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Encryption\Encrypter;
 use Laravel\Sanctum\HasApiTokens;
-use RuntimeException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -36,7 +33,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property EnvironmentType $type
  * @property EnvFileFormat $file_format
  * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
- * @property string|null $kek_salt
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -149,42 +145,6 @@ class Environment extends Model implements SupportsOverrides
     public function deploymentTokens(): HasMany
     {
         return $this->hasMany(DeploymentToken::class, 'environment_id');
-    }
-
-    public function encrypter(?string $kekSalt = null, ?string $cipher = null): EncrypterContract
-    {
-        return new Encrypter(
-            key: $this->derivedEncryptionKey($kekSalt),
-            cipher: $cipher ?? config('app.cipher'),
-        );
-    }
-
-    protected function derivedEncryptionKey(?string $kekSalt = null): string
-    {
-        $salt = $kekSalt ?? $this->kek_salt;
-
-        if (! $salt) {
-            throw new RuntimeException('Environment missing KEK salt.');
-        }
-
-        $appKey = config('app.key');
-
-        if (str_starts_with($appKey, 'base64:')) {
-            $appKey = base64_decode(substr($appKey, 7));
-        }
-
-        return hash_hkdf(
-            algo: 'sha256',
-            key: $appKey,
-            length: 32,
-            info: 'env-kek',
-            salt: base64_decode($salt)
-        );
-    }
-
-    public function encryptionKeyString(): string
-    {
-        return 'base64:'.base64_encode($this->derivedEncryptionKey());
     }
 
     public function isDescendantOf(Environment $possibleAncestor): bool

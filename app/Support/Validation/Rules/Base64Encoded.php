@@ -17,7 +17,15 @@ final class Base64Encoded implements ValidationRule
             return;
         }
 
-        $decoded = base64_decode($value, true);
+        $normalized = $value;
+
+        if (str_starts_with($normalized, 'b64:')) {
+            $normalized = substr($normalized, 4);
+        } elseif (str_starts_with($normalized, 'base64:')) {
+            $normalized = substr($normalized, 7);
+        }
+
+        $decoded = base64_decode($normalized, true);
 
         if ($decoded === false) {
             $fail('The :attribute must be a valid base64 string.');
@@ -25,7 +33,7 @@ final class Base64Encoded implements ValidationRule
             return;
         }
 
-        if (base64_encode($decoded) !== rtrim($value, "\r\n")) {
+        if (base64_encode($decoded) !== rtrim($normalized, "\r\n")) {
             $fail('The :attribute must be a valid base64 string.');
         }
     }

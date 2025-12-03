@@ -8,13 +8,10 @@ use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentKey;
 use Illuminate\Support\Facades\Log;
-use JsonException;
-use SodiumException;
-use Throwable;
 
 class ShareEnvironmentKeyWithDeploymentToken
 {
-    public function handle(DeploymentToken $deploymentToken): void
+    public function handle(DeploymentToken $deploymentToken, ?array $recipient = null): void
     {
         $environment = $deploymentToken->environment ?? $deploymentToken->environment()->first();
 
@@ -34,19 +31,14 @@ class ShareEnvironmentKeyWithDeploymentToken
             return;
         }
 
-        $environmentKeyBytes = $this->decodeEnvironmentKeyBytes($environment);
+        $normalizedRecipient = $this->normalizeRecipient($recipient, $deploymentToken);
 
-        if ($environmentKeyBytes === null) {
-            return;
-        }
+        if (! $normalizedRecipient) {
+            Log::info('Skipped sharing environment key with deployment token: missing recipient payload.', [
+                'deployment_token_id' => (string) $deploymentToken->getKey(),
+                'environment_id' => (string) $environment->getKey(),
+            ]);
 
-        $recipient = $this->encryptEnvironmentKeyForToken(
-            deploymentToken: $deploymentToken,
-            environmentKey: $environmentKeyBytes,
-            environmentId: (string) $environment->getKey()
-        );
-
-        if ($recipient === null) {
             return;
         }
 
@@ -75,7 +67,7 @@ class ShareEnvironmentKeyWithDeploymentToken
             }
         ));
 
-        $filteredRecipients[] = $recipient;
+        $filteredRecipients[] = $normalizedRecipient;
 
         $envelope->forceFill([
             'recipients' => $filteredRecipients,
@@ -98,103 +90,23 @@ class ShareEnvironmentKeyWithDeploymentToken
         return $environmentKey;
     }
 
-    private function decodeEnvironmentKeyBytes(Environment $environment): ?string
+    private function normalizeRecipient(?array $recipient, DeploymentToken $deploymentToken): ?array
     {
-        $encryptionKeyString = $environment->encryptionKeyString();
-
-        if (str_starts_with($encryptionKeyString, 'base64:')) {
-            $encryptionKeyString = substr($encryptionKeyString, 7);
-        }
-
-        $environmentKeyBytes = base64_decode($encryptionKeyString, true);
-
-        if ($environmentKeyBytes === false || $environmentKeyBytes === '') {
-            Log::warning('Failed to share environment key: unable to decode environment key string.', [
-                'environment_id' => (string) $environment->getKey(),
-            ]);
-
+        if (! is_array($recipient)) {
             return null;
         }
 
-        return $environmentKeyBytes;
-    }
+        $encoded = $recipient['edek_b64'] ?? null;
 
-    /**
-     * @return array{type:string,id:string,edek_b64:string}|null
-     */
-    private function encryptEnvironmentKeyForToken(
-        DeploymentToken $deploymentToken,
-        string $environmentKey,
-        string $environmentId
-    ): ?array {
-        $encodedPublicKey = $deploymentToken->public_key;
-        $publicKey = $encodedPublicKey !== null
-            ? base64_decode($encodedPublicKey, true)
-            : false;
-
-        if ($publicKey === false || strlen($publicKey) !== SODIUM_CRYPTO_BOX_PUBLICKEYBYTES) {
-            Log::warning('Failed to share environment key: deployment token public key is invalid.', [
-                'deployment_token_id' => (string) $deploymentToken->getKey(),
-            ]);
-
+        if (! is_string($encoded) || $encoded === '') {
             return null;
         }
 
-        try {
-            $ephemeralKeyPair = sodium_crypto_box_keypair();
-            $ephemeralSecretKey = sodium_crypto_box_secretkey($ephemeralKeyPair);
-            $ephemeralPublicKey = sodium_crypto_box_publickey($ephemeralKeyPair);
+        $normalized = $recipient;
+        $normalized['type'] = 'deployment';
+        $normalized['id'] = (string) $deploymentToken->getKey();
+        $normalized['edek_b64'] = $encoded;
 
-            $sharedSecret = sodium_crypto_scalarmult($ephemeralSecretKey, $publicKey);
-            $derivedKey = hash_hkdf(
-                'sha256',
-                $sharedSecret,
-                SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
-                'ghostable:edek:v1'
-            );
-
-            if (! is_string($derivedKey) || strlen($derivedKey) !== SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES) {
-                Log::error('Failed to derive deployment token envelope key.', [
-                    'deployment_token_id' => (string) $deploymentToken->getKey(),
-                    'environment_id' => $environmentId,
-                ]);
-
-                return null;
-            }
-
-            $nonce = random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES);
-            $ciphertext = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
-                $environmentKey,
-                '',
-                $nonce,
-                $derivedKey
-            );
-
-            $payload = [
-                'ciphertext_b64' => 'b64:'.base64_encode($ciphertext),
-                'nonce_b64' => 'b64:'.base64_encode($nonce),
-                'alg' => 'xchacha20-poly1305',
-                'aad_b64' => null,
-                'from_ephemeral_public_key' => 'b64:'.base64_encode($ephemeralPublicKey),
-            ];
-
-            $encodedPayload = 'b64:'.base64_encode(
-                json_encode($payload, JSON_THROW_ON_ERROR)
-            );
-        } catch (SodiumException|JsonException|Throwable $exception) {
-            Log::error('Failed to encrypt environment key for deployment token.', [
-                'deployment_token_id' => (string) $deploymentToken->getKey(),
-                'environment_id' => $environmentId,
-                'exception' => $exception->getMessage(),
-            ]);
-
-            return null;
-        }
-
-        return [
-            'type' => 'deployment',
-            'id' => (string) $deploymentToken->getKey(),
-            'edek_b64' => $encodedPayload,
-        ];
+        return $normalized;
     }
 }

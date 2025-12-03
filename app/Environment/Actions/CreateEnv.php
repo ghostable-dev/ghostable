@@ -27,8 +27,6 @@ class CreateEnv
         $env->type = $type;
         $env->file_format = EnvFileFormat::ALPHABETICAL;
 
-        $env->kek_salt = base64_encode(random_bytes(32));
-
         $env->project()->associate($project);
 
         $env->save();

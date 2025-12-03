@@ -17,7 +17,8 @@ class RotateDeploymentToken
         DeploymentToken $deploymentToken,
         ?User $user = null,
         ?string $publicKey = null,
-        int $expiresAfter = 90
+        int $expiresAfter = 90,
+        ?array $recipient = null
     ): DeploymentTokenResult {
         if ($deploymentToken->personalAccessToken) {
             $this->deleteEnvToken->handle($deploymentToken->personalAccessToken, $user);
@@ -47,7 +48,7 @@ class RotateDeploymentToken
         $deploymentToken->refresh();
         $deploymentToken->load('environment');
 
-        $this->shareEnvironmentKeyWithDeploymentToken->handle($deploymentToken);
+        $this->shareEnvironmentKeyWithDeploymentToken->handle($deploymentToken, $recipient);
 
         return new DeploymentTokenResult(
             token: $deploymentToken->fresh(),

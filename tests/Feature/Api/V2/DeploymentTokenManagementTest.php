@@ -18,6 +18,20 @@ beforeEach(function (): void {
     $this->project = $this->createProject('Containment Unit', $this->organization);
     $this->environment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $this->project);
     $this->endpoint = sprintf('/api/v2/projects/%s/deploy-tokens', $this->project->getKey());
+
+    $this->makeDeploymentRecipient = static function (): array {
+        $payload = [
+            'ciphertext_b64' => 'b64:'.base64_encode(random_bytes(32)),
+            'nonce_b64' => 'b64:'.base64_encode(random_bytes(24)),
+            'alg' => 'xchacha20-poly1305',
+            'aad_b64' => null,
+            'from_ephemeral_public_key' => 'b64:'.base64_encode(random_bytes(32)),
+        ];
+
+        return [
+            'edek_b64' => 'b64:'.base64_encode(json_encode($payload, JSON_THROW_ON_ERROR)),
+        ];
+    };
 });
 
 test('can create a deployment token', function (): void {
@@ -42,6 +56,7 @@ test('can create a deployment token', function (): void {
         'environment_id' => (string) $this->environment->getKey(),
         'public_key' => base64_encode(random_bytes(32)),
         'expires_after' => 45,
+        'recipient' => ($this->makeDeploymentRecipient)(),
     ];
 
     $response = $this->postJson($this->endpoint, $payload);
@@ -121,6 +136,7 @@ test('listing deployment tokens returns project tokens', function (): void {
         environment: $this->environment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     /** @var DeploymentTokenResult $second */
@@ -131,6 +147,7 @@ test('listing deployment tokens returns project tokens', function (): void {
         environment: $secondEnvironment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     $response = $this->getJson($this->endpoint.'?environment_id='.(string) $this->environment->getKey());
@@ -171,6 +188,7 @@ test('can rotate a deployment token', function (): void {
         environment: $this->environment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     $token = $result->token->fresh();
@@ -201,6 +219,7 @@ test('can rotate a deployment token', function (): void {
     $payload = [
         'public_key' => base64_encode(random_bytes(32)),
         'expires_after' => 60,
+        'recipient' => ($this->makeDeploymentRecipient)(),
     ];
 
     $response = $this->postJson(
@@ -266,6 +285,7 @@ test('can revoke a deployment token', function (): void {
         environment: $this->environment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     $token = $result->token->fresh();
@@ -296,6 +316,7 @@ test('cannot rotate a revoked deployment token', function (): void {
         environment: $this->environment,
         publicKey: base64_encode(random_bytes(32)),
         user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
     );
 
     $token = $result->token->fresh();

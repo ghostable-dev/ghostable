@@ -22,6 +22,8 @@ final class StoreDeploymentTokenRequest extends FormRequest
             'environment_id' => ['required', 'uuid', Rule::exists('environments', 'id')],
             'public_key' => ['required', 'string', new Base64Encoded, Rule::unique('deployment_tokens', 'public_key')],
             'expires_after' => ['nullable', 'integer', 'min:7', 'max:365'],
+            'recipient' => ['nullable', 'array'],
+            'recipient.edek_b64' => ['required_with:recipient', 'string', new Base64Encoded],
         ];
     }
 }

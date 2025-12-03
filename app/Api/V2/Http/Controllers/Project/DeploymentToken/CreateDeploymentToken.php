@@ -40,6 +40,7 @@ final class CreateDeploymentToken extends Controller
             publicKey: $data['public_key'],
             user: $user,
             expiresAfter: $data['expires_after'] ?? 90,
+            recipient: $data['recipient'] ?? null,
         );
 
         $resource = $presenter->present($result->token);

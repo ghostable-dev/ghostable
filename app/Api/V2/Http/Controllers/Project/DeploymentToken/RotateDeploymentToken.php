@@ -41,6 +41,7 @@ final class RotateDeploymentToken extends Controller
             user: $user,
             publicKey: $data['public_key'] ?? null,
             expiresAfter: $data['expires_after'] ?? 90,
+            recipient: $data['recipient'] ?? null,
         );
 
         $resource = $presenter->present($result->token);
