@@ -129,7 +129,7 @@ final class GetEnvironmentHistory extends Controller
 
     private function buildMoreUrl(Environment $environment): string
     {
-        return route('environment.variables.zero', $environment);
+        return route('environment.variables', $environment);
     }
 
     private function logHistoryRequested(

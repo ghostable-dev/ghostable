@@ -10,7 +10,6 @@ use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
 use App\Environment\Support\DeploymentTokenAuditProperties;
 use App\Environment\Support\EnvironmentAuditProperties;
-use App\Environment\Validation\Actions\ValidateEnvironment as Validate;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

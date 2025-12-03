@@ -9,8 +9,6 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentUpdated;
-use App\Environment\Validation\Models\EnvironmentVariableRule;
-use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Organization\Concerns\HasPermissionOverrides;
 use App\Organization\Contracts\SupportsOverrides;
 use App\Organization\Models\Organization;
@@ -50,14 +48,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
- * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariableRule> $rules
- * @property-read int|null $rules_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Secret\Models\Secret> $secrets
- * @property-read int|null $secrets_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, EnvironmentVariable> $variables
- * @property-read int|null $variables_count
  *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Environment newModelQuery()
@@ -139,11 +131,6 @@ class Environment extends Model implements SupportsOverrides
         return $this->hasMany(Environment::class, 'base_id');
     }
 
-    public function variables(): HasMany
-    {
-        return $this->hasMany(EnvironmentVariable::class);
-    }
-
     public function envSecrets(): HasMany
     {
         return $this->hasMany(EnvironmentSecret::class, 'environment_id');
@@ -152,11 +139,6 @@ class Environment extends Model implements SupportsOverrides
     public function secrets(): HasMany
     {
         return $this->hasMany(\App\Secret\Models\Secret::class, 'environment_id');
-    }
-
-    public function rules(): HasMany
-    {
-        return $this->hasMany(EnvironmentVariableRule::class);
     }
 
     public function keys(): HasMany
@@ -247,10 +229,5 @@ class Environment extends Model implements SupportsOverrides
         return once(function () {
             return $this->project->owningOrganization();
         }, "owningOrganization:{$this->id}");
-    }
-
-    public function findLocalVariableForKey(string $key): ?EnvironmentVariable
-    {
-        return $this->variables()->where('key', $key)->first();
     }
 }

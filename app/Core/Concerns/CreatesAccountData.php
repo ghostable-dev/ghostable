@@ -5,21 +5,24 @@ namespace App\Core\Concerns;
 use App\Account\Actions\RegisterUser;
 use App\Account\Models\User;
 use App\Billing\Enums\Plan;
+use App\Crypto\Actions\RegisterDevice;
+use App\Crypto\Models\Device;
 use App\Environment\Actions\CreateEnv;
+use App\Environment\Actions\CreateEnvironmentKey;
+use App\Environment\Actions\StoreEnvironmentKeyEnvelope;
 use App\Environment\Actions\StoreEnvironmentSecret;
+use App\Environment\Actions\Token\CreateDeploymentToken;
 use App\Environment\Actions\Token\CreateEnvToken;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
-use App\Environment\Variable\Actions\CreateVariable;
-use App\Environment\Variable\Entities\CreateVariableData;
+use App\Environment\Models\EnvironmentKey;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Organization\Actions\CreateInvite;
 use App\Organization\Actions\CreateOrganization;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use App\Project\Models\Project;
-use App\Secret\Actions\CreateSecret;
-use App\Secret\Enums\SecretType;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\NewAccessToken;
@@ -80,7 +83,6 @@ trait CreatesAccountData
             ->forOrganization($organization)
             ->create([
                 'name' => $name,
-                'is_legacy' => false,
             ]);
     }
 
@@ -107,47 +109,7 @@ trait CreatesAccountData
         );
     }
 
-    protected function createVariables(
-        Environment $env,
-        int $amount = 5,
-        ?User $createdBy = null
-    ) {
-        for ($i = 0; $i < $amount; $i++) {
-            $def = collect(
-                resolve(VariableRegistry::class)->all()
-            )->random();
-
-            $data = new CreateVariableData(
-                environment: $env,
-                key: $def->key(),
-                value: empty($def->suggestedValues())
-                    ? 'some-random-value'
-                    : collect($def->suggestedValues())->random(),
-                createdBy: $createdBy
-            );
-
-            resolve(CreateVariable::class)->handle($data);
-        }
-    }
-
     protected function createSecrets(
-        Environment $env,
-        User $createdBy,
-        int $amount = 5
-    ): void {
-        for ($i = 0; $i < $amount; $i++) {
-            app(CreateSecret::class)->handle(
-                environment: $env,
-                name: 'secret_'.Str::random(8),
-                type: collect(SecretType::cases())->random(),
-                value: Str::random(32),
-                metadata: null,
-                createdBy: $createdBy,
-            );
-        }
-    }
-
-    protected function createEnvToken(
         Environment $env,
         User $createdBy,
     ): NewAccessToken {
@@ -156,6 +118,90 @@ trait CreatesAccountData
             environment: $env,
             user: $createdBy
         );
+    }
+
+    protected function createDevice(User $user, string $name, string $platform = 'macos'): Device
+    {
+        /** @var RegisterDevice $registerDevice */
+        $registerDevice = resolve(RegisterDevice::class);
+
+        $device = $registerDevice->handle(
+            user: $user,
+            publicKey: base64_encode(random_bytes(32)),
+            publicSigningKey: base64_encode(random_bytes(32)),
+            name: $name,
+            platform: $platform,
+        );
+
+        $device->update([
+            'app_version' => '1.'.random_int(0, 9).'.'.random_int(0, 9),
+            'last_seen_at' => now()->subMinutes(random_int(1, 240)),
+        ]);
+
+        return $device->fresh();
+    }
+
+    protected function createEnvironmentKeyWithEnvelope(
+        Environment $environment,
+        Device $createdByDevice,
+        array $recipients = []
+    ): EnvironmentKey {
+        /** @var CreateEnvironmentKey $creator */
+        $creator = resolve(CreateEnvironmentKey::class);
+
+        $environmentKey = $creator->handle(
+            environment: $environment,
+            fingerprint: hash('sha256', Str::random(32)),
+            createdByDevice: $createdByDevice,
+            version: 1,
+        );
+
+        $envelopeRecipients = $recipients ?: [
+            [
+                'id' => (string) $createdByDevice->id,
+                'type' => 'device',
+                'label' => $createdByDevice->name ?? 'Primary device',
+            ],
+        ];
+
+        /** @var StoreEnvironmentKeyEnvelope $storeEnvelope */
+        $storeEnvelope = resolve(StoreEnvironmentKeyEnvelope::class);
+
+        $storeEnvelope->handle($environmentKey, [
+            'ciphertext_b64' => base64_encode(random_bytes(64)),
+            'nonce_b64' => base64_encode(random_bytes(24)),
+            'alg' => 'xchacha20-poly1305',
+            'version' => '1',
+            'aad_b64' => base64_encode(json_encode([
+                'env' => $environment->name,
+                'project' => $environment->project->name,
+            ], JSON_THROW_ON_ERROR)),
+            'recipients' => $envelopeRecipients,
+        ]);
+
+        return $environmentKey->fresh(['envelope']);
+    }
+
+    protected function createDeploymentToken(
+        string $name,
+        Environment $environment,
+        ?User $createdBy = null,
+        int $expiresAfter = 90
+    ): DeploymentToken {
+        /** @var CreateDeploymentToken $creator */
+        $creator = resolve(CreateDeploymentToken::class);
+
+        $publicKey = base64_encode(random_bytes(SODIUM_CRYPTO_BOX_PUBLICKEYBYTES));
+
+        $result = $creator->handle(
+            name: $name,
+            environment: $environment,
+            publicKey: $publicKey,
+            user: $createdBy,
+            expiresAfter: $expiresAfter,
+        );
+
+        return $result->token->fresh();
     }
 
     protected function createZeroKnowledgeVariables(

@@ -2,7 +2,6 @@
 
 namespace App\Environment\Variable\Definitions;
 
-use App\Environment\Validation\Rules\BooleanKeyRule;
 use App\Environment\Variable\Enums\VariableGroup;
 use App\Environment\Variable\Registry\VariableDefinition;
 
@@ -34,9 +33,6 @@ class AppDebug extends VariableDefinition
 
     public function ruleProviders(): array
     {
-        return [
-            $this->requiredProvider(),
-            new BooleanKeyRule,
-        ];
+        return [];
     }
 }

@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $t) {
             $t->string('delivery_mode', 32)
                 ->default('standard')
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $t) {
             $t->dropColumn('delivery_mode');
         });

@@ -73,69 +73,6 @@ CREATE INDEX environments_project_id_foreign ON environments(project_id);
 CREATE INDEX environments_type_index ON environments(type);
 CREATE INDEX environments_base_id_foreign ON environments(base_id);
 
-/* environment_variables (ref: environments, users) */
-DROP TABLE IF EXISTS environment_variables;
-CREATE TABLE environment_variables (
-  id TEXT PRIMARY KEY,
-  environment_id TEXT NOT NULL,
-  key TEXT NOT NULL,
-  value TEXT NOT NULL,
-  is_commented INTEGER NOT NULL DEFAULT 0,
-  is_override INTEGER NOT NULL DEFAULT 0,
-  is_deleted INTEGER NOT NULL DEFAULT 0,
-  last_updated_at DATETIME,
-  last_updated_by TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
-  deleted_at DATETIME,
-  UNIQUE (environment_id, key, deleted_at),
-  FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE,
-  FOREIGN KEY (last_updated_by) REFERENCES users(id) ON DELETE SET NULL
-);
-CREATE INDEX environment_variables_is_deleted_index ON environment_variables(is_deleted);
-CREATE INDEX environment_variables_is_override_index ON environment_variables(is_override);
-CREATE INDEX environment_variables_last_updated_by_foreign ON environment_variables(last_updated_by);
-
-/* environment_variable_rules (ref: environments) */
-DROP TABLE IF EXISTS environment_variable_rules;
-CREATE TABLE environment_variable_rules (
-  id TEXT PRIMARY KEY,
-  environment_id TEXT NOT NULL,
-  key TEXT NOT NULL,
-  description TEXT,
-  is_override INTEGER NOT NULL DEFAULT 0,
-  is_deleted INTEGER NOT NULL DEFAULT 0,
-  is_required INTEGER NOT NULL DEFAULT 0,
-  type TEXT NOT NULL DEFAULT 'string',
-  min INTEGER,
-  max INTEGER,
-  allowed_values TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
-  UNIQUE (environment_id, key),
-  FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE
-);
-CREATE INDEX environment_variable_rules_is_deleted_index ON environment_variable_rules(is_deleted);
-CREATE INDEX environment_variable_rules_is_override_index ON environment_variable_rules(is_override);
-
-/* environment_variable_versions (ref: environment_variables, users) */
-DROP TABLE IF EXISTS environment_variable_versions;
-CREATE TABLE environment_variable_versions (
-  id TEXT PRIMARY KEY,
-  environment_variable_id TEXT NOT NULL,
-  key TEXT NOT NULL,
-  value TEXT NOT NULL,
-  is_commented INTEGER NOT NULL DEFAULT 0,
-  version INTEGER NOT NULL,
-  changed_by TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
-  UNIQUE (environment_variable_id, version),
-  FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (environment_variable_id) REFERENCES environment_variables(id) ON DELETE CASCADE
-);
-CREATE INDEX environment_variable_versions_changed_by_foreign ON environment_variable_versions(changed_by);
-
 /* inquiries */
 DROP TABLE IF EXISTS inquiries;
 CREATE TABLE inquiries (
@@ -301,51 +238,6 @@ CREATE TABLE projects (
 );
 CREATE INDEX projects_organization_id_foreign ON projects(organization_id);
 
-/* secret_versions (ref: secrets, users) */
-DROP TABLE IF EXISTS secret_versions;
-CREATE TABLE secret_versions (
-  id TEXT PRIMARY KEY,
-  secret_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  value TEXT NOT NULL,
-  metadata TEXT,
-  version INTEGER NOT NULL,
-  changed_by TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
-  UNIQUE (secret_id, version),
-  FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (secret_id) REFERENCES secrets(id) ON DELETE CASCADE
-);
-CREATE INDEX secret_versions_changed_by_foreign ON secret_versions(changed_by);
-
-/* secrets (ref: environments, users) */
-DROP TABLE IF EXISTS secrets;
-CREATE TABLE secrets (
-  id TEXT PRIMARY KEY,
-  environment_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL DEFAULT 'generic',
-  value TEXT NOT NULL,
-  dek_wrapped TEXT,
-  kek_salt TEXT,
-  metadata TEXT,
-  last_updated_at DATETIME,
-  last_updated_by TEXT,
-  created_by_id TEXT NOT NULL,
-  notifications TEXT,
-  created_at DATETIME,
-  updated_at DATETIME,
-  deleted_at DATETIME,
-  FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE,
-  FOREIGN KEY (last_updated_by) REFERENCES users(id) ON DELETE SET NULL
-);
-CREATE INDEX secrets_environment_id_foreign ON secrets(environment_id);
-CREATE INDEX secrets_created_by_id_foreign ON secrets(created_by_id);
-CREATE INDEX secrets_last_updated_by_foreign ON secrets(last_updated_by);
-
 /* subscription_items */
 DROP TABLE IF EXISTS subscription_items;
 CREATE TABLE subscription_items (
@@ -408,7 +300,6 @@ INSERT INTO migrations (id, migration, batch) VALUES
   (3,'2025_05_14_144906_create_team_users_table',1),
   (4,'2025_05_14_162637_create_projects_table',1),
   (5,'2025_05_14_164406_create_environments_table',1),
-  (6,'2025_05_14_170134_create_environment_variables_table',1),
   (7,'2025_05_14_174856_create_personal_access_tokens_table',1),
   (8,'2025_05_21_185944_create_team_invites_table',1),
   (9,'2025_05_22_000000_add_type_to_environments_table',1),
@@ -427,21 +318,16 @@ INSERT INTO migrations (id, migration, batch) VALUES
   (22,'2025_06_13_132903_create_subscription_items_table',1),
   (23,'2025_06_17_131804_create_environment_variable_rules_table',1),
   (24,'2025_06_18_000000_add_file_format_column_to_environments_table',1),
-  (25,'2025_06_19_000000_create_secrets_table',1),
-  (26,'2025_07_20_000000_add_secret_versioning',1),
   (27,'2025_08_01_000000_add_notifications_columns',1),
   (28,'2025_08_02_000000_add_team_slack_settings',1),
   (29,'2025_08_04_152911_add_forking_migrations',1),
   (30,'2025_08_05_000001_add_inheritance_columns_to_environment_variable_rules_table',1),
-  (31,'2025_08_08_000000_migrate_secrets_to_environment_only',1),
   (32,'2025_08_09_000000_add_kek_salt_to_environments_table',1),
   (33,'2025_08_21_014108_add_timezone_column_to_users_table',1),
-  (34,'2025_08_21_183816_rename_value_column_on_secrets_table',1),
   (35,'2025_08_22_000001_add_is_featured_to_posts_table',1),
   (36,'2025_08_27_175910_update_usage_tables',1),
   (37,'2025_08_27_180000_create_inquiries_table',1),
   (38,'2025_09_01_000000_add_billing_policy_and_plan_override_to_organizations_table',1),
-  (39,'2025_09_15_000000_add_dek_columns_to_secrets_table',1),
   (40,'2025_09_16_000000_add_soft_deletes_and_indexes_to_tables',1),
   (41,'2025_09_17_193919_remove_unused_permissions_table',1);
 

@@ -6,16 +6,10 @@
 <x-layouts.environment :$environment :$heading>
     
     @php
-        $legacy = $this->environment->project->is_legacy;
-        
         $links = [
             ['route' => 'environment.settings.general', 'label' => 'General'],
         ];
-        
-        if ($legacy) {
-            array_push($links, ['route' => 'environment.settings.validation', 'label' => 'Validation']);
-        }
-        
+
         array_push($links, ['route' => 'environment.settings.access', 'label' => 'Access']);
         array_push($links, ['route' => 'environment.settings.notifications', 'label' => 'Notifications']);
         

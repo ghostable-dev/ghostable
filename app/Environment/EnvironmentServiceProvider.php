@@ -2,7 +2,6 @@
 
 namespace App\Environment;
 
-use App\Environment\Deployment\DeploymentServiceProvider;
 use App\Environment\Events\EnvironmentBaseChanged;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
@@ -12,7 +11,6 @@ use App\Environment\Listeners\SendEnvironmentActivityNotification;
 use App\Environment\Models\Environment;
 use App\Environment\Policies\EnvironmentPolicy;
 use App\Environment\Resolvers\EnvironmentAncestryResolver;
-use App\Environment\Validation\ValidationServiceProvider;
 use App\Environment\Variable\VariableServiceProvider;
 use App\Environment\View\Components\EnvTokenExpiryReminder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -24,9 +22,7 @@ use Illuminate\Support\ServiceProvider;
 class EnvironmentServiceProvider extends ServiceProvider
 {
     protected $providers = [
-        DeploymentServiceProvider::class,
         VariableServiceProvider::class,
-        ValidationServiceProvider::class,
     ];
 
     public function register(): void

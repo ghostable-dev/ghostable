@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $table) {
             // Full KEY=VALUE\n size in bytes, used for Vapor’s ~2KB budget
             $table->unsignedInteger('line_bytes')->default(0)->after('key')->index();
@@ -22,6 +26,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->dropColumn('line_bytes');
         });

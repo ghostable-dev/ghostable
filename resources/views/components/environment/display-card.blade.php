@@ -27,8 +27,12 @@
 
             {{-- Metadata row --}}
             <div class="mt-1 text-sm text-gray-500 flex flex-wrap gap-x-4">
-                @if($env->variables()->exists())
-                    <span>{{ $env->variables->count() }} variables</span>
+                @php
+                    $secretCount = $env->env_secrets_count ?? $env->envSecrets()->count();
+                @endphp
+
+                @if($secretCount > 0)
+                    <span>{{ $secretCount }} variables</span>
                 @endif
 
                 @isset($env->updated_at)

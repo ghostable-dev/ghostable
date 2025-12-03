@@ -14,6 +14,5 @@ return [
     App\Organization\OrganizationServiceProvider::class,
     App\Project\ProjectServiceProvider::class,
     App\Core\Providers\FilamentPanelProvider::class,
-    App\Secret\SecretServiceProvider::class,
     App\Messaging\MessagingServiceProvider::class,
 ];

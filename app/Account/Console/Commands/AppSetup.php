@@ -64,7 +64,23 @@ class AppSetup extends Command
 
         $primary = $this->createZeroKnowledgeProject('Primary', $ghostable);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
-        // $this->createZeroKnowledgeVariables(env: $production, amount: 0, createdBy: $joe);
+
+        $joeMac = $this->createDevice($joe, 'Joe MacBook Pro', 'macos');
+        $nickPhone = $this->createDevice($nick, 'Nick iPhone', 'ios');
+
+        $this->createEnvironmentKeyWithEnvelope(
+            environment: $production,
+            createdByDevice: $joeMac,
+            recipients: [
+                ['id' => (string) $joeMac->id, 'type' => 'device', 'label' => 'Joe MacBook Pro'],
+                ['id' => (string) $nickPhone->id, 'type' => 'device', 'label' => 'Nick iPhone'],
+            ],
+        );
+
+        $this->createDeploymentToken(name: 'gh-actions', environment: $production, createdBy: $joe, expiresAfter: 90);
+        $this->createDeploymentToken(name: 'render-deploy', environment: $production, createdBy: $joe, expiresAfter: 60);
+
+        $this->createZeroKnowledgeVariables(env: $production, amount: 5, createdBy: $joe);
 
         // $this->createVariables(env: $production, amount: 10, createdBy: $joe);
         // $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
@@ -102,20 +118,29 @@ class AppSetup extends Command
 
         $platform = $this->createProject('Platform', $piedPiper);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $platform);
-        $this->createVariables(env: $production, amount: 10, createdBy: $gilfoyle);
-        $this->createSecrets(env: $production, amount: 3, createdBy: $gilfoyle);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $platform, $production);
-        $this->createVariables(env: $staging, amount: 5, createdBy: $dinesh);
-        $this->createSecrets(env: $staging, amount: 2, createdBy: $dinesh);
 
         $compression = $this->createProject('Compression', $piedPiper);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $compression);
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $compression, $production);
         $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $compression, $staging);
-        $this->createVariables(env: $production, amount: 10, createdBy: $richard);
-        $this->createSecrets(env: $production, amount: 3, createdBy: $richard);
-        $this->createVariables(env: $local, amount: 3, createdBy: $jared);
-        $this->createSecrets(env: $local, amount: 1, createdBy: $jared);
+
+        $richardLaptop = $this->createDevice($richard, 'Richard MBP', 'macos');
+        $gilfoyleRig = $this->createDevice($gilfoyle, 'Gilfoyle Tower', 'linux');
+
+        $this->createEnvironmentKeyWithEnvelope(
+            environment: $production,
+            createdByDevice: $richardLaptop,
+            recipients: [
+                ['id' => (string) $richardLaptop->id, 'type' => 'device', 'label' => 'Richard MBP'],
+                ['id' => (string) $gilfoyleRig->id, 'type' => 'device', 'label' => 'Gilfoyle Tower'],
+            ],
+        );
+
+        $this->createDeploymentToken(name: 'jenkins-prod', environment: $production, createdBy: $richard, expiresAfter: 45);
+        $this->createDeploymentToken(name: 'circleci-staging', environment: $staging, createdBy: $gilfoyle, expiresAfter: 45);
+
+        $this->createZeroKnowledgeVariables(env: $production, amount: 4, createdBy: $richard);
 
         $this->createInvite(organization: $piedPiper, sender: $richard, email: 'gavin@hooli.com');
     }
@@ -136,8 +161,6 @@ class AppSetup extends Command
 
         $box = $this->createProject('Hooli Box', $hooli);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $box);
-        $this->createVariables(env: $production, amount: 5, createdBy: $gavin);
-        $this->createSecrets(env: $production, amount: 2, createdBy: $gavin);
     }
 
     protected function seedAviato(): void
@@ -154,8 +177,6 @@ class AppSetup extends Command
 
         $app = $this->createProject('App', $aviato);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $app);
-        $this->createVariables(env: $production, amount: 5, createdBy: $erlich);
-        $this->createSecrets(env: $production, amount: 2, createdBy: $erlich);
     }
 
     protected function seedLeeds(): void

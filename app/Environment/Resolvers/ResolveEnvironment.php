@@ -12,7 +12,7 @@ class ResolveEnvironment
             return Environment::with([
                 'base',
                 'derived',
-                'variables',
+                'envSecrets',
                 'project',
                 'project.environments',
                 'project.organization',

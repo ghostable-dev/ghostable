@@ -4,8 +4,6 @@ namespace App\Core\Models;
 
 use App\Auth\Models\PersonalAccessToken;
 use App\Environment\Models\Environment;
-use App\Environment\Validation\Models\EnvironmentVariableRule;
-use App\Environment\Variable\Models\EnvironmentVariable;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
@@ -34,14 +32,12 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * @method static Builder<static>|Activity forEnvironmentItself(\App\Environment\Models\Environment $environment)
  * @method static Builder<static>|Activity forEnvironmentRules(\App\Environment\Models\Environment $environment)
  * @method static Builder<static>|Activity forEnvironmentTokens(\App\Environment\Models\Environment $environment)
- * @method static Builder<static>|Activity forEnvironmentVariables(\App\Environment\Models\Environment $environment)
  * @method static Builder<static>|Activity forEvent(string $event)
  * @method static Builder<static>|Activity forProject(\App\Project\Models\Project $project)
  * @method static Builder<static>|Activity forProjectItself(\App\Project\Models\Project $project)
  * @method static Builder<static>|Activity forRuleIds($ids)
  * @method static Builder<static>|Activity forSubject(\Illuminate\Database\Eloquent\Model $subject)
  * @method static Builder<static>|Activity forTokenIds($ids)
- * @method static Builder<static>|Activity forVariableIds($ids)
  * @method static Builder<static>|Activity hasBatch()
  * @method static Builder<static>|Activity inLog(...$logNames)
  * @method static Builder<static>|Activity newModelQuery()
@@ -65,26 +61,22 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
 class Activity extends SpatieActivity
 {
     /**
-     * Scope activities related to the given project or its environments, variables, rules, or tokens.
+     * Scope activities related to the given project or its environments or tokens.
      */
     public function scopeForProject(Builder $query, Project $project): Builder
     {
         $environmentIds = $project->environments()->pluck('id');
 
-        $variableIds = EnvironmentVariable::whereIn('environment_id', $environmentIds)->pluck('id');
-        $ruleIds = EnvironmentVariableRule::whereIn('environment_id', $environmentIds)->pluck('id');
         $tokenIds = PersonalAccessToken::whereIn('tokenable_id', $environmentIds)
             ->where('tokenable_type', (new Environment)->getMorphClass())
             ->pluck('id');
 
         return $query->where(function ($query) use (
-            $project, $environmentIds, $variableIds, $ruleIds, $tokenIds
+            $project, $environmentIds, $tokenIds
         ) {
             $query
                 ->forProjectItself($project)
                 ->orWhere(fn ($q) => $q->forEnvironmentIds($environmentIds))
-                ->orWhere(fn ($q) => $q->forVariableIds($variableIds))
-                ->orWhere(fn ($q) => $q->forRuleIds($ruleIds))
                 ->orWhere(fn ($q) => $q->forTokenIds($tokenIds));
         });
     }
@@ -109,9 +101,7 @@ class Activity extends SpatieActivity
     {
         return $query
             ->forEnvironmentItself($environment)
-            ->orWhere(fn ($q) => $q->forEnvironmentVariables($environment))
-            ->orWhere(fn ($q) => $q->forEnvironmentTokens($environment))
-            ->orWhere(fn ($q) => $q->forEnvironmentRules($environment));
+            ->orWhere(fn ($q) => $q->forEnvironmentTokens($environment));
     }
 
     /**
@@ -125,26 +115,6 @@ class Activity extends SpatieActivity
             $query->where('subject_type', $type)
                 ->where('subject_id', $environment->id);
         });
-    }
-
-    /**
-     * Scope activities for all variables within the given environment.
-     */
-    public function scopeForEnvironmentVariables(Builder $query, Environment $environment): Builder
-    {
-        $ids = $environment->variables()->pluck('id');
-
-        return $this->scopeForVariableIds($query, $ids);
-    }
-
-    /**
-     * Scope activities for all rules within the given environment.
-     */
-    public function scopeForEnvironmentRules(Builder $query, Environment $environment): Builder
-    {
-        $ids = $environment->rules()->pluck('id');
-
-        return $this->scopeForRuleIds($query, $ids);
     }
 
     /**
@@ -163,32 +133,6 @@ class Activity extends SpatieActivity
     public function scopeForEnvironmentIds(Builder $query, $ids): Builder
     {
         $type = (new Environment)->getMorphClass();
-
-        return $query->orWhere(function ($query) use ($type, $ids) {
-            $query->where('subject_type', $type)
-                ->whereIn('subject_id', $ids);
-        });
-    }
-
-    /**
-     * Scope activities where the subject is an EnvironmentVariable with the given IDs.
-     */
-    public function scopeForVariableIds(Builder $query, $ids): Builder
-    {
-        $type = (new EnvironmentVariable)->getMorphClass();
-
-        return $query->orWhere(function ($query) use ($type, $ids) {
-            $query->where('subject_type', $type)
-                ->whereIn('subject_id', $ids);
-        });
-    }
-
-    /**
-     * Scope activities where the subject is an EnvironmentVariableRule with the given IDs.
-     */
-    public function scopeForRuleIds(Builder $query, $ids): Builder
-    {
-        $type = (new EnvironmentVariableRule)->getMorphClass();
 
         return $query->orWhere(function ($query) use ($type, $ids) {
             $query->where('subject_type', $type)

@@ -19,16 +19,10 @@
             @include('environment.header')
             
             @php
-                $legacy = $this->environment->project->is_legacy;
-                
                 $links = [
                     ['route' => 'environment.variables', 'label' => 'Variables', 'current' => null],
                 ];
-                
-                if ($legacy) {
-                    array_push($links, ['route' => 'environment.secrets', 'label' => 'Secrets', 'current' => null]);
-                }
-                
+
                 array_push($links, ['route' => 'environment.activity', 'label' => 'Activity', 'current' => null]);
                 array_push($links, ['route' => 'environment.settings.general', 'label' => 'Settings', 'current' => request()->routeIs('environment.settings.*')]);
                 

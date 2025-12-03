@@ -7,7 +7,7 @@
     <flux:table.cell>
         <flux:text size="sm" class="line-through">{{ $var->key }}</flux:text>
     </flux:table.cell>
-    <flux:table.cell colspan="3">
+    <flux:table.cell colspan="2">
         <flux:text size="sm">disabled in this environment and will not be inherited.</flux:text>
     </flux:table.cell>
     <flux:table.cell align="end">

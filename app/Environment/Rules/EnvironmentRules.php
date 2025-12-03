@@ -4,35 +4,24 @@ namespace App\Environment\Rules;
 
 use App\Environment\Models\Environment;
 use App\Project\Models\Project;
-use Illuminate\Validation\Rule;
 
 class EnvironmentRules
 {
     public static function createRules(Project $project): array
     {
-        $rules = [
+        return [
             'name' => self::nameRules($project),
             'type' => self::typeRules(),
-        ];
-
-        $rules['base_id'] = $project->is_legacy
-            ? [
-                'nullable',
-                'sometimes',
-                Rule::exists('environments', 'id')
-                    ->where(fn ($query) => $query->where('project_id', $project->id)),
-            ]
-            : [
+            'base_id' => [
                 'nullable',
                 'sometimes',
                 function (string $attribute, $value, $fail) {
                     if (filled($value)) {
-                        $fail('Base environments are not supported for this project.');
+                        $fail('Base environments are not supported.');
                     }
                 },
-            ];
-
-        return $rules;
+            ],
+        ];
     }
 
     public static function updateRules(Environment $environment): array
@@ -46,28 +35,15 @@ class EnvironmentRules
 
     public static function updateBaseRules(Environment $environment): array
     {
-        if (! $environment->project->is_legacy) {
-            return [
-                'base_id' => [
-                    'nullable',
-                    'sometimes',
-                    function (string $attribute, $value, $fail) {
-                        if (filled($value)) {
-                            $fail('Base environments are not supported for this project.');
-                        }
-                    },
-                ],
-            ];
-        }
-
         return [
             'base_id' => [
                 'nullable',
                 'sometimes',
-                Rule::exists('environments', 'id')
-                    ->where(fn ($query) => $query
-                        ->where('project_id', $environment->project_id)
-                        ->where('id', '!=', $environment->id)),
+                function (string $attribute, $value, $fail) {
+                    if (filled($value)) {
+                        $fail('Base environments are not supported.');
+                    }
+                },
             ],
         ];
     }

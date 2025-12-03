@@ -41,17 +41,6 @@ class ResolveProjectAuditEntries
             ->orderByDesc('created_at')
             ->orderByDesc('id');
 
-        if ($cursor) {
-            $versionsQuery->where(function (Builder $builder) use ($cursor) {
-                $builder
-                    ->where('created_at', '<', $cursor->created_at)
-                    ->orWhere(function (Builder $inner) use ($cursor) {
-                        $inner->where('created_at', $cursor->created_at)
-                            ->where('id', '<', $cursor->id);
-                    });
-            });
-        }
-
         $versions = $versionsQuery
             ->limit($limit + 1)
             ->get();

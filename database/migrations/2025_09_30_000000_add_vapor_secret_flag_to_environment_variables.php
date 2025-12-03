@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->boolean('is_vapor_secret')->default(false)->after('value');
         });
@@ -15,6 +19,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('environment_variables')) {
+            return;
+        }
+
         Schema::table('environment_variables', function (Blueprint $table) {
             $table->dropColumn('is_vapor_secret');
         });

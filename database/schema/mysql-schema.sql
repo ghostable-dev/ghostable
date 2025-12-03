@@ -87,48 +87,6 @@ CREATE TABLE `environment_variable_rules` (
 DROP TABLE IF EXISTS `environment_variable_versions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `environment_variable_versions` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `environment_variable_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_commented` tinyint(1) NOT NULL DEFAULT '0',
-  `version` bigint unsigned NOT NULL,
-  `changed_by` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `var_versions_env_id_version_unique` (`environment_variable_id`,`version`),
-  KEY `environment_variable_versions_changed_by_foreign` (`changed_by`),
-  CONSTRAINT `environment_variable_versions_changed_by_foreign` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `environment_variable_versions_environment_variable_id_foreign` FOREIGN KEY (`environment_variable_id`) REFERENCES `environment_variables` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `environment_variables`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `environment_variables` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `environment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_commented` tinyint(1) NOT NULL DEFAULT '0',
-  `is_override` tinyint(1) NOT NULL DEFAULT '0',
-  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
-  `last_updated_at` timestamp NULL DEFAULT NULL,
-  `last_updated_by` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `environment_variables_environment_id_key_deleted_at_unique` (`environment_id`,`key`,`deleted_at`),
-  KEY `environment_variables_last_updated_by_foreign` (`last_updated_by`),
-  KEY `environment_variables_is_deleted_index` (`is_deleted`),
-  KEY `environment_variables_is_override_index` (`is_override`),
-  CONSTRAINT `environment_variables_environment_id_foreign` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `environment_variables_last_updated_by_foreign` FOREIGN KEY (`last_updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `environments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -335,55 +293,6 @@ CREATE TABLE `projects` (
   CONSTRAINT `projects_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `secret_versions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `secret_versions` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `secret_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `metadata` json DEFAULT NULL,
-  `version` bigint unsigned NOT NULL,
-  `changed_by` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `secret_versions_secret_id_version_unique` (`secret_id`,`version`),
-  KEY `secret_versions_changed_by_foreign` (`changed_by`),
-  CONSTRAINT `secret_versions_changed_by_foreign` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `secret_versions_secret_id_foreign` FOREIGN KEY (`secret_id`) REFERENCES `secrets` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `secrets`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `secrets` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `environment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'generic',
-  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `dek_wrapped` text COLLATE utf8mb4_unicode_ci,
-  `kek_salt` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `metadata` json DEFAULT NULL,
-  `last_updated_at` timestamp NULL DEFAULT NULL,
-  `last_updated_by` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_by_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `notifications` json DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `secrets_environment_id_foreign` (`environment_id`),
-  KEY `secrets_created_by_id_foreign` (`created_by_id`),
-  KEY `secrets_last_updated_by_foreign` (`last_updated_by`),
-  CONSTRAINT `secrets_created_by_id_foreign` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `secrets_environment_id_foreign` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `secrets_last_updated_by_foreign` FOREIGN KEY (`last_updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `subscription_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -455,7 +364,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'2025_05_14_1339
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (3,'2025_05_14_144906_create_team_users_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (4,'2025_05_14_162637_create_projects_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (5,'2025_05_14_164406_create_environments_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (6,'2025_05_14_170134_create_environment_variables_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (7,'2025_05_14_174856_create_personal_access_tokens_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (8,'2025_05_21_185944_create_team_invites_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (9,'2025_05_22_000000_add_type_to_environments_table',1);
@@ -474,20 +382,15 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (21,'2025_06_13_132
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (22,'2025_06_13_132903_create_subscription_items_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (23,'2025_06_17_131804_create_environment_variable_rules_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (24,'2025_06_18_000000_add_file_format_column_to_environments_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (25,'2025_06_19_000000_create_secrets_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (26,'2025_07_20_000000_add_secret_versioning',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (27,'2025_08_01_000000_add_notifications_columns',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (28,'2025_08_02_000000_add_team_slack_settings',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (29,'2025_08_04_152911_add_forking_migrations',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (30,'2025_08_05_000001_add_inheritance_columns_to_environment_variable_rules_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (31,'2025_08_08_000000_migrate_secrets_to_environment_only',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (32,'2025_08_09_000000_add_kek_salt_to_environments_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (33,'2025_08_21_014108_add_timezone_column_to_users_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (34,'2025_08_21_183816_rename_value_column_on_secrets_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (35,'2025_08_22_000001_add_is_featured_to_posts_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (36,'2025_08_27_175910_update_usage_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (37,'2025_08_27_180000_create_inquiries_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (38,'2025_09_01_000000_add_billing_policy_and_plan_override_to_organizations_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (39,'2025_09_15_000000_add_dek_columns_to_secrets_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (40,'2025_09_16_000000_add_soft_deletes_and_indexes_to_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (41,'2025_09_17_193919_remove_unused_permissions_table',1);

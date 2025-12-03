@@ -21,8 +21,6 @@ class ProjectGeneralSettings extends Component
     #[Locked]
     public string $projectId;
 
-    public bool $is_zero_knowledge = false;
-
     /**
      * The editable name of the project.
      */
@@ -62,7 +60,6 @@ class ProjectGeneralSettings extends Component
             'framework' => $project->stack?->framework?->value,
             'platform' => $project->stack?->platform?->value,
         ];
-        $this->is_zero_knowledge = ! $project->is_legacy;
     }
 
     /**
@@ -164,18 +161,6 @@ class ProjectGeneralSettings extends Component
         $this->project->refresh();
 
         $this->dispatch('project-updated');
-    }
-
-    public function updateLegacy(): void
-    {
-        $this->authorize('perform', [$this->project, OrganizationPermission::ManageProjectSettings]);
-
-        $this->project->is_legacy = ! $this->is_zero_knowledge;
-        $this->project->save();
-
-        $this->project->refresh();
-
-        $this->dispatch('legacy-updated');
     }
 
     /**

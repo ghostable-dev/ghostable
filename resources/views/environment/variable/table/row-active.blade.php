@@ -40,9 +40,6 @@
         </flux:input>
     </flux:table.cell>
     <flux:table.cell>
-        {{ $var->latestVersion->version }}
-    </flux:table.cell>
-    <flux:table.cell>
         {{ $var->last_updated_at->timezone(timezone())->shortAbsoluteDiffForHumans() }}
     </flux:table.cell>
     <flux:table.cell align="end">
@@ -60,11 +57,6 @@
                     <flux:menu.item wire:click="viewVariableActivity('{{ $var->id }}')">
                         Activity
                     </flux:menu.item>
-                    @if($var->latestVersion->version > 1)
-                        <flux:menu.item wire:click="viewVersions('{{ $var->id }}')">
-                            Versions
-                        </flux:menu.item>
-                    @endif
                 </flux:menu>
             </flux:dropdown>
         @endif

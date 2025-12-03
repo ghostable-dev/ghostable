@@ -84,7 +84,6 @@ class ProjectCreateModal extends Component
                     organization: $this->organization,
                     deploymentProvider: $this->deploymentProvider,
                     withDefaultEnvironments: $this->withDefaultEnvironments,
-                    isLegacy: false,
                     stack: $this->stackPayload()
                 )
             );

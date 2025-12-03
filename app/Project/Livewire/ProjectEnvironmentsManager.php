@@ -26,14 +26,14 @@ class ProjectEnvironmentsManager extends Component
     public string $projectId;
 
     /**
-     * The base environment.
-     */
-    public ?string $base_id = '';
-
-    /**
      * The name of the new environment.
      */
     public string $name = '';
+
+    /**
+     * Legacy placeholder to satisfy validation signature; base environments are no longer supported.
+     */
+    public ?string $base_id = null;
 
     /**
      * The default environment display tab.
@@ -61,7 +61,10 @@ class ProjectEnvironmentsManager extends Component
     #[Computed]
     public function environments(): Collection
     {
-        return $this->project->environments;
+        return $this->project
+            ->environments()
+            ->withCount('envSecrets')
+            ->get();
     }
 
     /**
@@ -101,26 +104,14 @@ class ProjectEnvironmentsManager extends Component
     {
         $this->authorize('perform', [$this->project, OrganizationPermission::CreateEnvironments]);
 
-        $validated = $this->validate(EnvironmentRules::createRules($this->project));
-
-        if (! $this->project->is_legacy && filled($validated['base_id'] ?? null)) {
-            throw ValidationException::withMessages([
-                'base_id' => 'Base environments are not supported for this project.',
-            ]);
-        }
-
-        $base = null;
-
-        if ($this->project->is_legacy && filled($validated['base_id'] ?? null)) {
-            $base = $this->project->environments()->where('id', $validated['base_id'])->first();
-        }
+        $this->validate(EnvironmentRules::createRules($this->project));
 
         try {
             app(CreateEnv::class)->handle(
                 name: $this->name,
                 type: $this->type,
                 project: $this->project,
-                base: $base
+                base: null
             );
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('environment_limit')) {
@@ -133,12 +124,6 @@ class ProjectEnvironmentsManager extends Component
         }
 
         $this->reset('type', 'name');
-
-        if ($this->project->is_legacy) {
-            $this->base_id = '';
-        } else {
-            $this->base_id = null;
-        }
 
         Flux::modal('create-env')->close();
         Flux::toast('The new environment has been created.');

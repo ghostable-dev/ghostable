@@ -1,29 +1,5 @@
 <x-layouts.environment :environment="$this->environment">
     
-    @if ($this->validationErrors->isNotEmpty())
-    <flux:callout icon="exclamation-triangle" variant="warning">
-        <flux:accordion transition>
-            <flux:accordion.item>
-                <flux:accordion.heading>
-                    <flux:callout.heading>
-                        @php $count = $this->validationErrors->count(); @endphp
-                        This environment has {{ $count }} validation {{ str()->plural('issue', $count) }}.
-                    </flux:callout.heading>
-                </flux:accordion.heading>
-                <flux:accordion.content>
-                    <flux:callout.text>
-                        <ul class="list-disc list-inside space-y-1">
-                            @foreach ($this->validationErrors->all() as $message)
-                                <li>{{ $message }}</li>
-                            @endforeach
-                        </ul>
-                    </flux:callout.text>
-                </flux:accordion.content>
-            </flux:accordion.item>
-        </flux:accordion>
-    </flux:callout>
-    @endif
-
     <x-section>
         <x-slot:title>Variables</x-slot:title>
         <x-slot:subheading>
@@ -68,7 +44,6 @@
                     :direction="$sortDirection" 
                     wire:click="sort('key')">Key</flux:table.column>
                 <flux:table.column>Value</flux:table.column>
-                <flux:table.column>Version</flux:table.column>
                 <flux:table.column
                     sortable 
                     :sorted="$sortBy === 'last_updated_at'" 
@@ -102,11 +77,8 @@
     
     {{-- Variable reinstater modal --}}
     <livewire:environment.variable.livewire.variable-reinstater />
-        
-    {{-- Variable activity feed modal --}}
-    <livewire:environment.variable.livewire.variable-activity-feed />
     
     {{-- Variable activity feed modal --}}
-    <livewire:environment.versioning.livewire.version-manager />
+    <livewire:environment.variable.livewire.variable-activity-feed />
 
 </x-layouts.environment>

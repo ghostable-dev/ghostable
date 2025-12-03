@@ -5,7 +5,6 @@ namespace App\Core\Providers;
 use App\Account\Models\User;
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
-use App\Core\Commands\TempBackfillVariableLengths;
 use App\Core\Events\InquiryCreated;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\SeoMeta;
@@ -40,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([TempBackfillVariableLengths::class]);
+            $this->commands([]);
         }
 
         Blade::component('seo-meta', SeoMeta::class);

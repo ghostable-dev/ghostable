@@ -38,7 +38,6 @@ final class CreateProject extends Controller
                 deploymentProvider: DeploymentProvider::from($validated['deployment_provider']),
                 description: $validated['description'] ?? null,
                 withDefaultEnvironments: true,
-                isLegacy: false,
                 stack: isset($validated['stack'])
                     ? ProjectStackData::from($validated['stack'])
                     : null

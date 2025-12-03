@@ -73,7 +73,6 @@ class Project extends Model implements SupportsOverrides
         'is_restricted',
         'name',
         'notifications',
-        'is_legacy',
         'stack',
     ];
 

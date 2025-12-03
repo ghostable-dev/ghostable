@@ -50,6 +50,11 @@ class OrganizationPolicy
      */
     public function manageAccessControls(User $user, Organization $organization): bool
     {
+        // Advanced access controls (overrides) are a paid feature.
+        if (! $organization->features->advanced_permissions) {
+            return false;
+        }
+
         return $user->organizationMembership()->hasOrganizationPermission(
             permission: OrganizationPermission::ManageAccessControls,
             organization: $organization

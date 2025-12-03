@@ -31,10 +31,6 @@ class CreateEnv
 
         $env->project()->associate($project);
 
-        if ($project->is_legacy) {
-            $env->base()->associate($base);
-        }
-
         $env->save();
 
         return $env;

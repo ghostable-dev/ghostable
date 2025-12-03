@@ -3,30 +3,29 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
-use App\Environment\Resolvers\ResolveEnvironmentVariables;
 
 class SumResolvedLineBytes
 {
     public function __construct(
-        protected ResolveEnvironmentVariables $resolver,
+        protected ResolveEnvironmentSecrets $resolver,
     ) {}
 
     public function handle(Environment $env, bool $onlyVaporSecrets = true): int
     {
-        $resolved = $this->resolver->handle($env); // Collection<ResolvedVariableData>
+        $resolved = $this->resolver->handle($env); // Collection<EnvironmentSecret>
 
         return $resolved
             ->filter(function ($data) use ($onlyVaporSecrets) {
-                $var = $data->variable;
+                $secret = $data;
 
                 if ($onlyVaporSecrets) {
-                    if (! $var->is_vapor_secret) {
+                    if (! $secret->is_vapor_secret) {
                         return false;
                     }
                 }
 
                 // Skip null values (treat as empty string if you prefer to count them)
-                return $var->value !== null;
-            })->sum(fn ($data) => $data->variable->line_bytes);
+                return $secret->ciphertext !== null;
+            })->sum(fn ($secret) => $secret->line_bytes);
     }
 }

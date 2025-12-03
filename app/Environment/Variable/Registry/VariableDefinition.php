@@ -2,9 +2,6 @@
 
 namespace App\Environment\Variable\Registry;
 
-use App\Environment\Validation\Entities\FieldRules;
-use App\Environment\Validation\Rules\RequiredKeyRule;
-use App\Environment\Validation\Rules\StringKeyRule;
 use App\Environment\Variable\Enums\VariableGroup;
 
 abstract class VariableDefinition
@@ -41,33 +38,14 @@ abstract class VariableDefinition
     }
 
     /**
-     * Default "required" rule provider. Override if needed.
-     */
-    public function requiredProvider(): RequiredKeyRule
-    {
-        return new RequiredKeyRule;
-    }
-
-    /**
-     * Return the FieldRules for this definition.
-     */
-    public function fieldRules(): FieldRules
-    {
-        return new FieldRules(
-            key: $this->key(),
-            providers: $this->ruleProviders(),
-        );
-    }
-
-    /**
      * Rule providers to apply for this key.
      *
-     * @return array<int, \App\Environment\Validation\Contracts\KeyRuleProvider>
+     * Validation providers are no longer used; retained for compatibility.
+     *
+     * @return array<int, mixed>
      */
     public function ruleProviders(): array
     {
-        return [
-            new StringKeyRule,
-        ];
+        return [];
     }
 }

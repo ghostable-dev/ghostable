@@ -1,19 +1,7 @@
 <?php
 
 use App\Api\Core\Http\Middleware\TrackUsage;
-use App\Api\V1\Http\Controllers\Auth\LoginViaCli;
-use App\Api\V1\Http\Controllers\Environment\CreateEnvironment;
-use App\Api\V1\Http\Controllers\Environment\GetEnvFileFormats;
-use App\Api\V1\Http\Controllers\Environment\GetEnvironmentTypes;
-use App\Api\V1\Http\Controllers\Organization\GetOrganization;
-use App\Api\V1\Http\Controllers\Organization\GetOrganizationRoles;
-use App\Api\V1\Http\Controllers\Organization\GetOrganizations;
-use App\Api\V1\Http\Controllers\Organization\GetOwnedOrganizations;
-use App\Api\V1\Http\Controllers\Organization\InviteMember;
-use App\Api\V1\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
-use App\Api\V1\Http\Controllers\Project\GetEnvironments;
-use App\Api\V1\Http\Controllers\Project\GetProjects;
-use App\Api\V1\Http\Controllers\Secret\GetSecretTypes;
+use App\Api\V2\Http\Controllers\Auth\LoginViaCli;
 use App\Api\V2\Http\Controllers\CliLogin\PollCliLogin;
 use App\Api\V2\Http\Controllers\CliLogin\StartCliLogin;
 use App\Api\V2\Http\Controllers\CliRegister\PollCliRegister;
@@ -21,23 +9,34 @@ use App\Api\V2\Http\Controllers\CliRegister\StartCliRegister;
 use App\Api\V2\Http\Controllers\Device\RegisterDevice;
 use App\Api\V2\Http\Controllers\Device\RevokeDevice;
 use App\Api\V2\Http\Controllers\Device\ShowDevice;
+use App\Api\V2\Http\Controllers\Environment\CreateEnvironment;
 use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKey;
 use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKeyEnvelope;
 use App\Api\V2\Http\Controllers\Environment\DeployEnvironment;
+use App\Api\V2\Http\Controllers\Environment\GetEnvFileFormats;
 use App\Api\V2\Http\Controllers\Environment\GetEnvironmentDevices;
 use App\Api\V2\Http\Controllers\Environment\GetEnvironmentHistory;
 use App\Api\V2\Http\Controllers\Environment\GetEnvironmentKey;
 use App\Api\V2\Http\Controllers\Environment\GetEnvironmentKeys;
+use App\Api\V2\Http\Controllers\Environment\GetEnvironmentTypes;
 use App\Api\V2\Http\Controllers\Environment\GetEnvironmentVariableHistory;
 use App\Api\V2\Http\Controllers\Environment\PullEnvironment;
 use App\Api\V2\Http\Controllers\Environment\PushEnvironment;
 use App\Api\V2\Http\Controllers\Environment\RollbackEnvironmentVariable;
+use App\Api\V2\Http\Controllers\Organization\GetOrganization;
+use App\Api\V2\Http\Controllers\Organization\GetOrganizationRoles;
+use App\Api\V2\Http\Controllers\Organization\GetOrganizations;
+use App\Api\V2\Http\Controllers\Organization\GetOwnedOrganizations;
+use App\Api\V2\Http\Controllers\Organization\InviteMember;
 use App\Api\V2\Http\Controllers\Project\CreateProject;
 use App\Api\V2\Http\Controllers\Project\DeploymentToken\CreateDeploymentToken;
 use App\Api\V2\Http\Controllers\Project\DeploymentToken\ListDeploymentTokens;
 use App\Api\V2\Http\Controllers\Project\DeploymentToken\RevokeDeploymentToken;
 use App\Api\V2\Http\Controllers\Project\DeploymentToken\RotateDeploymentToken;
+use App\Api\V2\Http\Controllers\Project\GenerateSuggestedEnvironmentNames;
+use App\Api\V2\Http\Controllers\Project\GetEnvironments;
 use App\Api\V2\Http\Controllers\Project\GetProjectHistory;
+use App\Api\V2\Http\Controllers\Project\GetProjects;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -124,6 +123,5 @@ Route::middleware('api.version:v2')->group(function () {
 
         Route::get('environment-types', GetEnvironmentTypes::class);
         Route::get('environment-formats', GetEnvFileFormats::class);
-        Route::get('secret-types', GetSecretTypes::class);
     });
 });
