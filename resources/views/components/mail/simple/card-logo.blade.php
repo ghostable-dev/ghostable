@@ -1,5 +1,5 @@
-@php($logoUrl = function_exists('mail_asset')
-    ? mail_asset('logos/ghostable-dark@2x.v2.png')
+@php($logoUrl = function_exists('cdn_asset')
+    ? cdn_asset('logos/ghostable-dark@2x.v2.png')
     : asset('logos/ghostable-dark@2x.v2.png'))
 
 <img

@@ -9,6 +9,7 @@ use App\Blog\Http\Middleware\PostIsPublished;
 use App\Blog\Livewire\PostShow;
 use App\Blog\Livewire\PostsIndex;
 use App\Core\Http\Controllers\ContactController;
+use App\Core\Http\Controllers\GenerateLearnSitemap;
 use App\Core\Http\Controllers\GeneratePagesSitemap;
 use App\Core\Http\Controllers\GenerateSitemap;
 use App\Core\Http\Middleware\IsFounder;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('sitemap.xml', GenerateSitemap::class);
 Route::get('sitemap-blog.xml', GenerateBlogSitemap::class);
 Route::get('sitemap-pages.xml', GeneratePagesSitemap::class);
+Route::get('sitemap-learn.xml', GenerateLearnSitemap::class);
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -49,4 +51,15 @@ Route::prefix('blog')
         Route::get('category/{category}', PostsIndex::class)->name('category');
         Route::middleware(PostIsPublished::class)->get('{post:slug}', PostShow::class)->name('view');
         Route::middleware(['auth', IsFounder::class])->get('preview/{post:slug}', PostShow::class)->name('preview');
+    });
+
+// Learn
+Route::prefix('learn')
+    ->name('learn.')
+    ->group(function () {
+        Route::get('/', fn () => view('site.learn'))->name('index');
+        Route::get('tag/{tag}', fn ($tag) => view('site.learn', ['activeTag' => $tag]))->name('tag');
+        Route::view('laravel-env-example', 'site.guides.laravel-env-example')->name('laravel-env-example');
+        Route::view('laravel-multi-environment-secrets', 'site.guides.laravel-multi-environment-secrets')->name('laravel-multi-environment-secrets');
+        Route::view('env-naming-conventions', 'site.guides.env-naming-conventions')->name('env-naming-conventions');
     });

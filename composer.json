@@ -50,7 +50,7 @@
         },
         "files": [
             "bootstrap/timezone.php",
-            "bootstrap/mail_asset.php"
+            "bootstrap/cdn_asset.php"
         ]
     },
     "autoload-dev": {

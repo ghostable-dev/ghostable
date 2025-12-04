@@ -12,6 +12,7 @@ class GenerateSitemap extends Controller
         return SitemapIndex::create()
             ->add(Sitemap::create('sitemap-blog.xml'))
             ->add(Sitemap::create('sitemap-pages.xml'))
+            ->add(Sitemap::create('sitemap-learn.xml'))
             ->add('https://docs.ghostable.dev/sitemap.xml')
             ->toResponse(request());
     }
