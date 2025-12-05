@@ -4,6 +4,7 @@
     $guideTitle = $guide['title'] ?? 'ENV Variable Naming Conventions & Best Practices';
     $guideDescription = $guide['description'] ?? 'A concise guide to consistent, portable, collision-free environment variable naming that works across languages and teams.';
     $guideKeywords = $guide['keywords'] ?? [];
+    $guideImage = $guide['image'] ?? null;
     $tableOfContents = [
         ['href' => '#introduction', 'label' => 'Why naming conventions matter'],
         ['href' => '#conventions', 'label' => 'Recommended conventions'],
@@ -48,6 +49,7 @@
         title="{{ $guideTitle }}"
         description="{{ $guideDescription }}"
         :keywords="$guideKeywords"
+        :image="$guideImage"
     />
 @endpush
 

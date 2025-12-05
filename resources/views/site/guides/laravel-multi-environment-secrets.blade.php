@@ -4,6 +4,7 @@
     $guideTitle = $guide['title'] ?? 'Laravel Multi-Environment Secrets Strategy';
     $guideDescription = $guide['description'] ?? 'How to manage Laravel configuration and secrets safely across local, staging, and production.';
     $guideKeywords = $guide['keywords'] ?? [];
+    $guideImage = $guide['image'] ?? null;
     $tableOfContents = [
         ['href' => '#introduction', 'label' => 'Introduction'],
         ['href' => '#environment-basics', 'label' => 'Laravel environment basics'],
@@ -50,6 +51,7 @@
         title="{{ $guideTitle }}"
         description="{{ $guideDescription }}"
         :keywords="$guideKeywords"
+        :image="$guideImage"
     />
 @endpush
 

@@ -4,6 +4,7 @@
     $guideTitle = $guide['title'] ?? 'Laravel .env.example — The Definitive Guide';
     $guideDescription = $guide['description'] ?? 'A practical reference for creating, maintaining, and sharing .env.example files for Laravel teams.';
     $guideKeywords = $guide['keywords'] ?? [];
+    $guideImage = $guide['image'] ?? null;
     $tableOfContents = [
         ['href' => '#what-env-example-is-used-for', 'label' => 'What .env.example is used for'],
         ['href' => '#common-misconceptions', 'label' => 'Common misconceptions & mistakes'],
@@ -48,6 +49,7 @@
         title="{{ $guideTitle }}"
         description="{{ $guideDescription }}"
         :keywords="$guideKeywords"
+        :image="$guideImage"
     />
 @endpush
 
