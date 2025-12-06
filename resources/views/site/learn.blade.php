@@ -29,6 +29,31 @@
                     </flux:button>
                 </div>
 
+                <div class="mt-10 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl ring-1 ring-gray-100">
+                    <div class="grid items-center gap-8 lg:grid-cols-[1fr_1.15fr]">
+                        <div class="flex flex-col gap-4 p-10 lg:p-12">
+                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Explainer</p>
+                            <h2 class="text-3xl font-semibold tracking-tight text-gray-900">What is Ghostable?</h2>
+                            <p class="text-lg text-gray-600">
+                                A quick walkthrough of how Ghostable secures, validates, and shares your environment configuration across teams and projects.
+                            </p>
+                        </div>
+                        <div class="relative p-6 lg:pr-9 lg:pl-3">
+                            <div class="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-900 shadow-2xl" style="aspect-ratio: 16 / 9;">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-brand-dark/30 via-brand/15 to-brand-light/10"></div>
+                                <iframe
+                                  class="relative h-full w-full"
+                                  src="https://www.youtube.com/embed/TINYJ5F3F-k"
+                                  title="Ghostable explainer video"
+                                  frameborder="0"
+                                  allow="autoplay; encrypted-media; picture-in-picture"
+                                  allowfullscreen
+                                ></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-14 mb-6 border-t border-gray-200"></div>
 
                 

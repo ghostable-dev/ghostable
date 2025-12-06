@@ -20,6 +20,8 @@
     <div class="py-24 sm:py-32 lg:pb-40">
         
         @include('site.partials.hero')
+
+        @include('site.partials.explainer-video')
         
         @include('site.partials.features-overview')
         
