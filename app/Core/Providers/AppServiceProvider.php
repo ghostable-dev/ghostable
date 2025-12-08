@@ -7,6 +7,7 @@ use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
 use App\Core\Events\InquiryCreated;
 use App\Core\Notifications\NewInquiryNotification;
+use App\Core\View\Components\ActivityCauserDisplay;
 use App\Core\View\Components\SeoMeta;
 use Illuminate\Auth\Events\Verified as EmailVerified;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -43,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Blade::component('seo-meta', SeoMeta::class);
+        Blade::component('activity-causer-display', ActivityCauserDisplay::class);
 
         RateLimiter::for('contact', function (Request $request) {
             return [Limit::perMinute(5)->by($request->ip())];

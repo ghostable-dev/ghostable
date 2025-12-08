@@ -2,15 +2,19 @@
 
 namespace App\Project\Livewire;
 
+use App\Core\Actions\StreamActivityCsv;
 use App\Core\Models\Activity;
 use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectActivity extends Component
 {
@@ -56,9 +60,8 @@ class ProjectActivity extends Component
     #[Computed]
     public function activities(): LengthAwarePaginator
     {
-        return Activity::forProject($this->project)
-            ->with('causer')
-            ->latest()
+        return $this->activityQuery()
+            ->latest('created_at')
             ->paginate(20);
     }
 
@@ -69,6 +72,28 @@ class ProjectActivity extends Component
     public function refreshActivities(): void
     {
         $this->activities();
+    }
+
+    public function download(): StreamedResponse
+    {
+        $this->authorize('viewAuditLogs', $this->project->owningOrganization());
+
+        $filename = 'project-'.Str::slug($this->project->name).'-activity.csv';
+
+        return app(StreamActivityCsv::class)->handle(
+            $this->activityQuery()->latest('created_at'),
+            $filename,
+            [
+                'project_name' => $this->project->name,
+                'project_id' => $this->project->id,
+            ],
+        );
+    }
+
+    protected function activityQuery(): Builder
+    {
+        return Activity::forProject($this->project)
+            ->with('causer');
     }
 
     public function render()

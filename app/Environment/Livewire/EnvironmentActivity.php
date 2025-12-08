@@ -2,15 +2,19 @@
 
 namespace App\Environment\Livewire;
 
+use App\Core\Actions\StreamActivityCsv;
 use App\Core\Models\Activity;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EnvironmentActivity extends Component
 {
@@ -54,9 +58,8 @@ class EnvironmentActivity extends Component
     #[Computed]
     public function activities(): LengthAwarePaginator
     {
-        return Activity::forEnvironment($this->environment)
-            ->with('causer')
-            ->latest()
+        return $this->activityQuery()
+            ->latest('created_at')
             ->paginate(20);
     }
 
@@ -70,6 +73,29 @@ class EnvironmentActivity extends Component
     public function refreshActivities(): void
     {
         $this->activities();
+    }
+
+    public function download(): StreamedResponse
+    {
+        $this->authorize('viewAuditLogs', $this->environment->owningOrganization());
+
+        $filename = 'environment-'.Str::slug($this->environment->name).'-activity.csv';
+
+        return app(StreamActivityCsv::class)->handle(
+            $this->activityQuery()->latest('created_at'),
+            $filename,
+            [
+                'project_name' => optional($this->environment->project)->name,
+                'project_id' => optional($this->environment->project)->id,
+                'environment_id' => $this->environment->id,
+            ],
+        );
+    }
+
+    protected function activityQuery(): Builder
+    {
+        return Activity::forEnvironment($this->environment)
+            ->with('causer');
     }
 
     public function render()
