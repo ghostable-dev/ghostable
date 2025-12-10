@@ -4,9 +4,9 @@
     'subheader' => null
 ])
 
-<x-layouts.base 
-    :title="$title" 
-    :with-tracking="false" 
+<x-layouts.base
+    :title="$title"
+    :with-tracking="false"
     theme-color="#ffffff"
     body-classes="min-h-screen">
     <flux:header sticky 
@@ -93,14 +93,20 @@
     </flux:header>
     
     <div>
+        
+        <livewire:auth.livewire.device-link-blocker />
+        
         <div class="bg-zinc-50 dark:bg-zinc-800">
             {{ $subheader ?? '' }}
         </div>
+        
         <div>
             <flux:main container>
                 {{ $slot }}
             </flux:main>
         </div>
     </div>
+
     
+
 </x-layouts.base>
