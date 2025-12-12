@@ -6,6 +6,7 @@ use App\Account\Models\User;
 use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;
 use App\Organization\Enums\OrganizationRole;
+use App\Organization\Events\OrganizationCreated;
 use App\Organization\Models\Organization;
 
 class CreateOrganization
@@ -24,6 +25,8 @@ class CreateOrganization
         $organization->save();
 
         $owner->organizationMembership()->assignToOrganization(organization: $organization, role: OrganizationRole::ADMIN);
+
+        OrganizationCreated::dispatch($organization, $owner);
 
         return $organization;
     }

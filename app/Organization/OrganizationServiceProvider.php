@@ -8,10 +8,12 @@ use App\Organization\Events\InviteCreated;
 use App\Organization\Events\InviteSent;
 use App\Organization\Events\MemberRemoved;
 use App\Organization\Events\MemberRoleChanged;
+use App\Organization\Events\OrganizationCreated;
 use App\Organization\Events\OrganizationSettingsChanged;
 use App\Organization\Listeners\SendAccessChangeNotification;
 use App\Organization\Listeners\SendInvite;
 use App\Organization\Listeners\SendMembershipActivityNotification;
+use App\Organization\Listeners\SendOrganizationCreatedNotification;
 use App\Organization\Listeners\SendOrganizationSettingsChangedNotification;
 use App\Organization\Listeners\UpdateInviteSentTimestamp;
 use App\Organization\Models\Invite;
@@ -86,6 +88,11 @@ class OrganizationServiceProvider extends ServiceProvider
         Event::listen(
             OrganizationSettingsChanged::class,
             SendOrganizationSettingsChangedNotification::class
+        );
+
+        Event::listen(
+            OrganizationCreated::class,
+            SendOrganizationCreatedNotification::class
         );
 
         if ($this->app->runningInConsole()) {
