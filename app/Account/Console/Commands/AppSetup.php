@@ -5,7 +5,9 @@ namespace App\Account\Console\Commands;
 use App\Billing\Enums\Plan;
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
+use App\Integration\Models\Integration;
 use App\Organization\Enums\OrganizationRole;
+use App\Organization\Models\Organization;
 use Illuminate\Console\Command;
 
 class AppSetup extends Command
@@ -96,6 +98,26 @@ class AppSetup extends Command
 
         // $localCliToken = $this->createEnvToken(env: $local, createdBy: $joe);
         // $this->info('Token for local deploys: ' . $localCliToken->plainTextToken);
+
+        $this->seedGhostableIntegrations($ghostable);
+    }
+
+    protected function seedGhostableIntegrations(Organization $organization): void
+    {
+        Integration::factory()
+            ->for($organization)
+            ->drata()
+            ->create();
+
+        Integration::factory()
+            ->for($organization)
+            ->vanta()
+            ->create();
+
+        Integration::factory()
+            ->for($organization)
+            ->slack()
+            ->create();
     }
 
     protected function seedPiedPiper(): void

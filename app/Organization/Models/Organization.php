@@ -9,6 +9,7 @@ use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;
 use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
+use App\Integration\Models\Integration;
 use App\Organization\Actions\CreateNonConflictingSlug;
 use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
@@ -174,6 +175,11 @@ class Organization extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function integrations(): HasMany
+    {
+        return $this->hasMany(Integration::class);
     }
 
     public function apiUsages(): HasMany

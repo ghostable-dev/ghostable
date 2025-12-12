@@ -72,6 +72,19 @@ select:focus[data-flux-control] {
     @apply size-4;
 } */
 
+@layer components {
+    /* Ensure dropdown menus stay legible when placed inside white-on-white headers */
+    ui-menu[data-flux-menu],
+    [data-flux-menu] {
+        color: var(--color-zinc-900, #0f172a);
+    }
+
+    .dark ui-menu[data-flux-menu],
+    .dark [data-flux-menu] {
+        color: var(--color-white);
+    }
+}
+
 ::selection {
   background-color: var(--color-crypto);
   color: #ffffff;

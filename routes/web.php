@@ -14,6 +14,7 @@ use App\Core\Http\Controllers\GeneratePagesSitemap;
 use App\Core\Http\Controllers\GenerateSitemap;
 use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
+use App\Integration\IntegrationRoutes;
 use App\Organization\OrganizationRoutes;
 use App\Project\ProjectRoutes;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,7 @@ AccountRoutes::web();
 OrganizationRoutes::web();
 EnvironmentRoutes::web();
 ProjectRoutes::web();
+IntegrationRoutes::web();
 AuthRoutes::web();
 BillingRoutes::web();
 

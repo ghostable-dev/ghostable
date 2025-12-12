@@ -219,18 +219,33 @@ trait CreatesAccountData
 
         // Try to pull realistic keys + suggested values; fall back to synthetic keys if registry empty.
         $defs = collect(optional(resolve(VariableRegistry::class))->all() ?? []);
+        $definitionPool = $defs->values()->shuffle();
+        $usedNames = array_fill_keys(
+            $env->envSecrets()->pluck('name')->map(fn ($name) => (string) $name)->all(),
+            true
+        );
 
         for ($i = 0; $i < $amount; $i++) {
-            if ($defs->isNotEmpty()) {
-                $def = $defs->random();
-                $name = $def->key();
-                $plaintext = empty($def->suggestedValues())
+            $definition = $definitionPool->shift();
+            if ($definition) {
+                $baseName = $definition->key();
+                $plaintext = empty($definition->suggestedValues())
                     ? Str::random(16)
-                    : collect($def->suggestedValues())->random();
+                    : collect($definition->suggestedValues())->random();
             } else {
-                $name = 'SEED_'.Str::upper(Str::random(8));
+                $baseName = 'SEED_'.Str::upper(Str::random(8));
                 $plaintext = Str::random(16);
             }
+
+            $name = $baseName;
+
+            while (isset($usedNames[$name])) {
+                $name = $definition
+                    ? $baseName.'_'.Str::upper(Str::random(4))
+                    : 'SEED_'.Str::upper(Str::random(8));
+            }
+
+            $usedNames[$name] = true;
 
             // ---- Fabricate a client-side style encrypted packet (DEV/DEMO ONLY) ----
             // We DO NOT do real encryption here—this is seed/demo data. Ciphertext/nonce are random bytes.

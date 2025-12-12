@@ -76,6 +76,8 @@ class OrganizationMembership
         ]);
 
         $this->clearMembershipCache($organization);
+
+        \App\Organization\Events\MemberJoined::dispatch($organization, $this->user);
     }
 
     /**

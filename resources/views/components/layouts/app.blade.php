@@ -12,8 +12,8 @@
     <flux:header sticky 
         @class([
             'py-2 backdrop-blur-md',
-            'bg-white/20 dark:bg-zinc-900',
-            'border-b border-zinc-200 dark:border-white/20'
+            'bg-black text-white',
+            'border-b border-black'
         ])>
         
         <a 
@@ -23,8 +23,8 @@
             <x-app-logo />
         </a>
         
-        <flux:navbar class="-mb-px">
-            <flux:breadcrumbs>
+        <flux:navbar class="-mb-px text-white [&_*]:text-white">
+            <flux:breadcrumbs class="text-white [&_*]:text-white">
                 @if(auth()->user()->isVerified() && auth()->user()->organizations->count())
                     <flux:breadcrumbs.item separator="slash">
                         <livewire:organization.livewire.organization-dropdown/>
@@ -36,7 +36,7 @@
         
         <flux:spacer />
         
-        <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0! max-lg:hidden">
+        <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0! max-lg:hidden text-white [&_*]:text-white">
             <flux:navbar.item href="https://docs.ghostable.dev" target="_blank">
                 Docs
             </flux:navbar.item>
@@ -52,7 +52,7 @@
                     :chevron="false"
                     avatar:color="slate"
                 />
-                <flux:menu>
+                <flux:menu class="text-black">
                     <flux:menu.radio.group>
                         <div class="p-0 text-sm font-normal">
                             <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">

@@ -2,15 +2,27 @@
     
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <flux:navlist variant="sidebar">
-            @foreach([
-                ['route' => 'organization.settings.general', 'label' => 'General'],
-                ['route' => 'organization.settings.billing', 'label' => 'Billing'],
-                ['route' => 'organization.settings.members', 'label' => 'Members'],
-                ['route' => 'organization.settings.notifications', 'label' => 'Notifications'],
-            ] as $item)
+            
+            @php
+                $links = [
+                    ['route' => 'organization.settings.general', 'label' => 'General'],
+                    ['route' => 'organization.settings.billing', 'label' => 'Billing'],
+                    ['route' => 'organization.settings.members', 'label' => 'Members'],
+                    ['route' => 'organization.settings.notifications', 'label' => 'Notifications'],
+                ];
+                
+                if (\Laravel\Pennant\Feature::active('integrations')) {
+                    array_push($links, [
+                        'route' => 'organization.settings.integrations', 
+                        'label' => 'Integrations', 'feature' => 'integrations'
+                    ]);
+                }
+            @endphp
+            
+            @foreach($links as $item)
                 <flux:navlist.item
                     wire:key="nbi-{{ $item['route'] }}" 
-                    :href="route($item['route'])" 
+                    :href="route($item['route'])"
                     :current="request()->routeIs($item['route'])"
                     wire:navigate
                     wire:ignore>
