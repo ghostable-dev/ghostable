@@ -7,10 +7,28 @@ use Illuminate\Support\Str;
 
 class LearnRepository
 {
-    public function all(): Collection
+    public function all(?string $tag = null): Collection
     {
-        return collect(config('learn.guides', []))
-            ->map(fn (array $guide) => $this->normalize($guide));
+        return $this->filterByTag(
+            $this->guides()->concat($this->tutorials()),
+            $tag
+        );
+    }
+
+    public function guides(?string $tag = null): Collection
+    {
+        return $this->filterByTag(
+            $this->normalizeCollection(config('learn.guides', [])),
+            $tag
+        );
+    }
+
+    public function tutorials(?string $tag = null): Collection
+    {
+        return $this->filterByTag(
+            $this->normalizeCollection(config('learn.tutorials', [])),
+            $tag
+        );
     }
 
     public function findBySlug(string $slug): ?array
@@ -21,8 +39,7 @@ class LearnRepository
 
     public function tagged(string $tag): Collection
     {
-        return $this->all()
-            ->filter(fn (array $guide) => in_array($tag, $guide['tags'], true));
+        return $this->all($tag);
     }
 
     public function tags(): Collection
@@ -31,6 +48,20 @@ class LearnRepository
             ->flatMap(fn (array $guide) => $guide['tags'])
             ->unique()
             ->values();
+    }
+
+    private function normalizeCollection(array $items): Collection
+    {
+        return collect($items)->map(fn (array $item) => $this->normalize($item));
+    }
+
+    private function filterByTag(Collection $items, ?string $tag): Collection
+    {
+        if (! $tag) {
+            return $items;
+        }
+
+        return $items->filter(fn (array $guide) => in_array($tag, $guide['tags'], true));
     }
 
     private function normalize(array $guide): array

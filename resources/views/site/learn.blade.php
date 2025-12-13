@@ -58,7 +58,9 @@
 
                 
                 @php
-                    $guidesCollection = isset($activeTag) ? $learn->tagged($activeTag) : $learn->all();
+                    $activeTag = $activeTag ?? null;
+                    $guidesCollection = $learn->guides($activeTag);
+                    $tutorialsCollection = $learn->tutorials($activeTag);
                     $guides = $guidesCollection->map(function ($guide) {
                         return [
                             'title' => $guide['title'],
@@ -68,6 +70,17 @@
                             'image' => $guide['image'] ?? null,
                             'image_alt' => $guide['image_alt'] ?? null,
                             'tags' => $guide['tags'],
+                        ];
+                    });
+                    $tutorials = $tutorialsCollection->map(function ($tutorial) {
+                        return [
+                            'title' => $tutorial['title'],
+                            'description' => $tutorial['description'],
+                            'href' => $tutorial['href'],
+                            'cta' => 'Start tutorial',
+                            'image' => $tutorial['image'] ?? null,
+                            'image_alt' => $tutorial['image_alt'] ?? null,
+                            'tags' => $tutorial['tags'],
                         ];
                     });
                 @endphp
@@ -83,6 +96,12 @@
                 @endif
 
                 <div class="mx-auto max-w-2xl lg:max-w-6xl">
+                    @if($guidesCollection->isEmpty() && $tutorialsCollection->isEmpty())
+                        <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-gray-700">
+                            No resources match this tag yet. Try clearing the filter or check back soon for new guides and tutorials.
+                        </div>
+                    @endif
+
                     <x-site.resource-section
                         id="guides"
                         label="Guides"
@@ -91,6 +110,16 @@
                         :items="$guides"
                         class="mt-4"
                     />
+                    @if($tutorialsCollection->isNotEmpty())
+                        <x-site.resource-section
+                            id="tutorials"
+                            label="Tutorials"
+                            title="Tutorials"
+                            description="Hands-on, step-by-step walkthroughs for common Ghostable workflows—copy the commands, keep your envs healthy."
+                            :items="$tutorials"
+                            class="mt-4"
+                        />
+                    @endif
                 </div>
             </div>
         </div>
