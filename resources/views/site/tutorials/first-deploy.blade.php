@@ -160,9 +160,7 @@ jobs:
         env:
           GHOSTABLE_TOKEN: $@{{ secrets.GHOSTABLE_TOKEN }}
         run: |
-          # build and deploy using your toolchain
-          npm run build
-          npm run deploy
+          ghostable deploy
 </code></pre>
                                 <p>If validation fails, the job exits non-zero and the deploy is blocked.</p>
 
