@@ -3,7 +3,9 @@
 namespace App\Blog\Livewire;
 
 use App\Blog\Enums\PostCategory;
+use App\Blog\Enums\PostType;
 use App\Blog\Models\Post;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -13,21 +15,54 @@ class PostsIndex extends Component
 {
     public ?PostCategory $category = null;
 
-    public function mount(?PostCategory $category = null): void
+    public ?PostType $type = null;
+
+    public function mount(?PostCategory $category = null, PostType|string|null $type = null): void
     {
         $this->category = $category;
+        $this->type = match (true) {
+            $type instanceof PostType => $type,
+            filled($type) => PostType::from($type),
+            default => null,
+        };
     }
 
     #[Computed()]
     public function posts(): LengthAwarePaginator
     {
-        return Post::published()
-            ->where('is_featured', false)
-            ->when(! empty($this->category), function ($posts) {
-                return $posts->ofCategory($this->category);
-            })
-            ->latest('posted_at')
-            ->paginate(8);
+        if (empty($this->category) && empty($this->type)) {
+            return new LengthAwarePaginator([], 0, 1);
+        }
+
+        return $this->basePostsQuery()
+            ->when($this->type, fn (Builder $posts) => $posts->ofType($this->type))
+            ->paginate(9);
+    }
+
+    #[Computed()]
+    public function articles(): Collection
+    {
+        if (filled($this->category) || filled($this->type)) {
+            return collect();
+        }
+
+        return $this->basePostsQuery()
+            ->ofType(PostType::ARTICLE)
+            ->limit(4)
+            ->get();
+    }
+
+    #[Computed()]
+    public function insights(): Collection
+    {
+        if (filled($this->category) || filled($this->type)) {
+            return collect();
+        }
+
+        return $this->basePostsQuery()
+            ->ofType(PostType::INSIGHT)
+            ->limit(4)
+            ->get();
     }
 
     #[Computed(persist: true)]
@@ -43,9 +78,11 @@ class PostsIndex extends Component
     #[Computed()]
     public function metaTitle(): string
     {
-        $base = $this->category
-            ? "{$this->category->label()} — Ghostable Blog"
-            : 'Ghostable Blog';
+        $base = match (true) {
+            filled($this->category) => "{$this->category->label()} — Ghostable Blog",
+            filled($this->type) => sprintf('%ss — Ghostable Blog', $this->type->label()),
+            default => 'Ghostable Blog',
+        };
 
         return $this->page > 1
             ? sprintf('%s (Page %d)', $base, $this->page)
@@ -55,11 +92,15 @@ class PostsIndex extends Component
     #[Computed()]
     public function metaDescription(): string
     {
-        $baseDesc = 'Stay updated with Ghostable. Read product updates, security insights, and best practices for managing environment variables and secrets.';
+        $baseDesc = 'Stay updated with Ghostable. Read product updates, company news, and industry insights on configuration, security, and platform trends.';
 
-        $desc = $this->category
-            ? $this->category->description()
-            : $baseDesc;
+        $desc = match (true) {
+            filled($this->category) => $this->category->description(),
+            filled($this->type) => $this->type->is(PostType::ARTICLE)
+                ? 'Dive into Ghostable articles: deep product updates, best practices, and release notes.'
+                : 'Market and industry takes on security and platform trends.',
+            default => $baseDesc,
+        };
 
         return $this->page > 1
             ? "{$desc} Browse page {$this->page}."
@@ -69,12 +110,21 @@ class PostsIndex extends Component
     #[Computed()]
     public function metaCanonical(): string
     {
-        $canonical = $this->category
-            ? route('blog.category', $this->category->value)
-            : route('blog.index');
+        $canonical = match (true) {
+            filled($this->category) => route('blog.category', $this->category->value),
+            filled($this->type) && $this->type->is(PostType::ARTICLE) => route('blog.articles'),
+            filled($this->type) && $this->type->is(PostType::INSIGHT) => route('blog.insights'),
+            default => route('blog.index'),
+        };
 
-        return $this->page > 1
-            ? "{$canonical}?page={$this->page}"
+        $query = array_filter([
+            'page' => ($page = request()->integer('page', 1)) > 1 ? $page : null,
+            'articlesPage' => ($articlesPage = request()->integer('articlesPage', 1)) > 1 ? $articlesPage : null,
+            'insightsPage' => ($insightsPage = request()->integer('insightsPage', 1)) > 1 ? $insightsPage : null,
+        ]);
+
+        return count($query)
+            ? "{$canonical}?".http_build_query($query)
             : $canonical;
     }
 
@@ -92,12 +142,20 @@ class PostsIndex extends Component
             'developer tips',
         ];
 
-        $extra = $this->category ? [
-            str($this->category->label())->slug(' '),
-            $this->category->value,
-            "{$this->category->label()} articles",
-            "ghostable {$this->category->value}",
-        ] : [];
+        $extra = match (true) {
+            filled($this->category) => [
+                str($this->category->label())->slug(' '),
+                $this->category->value,
+                "{$this->category->label()} articles",
+                "ghostable {$this->category->value}",
+            ],
+            filled($this->type) => [
+                $this->type->label(),
+                "{$this->type->label()}s",
+                "ghostable {$this->type->value}",
+            ],
+            default => [],
+        };
 
         return array_values(array_unique([...$base, ...$extra]));
     }
@@ -105,7 +163,16 @@ class PostsIndex extends Component
     #[Computed()]
     public function page(): int
     {
-        return request()->integer('page', 1);
+        return max(
+            request()->integer('page', 1),
+            request()->integer('articlesPage', 1),
+            request()->integer('insightsPage', 1),
+        );
+    }
+
+    public function typeLabel(): ?string
+    {
+        return $this->type?->label();
     }
 
     public function render()
@@ -115,5 +182,15 @@ class PostsIndex extends Component
                 'title' => $this->metaTitle,
                 'canonical' => $this->metaCanonical,
             ]);
+    }
+
+    protected function basePostsQuery(): Builder
+    {
+        return Post::published()
+            ->where('is_featured', false)
+            ->when(! empty($this->category), function ($posts) {
+                return $posts->ofCategory($this->category);
+            })
+            ->latest('posted_at');
     }
 }

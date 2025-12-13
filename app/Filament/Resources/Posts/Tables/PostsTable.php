@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Posts\Tables;
 
 use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
+use App\Blog\Enums\PostType;
 use App\Blog\Models\Post;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -31,10 +32,14 @@ class PostsTable
                         PostStatus::ARCHIVED->value => 'danger',
                     })
                     ->badge(),
+                TextColumn::make('type')
+                    ->formatStateUsing(fn (PostType $state) => $state->label())
+                    ->color(fn (PostType $state): string => $state->is(PostType::INSIGHT) ? 'info' : 'gray')
+                    ->badge(),
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('category')
-                    ->formatStateUsing(fn (PostCategory $state) => $state->label())
+                    ->formatStateUsing(fn (?PostCategory $state) => $state?->label() ?? '—')
                     ->badge(),
                 TextColumn::make('posted_at')
                     ->dateTime()

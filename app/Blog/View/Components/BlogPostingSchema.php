@@ -19,7 +19,7 @@ class BlogPostingSchema extends SchemaGenerator
             ->datePublished($post->posted_at)
             // ->keywords($post->meta_keywords)
             ->image(! is_null($post->hero) ? Storage::url($post->hero) : null)
-            ->genre($post->category->label())
+            ->genre($post->category?->label())
             // ->wordCount($post->wordCount)
             ->url(route('blog.view', $post));
     }

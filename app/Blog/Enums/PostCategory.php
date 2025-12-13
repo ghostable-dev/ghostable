@@ -10,6 +10,7 @@ enum PostCategory: string
     case CASE_STUDIES = 'case-studies';
     case EVENTS = 'events';
     case RELEASE_NOTES = 'release-notes';
+    case INSIGHTS = 'insights';
 
     public static function selectOptions(): array
     {
@@ -27,6 +28,7 @@ enum PostCategory: string
             self::CASE_STUDIES => 'Case Studies',
             self::EVENTS => 'Events',
             self::RELEASE_NOTES => 'Release Notes',
+            self::INSIGHTS => 'Insights',
         };
     }
 
@@ -39,6 +41,7 @@ enum PostCategory: string
             self::CASE_STUDIES => 'Real-world stories of how teams use Ghostable to improve their workflows.',
             self::EVENTS => 'Announcements and recaps of Laracon, Wire:Live, and other community events.',
             self::RELEASE_NOTES => 'Detailed changelogs for Ghostable versions, fixes, and technical updates.',
+            self::INSIGHTS => 'Quick hits and observations from the Ghostable team.',
         };
     }
 }

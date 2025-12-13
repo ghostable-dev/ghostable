@@ -15,7 +15,7 @@ class PostShow extends Component
     {
         return view('blog.livewire.post-show')
             ->layout('components.layouts.blog', [
-                'title' => $this->post->meta_title,
+                'title' => $this->post->meta_title ?? $this->post->title,
                 'canonical' => route('blog.view', $this->post),
             ]);
     }

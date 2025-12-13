@@ -4,6 +4,7 @@ use App\Account\AccountRoutes;
 use App\Api\V2\Http\Controllers\CliLogin\ApproveCliLogin;
 use App\Auth\AuthRoutes;
 use App\Billing\BillingRoutes;
+use App\Blog\Enums\PostType;
 use App\Blog\Http\Controllers\GenerateBlogSitemap;
 use App\Blog\Http\Middleware\PostIsPublished;
 use App\Blog\Livewire\PostShow;
@@ -50,6 +51,12 @@ Route::prefix('blog')
     ->name('blog.')
     ->group(function () {
         Route::get('/', PostsIndex::class)->name('index');
+        Route::get('articles', PostsIndex::class)
+            ->name('articles')
+            ->defaults('type', PostType::ARTICLE->value);
+        Route::get('insights', PostsIndex::class)
+            ->name('insights')
+            ->defaults('type', PostType::INSIGHT->value);
         Route::get('category/{category}', PostsIndex::class)->name('category');
         Route::middleware(PostIsPublished::class)->get('{post:slug}', PostShow::class)->name('view');
         Route::middleware(['auth', IsFounder::class])->get('preview/{post:slug}', PostShow::class)->name('preview');

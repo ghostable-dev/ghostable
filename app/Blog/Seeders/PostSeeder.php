@@ -3,6 +3,7 @@
 namespace App\Blog\Seeders;
 
 use App\Blog\Enums\PostCategory;
+use App\Blog\Enums\PostType;
 use App\Blog\Models\Post;
 use Illuminate\Database\Seeder;
 
@@ -11,6 +12,7 @@ class PostSeeder extends Seeder
     public function run(): void
     {
         Post::factory()->published()->featured()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::PRODUCT_UPDATES,
             'title' => 'Welcome to Ghostable',
             'description' => 'An introduction to managing environment configuration with Ghostable.',
@@ -22,6 +24,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->featured()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::BEST_PRACTICES,
             'title' => 'Sync Your .env with Confidence',
             'description' => 'Best practices for keeping environment files consistent across teams.',
@@ -33,6 +36,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->featured()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::SECURITY,
             'title' => 'Keeping Secrets out of Git',
             'description' => 'Strategies for managing sensitive values without committing them to source control.',
@@ -44,6 +48,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::CASE_STUDIES,
             'title' => 'Case Study: Scaling Config at Acme Corp',
             'description' => 'How a growing startup keeps environments in sync with Ghostable.',
@@ -55,6 +60,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::RELEASE_NOTES,
             'title' => 'Ghostable 1.0 Release Notes',
             'description' => 'Highlights from the first major release of Ghostable.',
@@ -66,6 +72,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::BEST_PRACTICES,
             'title' => 'Automating Environment Setup with Ghostable',
             'description' => 'Save time by scripting your project onboarding.',
@@ -77,6 +84,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::SECURITY,
             'title' => 'How Ghostable Ensures Compliance',
             'description' => 'Meet regulatory requirements without the headache.',
@@ -88,6 +96,7 @@ class PostSeeder extends Seeder
         ]);
 
         Post::factory()->published()->create([
+            'type' => PostType::ARTICLE,
             'category' => PostCategory::CASE_STUDIES,
             'title' => 'From .env Chaos to Clarity',
             'description' => 'One team’s journey to organized configuration.',

@@ -4,6 +4,7 @@ namespace App\Blog\Builders;
 
 use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
+use App\Blog\Enums\PostType;
 use Illuminate\Database\Eloquent\Builder;
 
 class PostBuilder extends Builder
@@ -31,5 +32,10 @@ class PostBuilder extends Builder
     public function ofCategory(PostCategory $category): Builder
     {
         return $this->where('category', $category);
+    }
+
+    public function ofType(PostType $type): Builder
+    {
+        return $this->where('type', $type);
     }
 }

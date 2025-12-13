@@ -32,10 +32,28 @@ class GenerateBlogSitemap extends Controller
 
     protected function addBlogIndex(): void
     {
-        $this->sitemap->add(Url::create(route('blog.index'))
-            ->setLastModificationDate($this->latestChangeDate ?? now())
-            ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
-            ->setPriority(0.9));
+        $lastMod = $this->latestChangeDate ?? now();
+
+        $this->sitemap->add(
+            Url::create(route('blog.index'))
+                ->setLastModificationDate($lastMod)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                ->setPriority(0.9)
+        );
+
+        $this->sitemap->add(
+            Url::create(route('blog.articles'))
+                ->setLastModificationDate($lastMod)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                ->setPriority(0.8)
+        );
+
+        $this->sitemap->add(
+            Url::create(route('blog.insights'))
+                ->setLastModificationDate($lastMod)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                ->setPriority(0.8)
+        );
     }
 
     protected function addBlogPosts(): void

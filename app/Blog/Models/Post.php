@@ -5,6 +5,7 @@ namespace App\Blog\Models;
 use App\Blog\Builders\PostBuilder;
 use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
+use App\Blog\Enums\PostType;
 use App\Blog\Factories\PostFactory;
 use App\Blog\Markdown\CustomConverter;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -22,6 +23,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $id
  * @property string $title
  * @property string $slug
+ * @property PostType $type
  * @property PostCategory $category
  * @property string|null $description
  * @property string|null $content
@@ -89,6 +91,7 @@ class Post extends Model implements Sitemapable
         'meta_title',
         'posted_at',
         'slug',
+        'type',
         'status',
         'is_featured',
         'title',
@@ -96,6 +99,7 @@ class Post extends Model implements Sitemapable
 
     protected $casts = [
         'category' => PostCategory::class,
+        'type' => PostType::class,
         'meta_keywords' => 'array',
         'posted_at' => 'datetime',
         'status' => PostStatus::class,
@@ -105,12 +109,22 @@ class Post extends Model implements Sitemapable
     protected $attributes = [
         'status' => PostStatus::DRAFT,
         'category' => PostCategory::PRODUCT_UPDATES,
+        'type' => PostType::ARTICLE,
         'is_featured' => false,
     ];
 
     protected static function newFactory(): Factory
     {
         return PostFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Post $post): void {
+            if ($post->type?->is(PostType::INSIGHT)) {
+                $post->category = PostCategory::INSIGHTS;
+            }
+        });
     }
 
     protected function readTime(): Attribute

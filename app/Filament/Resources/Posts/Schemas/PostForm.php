@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Posts\Schemas;
 
 use App\Blog\Enums\PostCategory;
 use App\Blog\Enums\PostStatus;
+use App\Blog\Enums\PostType;
 use App\Blog\Models\Post;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -14,6 +15,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -23,9 +26,39 @@ class PostForm
     {
         return $schema
             ->components([
-                Select::make('category')
+                Select::make('type')
                     ->required()
-                    ->options(PostCategory::selectOptions())
+                    ->options(PostType::selectOptions())
+                    ->default(PostType::ARTICLE->value)
+                    ->native(false)
+                    ->live()
+                    ->columnSpanFull()
+                    ->afterStateUpdated(function (Set $set, ?string $state, Get $get): void {
+                        if ($state === PostType::INSIGHT->value) {
+                            $set('category', PostCategory::INSIGHTS->value);
+
+                            return;
+                        }
+
+                        if ($get('category') === PostCategory::INSIGHTS->value) {
+                            $set('category', PostCategory::PRODUCT_UPDATES->value);
+                        }
+                    }),
+                Select::make('category')
+                    ->required(fn (Get $get) => $get('type') === PostType::ARTICLE->value)
+                    ->options(function (Get $get) {
+                        $options = PostCategory::selectOptions();
+
+                        if ($get('type') === PostType::INSIGHT->value) {
+                            return [PostCategory::INSIGHTS->value => $options[PostCategory::INSIGHTS->value]];
+                        }
+
+                        return collect($options)
+                            ->reject(fn ($label, $value) => $value === PostCategory::INSIGHTS->value)
+                            ->all();
+                    })
+                    ->default(PostCategory::PRODUCT_UPDATES->value)
+                    ->hidden(fn (Get $get) => $get('type') === PostType::INSIGHT->value)
                     ->columnSpanFull(),
                 self::getHeroEditor(),
                 self::getSocialEditor(),
