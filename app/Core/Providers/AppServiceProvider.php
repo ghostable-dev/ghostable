@@ -9,7 +9,10 @@ use App\Auth\Models\CliLoginSession;
 use App\Core\Events\InquiryCreated;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\ActivityCauserDisplay;
+use App\Core\View\Components\ArticleSchema;
+use App\Core\View\Components\BreadcrumbSchema;
 use App\Core\View\Components\SeoMeta;
+use App\Core\View\Components\SiteSchema;
 use Illuminate\Auth\Events\Login as UserLoggedIn;
 use Illuminate\Auth\Events\Verified as EmailVerified;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -45,6 +48,9 @@ class AppServiceProvider extends ServiceProvider
             $this->commands([]);
         }
 
+        Blade::component('site-schema', SiteSchema::class);
+        Blade::component('breadcrumb-schema', BreadcrumbSchema::class);
+        Blade::component('article-schema', ArticleSchema::class);
         Blade::component('seo-meta', SeoMeta::class);
         Blade::component('activity-causer-display', ActivityCauserDisplay::class);
 

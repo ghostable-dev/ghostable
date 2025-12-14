@@ -19,6 +19,8 @@
     @if($canonical)
     <link rel="canonical" href="{{ $canonical }}" />
     @endif
+
+    <x-site-schema />
     
     @stack('meta')
     

@@ -51,6 +51,19 @@
         :keywords="$guideKeywords"
         :image="$guideImage"
     />
+    <x-article-schema
+        title="{{ $guideTitle }}"
+        description="{{ $guideDescription }}"
+        :keywords="$guideKeywords"
+        :image="$guideImage"
+        :url="route('learn.env-naming-conventions')"
+        section="Guide"
+    />
+    <x-breadcrumb-schema :items="[
+        ['name' => 'Learn', 'item' => route('learn.index')],
+        ['name' => 'Guides', 'item' => route('learn.index')],
+        ['name' => $guideTitle, 'item' => route('learn.env-naming-conventions')],
+    ]" />
 @endpush
 
 <x-layouts.guest title="{{ $guideTitle }}" canonical="{{ route('learn.env-naming-conventions') }}">

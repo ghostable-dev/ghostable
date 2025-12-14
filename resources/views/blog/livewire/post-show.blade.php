@@ -1,3 +1,9 @@
+@php
+    use App\Blog\Enums\PostType;
+
+    $isInsight = $post->type?->is(PostType::INSIGHT);
+@endphp
+
 @push('meta')
 <x-seo-meta
     :image="!is_null($post->social) ? Storage::url($post->social) : null"
@@ -5,11 +11,14 @@
     :title="$post->meta_title ?? $post->title"
     :description="$post->meta_description ?? $post->description"
     :keywords="$post->meta_keywords"/>
+<x-blog-posting-schema :post="$post"/>
+<x-breadcrumb-schema :items="[
+    ['name' => 'Blog', 'item' => route('blog.index')],
+    ['name' => $isInsight ? 'Insights' : 'Articles', 'item' => $isInsight ? route('blog.insights') : route('blog.articles')],
+    ['name' => $isInsight ? 'Insights' : $post->category?->label(), 'item' => $isInsight ? route('blog.insights') : route('blog.category', $post->category)],
+    ['name' => $post->title, 'item' => route('blog.view', $post)],
+]" />
 @endpush
-
-{{-- @push('scripts')
-    <x-blog-posting-schema :post="$post"/>
-@endpush --}}
 
 @push('head')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
@@ -22,12 +31,6 @@
       hljs.highlightAll();
     </script>
 @endpush
-
-@php
-    use App\Blog\Enums\PostType;
-
-    $isInsight = $post->type?->is(PostType::INSIGHT);
-@endphp
 
 <div>
     <div class="px-6 lg:px-8 bg-white pt-10">

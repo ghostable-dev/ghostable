@@ -2,20 +2,32 @@
 
 namespace App\Core\View\Components;
 
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Component;
-use Spatie\SchemaOrg\BaseType;
 use Spatie\SchemaOrg\Organization;
 use Spatie\SchemaOrg\Schema;
+use Spatie\SchemaOrg\Type;
 
 abstract class SchemaGenerator extends Component
 {
-    protected BaseType $type;
+    protected ?Type $type = null;
+
+    protected function absoluteUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http://') || str_starts_with($path, 'https://')
+            ? $path
+            : url($path);
+    }
 
     protected function defaultOrganization(): Organization
     {
-        return Schema::organization()
-            ->name('Ghostable')
-            ->legalName('Ghostable, LLC')
+        $organization = Schema::organization()
+            ->name(config('app.name', 'Ghostable'))
+            ->legalName(config('contact.legalName', 'Ghostable, LLC'))
             ->telephone(config('contact.phone'))
             ->address(
                 Schema::postalAddress()
@@ -29,16 +41,25 @@ abstract class SchemaGenerator extends Component
                     ->name('Joe Rucci')
                     ->email('joe@ghostable.dev'),
             ])
-            ->sameAs([
+            ->sameAs(array_filter([
                 config('contact.social.github'),
                 config('contact.social.discord'),
-            ])
-            ->foundingDate(2025)
-            ->url(url('/'));
+                config('contact.social.linkedin'),
+                config('contact.social.x'),
+                config('contact.social.youtube'),
+            ]))
+            ->url(url('/'))
+            ->logo($this->absoluteUrl('/images/logo-dark.svg'));
+
+        if ($foundingYear = config('contact.founding_year')) {
+            $organization->foundingDate($foundingYear);
+        }
+
+        return $organization;
     }
 
-    public function render(): string
+    public function render(): HtmlString
     {
-        return $this->type->toScript();
+        return new HtmlString($this->type?->toScript() ?? '');
     }
 }

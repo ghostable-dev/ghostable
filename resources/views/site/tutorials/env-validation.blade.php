@@ -25,6 +25,19 @@
         :keywords="$tutorialKeywords"
         :image="$tutorialImage"
     />
+    <x-article-schema
+        title="{{ $tutorialTitle }}"
+        description="{{ $tutorialDescription }}"
+        :keywords="$tutorialKeywords"
+        :image="$tutorialImage"
+        :url="route('learn.env-validation-tutorial')"
+        section="Tutorial"
+    />
+    <x-breadcrumb-schema :items="[
+        ['name' => 'Learn', 'item' => route('learn.index')],
+        ['name' => 'Tutorials', 'item' => route('learn.index')],
+        ['name' => $tutorialTitle, 'item' => route('learn.env-validation-tutorial')],
+    ]" />
 @endpush
 
 <x-layouts.guest title="{{ $tutorialTitle }}" canonical="{{ route('learn.env-validation-tutorial') }}">

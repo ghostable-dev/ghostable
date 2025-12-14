@@ -11,6 +11,19 @@
             'devops security',
             'configuration management'
         ]"/>
+    <x-article-schema
+        title="Learn Ghostable"
+        description="Evergreen guides, playbooks, and examples for secure environment and secrets management with Ghostable."
+        :keywords="[
+            'ghostable learn',
+            'secrets management guides',
+            'environment variables best practices',
+            'devops security',
+            'configuration management'
+        ]"
+        :url="route('learn.index')"
+        section="Resource Library"
+    />
 @endpush
 
 <x-layouts.guest title="Learn" canonical="{{ route('learn.index') }}">

@@ -53,6 +53,19 @@
         :keywords="$guideKeywords"
         :image="$guideImage"
     />
+    <x-article-schema
+        title="{{ $guideTitle }}"
+        description="{{ $guideDescription }}"
+        :keywords="$guideKeywords"
+        :image="$guideImage"
+        :url="route('learn.laravel-multi-environment-secrets')"
+        section="Guide"
+    />
+    <x-breadcrumb-schema :items="[
+        ['name' => 'Learn', 'item' => route('learn.index')],
+        ['name' => 'Guides', 'item' => route('learn.index')],
+        ['name' => $guideTitle, 'item' => route('learn.laravel-multi-environment-secrets')],
+    ]" />
 @endpush
 
 <x-layouts.guest title="{{ $guideTitle }}" canonical="{{ route('learn.laravel-multi-environment-secrets') }}">

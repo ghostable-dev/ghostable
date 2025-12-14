@@ -51,6 +51,19 @@
         :keywords="$guideKeywords"
         :image="$guideImage"
     />
+    <x-article-schema
+        title="{{ $guideTitle }}"
+        description="{{ $guideDescription }}"
+        :keywords="$guideKeywords"
+        :image="$guideImage"
+        :url="route('learn.laravel-env-example')"
+        section="Guide"
+    />
+    <x-breadcrumb-schema :items="[
+        ['name' => 'Learn', 'item' => route('learn.index')],
+        ['name' => 'Guides', 'item' => route('learn.index')],
+        ['name' => $guideTitle, 'item' => route('learn.laravel-env-example')],
+    ]" />
 @endpush
 
 <x-layouts.guest title="Laravel .env.example — The Definitive Guide" canonical="{{ route('learn.laravel-env-example') }}">
