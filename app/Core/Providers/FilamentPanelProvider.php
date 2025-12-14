@@ -2,14 +2,15 @@
 
 namespace App\Core\Providers;
 
+use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Core\Activity\ActivityResource;
 use App\Filament\Widgets\ApiUsageStats;
+use App\Filament\Widgets\LoginStats;
 use App\Filament\Widgets\UserStats;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -47,6 +48,7 @@ class FilamentPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 UserStats::class,
+                LoginStats::class,
                 ApiUsageStats::class,
             ])
             ->middleware([

@@ -2,6 +2,7 @@
 
 namespace App\Core\Providers;
 
+use App\Account\Jobs\UpdateLastLogin;
 use App\Account\Models\User;
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
@@ -9,6 +10,7 @@ use App\Core\Events\InquiryCreated;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\ActivityCauserDisplay;
 use App\Core\View\Components\SeoMeta;
+use Illuminate\Auth\Events\Login as UserLoggedIn;
 use Illuminate\Auth\Events\Verified as EmailVerified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -92,6 +94,16 @@ class AppServiceProvider extends ServiceProvider
                 'status' => CliLoginSessionStatus::Approved,
                 'approved_at' => now(),
             ])->save();
+        }));
+
+        Event::listen(queueable(function (UserLoggedIn $event) {
+            $user = $event->user;
+
+            if (! $user) {
+                return;
+            }
+
+            UpdateLastLogin::dispatch($user->getKey());
         }));
 
         Activity::creating(function (Activity $activity) {

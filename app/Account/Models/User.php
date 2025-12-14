@@ -41,6 +41,7 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property string|null $remember_token
  * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property string $timezone
+ * @property \Illuminate\Support\Carbon|null $last_login
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -138,6 +139,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'last_login' => 'datetime',
             'notifications' => NotificationSettings::class.':default',
             // 'two_factor_secret' => 'encrypted',
             // 'two_factor_recovery_codes' => 'encrypted:array',
