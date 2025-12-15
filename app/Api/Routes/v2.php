@@ -10,6 +10,7 @@ use App\Api\V2\Http\Controllers\Device\RegisterDevice;
 use App\Api\V2\Http\Controllers\Device\RevokeDevice;
 use App\Api\V2\Http\Controllers\Device\ShowDevice;
 use App\Api\V2\Http\Controllers\Environment\CreateEnvironment;
+use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentBackup;
 use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKey;
 use App\Api\V2\Http\Controllers\Environment\CreateEnvironmentKeyEnvelope;
 use App\Api\V2\Http\Controllers\Environment\DeployEnvironment;
@@ -101,6 +102,7 @@ Route::middleware('api.version:v2')->group(function () {
                 Route::prefix('environments/{name}')->group(function () {
                     Route::post('push', PushEnvironment::class);
                     Route::get('pull', PullEnvironment::class);
+                    Route::post('backups', CreateEnvironmentBackup::class);
                     Route::get('history', GetEnvironmentHistory::class);
                     Route::get('variables/{variable}/history', GetEnvironmentVariableHistory::class);
                     Route::post('variables/{variable}/rollback', RollbackEnvironmentVariable::class);
