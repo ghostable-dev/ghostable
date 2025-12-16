@@ -11,19 +11,25 @@
         
         @php
             $resourceLinks = [
+                ['label' => 'Integrations', 'href' => route('integrations.index'), 'target' => '_self', 'current' => request()->route()->named('integrations.*')],
                 ['label' => 'Learning', 'href' => route('learn.index'), 'target' => '_self', 'current' => request()->route()->named('learn.*')],
                 ['label' => 'Blog', 'href' => route('blog.index'), 'target' => '_self', 'current' => request()->route()->named('blog.*')],
             ];
 
             $links = [
-                ['label' => 'Pricing', 'href' => route('pricing'), 'target' => '_self', 'current' => request()->route()->named('pricing')],
-                ['label' => 'Contact', 'href' => route('contact'), 'target' => '_self', 'current' => request()->route()->named('contact')],
                 ['label' => 'Docs', 'href' => 'https://docs.ghostable.dev', 'target' => '_blank', 'current' => false]
             ];
         @endphp
 
         <!-- Primary nav links -->
         <flux:navbar class="hidden md:flex items-center gap-x-6 dark">
+            <flux:navbar.item
+                :current="request()->route()->named('pricing')"
+                href="{{ route('pricing') }}"
+                target="_self">
+                Pricing
+            </flux:navbar.item>
+
             @foreach($links as $link)
                 <flux:navbar.item
                     :current="$link['current']"
@@ -31,24 +37,24 @@
                     target="{{ $link['target'] }}">
                     {{ $link['label'] }}
                 </flux:navbar.item>
-                @if($loop->first)
-                    <flux:dropdown>
-                        <flux:button variant="ghost" class="!text-white">
-                            Resources
-                        </flux:button>
-                        <flux:menu>
-                            @foreach($resourceLinks as $link)
-                                <flux:menu.item
-                                    :current="$link['current']"
-                                    href="{{ $link['href'] }}"
-                                    target="{{ $link['target'] }}">
-                                    {{ $link['label'] }}
-                                </flux:menu.item>
-                            @endforeach
-                        </flux:menu>
-                    </flux:dropdown>
-                @endif
             @endforeach
+
+            <flux:dropdown>
+                <flux:button variant="ghost" class="!text-white" icon:trailing="chevron-down">
+                    Resources
+                </flux:button>
+                <flux:menu>
+                    @foreach($resourceLinks as $link)
+                        <flux:menu.item
+                            :current="$link['current']"
+                            href="{{ $link['href'] }}"
+                            target="{{ $link['target'] }}">
+                            {{ $link['label'] }}
+                        </flux:menu.item>
+                    @endforeach
+                </flux:menu>
+            </flux:dropdown>
+
         </flux:navbar>
 
         <!-- Auth buttons & mobile navigation -->
@@ -62,6 +68,12 @@
                     class="!text-white"
                 />
                 <flux:menu>
+                    <flux:menu.item
+                        :current="request()->route()->named('pricing')"
+                        href="{{ route('pricing') }}"
+                        target="_self">
+                        Pricing
+                    </flux:menu.item>
                     @foreach($links as $link)
                         <flux:menu.item 
                             :current="$link['current']"
@@ -69,16 +81,14 @@
                             target="{{ $link['target'] }}">
                             {{ $link['label'] }}
                         </flux:menu.item>
-                        @if($loop->first)
-                            @foreach($resourceLinks as $link)
-                                <flux:menu.item
-                                    :current="$link['current']"
-                                    href="{{ $link['href'] }}"
-                                    target="{{ $link['target'] }}">
-                                    {{ $link['label'] }}
-                                </flux:menu.item>
-                            @endforeach
-                        @endif
+                    @endforeach
+                    @foreach($resourceLinks as $link)
+                        <flux:menu.item
+                            :current="$link['current']"
+                            href="{{ $link['href'] }}"
+                            target="{{ $link['target'] }}">
+                            {{ $link['label'] }}
+                        </flux:menu.item>
                     @endforeach
                 </flux:menu>
             </flux:dropdown>

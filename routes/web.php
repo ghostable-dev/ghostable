@@ -46,6 +46,16 @@ Route::post('contact', [ContactController::class, 'store'])->middleware('throttl
 Route::view('privacy', 'site.privacy')->name('privacy');
 Route::view('terms', 'site.terms')->name('terms');
 
+Route::prefix('integrations')
+    ->name('integrations.')
+    ->group(function () {
+        Route::view('/', 'site.integrations.index')->name('index');
+        Route::view('vanta', 'site.integrations.vanta')->name('vanta');
+        Route::view('forge', 'site.integrations.forge')->name('forge');
+        Route::view('cloud', 'site.integrations.cloud')->name('cloud');
+        Route::view('vapor', 'site.integrations.vapor')->name('vapor');
+    });
+
 // Blog
 Route::prefix('blog')
     ->name('blog.')

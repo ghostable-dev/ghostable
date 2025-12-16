@@ -16,6 +16,11 @@ class GeneratePagesSitemap extends Controller
             ->add($this->contact())
             ->add($this->terms())
             ->add($this->privacy())
+            ->add($this->integrationsIndex())
+            ->add($this->vantaIntegration())
+            ->add($this->forgeIntegration())
+            ->add($this->cloudIntegration())
+            ->add($this->vaporIntegration())
             ->toResponse(request());
     }
 
@@ -63,5 +68,45 @@ class GeneratePagesSitemap extends Controller
                 Carbon::create(year: 2025, month: 6, day: 23)
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.5);
+    }
+
+    private function vantaIntegration(): Url
+    {
+        return Url::create(route('integrations.vanta'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.7);
+    }
+
+    private function integrationsIndex(): Url
+    {
+        return Url::create(route('integrations.index'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.75);
+    }
+
+    private function forgeIntegration(): Url
+    {
+        return Url::create(route('integrations.forge'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.7);
+    }
+
+    private function cloudIntegration(): Url
+    {
+        return Url::create(route('integrations.cloud'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.7);
+    }
+
+    private function vaporIntegration(): Url
+    {
+        return Url::create(route('integrations.vapor'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.7);
     }
 }
