@@ -42,6 +42,14 @@ class SyncUsersAction
             return;
         }
 
+        if ($integration->status !== IntegrationStatus::Active) {
+            if ($strict) {
+                throw new RuntimeException('Vanta integration is not active.');
+            }
+
+            return;
+        }
+
         $integration->loadMissing([
             'organization.users',
             'organization.projects.permissionOverrides',

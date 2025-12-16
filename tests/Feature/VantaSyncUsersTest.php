@@ -2,6 +2,7 @@
 
 use App\Integration\Entities\VantaSettings;
 use App\Integration\Enums\IntegrationStatus;
+use App\Integration\Integrations\Vanta\Actions\SyncUsersAction;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers;
 use App\Integration\Models\Integration;
 use App\Organization\Enums\OrganizationRole;
@@ -131,6 +132,25 @@ test('sync users skips inactive vanta integrations', function () {
         ]);
 
     SyncUsers::dispatchSync();
+
+    Http::assertNothingSent();
+});
+
+test('sync users action skips inactive integration when invoked directly', function () {
+    Http::fake();
+
+    $owner = $this->createUser('Owner', 'direct@example.com');
+    $organization = $this->createOrganization('Direct Org', $owner);
+
+    $integration = Integration::factory()
+        ->for($organization)
+        ->vanta()
+        ->create([
+            'status' => IntegrationStatus::Failed,
+            'secure_settings' => ['access_token' => 'token-999'],
+        ]);
+
+    app(SyncUsersAction::class)->handleForIntegration($integration);
 
     Http::assertNothingSent();
 });
