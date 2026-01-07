@@ -24,7 +24,7 @@
                 <p class="mt-6 max-w-xl text-lg/7 font-medium text-gray-500 mx-auto">
                 Every team deserves safe, reliable environments. Ghostable gives you validation, 
                 versioning, and secret sharing out of the box — with fair pricing 
-                that scales as you do.</p>
+                that scales as you do. Vanta is included today, with Drata coming soon.</p>
             </div>
             <div class="mt-20 flow-root">
                     <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
@@ -43,6 +43,11 @@
                                 'Secrets Management',
                                 'Environment Validation',
                                 'Version Tracking'
+                            ]"
+                            :integrations="[
+                                ['label' => 'Forge', 'accent' => 'rgb(70, 197, 175)', 'fill' => '#111827', 'text' => '#F8F4F3'],
+                                ['label' => 'Cloud', 'accent' => '#005cec', 'fill' => '#111827', 'text' => '#F8F4F3'],
+                                ['label' => 'Vapor', 'accent' => 'rgb(48, 165, 230)', 'fill' => '#111827', 'text' => '#F8F4F3']
                             ]"/>
                         <x-billing.plan-card 
                             name="Standard" 
@@ -55,6 +60,9 @@
                                 'Everything from Free',
                                 'Advanced User Permissions',
                                 '30 Day Audit History'
+                            ]"
+                            :integrations="[
+                                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3']
                             ]"/>
                         <x-billing.plan-card 
                             name="Scale" 
@@ -67,6 +75,9 @@
                                 'Everything from Standard',
                                 '60 Day Audit History',
                                 //'SOC2 Integrations'
+                            ]"
+                            :integrations="[
+                                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3']
                             ]"/>
                     </div>
                 </div>  

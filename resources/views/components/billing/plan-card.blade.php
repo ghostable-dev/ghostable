@@ -5,6 +5,7 @@
   'featured' => false,
   'description' => '',
   'features' => [],
+  'integrations' => [],
   'pl' => 'xl:pl-14',
   'pr' => 'xl:pr-14'
 ])
@@ -46,4 +47,19 @@
             </li>
         @endforeach
     </ul>
+    @if(count($integrations))
+        <div class="mt-8 pt-2">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Integrations</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+                @foreach($integrations as $integration)
+                    <span
+                        class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+                        style="border-color: {{ $integration['accent'] ?? '#AC55FF' }}; background-color: {{ ($integration['fill'] ?? '#240642') }}; color: {{ $integration['text'] ?? '#F8F4F3' }};">
+                        <span class="h-1.5 w-1.5 rounded-full" style="background-color: {{ $integration['accent'] ?? '#AC55FF' }};"></span>
+                        {{ $integration['label'] ?? 'Vanta' }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>
