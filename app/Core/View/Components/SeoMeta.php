@@ -47,7 +47,7 @@ class SeoMeta extends Component
     public function sharingImage(): string
     {
         return empty($this->image)
-            ? asset('/og-default.png')
+            ? asset('/og-default_v2.png')
             : $this->image;
     }
 }
