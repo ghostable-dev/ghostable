@@ -31,6 +31,10 @@ class UsersTable
                 IconColumn::make('email_verified_at')
                     ->boolean()
                     ->label('Verified'),
+                DateColumn::make('last_login')
+                    ->label('Last login')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 DateColumn::make('created_at')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
