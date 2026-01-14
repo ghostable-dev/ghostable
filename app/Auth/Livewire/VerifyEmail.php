@@ -16,6 +16,22 @@ class VerifyEmail extends Component
      */
     public function sendVerification(): void
     {
+        if (Auth::user()->isSuspended() || Auth::user()->isLocked()) {
+            $message = Auth::user()->isSuspended()
+                ? 'Your account is suspended.'
+                : 'Your account is locked.';
+
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+
+            Session::flash('status', $message);
+
+            $this->redirectRoute('login', navigate: true);
+
+            return;
+        }
+
         if (Auth::user()->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
 

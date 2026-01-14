@@ -35,3 +35,19 @@ test('returns organizations the user belongs to', function (): void {
     expect($returnedNames)->toContain($second->name);
     expect($returnedNames)->not()->toContain($outsider->name);
 });
+
+test('suspended users cannot access organizations endpoint', function (): void {
+    $this->user->suspend();
+
+    Sanctum::actingAs($this->user);
+
+    $this->getJson($this->endpoint)->assertForbidden();
+});
+
+test('locked users cannot access organizations endpoint', function (): void {
+    $this->user->lock();
+
+    Sanctum::actingAs($this->user);
+
+    $this->getJson($this->endpoint)->assertForbidden();
+});

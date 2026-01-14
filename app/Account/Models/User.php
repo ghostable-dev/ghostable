@@ -2,8 +2,13 @@
 
 namespace App\Account\Models;
 
+use App\Account\Actions\UserStatus\LockUser;
+use App\Account\Actions\UserStatus\ReinstateUser;
+use App\Account\Actions\UserStatus\SuspendUser;
+use App\Account\Actions\UserStatus\UnlockUser;
 use App\Account\Builders\UserBuilder;
 use App\Account\Entities\NotificationSettings;
+use App\Account\Enums\UserStatus;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
 use App\Crypto\Models\Device;
@@ -35,6 +40,7 @@ use Spatie\Activitylog\ActivitylogServiceProvider;
  * @property string $email
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
+ * @property UserStatus $status
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
@@ -129,6 +135,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     ];
 
     /**
+     * The model's default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => UserStatus::ACTIVE->value,
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -141,6 +156,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'two_factor_confirmed_at' => 'datetime',
             'last_login' => 'datetime',
             'notifications' => NotificationSettings::class.':default',
+            'status' => UserStatus::class,
             // 'two_factor_secret' => 'encrypted',
             // 'two_factor_recovery_codes' => 'encrypted:array',
         ];
@@ -168,7 +184,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->morphMany(
             ActivitylogServiceProvider::determineActivityModel(), 'subject'
-        )->whereIn('event', ['created', 'updated', 'deleted']);
+        )->whereIn('event', [
+            'created',
+            'updated',
+            'deleted',
+            'suspended',
+            'reinstated',
+            'locked',
+            'unlocked',
+        ]);
     }
 
     public function devices(): HasMany
@@ -194,6 +218,41 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function isVerified(): bool
     {
         return ! is_null($this->email_verified_at);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status->is(UserStatus::ACTIVE);
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status->is(UserStatus::SUSPENDED);
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->status->is(UserStatus::LOCKED);
+    }
+
+    public function suspend(?self $actor = null, ?string $reason = null): void
+    {
+        app(SuspendUser::class)->handle($this, $actor, $reason);
+    }
+
+    public function reinstate(?self $actor = null, ?string $reason = null): void
+    {
+        app(ReinstateUser::class)->handle($this, $actor, $reason);
+    }
+
+    public function lock(?self $actor = null, ?string $reason = null): void
+    {
+        app(LockUser::class)->handle($this, $actor, $reason);
+    }
+
+    public function unlock(?self $actor = null, ?string $reason = null): void
+    {
+        app(UnlockUser::class)->handle($this, $actor, $reason);
     }
 
     public function sendPasswordResetNotification($token): void

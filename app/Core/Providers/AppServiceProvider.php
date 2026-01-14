@@ -6,7 +6,9 @@ use App\Account\Jobs\UpdateLastLogin;
 use App\Account\Models\User;
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
+use App\Core\Enums\InquiryType;
 use App\Core\Events\InquiryCreated;
+use App\Core\Notifications\InquiryAutoReplyNotification;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\ActivityCauserDisplay;
 use App\Core\View\Components\ArticleSchema;
@@ -57,12 +59,24 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('contact', function (Request $request) {
             return [Limit::perMinute(5)->by($request->ip())];
         });
+        RateLimiter::for('security-report', function (Request $request) {
+            return [Limit::perMinute(5)->by($request->ip())];
+        });
 
         Event::listen(queueable(function (InquiryCreated $event) {
             $joe = User::where('email', 'rucci.joe@gmail.com')->first();
             if ($joe) {
                 Notification::send($joe, new NewInquiryNotification($event->inquiry));
             }
+        }));
+
+        Event::listen(queueable(function (InquiryCreated $event) {
+            if (! in_array($event->inquiry->inquiry, [InquiryType::SECURITY, InquiryType::SUPPORT], true)) {
+                return;
+            }
+
+            Notification::route('mail', $event->inquiry->email)
+                ->notify(new InquiryAutoReplyNotification($event->inquiry));
         }));
 
         Event::listen(queueable(function (EmailVerified $event) {

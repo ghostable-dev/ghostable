@@ -32,6 +32,22 @@ it('sends verification email to unverified users', function () {
     Notification::assertSentTo($user, VerifyEmailNotification::class);
 });
 
+it('does not send verification email for suspended users', function () {
+    $user = $this->createUser('Deb', 'deb@example.com');
+    $user->email_verified_at = null;
+    $user->save();
+    $user->suspend();
+
+    Notification::fake();
+    $this->actingAs($user);
+
+    Livewire::test(VerifyEmail::class)
+        ->call('sendVerification')
+        ->assertRedirect(route('login'));
+
+    Notification::assertNothingSent();
+});
+
 it('logs users out', function () {
     $user = $this->createUser('Carl', 'carl@example.com');
     $this->actingAs($user);

@@ -13,6 +13,7 @@ use App\Core\Http\Controllers\ContactController;
 use App\Core\Http\Controllers\GenerateLearnSitemap;
 use App\Core\Http\Controllers\GeneratePagesSitemap;
 use App\Core\Http\Controllers\GenerateSitemap;
+use App\Core\Http\Controllers\SecurityIssueController;
 use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
 use App\Integration\IntegrationRoutes;
@@ -43,6 +44,8 @@ Route::get('/', fn () => view('site.home'))->name('home');
 Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
 Route::get('contact', [ContactController::class, 'create'])->name('contact');
 Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:contact');
+Route::get('security', [SecurityIssueController::class, 'create'])->name('security.report');
+Route::post('security', [SecurityIssueController::class, 'store'])->middleware('throttle:security-report');
 Route::view('privacy', 'site.privacy')->name('privacy');
 Route::view('terms', 'site.terms')->name('terms');
 

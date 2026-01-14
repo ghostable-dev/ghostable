@@ -5,9 +5,11 @@ namespace App\Core\Models;
 use App\Core\Enums\InquiryType;
 use App\Core\Events\InquiryCreated;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property string|null $case_id
  * @property string $name
  * @property string $email
  * @property InquiryType $inquiry
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
 class Inquiry extends Model
 {
     protected $fillable = [
+        'case_id',
         'name',
         'email',
         'inquiry',
@@ -47,4 +50,13 @@ class Inquiry extends Model
     protected $dispatchesEvents = [
         'created' => InquiryCreated::class,
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Inquiry $inquiry) {
+            if (! $inquiry->case_id) {
+                $inquiry->case_id = (string) Str::uuid();
+            }
+        });
+    }
 }

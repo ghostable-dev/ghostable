@@ -88,12 +88,15 @@ class ActivityResource extends Resource
                             'disconnected',
                             'disabled',
                             'job-reported',
+                            'revoked',
+                            'suspended',
                         ]),
                         'warning' => static fn ($state): bool => in_array($state, [
                             'updated',
                             'logout',
                             'job-report-ignored',
                             'configuration-updated',
+                            'locked',
                         ]),
                         'success' => static fn ($state): bool => in_array($state, [
                             'registered',
@@ -103,6 +106,8 @@ class ActivityResource extends Resource
                             'enabled',
                             'connected',
                             'applied-to-job',
+                            'reinstated',
+                            'unlocked',
                         ]),
                     ])
                     ->badge()

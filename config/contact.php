@@ -5,6 +5,9 @@ return [
         'url' => 'https://support.ghostable.dev',
         'email' => 'support@ghostable.dev',
     ],
+    'security' => [
+        'email' => 'security@ghostable.dev',
+    ],
 
     'legalName' => 'GHOSTABLE LLC',
     'phone' => '(551) 278-5869',

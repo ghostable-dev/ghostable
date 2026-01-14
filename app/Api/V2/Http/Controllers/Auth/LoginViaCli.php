@@ -26,6 +26,14 @@ final class LoginViaCli extends Controller
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
 
+        if ($user->isSuspended()) {
+            return response()->json(['message' => 'Account suspended.'], 403);
+        }
+
+        if ($user->isLocked()) {
+            return response()->json(['message' => 'Account locked.'], 403);
+        }
+
         if (! $user->hasVerifiedEmail()) {
             return response()->json([
                 'message' => 'Email address not verified.',

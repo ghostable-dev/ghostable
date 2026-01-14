@@ -39,6 +39,7 @@
                 <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-sm">
                     <flux:link href="{{ route('terms')}}" variant="subtle">Terms</flux:link>
                     <flux:link href="{{ route('privacy')}}" variant="subtle">Privacy</flux:link>
+                    <flux:link href="{{ route('security.report') }}" variant="subtle">Security</flux:link>
                     <flux:link href="{{ route('contact')}}" variant="subtle">Contact</flux:link>
                 </div>
             </div>

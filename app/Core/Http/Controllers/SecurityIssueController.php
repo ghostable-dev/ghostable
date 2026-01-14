@@ -6,17 +6,17 @@ use App\Core\Enums\InquiryType;
 use App\Core\Http\Controllers\Concerns\HandlesRecaptcha;
 use App\Core\Models\Inquiry;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Enum;
 
-class ContactController extends Controller
+class SecurityIssueController extends Controller
 {
     use HandlesRecaptcha;
 
     public function create()
     {
-        return view(view: 'site.contact', data: [
+        return view(view: 'site.security-report', data: [
             'recaptchaEnabled' => $this->recaptchaEnabled(),
             'recaptchaKey' => $this->recaptchaKey(),
+            'securityEmail' => (string) config('contact.security.email'),
         ]);
     }
 
@@ -33,11 +33,11 @@ class ContactController extends Controller
         Inquiry::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'inquiry' => $validated['inquiry'],
+            'inquiry' => InquiryType::SECURITY,
             'message' => $validated['message'],
         ]);
 
-        return back()->with('status', 'Thanks for reaching out! We\'ll be in touch.');
+        return back()->with('status', 'Thanks for the report. Our team will review it soon.');
     }
 
     protected function getRules(): array
@@ -45,7 +45,6 @@ class ContactController extends Controller
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'inquiry' => ['required', new Enum(InquiryType::class)],
             'message' => ['required', 'string'],
         ];
 

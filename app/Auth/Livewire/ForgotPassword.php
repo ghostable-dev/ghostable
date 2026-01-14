@@ -2,6 +2,7 @@
 
 namespace App\Auth\Livewire;
 
+use App\Account\Models\User;
 use Illuminate\Support\Facades\Password;
 use Livewire\Component;
 
@@ -17,6 +18,14 @@ class ForgotPassword extends Component
         $this->validate([
             'email' => ['required', 'string', 'email'],
         ]);
+
+        $user = User::where('email', $this->email)->first();
+
+        if ($user?->isSuspended()) {
+            session()->flash('status', __('A reset link will be sent if the account exists.'));
+
+            return;
+        }
 
         Password::sendResetLink($this->only('email'));
 

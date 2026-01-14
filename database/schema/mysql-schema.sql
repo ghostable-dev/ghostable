@@ -116,13 +116,15 @@ DROP TABLE IF EXISTS `inquiries`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inquiries` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `case_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `inquiry` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inquiries_case_id_unique` (`case_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `migrations`;
@@ -132,7 +134,7 @@ CREATE TABLE `migrations` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `organization_invites`;
@@ -394,3 +396,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (37,'2025_08_27_180
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (38,'2025_09_01_000000_add_billing_policy_and_plan_override_to_organizations_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (40,'2025_09_16_000000_add_soft_deletes_and_indexes_to_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (41,'2025_09_17_193919_remove_unused_permissions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (42,'2025_12_21_000000_add_case_id_to_inquiries_table',1);

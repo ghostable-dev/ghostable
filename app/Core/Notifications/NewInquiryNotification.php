@@ -38,6 +38,7 @@ class NewInquiryNotification extends Notification implements ShouldQueue
             ->subject("[Ghostable] New Inquiry from {$this->inquiry->name}")
             ->greeting('New Inquiry Received')
             ->line("Inquiry: {$this->inquiry->inquiry->value}")
+            ->line('Case: '.($this->inquiry->case_id ?? $this->inquiry->id))
             ->line("Name: {$this->inquiry->name}")
             ->line("Email: {$this->inquiry->email}")
             ->line('Message:')

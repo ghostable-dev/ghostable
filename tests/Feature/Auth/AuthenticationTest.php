@@ -33,6 +33,34 @@ test('users can authenticate using the login screen', function () {
     $this->assertAuthenticated();
 });
 
+test('suspended users cannot authenticate using the login screen', function () {
+    $user = User::factory()->create();
+    $user->suspend();
+
+    $response = Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    $response->assertHasErrors('email');
+
+    $this->assertGuest();
+});
+
+test('locked users cannot authenticate using the login screen', function () {
+    $user = User::factory()->create();
+    $user->lock();
+
+    $response = Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    $response->assertHasErrors('email');
+
+    $this->assertGuest();
+});
+
 test('single-organization users are not prompted to select a organization after login', function () {
     Livewire::test(Login::class)
         ->set('email', $this->ray->email)

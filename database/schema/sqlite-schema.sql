@@ -77,12 +77,14 @@ CREATE INDEX environments_base_id_foreign ON environments(base_id);
 DROP TABLE IF EXISTS inquiries;
 CREATE TABLE inquiries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  case_id TEXT,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   inquiry TEXT NOT NULL,
   message TEXT NOT NULL,
   created_at DATETIME,
-  updated_at DATETIME
+  updated_at DATETIME,
+  UNIQUE (case_id)
 );
 
 /* migrations (Laravel default) */
@@ -329,6 +331,7 @@ INSERT INTO migrations (id, migration, batch) VALUES
   (37,'2025_08_27_180000_create_inquiries_table',1),
   (38,'2025_09_01_000000_add_billing_policy_and_plan_override_to_organizations_table',1),
   (40,'2025_09_16_000000_add_soft_deletes_and_indexes_to_tables',1),
-  (41,'2025_09_17_193919_remove_unused_permissions_table',1);
+  (41,'2025_09_17_193919_remove_unused_permissions_table',1),
+  (42,'2025_12_21_000000_add_case_id_to_inquiries_table',1);
 
 COMMIT;

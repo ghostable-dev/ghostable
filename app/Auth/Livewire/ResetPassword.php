@@ -2,6 +2,7 @@
 
 namespace App\Auth\Livewire;
 
+use App\Account\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -44,6 +45,14 @@ class ResetPassword extends Component
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $user = User::where('email', $this->email)->first();
+
+        if ($user?->isSuspended()) {
+            $this->addError('email', 'Your account is suspended.');
+
+            return;
+        }
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the

@@ -7,6 +7,7 @@ namespace App\Api;
 use App\Api\Core\Http\Exceptions\ApiExceptionMap;
 use App\Api\Core\Http\Middleware\AddApiControlHeaders;
 use App\Api\Core\Http\Middleware\ApplyApiVersion;
+use App\Auth\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,6 +23,7 @@ final class ApiServiceProvider extends ServiceProvider
 
         $router->aliasMiddleware('api.version', ApplyApiVersion::class);
         $router->pushMiddlewareToGroup('api', AddApiControlHeaders::class);
+        $router->pushMiddlewareToGroup('api', EnsureUserIsActive::class);
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(

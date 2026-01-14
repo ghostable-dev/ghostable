@@ -40,6 +40,20 @@ class Login extends Component
 
         $user = Auth::user();
 
+        if ($user->isSuspended() || $user->isLocked()) {
+            $message = $user->isSuspended()
+                ? 'Your account is suspended.'
+                : 'Your account is locked.';
+
+            Auth::logout();
+            Session::invalidate();
+            Session::regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => $message,
+            ]);
+        }
+
         if (! empty($user->two_factor_secret) && $user->two_factor_confirmed_at) {
 
             Auth::logout();

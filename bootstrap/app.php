@@ -2,6 +2,7 @@
 
 use App\Api\Usage\Jobs\FoldUsageCounters;
 use App\Auth\Console\Commands\PruneCliLoginSessionsCommand;
+use App\Auth\Http\Middleware\EnsureUserIsActive;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers as SyncVantaUsers;
 use App\Messaging\Commands\RunSeriesCampaignCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
         ]);
+        $middleware->appendToGroup('web', EnsureUserIsActive::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

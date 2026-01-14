@@ -19,6 +19,20 @@ class OrganizationAwareTwoFactorLoginResponse implements TwoFactorLoginResponseC
     {
         $user = Auth::user();
 
+        if ($user?->isSuspended() || $user?->isLocked()) {
+            $message = $user?->isSuspended()
+                ? 'Your account is suspended.'
+                : 'Your account is locked.';
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return $request->wantsJson()
+                ? new JsonResponse(['message' => $message], 403)
+                : redirect()->route('login')->withErrors(['email' => $message]);
+        }
+
         if ($user && $user->organizations()->count() > 1) {
             $request->session()->put('show-organization-switcher', true);
         }

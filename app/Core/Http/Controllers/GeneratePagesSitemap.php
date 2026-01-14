@@ -14,6 +14,7 @@ class GeneratePagesSitemap extends Controller
             ->add($this->home())
             ->add($this->pricing())
             ->add($this->contact())
+            ->add($this->securityReport())
             ->add($this->terms())
             ->add($this->privacy())
             ->add($this->integrationsIndex())
@@ -45,6 +46,17 @@ class GeneratePagesSitemap extends Controller
     private function contact(): Url
     {
         return Url::create(route('contact'))
+            ->setLastModificationDate(
+                Carbon::create(year: 2025, month: 9, day: 1)
+            )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
+            ->setPriority(0.9);
+    }
+    // @codeCoverageIgnoreEnd
+
+    // @codeCoverageIgnoreStart
+    private function securityReport(): Url
+    {
+        return Url::create(route('security.report'))
             ->setLastModificationDate(
                 Carbon::create(year: 2025, month: 9, day: 1)
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)

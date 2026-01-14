@@ -28,3 +28,43 @@ test('user can accept an invite', function () {
 
     Event::assertDispatched(InviteAccepted::class);
 });
+
+test('suspended users cannot accept an invite', function () {
+    Event::fake();
+
+    $owner = $this->createUser('Owner', 'owner@example.com');
+    $invitee = $this->createUser('Invitee', 'invitee@example.com');
+    $invitee->suspend();
+
+    $organization = $this->createOrganization('Acme', $owner);
+    $invite = CreateInvite::handle($organization, $owner, $invitee->email, OrganizationRole::DEVELOPER);
+
+    app(AcceptInvite::class)->handle($invitee, $invite);
+
+    $invitee = $invitee->fresh();
+
+    expect($invitee->organizations)->toHaveCount(0)
+        ->and($invite->fresh()->status)->toBe(InviteStatus::PENDING);
+
+    Event::assertNotDispatched(InviteAccepted::class);
+});
+
+test('locked users cannot accept an invite', function () {
+    Event::fake();
+
+    $owner = $this->createUser('Owner', 'owner@example.com');
+    $invitee = $this->createUser('Invitee', 'invitee@example.com');
+    $invitee->lock();
+
+    $organization = $this->createOrganization('Acme', $owner);
+    $invite = CreateInvite::handle($organization, $owner, $invitee->email, OrganizationRole::DEVELOPER);
+
+    app(AcceptInvite::class)->handle($invitee, $invite);
+
+    $invitee = $invitee->fresh();
+
+    expect($invitee->organizations)->toHaveCount(0)
+        ->and($invite->fresh()->status)->toBe(InviteStatus::PENDING);
+
+    Event::assertNotDispatched(InviteAccepted::class);
+});

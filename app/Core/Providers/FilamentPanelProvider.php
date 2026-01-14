@@ -2,6 +2,7 @@
 
 namespace App\Core\Providers;
 
+use App\Auth\Http\Middleware\EnsureUserIsActive;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Core\Activity\ActivityResource;
 use App\Filament\Widgets\ApiUsageStats;
@@ -64,6 +65,7 @@ class FilamentPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureUserIsActive::class,
             ]);
     }
 }

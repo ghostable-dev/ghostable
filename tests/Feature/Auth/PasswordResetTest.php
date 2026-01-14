@@ -5,6 +5,7 @@ use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\ResetPassword;
 use App\Auth\Notifications\ResetPasswordNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -25,6 +26,19 @@ test('reset password link can be requested', function () {
         ->call('sendPasswordResetLink');
 
     Notification::assertSentTo($user, ResetPasswordNotification::class);
+});
+
+test('reset password link is not sent for suspended users', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $user->suspend();
+
+    Livewire::test(ForgotPassword::class)
+        ->set('email', $user->email)
+        ->call('sendPasswordResetLink');
+
+    Notification::assertNothingSent();
 });
 
 test('reset password screen can be rendered', function () {
@@ -67,4 +81,19 @@ test('password can be reset with valid token', function () {
 
         return true;
     });
+});
+
+test('suspended users cannot reset their password', function () {
+    $user = User::factory()->create();
+    $user->suspend();
+
+    $token = Password::broker()->createToken($user);
+
+    $response = Livewire::test(ResetPassword::class, ['token' => $token])
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->set('password_confirmation', 'password')
+        ->call('resetPassword');
+
+    $response->assertHasErrors('email');
 });

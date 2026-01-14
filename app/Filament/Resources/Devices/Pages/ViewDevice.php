@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Devices\Pages;
 
+use App\Crypto\Actions\LogDeviceActivity;
+use App\Crypto\Actions\RevokeDevice as RevokeDeviceAction;
 use App\Filament\Components\DateEntry;
 use App\Filament\Resources\Devices\DeviceResource;
+use Filament\Actions\Action;
+use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
@@ -16,7 +20,29 @@ class ViewDevice extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            //
+            Action::make('revoke')
+                ->label('Revoke Device')
+                ->color('danger')
+                ->icon('heroicon-m-no-symbol')
+                ->visible(fn () => ! $this->record->isRevoked())
+                ->requiresConfirmation()
+                ->modalHeading('Revoke this device?')
+                ->modalDescription('This device will be blocked from future crypto operations.')
+                ->action(function (): void {
+                    $user = auth()->user();
+                    $revokedDevice = app(RevokeDeviceAction::class)->handle($this->record);
+
+                    app(LogDeviceActivity::class)->handle(
+                        device: $revokedDevice,
+                        event: 'revoked',
+                        user: $user,
+                        context: [
+                            'source' => 'filament',
+                            'ip_address' => request()?->ip(),
+                        ],
+                    );
+                })
+                ->successNotificationTitle('Device revoked'),
         ];
     }
 
@@ -28,7 +54,9 @@ class ViewDevice extends ViewRecord
                     TextEntry::make('name'),
                     TextEntry::make('platform'),
                     TextEntry::make('app_version')->label('App Version'),
-                    TextEntry::make('active')->boolean(),
+                    IconEntry::make('active')
+                        ->boolean()
+                        ->label('Active'),
                     DateEntry::make('last_seen_at')->label('Last Seen'),
                     DateEntry::make('revoked_at')->label('Revoked At'),
                 ])->columnSpanFull(),

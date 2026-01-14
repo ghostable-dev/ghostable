@@ -7,6 +7,7 @@ enum InquiryType: string
     case SALES = 'sales';
     case SUPPORT = 'support';
     case PARTNERSHIP = 'partnership';
+    case SECURITY = 'security';
     case OTHER = 'other';
 
     public static function options(): array
@@ -22,6 +23,7 @@ enum InquiryType: string
             self::SALES => 'Sales',
             self::SUPPORT => 'Support',
             self::PARTNERSHIP => 'Partnership',
+            self::SECURITY => 'Security',
             self::OTHER => 'Other',
         };
     }

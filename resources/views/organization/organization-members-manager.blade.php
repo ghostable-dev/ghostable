@@ -16,6 +16,15 @@
                 @foreach($this->members as $member)
                     <flux:table.row wire:key="member-{{ $member->id }}">
                         <flux:table.cell class="flex items-center gap-3">
+                            @if($member->isSuspended())
+                                <flux:tooltip content="Suspended">
+                                    <flux:icon name="no-symbol" class="text-red-500"/>
+                                </flux:tooltip>
+                            @elseif($member->isLocked())
+                                <flux:tooltip content="Locked">
+                                    <flux:icon name="lock-closed" class="text-yellow-500"/>
+                                </flux:tooltip>
+                            @endif
                             <flux:profile
                                 :initials="$member->initials()"
                                 :chevron="false"

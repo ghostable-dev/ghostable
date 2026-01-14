@@ -29,3 +29,15 @@ it('returns pending invites for the user', function () {
 
     expect($user->pendingInvites())->toHaveCount(1);
 });
+
+it('revokes personal access tokens when a user is suspended or locked', function () {
+    $user = User::factory()->create();
+
+    $user->createToken('cli-token');
+
+    expect($user->tokens()->count())->toBe(1);
+
+    $user->lock();
+
+    expect($user->tokens()->count())->toBe(0);
+});
