@@ -21,6 +21,8 @@ class OrganizationResource extends Resource
 {
     protected static ?string $model = Organization::class;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Accounts';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';

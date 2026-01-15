@@ -3,6 +3,7 @@
 namespace App\Auth\Livewire;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Auth\Concerns\ConfirmsPasswords;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
@@ -61,6 +62,8 @@ class TwoFactorAuthentication extends Component
 
         Auth::user()->refresh();
 
+        app(LogAccountSecurityActivity::class)->twoFactorEnabled(Auth::user());
+
         $this->showingQrCode = false;
         $this->showingRecoveryCodes = true;
         $this->showingConfirmation = false;
@@ -82,6 +85,8 @@ class TwoFactorAuthentication extends Component
     public function disableTwoFactorAuthentication(DisableTwoFactorAuthentication $disable): void
     {
         $disable(Auth::user());
+
+        app(LogAccountSecurityActivity::class)->twoFactorDisabled(Auth::user());
 
         $this->showingQrCode = false;
         $this->showingRecoveryCodes = false;

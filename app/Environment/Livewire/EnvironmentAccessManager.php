@@ -3,6 +3,7 @@
 namespace App\Environment\Livewire;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Environment\Models\Environment;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Organization\Actions\CreatePermissionOverride;
@@ -12,6 +13,7 @@ use App\Organization\Models\OrganizationPermissionOverride;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -187,7 +189,8 @@ class EnvironmentAccessManager extends Component
         app(CreatePermissionOverride::class)->handle(
             user: $this->overridingMember,
             target: $this->environment,
-            permission: $this->permission
+            permission: $this->permission,
+            actor: Auth::user()
         );
 
         $this->reset(['userId', 'permission']);
@@ -232,6 +235,19 @@ class EnvironmentAccessManager extends Component
         $organization = $this->overrideToRemove->target->project->organization;
 
         $this->authorize('manageAccessControls', $organization);
+
+        app(LogAccountSecurityActivity::class)->permissionOverrideRevoked(
+            member: $this->overrideToRemove->user,
+            permission: $this->overrideToRemove->permission->value,
+            context: [
+                'target' => [
+                    'type' => class_basename($this->overrideToRemove->target),
+                    'id' => (string) $this->overrideToRemove->target->id,
+                    'name' => data_get($this->overrideToRemove->target, 'name'),
+                ],
+            ],
+            actor: Auth::user()
+        );
 
         $this->overrideToRemove->delete();
 

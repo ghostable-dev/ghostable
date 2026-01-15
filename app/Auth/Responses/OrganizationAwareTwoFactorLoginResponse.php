@@ -2,6 +2,7 @@
 
 namespace App\Auth\Responses;
 
+use App\Auth\Actions\LogLoginActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
@@ -24,6 +25,14 @@ class OrganizationAwareTwoFactorLoginResponse implements TwoFactorLoginResponseC
                 ? 'Your account is suspended.'
                 : 'Your account is locked.';
 
+            if ($user) {
+                app(LogLoginActivity::class)->failed(
+                    user: $user,
+                    email: $user->email,
+                    reason: $user->isSuspended() ? 'suspended' : 'locked'
+                );
+            }
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -35,6 +44,10 @@ class OrganizationAwareTwoFactorLoginResponse implements TwoFactorLoginResponseC
 
         if ($user && $user->organizations()->count() > 1) {
             $request->session()->put('show-organization-switcher', true);
+        }
+
+        if ($user) {
+            app(LogLoginActivity::class)->successful($user);
         }
 
         return $request->wantsJson()

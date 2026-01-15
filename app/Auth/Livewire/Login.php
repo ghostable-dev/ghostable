@@ -2,6 +2,9 @@
 
 namespace App\Auth\Livewire;
 
+use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
+use App\Auth\Actions\LogLoginActivity;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,6 +34,14 @@ class Login extends Component
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            $user = User::where('email', $this->email)->first();
+
+            app(LogLoginActivity::class)->failed(
+                user: $user,
+                email: $this->email,
+                reason: 'invalid_credentials'
+            );
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -49,6 +60,12 @@ class Login extends Component
             Session::invalidate();
             Session::regenerateToken();
 
+            app(LogLoginActivity::class)->failed(
+                user: $user,
+                email: $user->email,
+                reason: $user->isSuspended() ? 'suspended' : 'locked'
+            );
+
             throw ValidationException::withMessages([
                 'email' => $message,
             ]);
@@ -63,6 +80,10 @@ class Login extends Component
                 'login.remember' => $this->remember,
             ]);
 
+            app(LogAccountSecurityActivity::class)->mfaChallenge($user, [
+                'source' => 'web',
+            ]);
+
             $this->redirect(route('two-factor.login', absolute: false));
 
             return;
@@ -70,6 +91,8 @@ class Login extends Component
 
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
+
+        app(LogLoginActivity::class)->successful($user);
 
         if ($user->organizations()->count() > 1) {
             session(['show-organization-switcher' => true]);

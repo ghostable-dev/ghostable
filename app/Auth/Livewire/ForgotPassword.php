@@ -3,6 +3,7 @@
 namespace App\Auth\Livewire;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use Illuminate\Support\Facades\Password;
 use Livewire\Component;
 
@@ -26,6 +27,11 @@ class ForgotPassword extends Component
 
             return;
         }
+
+        app(LogAccountSecurityActivity::class)->passwordResetRequested(
+            email: $this->email,
+            user: $user
+        );
 
         Password::sendResetLink($this->only('email'));
 

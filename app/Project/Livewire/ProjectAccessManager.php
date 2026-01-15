@@ -3,6 +3,7 @@
 namespace App\Project\Livewire;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Organization\Actions\CreatePermissionOverride;
 use App\Organization\Enums\OrganizationPermission;
 use App\Organization\Enums\OrganizationRole;
@@ -12,6 +13,7 @@ use App\Project\Resolvers\ResolveProject;
 use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -183,7 +185,8 @@ class ProjectAccessManager extends Component
         app(CreatePermissionOverride::class)->handle(
             user: $this->overridingMember,
             target: $this->project,
-            permission: $this->permission
+            permission: $this->permission,
+            actor: Auth::user()
         );
 
         $this->reset(['userId', 'permission']);
@@ -228,6 +231,19 @@ class ProjectAccessManager extends Component
     public function removeOverride(): void
     {
         $this->authorize('manageAccessControls', $this->overrideToRemove->target->organization);
+
+        app(LogAccountSecurityActivity::class)->permissionOverrideRevoked(
+            member: $this->overrideToRemove->user,
+            permission: $this->overrideToRemove->permission->value,
+            context: [
+                'target' => [
+                    'type' => class_basename($this->overrideToRemove->target),
+                    'id' => (string) $this->overrideToRemove->target->id,
+                    'name' => data_get($this->overrideToRemove->target, 'name'),
+                ],
+            ],
+            actor: Auth::user()
+        );
 
         $this->overrideToRemove->delete();
 

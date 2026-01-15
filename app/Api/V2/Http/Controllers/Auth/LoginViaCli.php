@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Auth;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Core\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -42,6 +43,10 @@ final class LoginViaCli extends Controller
 
         if (! empty($user->two_factor_secret) && $user->two_factor_confirmed_at) {
             if (! $request->code) {
+                app(LogAccountSecurityActivity::class)->mfaChallenge($user, [
+                    'source' => 'cli',
+                ]);
+
                 return response()->json([
                     'two_factor' => true,
                     'message' => 'Two-factor authentication code required.',
@@ -49,10 +54,18 @@ final class LoginViaCli extends Controller
             }
 
             if (! $twoFactor->verify(decrypt($user->two_factor_secret), $request->code)) {
+                app(LogAccountSecurityActivity::class)->failedMfa($user, [
+                    'source' => 'cli',
+                ]);
+
                 return response()->json([
                     'message' => 'Invalid two-factor authentication code.',
                 ], 422);
             }
+
+            app(LogAccountSecurityActivity::class)->successfulMfa($user, [
+                'source' => 'cli',
+            ]);
         }
 
         return response()->json([

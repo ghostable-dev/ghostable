@@ -70,7 +70,8 @@ class OrganizationMembersManager extends Component
         UpdateOrganizationMemberRole::handle(
             member: $this->managingRoleUser,
             organization: $this->organization,
-            role: $this->managingRole
+            role: $this->managingRole,
+            actor: Auth::user()
         );
 
         $this->reset(['managingRoleForUserId', 'managingRole']);

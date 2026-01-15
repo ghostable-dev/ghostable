@@ -4,6 +4,7 @@ namespace App\Core\Providers;
 
 use App\Account\Jobs\UpdateLastLogin;
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
 use App\Core\Enums\InquiryType;
@@ -27,6 +28,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
+use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
+use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
 use Spatie\Activitylog\Models\Activity;
 
 use function Illuminate\Events\queueable;
@@ -124,6 +128,42 @@ class AppServiceProvider extends ServiceProvider
             }
 
             UpdateLastLogin::dispatch($user->getKey());
+        }));
+
+        Event::listen(queueable(function (TwoFactorAuthenticationChallenged $event) {
+            $user = $event->user;
+
+            if (! $user) {
+                return;
+            }
+
+            app(LogAccountSecurityActivity::class)->mfaChallenge($user, [
+                'source' => 'web',
+            ]);
+        }));
+
+        Event::listen(queueable(function (TwoFactorAuthenticationFailed $event) {
+            $user = $event->user;
+
+            if (! $user) {
+                return;
+            }
+
+            app(LogAccountSecurityActivity::class)->failedMfa($user, [
+                'source' => 'web',
+            ]);
+        }));
+
+        Event::listen(queueable(function (ValidTwoFactorAuthenticationCodeProvided $event) {
+            $user = $event->user;
+
+            if (! $user) {
+                return;
+            }
+
+            app(LogAccountSecurityActivity::class)->successfulMfa($user, [
+                'source' => 'web',
+            ]);
         }));
 
         Activity::creating(function (Activity $activity) {

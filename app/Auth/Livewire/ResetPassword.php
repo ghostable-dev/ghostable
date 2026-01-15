@@ -3,6 +3,7 @@
 namespace App\Auth\Livewire;
 
 use App\Account\Models\User;
+use App\Auth\Actions\LogAccountSecurityActivity;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -66,6 +67,8 @@ class ResetPassword extends Component
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                app(LogAccountSecurityActivity::class)->passwordResetCompleted($user);
             }
         );
 

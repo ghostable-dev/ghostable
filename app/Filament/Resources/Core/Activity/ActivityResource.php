@@ -6,7 +6,9 @@ use App\Account\Models\User;
 use App\Filament\Columns\DateColumn;
 use App\Filament\Resources\Core\Activity\Pages\ListActivities;
 use App\Filament\Resources\Users\UserResource;
+use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -17,11 +19,13 @@ class ActivityResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    // protected static ?string $navigationGroup = 'Activity';
-    // protected static ?string $navigationIcon = 'heroicon-o-ellipsis-horizontal';
-    protected static ?string $navigationLabel = 'Activity';
+    protected static string|\UnitEnum|null $navigationGroup = 'Activity';
 
-    protected static ?string $label = 'Activities';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
+
+    protected static ?string $navigationLabel = 'All';
+
+    protected static ?string $label = 'All Activity';
 
     public static ?string $slug = 'activities';
 
@@ -88,6 +92,7 @@ class ActivityResource extends Resource
                             'disconnected',
                             'disabled',
                             'job-reported',
+                            'login_failed',
                             'revoked',
                             'suspended',
                         ]),
@@ -96,6 +101,8 @@ class ActivityResource extends Resource
                             'logout',
                             'job-report-ignored',
                             'configuration-updated',
+                            '2fa-disabled',
+                            'password_reset_requested',
                             'locked',
                         ]),
                         'success' => static fn ($state): bool => in_array($state, [
@@ -103,6 +110,7 @@ class ActivityResource extends Resource
                             'created',
                             'login',
                             '2fa-enabled',
+                            'password_reset',
                             'enabled',
                             'connected',
                             'applied-to-job',
