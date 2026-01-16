@@ -13,6 +13,7 @@ class GeneratePagesSitemap extends Controller
         return Sitemap::create()
             ->add($this->home())
             ->add($this->pricing())
+            ->add($this->trust())
             ->add($this->contact())
             ->add($this->securityReport())
             ->add($this->terms())
@@ -40,6 +41,14 @@ class GeneratePagesSitemap extends Controller
                 Carbon::create(year: 2025, month: 9, day: 1)
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.9);
+    }
+
+    private function trust(): Url
+    {
+        return Url::create(route('trust'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
+            ->setPriority(0.7);
     }
 
     // @codeCoverageIgnoreStart

@@ -20,17 +20,22 @@
                     </flux:link>
                 </div>
                 <flux:subheading>&copy; {{ date('Y') }} Ghostable, LLC</flux:subheading>
-                <button
-                    x-data="ghostableStatus()"
-                    x-init="init()"
-                    @click="window.open('https://ghostable.statuspage.io', '_blank')"
-                    type="button"
-                    class="inline-flex items-center gap-2 px-1 py-1 text-xs font-medium text-white hover:text-white transition"
-                    title="View full status page"
-                >
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="dotClass"></span>
-                    <span x-text="statusText"></span>
-                </button>
+                <div class="inline-flex items-center gap-3">
+                    <flux:link href="{{ route('trust') }}" variant="subtle" class="inline-flex">
+                        <flux:badge variant="soft" size="sm" color="slate">SOC 2 Aligned</flux:badge>
+                    </flux:link>
+                    <button
+                        x-data="ghostableStatus()"
+                        x-init="init()"
+                        @click="window.open('https://ghostable.statuspage.io', '_blank')"
+                        type="button"
+                        class="inline-flex items-center gap-2 px-1 py-1 text-xs font-medium text-white hover:text-white transition"
+                        title="View full status page"
+                    >
+                        <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="dotClass"></span>
+                        <span x-text="statusText"></span>
+                    </button>
+                </div>
                 
             </div>
 

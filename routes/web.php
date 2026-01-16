@@ -42,6 +42,7 @@ BillingRoutes::web();
 // Site pages
 Route::get('/', fn () => view('site.home'))->name('home');
 Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
+Route::view('trust', 'site.trust')->name('trust');
 Route::get('contact', [ContactController::class, 'create'])->name('contact');
 Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:contact');
 Route::get('security', [SecurityIssueController::class, 'create'])->name('security.report');
