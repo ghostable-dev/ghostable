@@ -6,7 +6,6 @@ use App\Billing\Enums\BillingPolicy;
 use App\Billing\Enums\Plan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -22,14 +21,15 @@ class OrganizationForm
                         TextInput::make('name')
                             ->required(),
                         Select::make('owner_id')
-                            ->relationship('owner', 'name'),
-                        TextInput::make('slack_webhook_url'),
-                        Toggle::make('slack_enabled')
-                            ->required(),
+                            ->relationship('owner', 'name')
+                            ->disabled()
+                            ->dehydrated(false),
                     ]),
                 Section::make('Billing')
                     ->schema([
-                        TextInput::make('stripe_id'),
+                        TextInput::make('stripe_id')
+                            ->disabled()
+                            ->dehydrated(false),
                         Select::make('billing_policy')
                             ->options(BillingPolicy::class)
                             ->required(),
