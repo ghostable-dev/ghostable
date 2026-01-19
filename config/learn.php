@@ -3,6 +3,26 @@
 return [
     'guides' => [
         [
+            'image' => 'learn/zero-knowledge-encryption.jpg',
+            'slug' => 'zero-knowledge-encryption',
+            'title' => 'Zero-Knowledge Encryption: What It Means, How It Works, and Why It Matters',
+            'description' => 'A practical guide to zero-knowledge encryption: what it means, why it exists, how it works, and the tradeoffs to plan for.',
+            'route' => 'learn.zero-knowledge-encryption',
+            'tags' => [
+                'security',
+                'zero-knowledge',
+                'encryption',
+                'architecture',
+            ],
+            'keywords' => [
+                'zero knowledge encryption',
+                'client-side encryption',
+                'zero knowledge architecture',
+                'encryption tradeoffs',
+                'key management strategy',
+            ],
+        ],
+        [
             'image' => 'learn/laravel-env-example.png',
             'slug' => 'laravel-env-example',
             'title' => 'Laravel .env.example — The Definitive Guide',

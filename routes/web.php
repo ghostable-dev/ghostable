@@ -85,6 +85,7 @@ Route::prefix('learn')
         Route::view('laravel-env-example', 'site.guides.laravel-env-example')->name('laravel-env-example');
         Route::view('laravel-multi-environment-secrets', 'site.guides.laravel-multi-environment-secrets')->name('laravel-multi-environment-secrets');
         Route::view('env-naming-conventions', 'site.guides.env-naming-conventions')->name('env-naming-conventions');
+        Route::view('zero-knowledge-encryption', 'site.guides.zero-knowledge-encryption')->name('zero-knowledge-encryption');
         Route::view('env-validation-tutorial', 'site.tutorials.env-validation')->name('env-validation-tutorial');
         Route::view('first-deploy-with-ghostable', 'site.tutorials.first-deploy')->name('first-deploy-with-ghostable');
         Route::view('linking-devices', 'site.tutorials.linking-devices')->name('linking-devices');

@@ -74,7 +74,8 @@
                         <p class="mt-3 text-gray-600">
                             Encryption and decryption happen locally in the CLI. Only ciphertext and
                             non-sensitive metadata are stored. This changes how certain controls are
-                            implemented, but not the security objectives they serve.
+                            implemented, but not the security objectives they serve. For a deeper
+                            walkthrough, see our <flux:link href="{{ route('learn.zero-knowledge-encryption') }}">zero-knowledge guide</flux:link>.
                         </p>
                     </section>
 

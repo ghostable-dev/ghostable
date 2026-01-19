@@ -64,7 +64,7 @@
 
                         <article class="prose prose-lg prose-slate max-w-none">
                             <div class="space-y-8">
-                                <p>Ghostable is zero-knowledge: every secret is encrypted with keys that live on your device. Linking registers your workstation so Ghostable can share environment keys with it, and unlinking revokes those keys instantly. This tutorial shows you how to link, check, and remove devices for yourself and teammates.</p>
+                                <p>Ghostable is <flux:link href="{{ route('learn.zero-knowledge-encryption') }}">zero-knowledge</flux:link>: every secret is encrypted with keys that live on your device. Linking registers your workstation so Ghostable can share environment keys with it, and unlinking revokes those keys instantly. This tutorial shows you how to link, check, and remove devices for yourself and teammates.</p>
 
                                 <h2 id="why-devices-matter">Why devices matter</h2>
                                 <ul>

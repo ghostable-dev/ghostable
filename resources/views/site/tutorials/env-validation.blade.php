@@ -217,7 +217,7 @@ X APP_DEBUG must be "false"
                                 <p>Fix values locally, rerun, and only push or deploy once validation passes.</p>
 
                                 <h2 id="ci-cd">4. Gate deploys in CI/CD</h2>
-                                <p>Because validation happens locally (zero-knowledge), it fits neatly into your pipeline. Here is a GitHub Actions job that blocks merges when validation fails:</p>
+                                <p>Because validation happens locally (<flux:link href="{{ route('learn.zero-knowledge-encryption') }}">zero-knowledge</flux:link>), it fits neatly into your pipeline. Here is a GitHub Actions job that blocks merges when validation fails:</p>
 <pre><code class="language-yaml">name: Validate env
 
 on:

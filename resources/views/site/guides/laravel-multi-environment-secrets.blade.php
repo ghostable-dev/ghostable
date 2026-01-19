@@ -215,7 +215,7 @@ php artisan migrate --force</code></pre>
                                     <li><strong>Secure sharing:</strong> share secrets without passing around files; audit who accessed what, and when.</li>
                                     <li><strong>Rotation and drift control:</strong> rotate credentials centrally and push updates without leaking into Git or artifacts.</li>
                                 </ul>
-                                <p>Want these guardrails without gluing tools together? <flux:link href="{{ route('pricing') }}">Ghostable</flux:link> ships environment templates, validation, and audited sharing out of the box.</p>
+                                <p>Want these guardrails without gluing tools together? <flux:link href="{{ route('pricing') }}">Ghostable</flux:link> ships environment templates, validation, and audited sharing out of the box. If you want the security model in detail, read the <flux:link href="{{ route('learn.zero-knowledge-encryption') }}">zero-knowledge guide</flux:link>.</p>
 
                                 <hr>
 
