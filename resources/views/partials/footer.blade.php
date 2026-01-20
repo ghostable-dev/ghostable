@@ -18,6 +18,18 @@
                         target="_blank">
                         <flux:icon.discord variant="mini"/>
                     </flux:link>
+                    <flux:link 
+                        href="{{ config('contact.social.x') }}" 
+                        variant="subtle" 
+                        target="_blank">
+                        <flux:icon.x variant="mini"/>
+                    </flux:link>
+                    <flux:link 
+                        href="{{ config('contact.social.youtube') }}" 
+                        variant="subtle" 
+                        target="_blank">
+                        <flux:icon.youtube variant="mini"/>
+                    </flux:link>
                 </div>
                 <flux:subheading>&copy; {{ date('Y') }} Ghostable, LLC</flux:subheading>
                 <div class="inline-flex items-center gap-3">
