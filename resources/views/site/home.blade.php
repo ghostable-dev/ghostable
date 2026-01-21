@@ -1,17 +1,17 @@
 @push('meta')
     <x-seo-meta
-        title="Ghostable – Secure Environment Management"
-        description="Ghostable helps teams securely manage and share environment variables and secrets. Enforce validation, track version history, and gain full audit visibility across projects."
+        title="Environment Variable & Secrets Management for Dev Teams"
+        description="Ghostable is an environment variable and secrets management platform for development teams. Securely manage .env files, enforce validation, track version history, and maintain full audit visibility across environments and projects."
         :keywords="[
-            'ghostable',
-            'environment variables',
-            'secrets management',
-            'env file security',
-            'version history',
-            'audit logs',
-            'validation',
-            'team collaboration',
-            'laravel'
+          'environment variable management',
+          'secrets management platform',
+          '.env file management',
+          'developer configuration management',
+          'secure env variables',
+          'team secrets sharing',
+          'audit logs',
+          'validation',
+          'laravel'
         ]"/>
 @endpush
     
