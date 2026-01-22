@@ -7,14 +7,14 @@ namespace App\Integration\Support;
 class IntegrationManager
 {
     /**
-     * @var array<string, array{name: string, description: string, oauth?: bool, color?: string}>
+     * @var array<string, array{name: string, description: string, oauth?: bool, color?: string, logo?: string, landing_page_url?: string, scopes?: array<int, string>}>
      */
     protected array $integrations = [];
 
     /**
      * Register an integration and its display metadata.
      *
-     * @param  array{name: string, description: string, oauth?: bool, color?: string}  $meta
+     * @param  array{name: string, description: string, oauth?: bool, color?: string, logo?: string, landing_page_url?: string, scopes?: array<int, string>}  $meta
      */
     public function register(string $key, array $meta): void
     {
@@ -22,7 +22,7 @@ class IntegrationManager
     }
 
     /**
-     * @return array<string, array{name: string, description: string, oauth?: bool, color?: string, logo?: string}>
+     * @return array<string, array{name: string, description: string, oauth?: bool, color?: string, logo?: string, landing_page_url?: string, scopes?: array<int, string>}>
      */
     public function available(): array
     {
@@ -35,7 +35,7 @@ class IntegrationManager
     }
 
     /**
-     * @return array{name: string, description: string, oauth?: bool, color?: string, logo?: string}|null
+     * @return array{name: string, description: string, oauth?: bool, color?: string, logo?: string, landing_page_url?: string, scopes?: array<int, string>}|null
      */
     public function get(string $key): ?array
     {

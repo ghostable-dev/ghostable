@@ -190,9 +190,7 @@ class IntegrationSettingsFlyout extends Component
         $handler = app(VantaOauthHandler::class);
 
         try {
-            $payload = $handler->exchangeToken(
-                $integration->settings instanceof Data ? $integration->settings : VantaSettings::defaults()
-            );
+            $payload = $handler->refreshAccessToken($integration);
 
             $integration->forceFill([
                 'status' => IntegrationStatus::Active,

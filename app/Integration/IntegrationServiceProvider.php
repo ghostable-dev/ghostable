@@ -9,12 +9,15 @@ use App\Integration\Entities\DrataSettings;
 use App\Integration\Entities\SlackSettings;
 use App\Integration\Entities\VantaSettings;
 use App\Integration\Listeners\SyncVantaUsersOnMembershipChange;
+use App\Integration\Models\Integration;
+use App\Integration\Models\IntegrationClient;
 use App\Integration\Support\IntegrationKey;
 use App\Integration\Support\IntegrationManager;
 use App\Integration\Support\IntegrationSettingsRegistry;
 use App\Organization\Events\MemberJoined;
 use App\Organization\Events\MemberRemoved;
 use App\Organization\Events\MemberRoleChanged;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,6 +30,11 @@ class IntegrationServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Relation::enforceMorphMap([
+            'integration' => Integration::class,
+            'integration_client' => IntegrationClient::class,
+        ]);
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SyncVantaUsers::class,
@@ -38,10 +46,15 @@ class IntegrationServiceProvider extends ServiceProvider
 
         $integrations->register(IntegrationKey::VANTA, [
             'name' => 'Vanta',
-            'description' => 'Sync organization members and MFA status to Vanta.',
+            'description' => 'Sync organization members and MFA status to Vanta for compliance reporting.',
+            'landing_page_url' => 'https://www.vanta.com',
             'oauth' => true,
             'color' => '#240642',
             'logo' => '/images/logos/vanta-icon.svg',
+            'scopes' => [
+                'organization.read',
+                'members.read',
+            ],
         ]);
 
         // $integrations->register(IntegrationKey::DRATA, [

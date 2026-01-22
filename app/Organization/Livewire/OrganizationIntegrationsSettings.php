@@ -4,6 +4,7 @@ namespace App\Organization\Livewire;
 
 use App\Integration\Enums\IntegrationStatus;
 use App\Integration\Models\Integration;
+use App\Integration\Models\IntegrationClient;
 use App\Integration\Support\IntegrationKey;
 use App\Integration\Support\IntegrationManager;
 use App\Integration\Support\IntegrationSettingsRegistry;
@@ -22,6 +23,8 @@ class OrganizationIntegrationsSettings extends Component
 
     public string $statusLevel = 'info';
 
+    public string $tab = 'connected';
+
     protected ?IntegrationManager $integrationManager = null;
 
     #[Computed]
@@ -39,9 +42,32 @@ class OrganizationIntegrationsSettings extends Component
     }
 
     #[Computed]
+    public function integrationClients()
+    {
+        return $this->organization->integrationClients()
+            ->orderBy('name')
+            ->get();
+    }
+
+    #[Computed]
+    public function publishedIntegrationClients()
+    {
+        $connectedKeys = $this->integrations->pluck('key')->all();
+
+        return IntegrationClient::query()
+            ->where('publish_status', IntegrationClient::PUBLISH_STATUS_PUBLISHED)
+            ->where('owner_organization_id', '!=', $this->organization->id)
+            ->whereHas('ownerOrganization', fn ($query) => $query->where('is_partner', true))
+            ->when(! empty($connectedKeys), fn ($query) => $query->whereNotIn('key', $connectedKeys))
+            ->orderBy('name')
+            ->get();
+    }
+
+    #[Computed]
     public function canAccessIntegrations(): bool
     {
-        return (bool) ($this->organization->features->integrations ?? false);
+        return (bool) ($this->organization->features->integrations ?? false)
+            || (bool) $this->organization->is_partner;
     }
 
     public function verifyIntegration(string $integrationId): void
@@ -64,7 +90,7 @@ class OrganizationIntegrationsSettings extends Component
         $handler = app(VantaOauthHandler::class);
 
         try {
-            $payload = $handler->exchangeToken($integration->settings instanceof Data ? $integration->settings : null ?? \App\Integration\Entities\VantaSettings::defaults());
+            $payload = $handler->refreshAccessToken($integration);
 
             $integration->forceFill([
                 'status' => IntegrationStatus::Active,

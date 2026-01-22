@@ -74,6 +74,13 @@ class SecurityActivityResource extends Resource
                     ],
                 ],
                 [
+                    'log' => 'integration',
+                    'events' => [
+                        'published',
+                        'unpublished',
+                    ],
+                ],
+                [
                     'log' => 'cli-token',
                     'events' => [
                         'created',

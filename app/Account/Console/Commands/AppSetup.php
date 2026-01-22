@@ -6,9 +6,12 @@ use App\Billing\Enums\Plan;
 use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
 use App\Integration\Models\Integration;
+use App\Integration\Models\IntegrationClient;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AppSetup extends Command
 {
@@ -34,7 +37,7 @@ class AppSetup extends Command
 
         $this->seedPiedPiper();
 
-        // $this->seedHooli();
+        $this->seedHooli();
 
         // $this->seedAviato();
 
@@ -177,12 +180,48 @@ class AppSetup extends Command
             name: 'Hooli',
             owner: $gavin,
         );
+        $hooli->forceFill(['is_partner' => true])->save();
 
         $bighead->organizationMembership()->assignToOrganization(organization: $hooli, role: OrganizationRole::DEVELOPER_READ_ONLY);
         $jianyang->organizationMembership()->assignToOrganization(organization: $hooli, role: OrganizationRole::DEVELOPER);
 
+        $gavinDevice = $this->createDevice($gavin, 'Gavin MacBook Pro', 'macos');
+
         $box = $this->createProject('Hooli Box', $hooli);
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $box);
+
+        $this->seedHooliIntegrationClient($hooli);
+    }
+
+    protected function seedHooliIntegrationClient(Organization $organization): void
+    {
+        $clientId = Str::random(32);
+        $clientSecret = Str::random(64);
+        $baseUrl = rtrim((string) config('app.url'), '/');
+        $parts = parse_url($baseUrl);
+        if (isset($parts['scheme']) && $parts['scheme'] !== 'https') {
+            $baseUrl = preg_replace('/^http:\/\//', 'https://', $baseUrl) ?? $baseUrl;
+        }
+        $testUrl = $baseUrl.'/local/oauth-test';
+        $redirectUri = $baseUrl.'/local/oauth-test/callback';
+
+        IntegrationClient::query()->create([
+            'name' => 'Hooli Internal Access',
+            'key' => 'hooli-internal',
+            'client_id' => $clientId,
+            'client_secret_hash' => Hash::make($clientSecret),
+            'redirect_uris' => [$redirectUri],
+            'default_scopes' => ['organization.read'],
+            'status' => 'active',
+            'owner_organization_id' => $organization->id,
+            'publish_status' => IntegrationClient::PUBLISH_STATUS_DRAFT,
+        ]);
+
+        $this->info('Hooli integration client created for local OAuth testing:');
+        $this->info('Test URL: '.$testUrl);
+        $this->info('Client ID: '.$clientId);
+        $this->info('Client secret: '.$clientSecret);
+        $this->info('Redirect URI: '.$redirectUri);
     }
 
     protected function seedAviato(): void

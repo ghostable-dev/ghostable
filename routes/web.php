@@ -16,6 +16,7 @@ use App\Core\Http\Controllers\GenerateSitemap;
 use App\Core\Http\Controllers\SecurityIssueController;
 use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
+use App\Integration\Http\Controllers\LocalOauthTestController;
 use App\Integration\IntegrationRoutes;
 use App\Organization\OrganizationRoutes;
 use App\Project\ProjectRoutes;
@@ -38,6 +39,17 @@ ProjectRoutes::web();
 IntegrationRoutes::web();
 AuthRoutes::web();
 BillingRoutes::web();
+
+if (app()->environment('local')) {
+    Route::middleware(['auth', 'verified'])
+        ->prefix('local/oauth-test')
+        ->name('local.oauth-test.')
+        ->group(function () {
+            Route::get('/', [LocalOauthTestController::class, 'show'])->name('show');
+            Route::post('start', [LocalOauthTestController::class, 'start'])->name('start');
+            Route::get('callback', [LocalOauthTestController::class, 'callback'])->name('callback');
+        });
+}
 
 // Site pages
 Route::get('/', fn () => view('site.home'))->name('home');

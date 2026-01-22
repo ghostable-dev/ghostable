@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Integration\Models;
 
+use App\Account\Models\User;
 use App\Integration\Casts\IntegrationSettingsCast;
+use App\Integration\Enums\IntegrationDirection;
 use App\Integration\Enums\IntegrationStatus;
 use App\Organization\Models\Organization;
 use Database\Factories\IntegrationFactory;
@@ -26,12 +28,20 @@ class Integration extends Model
         'settings',
         'secure_settings',
         'status',
+        'direction',
+        'integration_client_id',
+        'approved_by_user_id',
+        'approved_at',
+        'connected_at',
     ];
 
     protected $casts = [
         'settings' => IntegrationSettingsCast::class,
         'secure_settings' => 'encrypted:array',
         'status' => IntegrationStatus::class,
+        'direction' => IntegrationDirection::class,
+        'approved_at' => 'datetime',
+        'connected_at' => 'datetime',
     ];
 
     protected static function newFactory(): IntegrationFactory
@@ -42,5 +52,15 @@ class Integration extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function integrationClient(): BelongsTo
+    {
+        return $this->belongsTo(IntegrationClient::class);
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 }

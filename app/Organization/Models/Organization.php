@@ -10,6 +10,7 @@ use App\Billing\Enums\Plan;
 use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
 use App\Integration\Models\Integration;
+use App\Integration\Models\IntegrationClient;
 use App\Organization\Actions\CreateNonConflictingSlug;
 use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
@@ -43,6 +44,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property string|null $slack_webhook_url
  * @property bool $slack_enabled
+ * @property bool $is_partner
  * @property \App\Organization\Entities\OrganizationFeatures|null $features
  * @property \App\Organization\Entities\OrganizationLimits|null $limits
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -115,10 +117,12 @@ class Organization extends Model
         'features',
         'billing_policy',
         'plan_override',
+        'is_partner',
     ];
 
     protected $attributes = [
         'slack_enabled' => false,
+        'is_partner' => false,
     ];
 
     protected $casts = [
@@ -129,6 +133,7 @@ class Organization extends Model
         'features' => OrganizationFeaturesCast::class,
         'billing_policy' => BillingPolicy::class,
         'plan_override' => Plan::class,
+        'is_partner' => 'boolean',
     ];
 
     public static function newFactory(): OrganizationFactory
@@ -180,6 +185,11 @@ class Organization extends Model
     public function integrations(): HasMany
     {
         return $this->hasMany(Integration::class);
+    }
+
+    public function integrationClients(): HasMany
+    {
+        return $this->hasMany(IntegrationClient::class, 'owner_organization_id');
     }
 
     public function apiUsages(): HasMany

@@ -8,6 +8,7 @@ use App\Api\Core\Http\Exceptions\ApiExceptionMap;
 use App\Api\Core\Http\Middleware\AddApiControlHeaders;
 use App\Api\Core\Http\Middleware\ApplyApiVersion;
 use App\Auth\Http\Middleware\EnsureUserIsActive;
+use App\Integration\Http\Middleware\EnsureIntegrationToken;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,6 +23,7 @@ final class ApiServiceProvider extends ServiceProvider
         $router = $this->app['router'];
 
         $router->aliasMiddleware('api.version', ApplyApiVersion::class);
+        $router->aliasMiddleware('integration.auth', EnsureIntegrationToken::class);
         $router->pushMiddlewareToGroup('api', AddApiControlHeaders::class);
         $router->pushMiddlewareToGroup('api', EnsureUserIsActive::class);
 
@@ -38,6 +40,14 @@ final class ApiServiceProvider extends ServiceProvider
         Route::prefix('api/v2')
             ->middleware(['api', Sample::rate(1.0)])
             ->group(__DIR__.'/Routes/v2.php');
+
+        Route::prefix('integrations/oauth')
+            ->middleware(['api', Sample::rate(1.0)])
+            ->group(__DIR__.'/Routes/integrations-oauth.php');
+
+        Route::prefix('api/integrations/v1')
+            ->middleware(['api', Sample::rate(1.0), 'integration.auth'])
+            ->group(__DIR__.'/Routes/integrations.php');
 
         ApiExceptionMap::register();
 

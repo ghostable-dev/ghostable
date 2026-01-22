@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Organizations\Tables;
 
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -26,6 +27,10 @@ class OrganizationsTable
                     ->searchable(),
                 TextColumn::make('owner.name')
                     ->searchable(),
+                IconColumn::make('is_partner')
+                    ->label('Partner')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

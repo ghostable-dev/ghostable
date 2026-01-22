@@ -4,6 +4,8 @@ namespace App\Organization;
 
 use App\Organization\Livewire\OrganizationBillingSettings;
 use App\Organization\Livewire\OrganizationGeneralSettings;
+use App\Organization\Livewire\OrganizationIntegrationsCreate;
+use App\Organization\Livewire\OrganizationIntegrationsEdit;
 use App\Organization\Livewire\OrganizationIntegrationsSettings;
 use App\Organization\Livewire\OrganizationMemberSettings;
 use App\Organization\Livewire\OrganizationNotificationsSettings;
@@ -23,6 +25,8 @@ class OrganizationRoutes
                 Route::get('notifications', OrganizationNotificationsSettings::class)->name('notifications');
                 Route::get('billing', OrganizationBillingSettings::class)->name('billing');
                 Route::get('integrations', OrganizationIntegrationsSettings::class)->name('integrations');
+                Route::get('integrations/create', OrganizationIntegrationsCreate::class)->name('integrations.create');
+                Route::get('integrations/{client}/edit', OrganizationIntegrationsEdit::class)->name('integrations.edit');
             });
     }
 }
