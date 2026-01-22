@@ -63,7 +63,7 @@ class NotificationManager extends Component
     public function render()
     {
         return view('account.notification-manager')
-            ->layout('layouts.guest', [
+            ->layout('components.layouts.guest', [
                 'withHeader' => false,
                 'withFooter' => false,
             ]);
