@@ -17,7 +17,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
-use Spatie\LaravelData\Data;
 
 class IntegrationSettingsFlyout extends Component
 {
