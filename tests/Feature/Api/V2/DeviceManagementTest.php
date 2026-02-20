@@ -57,6 +57,48 @@ test('can register a device', function () {
     expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
 });
 
+test('register device tolerates legacy cli platform payload', function () {
+    Sanctum::actingAs($this->user);
+
+    $payload = [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'cli',
+    ];
+
+    $response = $this->postJson($this->endpoint, $payload);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.attributes.platform', 'unknown');
+
+    $this->assertDatabaseHas('devices', [
+        'public_key' => $payload['public_key'],
+        'platform' => 'unknown',
+        'client_type' => 'cli',
+    ]);
+});
+
+test('register device defaults invalid platform to unknown', function () {
+    Sanctum::actingAs($this->user);
+
+    $payload = [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'totally-invalid-platform',
+    ];
+
+    $response = $this->postJson($this->endpoint, $payload);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.attributes.platform', 'unknown');
+
+    $this->assertDatabaseHas('devices', [
+        'public_key' => $payload['public_key'],
+        'platform' => 'unknown',
+        'client_type' => 'cli',
+    ]);
+});
+
 test('public key must be base64 and unique', function () {
     Sanctum::actingAs($this->user);
 
@@ -117,7 +159,7 @@ test('cannot fetch device for another user', function () {
     $peter = $this->createUser('Peter', 'peter@ghostbusters.com');
     $device = Device::factory()->for($peter)->create([
         'public_key' => base64_encode(random_bytes(32)),
-        'platform' => 'other',
+        'platform' => 'unknown',
     ]);
 
     $this->getJson("{$this->endpoint}/{$device->id}")->assertForbidden();
@@ -161,7 +203,7 @@ test('cannot revoke device for another user', function () {
     $peter = $this->createUser('Peter', 'peter@ghostbusters.com');
     $device = Device::factory()->for($peter)->create([
         'public_key' => base64_encode(random_bytes(32)),
-        'platform' => 'other',
+        'platform' => 'unknown',
     ]);
 
     $this->deleteJson("{$this->endpoint}/{$device->id}")->assertForbidden();

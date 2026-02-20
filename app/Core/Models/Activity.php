@@ -4,6 +4,7 @@ namespace App\Core\Models;
 
 use App\Auth\Models\PersonalAccessToken;
 use App\Environment\Models\Environment;
+use App\Organization\Models\Organization;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
@@ -78,6 +79,57 @@ class Activity extends SpatieActivity
                 ->forProjectItself($project)
                 ->orWhere(fn ($q) => $q->forEnvironmentIds($environmentIds))
                 ->orWhere(fn ($q) => $q->forTokenIds($tokenIds));
+        });
+    }
+
+    /**
+     * Scope activities related to the given organization, including its projects,
+     * environments, and environment tokens.
+     */
+    public function scopeForOrganization(Builder $query, Organization $organization): Builder
+    {
+        $projectIds = $organization->projects()->pluck('id');
+
+        $environmentIds = Environment::query()
+            ->whereIn('project_id', $projectIds)
+            ->pluck('id');
+
+        $tokenIds = PersonalAccessToken::whereIn('tokenable_id', $environmentIds)
+            ->where('tokenable_type', (new Environment)->getMorphClass())
+            ->pluck('id');
+
+        $organizationType = $organization->getMorphClass();
+        $projectType = (new Project)->getMorphClass();
+        $environmentType = (new Environment)->getMorphClass();
+        $tokenType = (new PersonalAccessToken)->getMorphClass();
+
+        return $query->where(function ($query) use (
+            $organization,
+            $projectIds,
+            $environmentIds,
+            $tokenIds,
+            $organizationType,
+            $projectType,
+            $environmentType,
+            $tokenType,
+        ) {
+            $query
+                ->where(function ($query) use ($organizationType, $organization) {
+                    $query->where('subject_type', $organizationType)
+                        ->where('subject_id', $organization->id);
+                })
+                ->orWhere(function ($query) use ($projectType, $projectIds) {
+                    $query->where('subject_type', $projectType)
+                        ->whereIn('subject_id', $projectIds);
+                })
+                ->orWhere(function ($query) use ($environmentType, $environmentIds) {
+                    $query->where('subject_type', $environmentType)
+                        ->whereIn('subject_id', $environmentIds);
+                })
+                ->orWhere(function ($query) use ($tokenType, $tokenIds) {
+                    $query->where('subject_type', $tokenType)
+                        ->whereIn('subject_id', $tokenIds);
+                });
         });
     }
 

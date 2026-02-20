@@ -118,8 +118,12 @@ trait CreatesAccountData
         );
     }
 
-    protected function createDevice(User $user, string $name, string $platform = 'macos'): Device
-    {
+    protected function createDevice(
+        User $user,
+        string $name,
+        string $platform = 'macos',
+        string $clientType = 'cli'
+    ): Device {
         /** @var RegisterDevice $registerDevice */
         $registerDevice = resolve(RegisterDevice::class);
 
@@ -129,6 +133,7 @@ trait CreatesAccountData
             publicSigningKey: base64_encode(random_bytes(32)),
             name: $name,
             platform: $platform,
+            clientType: $clientType,
         );
 
         $device->update([

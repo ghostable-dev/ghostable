@@ -337,6 +337,55 @@ test('cannot rotate a revoked deployment token', function (): void {
     expect($token->revoked_at)->not()->toBeNull();
 });
 
+test('can delete a revoked deployment token', function (): void {
+    Sanctum::actingAs($this->user);
+
+    /** @var DeploymentTokenResult $result */
+    $result = app(CreateDeploymentTokenAction::class)->handle(
+        name: 'Disposable token',
+        environment: $this->environment,
+        publicKey: base64_encode(random_bytes(32)),
+        user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
+    );
+
+    $token = $result->token->fresh();
+
+    $this->postJson(sprintf('%s/%s/revoke', $this->endpoint, $token->getKey()))
+        ->assertOk();
+
+    $this->deleteJson(sprintf('%s/%s', $this->endpoint, $token->getKey()))
+        ->assertOk()
+        ->assertJsonPath('meta.success', true)
+        ->assertJsonPath('meta.deleted_id', (string) $token->getKey());
+
+    $this->assertDatabaseMissing('deployment_tokens', [
+        'id' => (string) $token->getKey(),
+    ]);
+});
+
+test('cannot delete an active deployment token', function (): void {
+    Sanctum::actingAs($this->user);
+
+    /** @var DeploymentTokenResult $result */
+    $result = app(CreateDeploymentTokenAction::class)->handle(
+        name: 'Still active token',
+        environment: $this->environment,
+        publicKey: base64_encode(random_bytes(32)),
+        user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
+    );
+
+    $token = $result->token->fresh();
+
+    $this->deleteJson(sprintf('%s/%s', $this->endpoint, $token->getKey()))
+        ->assertStatus(422);
+
+    $this->assertDatabaseHas('deployment_tokens', [
+        'id' => (string) $token->getKey(),
+    ]);
+});
+
 test('environment tokens cannot manage other projects tokens', function (): void {
     Sanctum::actingAs($this->user);
 

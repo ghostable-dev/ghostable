@@ -32,7 +32,8 @@ beforeEach(function (): void {
     $this->devicePublicKey = sodium_crypto_sign_publickey($this->deviceKeypair);
 
     $this->device = Device::factory()->for($this->user)->create([
-        'platform' => 'cli',
+        'platform' => 'macos',
+        'client_type' => 'cli',
         'public_key' => base64_encode(random_bytes(32)),
         'public_signing_key' => base64_encode($this->devicePublicKey),
     ]);

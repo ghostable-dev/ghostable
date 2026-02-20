@@ -29,7 +29,7 @@ class LogEnvironmentBackupCreated
             'device' => [
                 'id' => (string) $device->getKey(),
                 'name' => $device->name,
-                'platform' => $device->platform,
+                'platform' => $device->platform?->value,
             ],
             'backup' => [
                 'backup_id' => $envelope['backup_id'] ?? null,

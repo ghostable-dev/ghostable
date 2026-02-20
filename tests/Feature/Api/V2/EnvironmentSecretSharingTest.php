@@ -25,13 +25,15 @@ beforeEach(function (): void {
     $this->device = Device::factory()->for($this->owner)->create([
         'public_key' => base64_encode(random_bytes(32)),
         'public_signing_key' => base64_encode($this->deviceSigningPublicKey),
-        'platform' => 'cli',
+        'platform' => 'macos',
+        'client_type' => 'cli',
     ]);
 
     $this->collaboratorDevice = Device::factory()->for($this->collaborator)->create([
         'public_key' => base64_encode(random_bytes(32)),
         'public_signing_key' => base64_encode(random_bytes(32)),
-        'platform' => 'cli',
+        'platform' => 'macos',
+        'client_type' => 'cli',
     ]);
 
     $this->makeSecretPayload = function (string $name, string $plaintext): array {

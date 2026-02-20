@@ -93,6 +93,7 @@ class BuildEncryptedProjection
                 'aad' => $secret->aad,
                 'claims' => $secret->claims,
                 'line_bytes' => $secret->line_bytes,
+                'is_commented' => (bool) $secret->is_commented,
                 'updated_at' => $secret->updated_at,
                 'updated_by' => $secret->lastUpdatedBy?->email,
             ];

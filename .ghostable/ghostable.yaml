@@ -1,0 +1,12 @@
+deployment_provider: laravel_forge
+environments:
+  awesome:
+    type: development
+  development:
+    type: development
+  production:
+    type: production
+id: 019c293a-77af-71d1-adf1-0a3368f454fd
+name: Primary
+stack:
+  language: javascript_typescript

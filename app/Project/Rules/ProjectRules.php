@@ -16,6 +16,7 @@ class ProjectRules
             'name' => self::nameRules(),
             'description' => self::descriptionRules(),
             'deployment_provider' => self::deploymentProviderRules(),
+            'with_default_environments' => ['sometimes', 'boolean'],
         ], self::stackRules());
     }
 

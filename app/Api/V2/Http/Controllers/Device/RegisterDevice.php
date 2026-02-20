@@ -10,6 +10,8 @@ use App\Api\V2\Device\Requests\RegisterDeviceRequest;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\LogDeviceActivity;
 use App\Crypto\Actions\RegisterDevice as RegisterDeviceAction;
+use App\Crypto\Enums\DeviceClientType;
+use App\Crypto\Enums\DevicePlatform;
 use Illuminate\Http\JsonResponse;
 
 final class RegisterDevice extends Controller
@@ -24,13 +26,30 @@ final class RegisterDevice extends Controller
         $user = $request->user();
 
         $validated = $request->validated();
+        $platformInput = strtolower(trim((string) ($validated['platform'] ?? '')));
+        $clientTypeInput = strtolower(trim((string) ($validated['client_type'] ?? '')));
+
+        // Backward compatibility: older clients sent "cli" in platform.
+        if ($clientTypeInput === '' && in_array($platformInput, ['cli', 'desktop'], true)) {
+            $clientTypeInput = $platformInput;
+        }
+
+        $platform = match ($platformInput) {
+            '', 'cli', 'desktop', 'other' => DevicePlatform::Unknown->value,
+            'mac', 'macosx', 'darwin', 'osx' => DevicePlatform::MacOS->value,
+            default => DevicePlatform::tryFrom($platformInput)?->value ?? DevicePlatform::Unknown->value,
+        };
+
+        $clientType = DeviceClientType::tryFrom($clientTypeInput)?->value
+            ?? DeviceClientType::Cli->value;
 
         $device = $registerDevice->handle(
             user: $user,
             publicKey: $validated['public_key'],
             publicSigningKey: $validated['public_signing_key'],
             name: $validated['name'] ?? null,
-            platform: $validated['platform'],
+            platform: $platform,
+            clientType: $clientType,
         );
 
         $logDeviceActivity->handle(

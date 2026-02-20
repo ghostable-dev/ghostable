@@ -131,7 +131,7 @@ final class PullEnvironment extends Controller
         $properties = array_filter([
             'id' => (string) $device->id,
             'name' => $device->name,
-            'platform' => $device->platform,
+            'platform' => $device->platform?->value,
             'app_version' => $device->app_version,
             'last_seen_at' => $device->last_seen_at?->toISOString(),
         ], static fn ($value) => $value !== null && $value !== '');

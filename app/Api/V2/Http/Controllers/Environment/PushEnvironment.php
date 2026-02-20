@@ -155,7 +155,7 @@ final class PushEnvironment extends Controller
             'device' => array_filter([
                 'id' => (string) $device->id,
                 'name' => $device->name,
-                'platform' => $device->platform,
+                'platform' => $device->platform?->value,
                 'app_version' => $device->app_version,
             ]),
             'requested_by' => [

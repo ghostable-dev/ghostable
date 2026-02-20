@@ -35,9 +35,16 @@ final class RegisterDeviceRequest extends FormRequest
                 'max:255',
             ],
             'platform' => [
-                'required',
+                'sometimes',
+                'nullable',
                 'string',
                 'max:64',
+            ],
+            'client_type' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:32',
             ],
         ];
     }

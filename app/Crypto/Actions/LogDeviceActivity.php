@@ -47,10 +47,12 @@ class LogDeviceActivity
 
     protected function deviceProperties(Device $device): array
     {
+        $platform = $device->platform?->value;
+
         return array_filter([
             'id' => (string) $device->id,
             'name' => $device->name,
-            'platform' => $device->platform,
+            'platform' => $platform,
             'app_version' => $device->app_version,
             'public_key_fingerprint' => $device->public_key
                 ? KeyFingerprint::fromPublicKey($device->public_key)
@@ -74,11 +76,13 @@ class LogDeviceActivity
 
     protected function message(string $event, Device $device): string
     {
-        $name = $device->name ?: $device->platform ?: 'device';
+        $platform = $device->platform?->value;
+        $name = $device->name ?: $platform ?: 'device';
+        $platformSuffix = $platform ? " ({$platform})" : '';
 
         return match ($event) {
-            'created' => "Registered device \"{$name}\" ({$device->platform})",
-            'revoked' => "Revoked device \"{$name}\" ({$device->platform})",
+            'created' => "Registered device \"{$name}\"{$platformSuffix}",
+            'revoked' => "Revoked device \"{$name}\"{$platformSuffix}",
             default => ucfirst($event)." device \"{$name}\"",
         };
     }

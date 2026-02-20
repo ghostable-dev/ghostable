@@ -15,14 +15,16 @@ final class RegisterDevice
         string $publicKey,
         string $publicSigningKey,
         ?string $name,
-        string $platform
+        string $platform,
+        string $clientType
     ): Device {
-        return DB::transaction(function () use ($user, $publicKey, $publicSigningKey, $name, $platform) {
+        return DB::transaction(function () use ($user, $publicKey, $publicSigningKey, $name, $platform, $clientType) {
             return $user->devices()->create([
                 'public_key' => $publicKey,
                 'public_signing_key' => $publicSigningKey,
                 'name' => $name,
                 'platform' => $platform,
+                'client_type' => $clientType,
                 'active' => true,
             ]);
         });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Core\Models\Activity;
 use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKey;
@@ -90,6 +91,15 @@ test('an environment key envelope can be stored when signed by a device', functi
     $this->postJson($this->endpoint, $payload)
         ->assertOk()
         ->assertJsonPath('data.relationships.envelope.data.attributes.ciphertext_b64', $payload['envelope']['ciphertext_b64']);
+
+    $activity = Activity::query()
+        ->where('event', 'environment_key_reshared')
+        ->latest('id')
+        ->first();
+
+    expect($activity)->not()->toBeNull();
+    expect((string) $activity->subject_id)->toBe((string) $this->environment->getKey());
+    expect(data_get($activity?->properties, 'recipient_counts.device'))->toBe(1);
 });
 
 test('environment key envelope creation fails with an invalid signature', function (): void {

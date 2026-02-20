@@ -77,3 +77,30 @@ test('non-members cannot view environment history', function (): void {
     $this->getJson("/api/v2/projects/{$project->id}/environments/{$env->name}/history")
         ->assertForbidden();
 });
+
+test('environment history includes environment key reshare events', function (): void {
+    $org = $this->createOrganization('Ghostbusters', $this->user, [$this->member]);
+    $project = $this->createProject('Containment Unit', $org);
+    $env = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
+
+    activity('variable')
+        ->performedOn($env)
+        ->causedBy($this->user)
+        ->event('environment_key_reshared')
+        ->withProperties([
+            'environment_key' => [
+                'version' => 2,
+                'fingerprint' => 'abc123',
+            ],
+        ])
+        ->log('Re-shared environment key.');
+
+    Sanctum::actingAs($this->member);
+
+    $response = $this->getJson("/api/v2/projects/{$project->id}/environments/{$env->name}/history");
+
+    $response->assertOk()
+        ->assertJsonPath('data.entries.0.operation', 'reshared')
+        ->assertJsonPath('data.entries.0.variable.name', 'Environment key')
+        ->assertJsonPath('data.entries.0.variable.version', 2);
+});

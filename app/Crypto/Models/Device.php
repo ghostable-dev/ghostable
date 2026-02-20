@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Crypto\Models;
 
 use App\Account\Models\User;
+use App\Crypto\Enums\DeviceClientType;
+use App\Crypto\Enums\DevicePlatform;
 use Database\Factories\DeviceFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +24,7 @@ class Device extends Model
     protected $fillable = [
         'active',
         'app_version',
+        'client_type',
         'last_seen_at',
         'name',
         'platform',
@@ -34,7 +37,9 @@ class Device extends Model
     /** @var array<string, string> */
     protected $casts = [
         'active' => 'boolean',
+        'client_type' => DeviceClientType::class,
         'last_seen_at' => 'datetime',
+        'platform' => DevicePlatform::class,
         'revoked_at' => 'datetime',
     ];
 

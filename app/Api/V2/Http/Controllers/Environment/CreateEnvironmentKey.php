@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Http\Controllers\Environment;
 
+use App\Account\Models\User;
 use App\Api\V2\Environment\Presenters\EnvironmentKeyPresenter;
 use App\Api\V2\Environment\Requests\StoreEnvironmentKeyRequest;
+use App\Api\V2\Http\Controllers\Concerns\LogsEnvironmentKeyActivity;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Actions\VerifyClientPayloadSignature;
@@ -23,6 +25,8 @@ use JsonException;
 
 final class CreateEnvironmentKey extends Controller
 {
+    use LogsEnvironmentKeyActivity;
+
     public function __invoke(
         StoreEnvironmentKeyRequest $request,
         Project $project,
@@ -38,7 +42,6 @@ final class CreateEnvironmentKey extends Controller
         $this->authorize('manageSettings', $environment);
 
         $data = $request->validated();
-        $rawPayload = $request->all();
 
         $organization = $environment->owningOrganization();
 
@@ -50,15 +53,14 @@ final class CreateEnvironmentKey extends Controller
 
         $ensureDeviceOwnership->handle($signingDevice, $request->user());
 
-        $payloadToVerify = is_array($rawPayload) ? $rawPayload : [];
-        unset($payloadToVerify['client_sig']);
+        $payloadToVerify = $this->signaturePayloadFromValidatedData($data);
 
-        $verifyClientPayloadSignature->handle(
-            payload: $payloadToVerify,
+        $this->verifyWithFallback(
+            request: $request,
+            primaryPayload: $payloadToVerify,
             signatureBase64: $data['client_sig'],
             device: $signingDevice,
-            attributePath: 'client_sig',
-            contextLabel: 'environment key'
+            verifyClientPayloadSignature: $verifyClientPayloadSignature
         );
 
         unset($data['client_sig']);
@@ -101,6 +103,25 @@ final class CreateEnvironmentKey extends Controller
         );
 
         $environmentKey->load('envelope');
+
+        /** @var User $user */
+        $user = $request->user();
+
+        $this->logEnvironmentKeyActivity(
+            event: 'environment_key_created',
+            message: "Created environment key v{$environmentKey->version} for \"{$environment->name}\".",
+            environmentKey: $environmentKey,
+            project: $project,
+            environment: $environment,
+            user: $user,
+            request: $request,
+            context: [
+                'recipient_counts' => [
+                    'device' => $this->countRecipientsOfType($recipients, 'device'),
+                    'deployment' => $this->countRecipientsOfType($recipients, 'deployment'),
+                ],
+            ],
+        );
 
         return response()->json(
             $presenter->present($environmentKey),
@@ -339,5 +360,111 @@ final class CreateEnvironmentKey extends Controller
             'deploymenttokens' => 'deployment',
             default => $type,
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $primaryPayload
+     */
+    private function verifyWithFallback(
+        StoreEnvironmentKeyRequest $request,
+        array $primaryPayload,
+        string $signatureBase64,
+        Device $device,
+        VerifyClientPayloadSignature $verifyClientPayloadSignature
+    ): void {
+        try {
+            $verifyClientPayloadSignature->handle(
+                payload: $primaryPayload,
+                signatureBase64: $signatureBase64,
+                device: $device,
+                attributePath: 'client_sig',
+                contextLabel: 'environment key'
+            );
+
+            return;
+        } catch (ValidationException $primaryException) {
+            $fallbackPayload = $request->all();
+            if (! is_array($fallbackPayload)) {
+                throw $primaryException;
+            }
+
+            unset($fallbackPayload['client_sig']);
+
+            if ($fallbackPayload === $primaryPayload) {
+                throw $primaryException;
+            }
+
+            try {
+                $verifyClientPayloadSignature->handle(
+                    payload: $fallbackPayload,
+                    signatureBase64: $signatureBase64,
+                    device: $device,
+                    attributePath: 'client_sig',
+                    contextLabel: 'environment key'
+                );
+            } catch (ValidationException) {
+                throw $primaryException;
+            }
+        }
+    }
+
+    /**
+     * Build the exact signed payload shape expected by clients:
+     * device_id, fingerprint, optional version/created_by_device_id/rotated_at, envelope.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function signaturePayloadFromValidatedData(array $data): array
+    {
+        $envelope = is_array($data['envelope'] ?? null) ? $data['envelope'] : [];
+
+        $payloadEnvelope = [
+            'ciphertext_b64' => (string) ($envelope['ciphertext_b64'] ?? ''),
+            'nonce_b64' => (string) ($envelope['nonce_b64'] ?? ''),
+        ];
+
+        if (array_key_exists('alg', $envelope)) {
+            $payloadEnvelope['alg'] = $envelope['alg'];
+        }
+
+        if (array_key_exists('recipients', $envelope)) {
+            $payloadEnvelope['recipients'] = is_array($envelope['recipients']) ? array_values($envelope['recipients']) : $envelope['recipients'];
+        }
+
+        $payload = [
+            'device_id' => (string) $data['device_id'],
+            'fingerprint' => (string) $data['fingerprint'],
+        ];
+
+        if (array_key_exists('version', $data)) {
+            $payload['version'] = $data['version'];
+        }
+
+        if (array_key_exists('created_by_device_id', $data)) {
+            $payload['created_by_device_id'] = $data['created_by_device_id'];
+        }
+
+        if (array_key_exists('rotated_at', $data)) {
+            $payload['rotated_at'] = $data['rotated_at'];
+        }
+
+        $payload['envelope'] = $payloadEnvelope;
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>|null  $recipients
+     */
+    private function countRecipientsOfType(?array $recipients, string $type): int
+    {
+        if (! $recipients) {
+            return 0;
+        }
+
+        return collect($recipients)
+            ->filter(fn (array $recipient): bool => (($recipient['type'] ?? null) === $type))
+            ->count();
     }
 }

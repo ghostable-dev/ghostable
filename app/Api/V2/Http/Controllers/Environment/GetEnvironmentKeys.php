@@ -37,11 +37,11 @@ final class GetEnvironmentKeys extends Controller
                 return [
                     'name' => $secret['name'],
                     'version' => $secret['version'] ?? null,     // only present if includeVersions=true
+                    'is_commented' => (bool) ($secret['is_commented'] ?? data_get($secret, 'meta.is_commented', false)),
                     // You did select 'updated_at' in the query, but you never added it to $entry.
                     // Add it in BuildEncryptedProjection if you want it here.
                     'updated_at' => $secret['updated_at'] ?? null,
-                    // Not available in the current projection — will be null unless you add it there.
-                    'updated_by_email' => $secret['updated_by_email'] ?? null,
+                    'updated_by_email' => $secret['updated_by_email'] ?? $secret['updated_by'] ?? null,
                 ];
             })
             ->values();

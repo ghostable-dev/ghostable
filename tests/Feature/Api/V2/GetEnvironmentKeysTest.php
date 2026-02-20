@@ -25,7 +25,10 @@ test('members can list environment keys', function (): void {
     $project = $this->createProject('Containment Unit', $org);
     $env = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
 
-    $test = $this->createZeroKnowledgeVariables($env, amount: 2, createdBy: $this->member);
+    $this->createZeroKnowledgeVariables($env, amount: 2, createdBy: $this->member);
+    $firstSecret = $env->envSecrets()->first();
+    expect($firstSecret)->not->toBeNull();
+    $firstSecret->update(['is_commented' => true]);
 
     Sanctum::actingAs($this->member);
     $this->member->refresh();
@@ -38,6 +41,10 @@ test('members can list environment keys', function (): void {
     $data = $response->json('data') ?? [];
     expect($data)->toBeArray();
     expect(collect($data)->pluck('name'))->toHaveCount(2);
+    expect(collect($data)->contains(function (array $row) use ($firstSecret): bool {
+        return ($row['name'] ?? null) === $firstSecret->name
+            && ($row['is_commented'] ?? null) === true;
+    }))->toBeTrue();
 });
 
 test('non-members cannot list environment keys', function (): void {

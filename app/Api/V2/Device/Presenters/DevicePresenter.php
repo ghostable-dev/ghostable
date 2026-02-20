@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Device\Presenters;
 
+use App\Crypto\Enums\DeviceClientType;
 use App\Crypto\Models\Device;
 use Illuminate\Support\Collection;
 
@@ -14,10 +15,19 @@ final class DevicePresenter
      */
     public function present(Device $device, ?array $only = null): array
     {
+        $clientType = $device->client_type instanceof DeviceClientType
+            ? $device->client_type->value
+            : $device->getRawOriginal('client_type');
+
+        if (! is_string($clientType) || trim($clientType) === '') {
+            $clientType = DeviceClientType::Cli->value;
+        }
+
         $attributes = [
             'name' => $device->name,
             'public_key' => $device->public_key,
-            'platform' => $device->platform,
+            'platform' => $device->platform?->value,
+            'client_type' => $clientType,
             'status' => $device->isRevoked() ? 'revoked' : 'active',
             'last_seen_at' => $device->last_seen_at?->toIso8601String(),
             'created_at' => $device->created_at?->toIso8601String(),

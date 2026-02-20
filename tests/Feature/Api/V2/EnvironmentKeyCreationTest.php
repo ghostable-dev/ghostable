@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Core\Models\Activity;
 use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
 use Illuminate\Support\Carbon;
@@ -92,6 +93,15 @@ test('environment key can be created for multiple devices', function (): void {
 
     expect($envelopes[0]['attributes']['device_id'])->toBe((string) $creatorDevice->getKey());
     expect($envelopes[1]['attributes']['device_id'])->toBe((string) $memberDevice->getKey());
+
+    $activity = Activity::query()
+        ->where('event', 'environment_key_created')
+        ->latest('id')
+        ->first();
+
+    expect($activity)->not()->toBeNull();
+    expect((string) $activity->subject_id)->toBe((string) $this->environment->getKey());
+    expect(data_get($activity?->properties, 'recipient_counts.device'))->toBe(2);
 });
 
 test('environment key signature verification uses the raw payload order', function (): void {

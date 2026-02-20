@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Http\Controllers\Environment;
 
+use App\Account\Models\User;
 use App\Api\V2\Http\Controllers\Concerns\PresentsAuditActor;
 use App\Core\Http\Controllers\Controller;
+use App\Core\Models\Activity;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecretVersion;
 use App\Environment\Support\EnvironmentAuditProperties;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 final class GetEnvironmentHistory extends Controller
 {
@@ -42,13 +46,21 @@ final class GetEnvironmentHistory extends Controller
             ])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->limit(self::ENTRY_LIMIT + 1)
+            ->limit(self::ENTRY_LIMIT * 3)
             ->get();
 
-        $truncated = $versions->count() > self::ENTRY_LIMIT;
-        $entries = $versions->take(self::ENTRY_LIMIT)
-            ->map(fn (EnvironmentSecretVersion $version) => $this->presentEntry($version))
-            ->values();
+        $reshareActivities = Activity::query()
+            ->forEnvironmentItself($environment)
+            ->whereIn('event', ['environment_key_created', 'environment_key_reshared'])
+            ->with('causer')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(self::ENTRY_LIMIT * 3)
+            ->get();
+
+        $combined = $this->mergeVersionAndKeyShareEntries($versions, $reshareActivities);
+        $truncated = $combined->count() > self::ENTRY_LIMIT;
+        $entries = $combined->take(self::ENTRY_LIMIT)->values();
 
         $summary = $this->buildSummary(
             environmentSecretCount: $environment->envSecrets()->count(),
@@ -104,16 +116,22 @@ final class GetEnvironmentHistory extends Controller
     {
         $secret = $version->secret;
 
+        $isDeleted = $secret?->trashed() ?? false;
+        $isLatest = $secret && (int) $version->version === (int) $secret->version;
+        $operation = $isDeleted && $isLatest
+            ? 'deleted'
+            : ($version->version === 1 ? 'created' : 'updated');
+
         return [
             'id' => (string) $version->id,
             'environment_secret_id' => (string) $version->environment_secret_id,
             'occurred_at' => optional($version->created_at)->toIso8601String(),
             'actor' => $this->presentAuditActor($version->changedBy),
-            'operation' => $version->version === 1 ? 'created' : 'updated',
+            'operation' => $operation,
             'variable' => [
                 'name' => $secret?->name ?? $version->name,
                 'version' => (int) $version->version,
-                'state' => $secret?->trashed() ? 'deleted' : 'active',
+                'state' => $isDeleted ? 'deleted' : 'active',
             ],
             'kek' => [
                 'version' => $version->env_kek_version,
@@ -124,6 +142,93 @@ final class GetEnvironmentHistory extends Controller
                 'display' => $version->display_line_bytes,
             ],
             'commented' => (bool) $version->is_commented,
+        ];
+    }
+
+    private function presentKeyShareEntry(Activity $activity): array
+    {
+        $operation = $activity->event === 'environment_key_reshared' ? 'reshared' : 'created';
+        $version = (int) data_get($activity->properties, 'environment_key.version', 0);
+        $fingerprint = data_get($activity->properties, 'environment_key.fingerprint');
+
+        return [
+            'id' => 'activity-'.$activity->id,
+            'environment_secret_id' => null,
+            'occurred_at' => optional($activity->created_at)->toIso8601String(),
+            'actor' => $this->presentActivityActor($activity->causer),
+            'operation' => $operation,
+            'variable' => [
+                'name' => 'Environment key',
+                'version' => $version > 0 ? $version : null,
+                'state' => 'active',
+            ],
+            'kek' => [
+                'version' => $version > 0 ? $version : null,
+                'fingerprint' => is_string($fingerprint) ? $fingerprint : null,
+            ],
+            'line' => [
+                'bytes' => null,
+                'display' => null,
+            ],
+            'commented' => false,
+        ];
+    }
+
+    /**
+     * @param  Collection<int, EnvironmentSecretVersion>  $versions
+     * @param  Collection<int, Activity>  $reshareActivities
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function mergeVersionAndKeyShareEntries(
+        Collection $versions,
+        Collection $reshareActivities
+    ): Collection {
+        $versionEntries = $versions
+            ->map(fn (EnvironmentSecretVersion $version): array => [
+                ...$this->presentEntry($version),
+                '__sort_at' => $version->created_at?->toImmutable()->valueOf() ?? 0,
+                '__sort_id' => (string) $version->id,
+            ])
+            ->toBase();
+
+        $activityEntries = $reshareActivities
+            ->map(fn (Activity $activity): array => [
+                ...$this->presentKeyShareEntry($activity),
+                '__sort_at' => $activity->created_at?->toImmutable()->valueOf() ?? 0,
+                '__sort_id' => 'activity-'.$activity->id,
+            ])
+            ->toBase();
+
+        return $versionEntries
+            ->merge($activityEntries)
+            ->sort(function (array $left, array $right): int {
+                $leftAt = (int) ($left['__sort_at'] ?? 0);
+                $rightAt = (int) ($right['__sort_at'] ?? 0);
+
+                if ($leftAt !== $rightAt) {
+                    return $rightAt <=> $leftAt;
+                }
+
+                $leftId = (string) ($left['__sort_id'] ?? '');
+                $rightId = (string) ($right['__sort_id'] ?? '');
+
+                return strcmp($rightId, $leftId);
+            })
+            ->values()
+            ->map(fn (array $entry): array => array_diff_key($entry, [
+                '__sort_at' => true,
+                '__sort_id' => true,
+            ]));
+    }
+
+    private function presentActivityActor(?Model $causer): array
+    {
+        if ($causer instanceof User) {
+            return $this->presentAuditActor($causer);
+        }
+
+        return [
+            'type' => 'system',
         ];
     }
 

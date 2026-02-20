@@ -11,7 +11,6 @@ use App\Organization\Models\Invite;
 use App\Organization\Models\Organization;
 use App\Organization\Rules\InviteRules;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 final class InviteMember extends Controller
 {
@@ -23,9 +22,14 @@ final class InviteMember extends Controller
             InviteRules::createRules($organization)
         );
 
+        $user = $request->user();
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         CreateInvite::handle(
             organization: $organization,
-            user: Auth::user(),
+            user: $user,
             email: $validated['email'],
             role: OrganizationRole::from($validated['role'])
         );

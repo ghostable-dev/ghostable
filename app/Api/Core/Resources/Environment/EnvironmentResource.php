@@ -13,6 +13,7 @@ class EnvironmentResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type->value,
+            'file_format' => $this->file_format?->value,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

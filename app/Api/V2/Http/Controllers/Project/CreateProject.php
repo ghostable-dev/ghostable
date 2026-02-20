@@ -27,7 +27,9 @@ final class CreateProject extends Controller
     {
         $this->authorize('create', [Project::class, $organization]);
 
-        $request->merge(['deployment_provider' => DeploymentProvider::OTHER->value]);
+        if (! $request->has('deployment_provider')) {
+            $request->merge(['deployment_provider' => DeploymentProvider::OTHER->value]);
+        }
 
         $validated = $request->validate(ProjectRules::createRules($organization));
 
@@ -37,7 +39,7 @@ final class CreateProject extends Controller
                 organization: $organization,
                 deploymentProvider: DeploymentProvider::from($validated['deployment_provider']),
                 description: $validated['description'] ?? null,
-                withDefaultEnvironments: true,
+                withDefaultEnvironments: $validated['with_default_environments'] ?? true,
                 stack: isset($validated['stack'])
                     ? ProjectStackData::from($validated['stack'])
                     : null
