@@ -37,7 +37,7 @@ final class RegisterDevice extends Controller
         $platform = match ($platformInput) {
             '', 'cli', 'desktop', 'other' => DevicePlatform::Unknown->value,
             'mac', 'macosx', 'darwin', 'osx' => DevicePlatform::MacOS->value,
-            default => DevicePlatform::tryFrom($platformInput)?->value ?? DevicePlatform::Unknown->value,
+            default => DevicePlatform::fromStorageValue($platformInput)->value,
         };
 
         $clientType = DeviceClientType::tryFrom($clientTypeInput)?->value

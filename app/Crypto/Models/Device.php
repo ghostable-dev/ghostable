@@ -8,6 +8,7 @@ use App\Account\Models\User;
 use App\Crypto\Enums\DeviceClientType;
 use App\Crypto\Enums\DevicePlatform;
 use Database\Factories\DeviceFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,7 +40,6 @@ class Device extends Model
         'active' => 'boolean',
         'client_type' => DeviceClientType::class,
         'last_seen_at' => 'datetime',
-        'platform' => DevicePlatform::class,
         'revoked_at' => 'datetime',
     ];
 
@@ -55,6 +55,21 @@ class Device extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected function platform(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value): ?DevicePlatform => $value === null || $value === ''
+                ? null
+                : DevicePlatform::fromStorageValue((string) $value),
+            set: fn (mixed $value): ?string => $value === null || $value === ''
+                ? null
+                : match (true) {
+                    $value instanceof DevicePlatform => $value->value,
+                    default => DevicePlatform::fromStorageValue((string) $value)->value,
+                },
+        );
     }
 
     /**

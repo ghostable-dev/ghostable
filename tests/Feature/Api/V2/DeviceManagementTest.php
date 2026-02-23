@@ -153,6 +153,20 @@ test('can fetch device info', function () {
         ->assertJsonPath('data.attributes.public_key', $device->public_key);
 });
 
+test('can fetch device info when legacy platform values are stored in DB', function () {
+    Sanctum::actingAs($this->user);
+
+    $device = Device::factory()->for($this->user)->create([
+        'platform' => 'darwin-arm64 (23.6.0)',
+        'public_key' => base64_encode(random_bytes(32)),
+    ]);
+
+    $response = $this->getJson("{$this->endpoint}/{$device->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('data.attributes.platform', 'macos');
+});
+
 test('cannot fetch device for another user', function () {
     Sanctum::actingAs($this->user);
 
