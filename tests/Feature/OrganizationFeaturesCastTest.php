@@ -20,7 +20,7 @@ it('returns free features by default', function () {
         ->and($organization->features->audits)->toBeFalse()
         ->and($organization->features->integrations)->toBeFalse()
         ->and($organization->features->advanced_permissions)->toBeFalse()
-        ->and($organization->features->guided_key_reshare_v2)->toBeFalse();
+        ->and($organization->features->guided_key_reshare_v2)->toBeTrue();
 });
 
 it('stores feature overrides', function () {
@@ -42,5 +42,5 @@ it('returns standard features for standard plans', function () {
         ->and($features->audits)->toBeTrue()
         ->and($features->integrations)->toBeTrue()
         ->and($features->advanced_permissions)->toBeFalse()
-        ->and($features->guided_key_reshare_v2)->toBeFalse();
+        ->and($features->guided_key_reshare_v2)->toBeTrue();
 });

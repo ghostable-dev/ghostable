@@ -111,7 +111,7 @@ test('show endpoint allows only actor or recipient visibility', function (): voi
         ->assertForbidden();
 });
 
-test('list and show endpoints return not found when guided key re-share is disabled', function (): void {
+test('list and show endpoints remain available even if guided key re-share override is false', function (): void {
     $this->organization->features = $this->organization->features->withOverrides([
         'guided_key_reshare_v2' => false,
     ]);
@@ -121,9 +121,13 @@ test('list and show endpoints return not found when guided key re-share is disab
 
     $this->getJson(
         "/api/v2/organizations/{$this->organization->id}/key-reshare-requests?role=actor&status=pending"
-    )->assertNotFound();
+    )
+        ->assertOk()
+        ->assertJsonPath('data.0.id', (string) $this->requestModel->id);
 
     $this->getJson(
         "/api/v2/organizations/{$this->organization->id}/key-reshare-requests/{$this->requestModel->id}"
-    )->assertNotFound();
+    )
+        ->assertOk()
+        ->assertJsonPath('data.id', (string) $this->requestModel->id);
 });
