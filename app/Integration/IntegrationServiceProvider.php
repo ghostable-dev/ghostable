@@ -72,9 +72,11 @@ class IntegrationServiceProvider extends ServiceProvider
         IntegrationSettingsRegistry::register(IntegrationKey::VANTA, VantaSettings::class);
         // IntegrationSettingsRegistry::register(IntegrationKey::SLACK, SlackSettings::class);
 
-        Event::listen(
-            [MemberJoined::class, MemberRemoved::class, MemberRoleChanged::class],
-            SyncVantaUsersOnMembershipChange::class
-        );
+        if (config('vanta.enabled', true)) {
+            Event::listen(
+                [MemberJoined::class, MemberRemoved::class, MemberRoleChanged::class],
+                SyncVantaUsersOnMembershipChange::class
+            );
+        }
     }
 }

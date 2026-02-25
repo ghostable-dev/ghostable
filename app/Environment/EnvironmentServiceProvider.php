@@ -2,6 +2,8 @@
 
 namespace App\Environment;
 
+use App\Environment\Console\Commands\ReconcileEnvironmentKeyReshareRequestsCommand;
+use App\Environment\Console\Commands\RunLocalCliCommand;
 use App\Environment\Events\EnvironmentCreated;
 use App\Environment\Events\EnvironmentDeleted;
 use App\Environment\Events\EnvironmentEvent;
@@ -61,6 +63,13 @@ class EnvironmentServiceProvider extends ServiceProvider
                 resolve(EnvironmentAncestryResolver::class)->bust($event->environment);
             }
         );
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ReconcileEnvironmentKeyReshareRequestsCommand::class,
+                RunLocalCliCommand::class,
+            ]);
+        }
 
     }
 }

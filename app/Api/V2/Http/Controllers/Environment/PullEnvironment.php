@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Http\Controllers\Environment;
 
+use App\Account\Models\User;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Models\Device;
 use App\Environment\Actions\BuildEncryptedProjection;
 use App\Environment\Actions\LogEnvironmentDownloaded;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +34,8 @@ final class PullEnvironment extends Controller
         Request $request,
         Project $project,
         string $name,
-        EnsureDeviceOwnership $ensureDeviceOwnership
+        EnsureDeviceOwnership $ensureDeviceOwnership,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests
     ): JsonResponse {
         $env = $project->environmentOrFail($name);
 
@@ -42,13 +45,6 @@ final class PullEnvironment extends Controller
         $includeMeta = (bool) filter_var($request->query('include_meta', false), FILTER_VALIDATE_BOOLEAN);
         $includeVersions = (bool) filter_var($request->query('include_versions', false), FILTER_VALIDATE_BOOLEAN);
 
-        $bundle = app(BuildEncryptedProjection::class)->handle(
-            environment: $env,
-            only: $only,
-            includeMeta: $includeMeta,
-            includeVersions: $includeVersions
-        );
-
         $onlyNames = collect($only)
             ->filter(fn ($value) => is_string($value) && $value !== '')
             ->values()
@@ -56,7 +52,37 @@ final class PullEnvironment extends Controller
 
         $device = $this->resolveRequestDevice($request, $ensureDeviceOwnership);
 
-        if ($user = $request->user()) {
+        /** @var User|null $user */
+        $user = $request->user();
+
+        if ($device && $user) {
+            $missingState = $manageEnvironmentKeyReshareRequests->resolveMissingKeyAccessState(
+                environment: $env,
+                device: $device,
+                triggerSource: 'pull',
+                actor: $user,
+                request: $request,
+            );
+
+            if ($missingState !== null) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'ENV_KEY_RESHARE_REQUIRED',
+                        'detail' => 'Environment key access is pending key re-share for this device.',
+                        ...$missingState,
+                    ],
+                ], 409);
+            }
+        }
+
+        $bundle = app(BuildEncryptedProjection::class)->handle(
+            environment: $env,
+            only: $only,
+            includeMeta: $includeMeta,
+            includeVersions: $includeVersions
+        );
+
+        if ($user) {
             $context = [
                 'filters' => [
                     'only' => $onlyNames,

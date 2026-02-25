@@ -34,11 +34,17 @@ final class ListDeploymentTokens extends Controller
             ->orderBy('name');
 
         if (! empty($data['environment_id'])) {
-            $environmentId = $data['environment_id'];
+            $environmentFilter = (string) $data['environment_id'];
 
-            $exists = $project->environments()->whereKey($environmentId)->exists();
+            $environmentId = $project->environments()
+                ->where(function ($query) use ($environmentFilter): void {
+                    $query
+                        ->whereKey($environmentFilter)
+                        ->orWhere('name', $environmentFilter);
+                })
+                ->value('id');
 
-            if (! $exists) {
+            if (! is_string($environmentId) || $environmentId === '') {
                 abort(404);
             }
 

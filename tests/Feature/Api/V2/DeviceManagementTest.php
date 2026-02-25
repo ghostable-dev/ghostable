@@ -1,6 +1,8 @@
 <?php
 
 use App\Crypto\Models\Device;
+use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\EnvironmentKeyReshareRequest;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Activitylog\Models\Activity;
 
@@ -97,6 +99,54 @@ test('register device defaults invalid platform to unknown', function () {
         'platform' => 'unknown',
         'client_type' => 'cli',
     ]);
+});
+
+test('registering a new device creates pending key re-share requests when guided flow is enabled', function () {
+    Sanctum::actingAs($this->user);
+
+    $organization = $this->createOrganization('Ghostbusters', $this->user);
+    $organization->features = $organization->features->withOverrides([
+        'guided_key_reshare_v2' => true,
+    ]);
+    $organization->save();
+
+    $project = $this->createProject('Containment Unit', $organization);
+    $environment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
+
+    $existingDevice = $this->createDevice($this->user, 'Existing device');
+    $environmentKey = $this->createEnvironmentKeyWithEnvelope(
+        environment: $environment,
+        createdByDevice: $existingDevice,
+        recipients: [
+            [
+                'id' => (string) $existingDevice->id,
+                'type' => 'device',
+                'label' => 'Existing device',
+            ],
+        ],
+    );
+
+    $payload = [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'macos',
+    ];
+
+    $response = $this->postJson($this->endpoint, $payload)->assertCreated();
+
+    $newDeviceId = (string) $response->json('data.id');
+
+    $this->assertDatabaseHas('environment_key_reshare_requests', [
+        'organization_id' => (string) $organization->id,
+        'project_id' => (string) $project->id,
+        'environment_id' => (string) $environment->id,
+        'target_user_id' => (string) $this->user->id,
+        'target_device_id' => $newDeviceId,
+        'required_key_version' => $environmentKey->version,
+        'status' => 'pending',
+    ]);
+
+    expect(EnvironmentKeyReshareRequest::query()->count())->toBe(1);
 });
 
 test('public key must be base64 and unique', function () {
@@ -209,6 +259,39 @@ test('can revoke a device', function () {
     expect(data_get($activity->properties, 'device.status'))->toBe('revoked');
     expect(data_get($activity->properties, 'requested_by.email'))->toBe($this->user->email);
     expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
+});
+
+test('revoking a device cancels pending key re-share requests for that device', function () {
+    Sanctum::actingAs($this->user);
+
+    $organization = $this->createOrganization('Ghostbusters', $this->user);
+    $organization->features = $organization->features->withOverrides([
+        'guided_key_reshare_v2' => true,
+    ]);
+    $organization->save();
+
+    $project = $this->createProject('Containment Unit', $organization);
+    $environment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
+    $device = $this->createDevice($this->user, 'Revoked target');
+
+    EnvironmentKeyReshareRequest::query()->create([
+        'organization_id' => $organization->id,
+        'project_id' => $project->id,
+        'environment_id' => $environment->id,
+        'required_key_version' => 1,
+        'target_user_id' => $this->user->id,
+        'target_device_id' => $device->id,
+        'status' => 'pending',
+        'trigger_source' => 'device_link',
+    ]);
+
+    $this->deleteJson("{$this->endpoint}/{$device->id}")->assertOk();
+
+    $this->assertDatabaseHas('environment_key_reshare_requests', [
+        'target_device_id' => (string) $device->id,
+        'status' => 'cancelled',
+        'cancel_reason' => 'device_revoked',
+    ]);
 });
 
 test('cannot revoke device for another user', function () {

@@ -15,6 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendAuditEvent implements ShouldQueue
 {
@@ -24,28 +25,35 @@ class SendAuditEvent implements ShouldQueue
 
     public function handle(VantaClient $client): void
     {
-        $activity = Activity::find($this->activityId);
+        try {
+            $activity = Activity::find($this->activityId);
 
-        if (! $activity) {
-            return;
+            if (! $activity) {
+                return;
+            }
+
+            $integration = $this->resolveIntegration($activity);
+
+            if (! $integration) {
+                return;
+            }
+
+            $token = $integration->secure_settings['access_token'] ?? null;
+            $settings = $integration->settings instanceof VantaSettings
+                ? $integration->settings
+                : VantaSettings::defaults();
+
+            if (! $token) {
+                return;
+            }
+
+            $client->sendActivity($activity, $token, $settings->base_url ?? null);
+        } catch (\Throwable $exception) {
+            Log::warning('Vanta audit event forwarding failed', [
+                'activity_id' => $this->activityId,
+                'exception' => $exception->getMessage(),
+            ]);
         }
-
-        $integration = $this->resolveIntegration($activity);
-
-        if (! $integration) {
-            return;
-        }
-
-        $token = $integration->secure_settings['access_token'] ?? null;
-        $settings = $integration->settings instanceof VantaSettings
-            ? $integration->settings
-            : VantaSettings::defaults();
-
-        if (! $token) {
-            return;
-        }
-
-        $client->sendActivity($activity, $token, $settings->base_url ?? null);
     }
 
     protected function resolveIntegration(Activity $activity): ?Integration

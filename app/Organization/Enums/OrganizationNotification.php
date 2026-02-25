@@ -10,6 +10,7 @@ enum OrganizationNotification: string
     case ACCESS_CHANGE = 'access_change';
     case ORGANIZATION_SETTINGS_CHANGED = 'organization_settings_changed';
     case PROJECT_ACTIVITY = 'project_activity';
+    case ENVIRONMENT_KEY_RESHARE_REQUIRED = 'environment_key_reshare_required';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum OrganizationNotification: string
             self::ACCESS_CHANGE => 'Role & Permission Changes',
             self::ORGANIZATION_SETTINGS_CHANGED => 'Organization Settings Changes',
             self::PROJECT_ACTIVITY => 'Project Activity',
+            self::ENVIRONMENT_KEY_RESHARE_REQUIRED => 'Environment Key Re-share Required',
         };
     }
 
@@ -28,6 +30,7 @@ enum OrganizationNotification: string
             self::ACCESS_CHANGE => 'Alerts when a organization member’s role or access permissions are updated.',
             self::ORGANIZATION_SETTINGS_CHANGED => 'Fires when core organization-level settings are modified.',
             self::PROJECT_ACTIVITY => 'Notifies when projects are created or deleted from the organization.',
+            self::ENVIRONMENT_KEY_RESHARE_REQUIRED => 'Alerts users who can manage environment settings when a device needs key re-sharing.',
         };
     }
 
@@ -37,7 +40,8 @@ enum OrganizationNotification: string
             self::MEMBERSHIP_ACTIVITY,
             self::ACCESS_CHANGE,
             self::PROJECT_ACTIVITY,
-            self::ORGANIZATION_SETTINGS_CHANGED => true,
+            self::ORGANIZATION_SETTINGS_CHANGED,
+            self::ENVIRONMENT_KEY_RESHARE_REQUIRED => true,
         };
     }
 
@@ -47,7 +51,8 @@ enum OrganizationNotification: string
             self::MEMBERSHIP_ACTIVITY => 'manageMembers',
             self::ACCESS_CHANGE => 'manageAccessControls',
             self::ORGANIZATION_SETTINGS_CHANGED,
-            self::PROJECT_ACTIVITY => 'manageSettings',
+            self::PROJECT_ACTIVITY,
+            self::ENVIRONMENT_KEY_RESHARE_REQUIRED => 'manageSettings',
         };
     }
 }

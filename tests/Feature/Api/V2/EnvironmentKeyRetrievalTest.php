@@ -6,6 +6,7 @@ use App\Crypto\Models\Device;
 use App\Environment\Actions\Token\CreateDeploymentToken as CreateDeploymentTokenAction;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKey;
+use App\Organization\Enums\OrganizationRole;
 use Illuminate\Support\Arr;
 use Laravel\Sanctum\Sanctum;
 
@@ -131,6 +132,58 @@ test('users without access cannot retrieve environment keys', function (): void 
     $this->getJson($this->endpoint)->assertForbidden();
 });
 
+test('returns ENV_KEY_RESHARE_REQUIRED when the linked device is missing key access', function (): void {
+    $recipient = $this->createUser('Louis', 'louis@ghostbusters.com');
+    $recipient->organizationMembership()->assignToOrganization($this->organization, OrganizationRole::DEVELOPER);
+
+    $recipientDevice = Device::factory()->for($recipient)->create([
+        'active' => true,
+        'revoked_at' => null,
+        'public_signing_key' => base64_encode(random_bytes(32)),
+    ]);
+
+    $this->organization->features = $this->organization->features->withOverrides([
+        'guided_key_reshare_v2' => true,
+    ]);
+    $this->organization->save();
+
+    $environmentKey = $this->createEnvironmentKeyWithEnvelope(
+        environment: $this->environment,
+        createdByDevice: $this->signingDevice,
+        recipients: [
+            [
+                'id' => (string) $this->signingDevice->id,
+                'type' => 'device',
+                'label' => 'Owner device',
+            ],
+        ],
+    );
+
+    Sanctum::actingAs($recipient);
+
+    $response = $this->getJson("{$this->endpoint}?device_id={$recipientDevice->id}");
+
+    $response->assertStatus(409)
+        ->assertJsonPath('error.code', 'ENV_KEY_RESHARE_REQUIRED')
+        ->assertJsonPath('error.required_key_version', $environmentKey->version)
+        ->assertJsonPath('error.environment_id', (string) $this->environment->id)
+        ->assertJsonPath('error.organization_id', (string) $this->organization->id);
+
+    $pendingRequestId = data_get($response->json(), 'error.pending_request_ids.0');
+
+    expect($pendingRequestId)->toBeString()->not->toBe('');
+
+    $this->assertDatabaseHas('environment_key_reshare_requests', [
+        'id' => $pendingRequestId,
+        'organization_id' => (string) $this->organization->id,
+        'environment_id' => (string) $this->environment->id,
+        'target_user_id' => (string) $recipient->id,
+        'target_device_id' => (string) $recipientDevice->id,
+        'required_key_version' => $environmentKey->version,
+        'status' => 'pending',
+    ]);
+});
+
 test('creating environment keys normalizes deployment token recipients', function (): void {
     Sanctum::actingAs($this->user);
 
@@ -189,6 +242,20 @@ test('updating environment key envelopes normalizes deployment token recipients'
         ->create([
             'fingerprint' => hash('sha256', 'existing-key'),
         ]);
+
+    $environmentKey->envelope()->create([
+        'ciphertext_b64' => base64_encode(random_bytes(48)),
+        'nonce_b64' => base64_encode(random_bytes(12)),
+        'alg' => 'xchacha20-poly1305',
+        'version' => '1',
+        'recipients' => [
+            [
+                'type' => 'device',
+                'id' => (string) $this->signingDevice->getKey(),
+                'edek_b64' => base64_encode(random_bytes(32)),
+            ],
+        ],
+    ]);
 
     $payload = [
         'device_id' => (string) $this->signingDevice->getKey(),

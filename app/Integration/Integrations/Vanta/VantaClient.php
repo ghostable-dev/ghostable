@@ -3,9 +3,9 @@
 namespace App\Integration\Integrations\Vanta;
 
 use App\Core\Models\Activity;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class VantaClient
 {
@@ -51,8 +51,12 @@ class VantaClient
                 'url' => $url,
                 'activity_id' => $activity->id,
             ]);
-
-            throw $e;
+        } catch (Throwable $e) {
+            Log::error('Vanta activity send exception', [
+                'message' => $e->getMessage(),
+                'url' => $url,
+                'activity_id' => $activity->id,
+            ]);
         }
     }
 
@@ -91,8 +95,13 @@ class VantaClient
                 'resource_id' => $resourceId,
                 'resource_count' => count($resources),
             ]);
-
-            throw $e;
+        } catch (Throwable $e) {
+            Log::error('Vanta resource sync exception', [
+                'message' => $e->getMessage(),
+                'url' => $url,
+                'resource_id' => $resourceId,
+                'resource_count' => count($resources),
+            ]);
         }
     }
 

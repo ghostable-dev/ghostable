@@ -12,24 +12,53 @@ use App\Organization\Models\Organization;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 
 class AppSetup extends Command
 {
     use CreatesAccountData;
 
-    protected $signature = 'app:setup {--force}';
+    private const GHOSTABLE_SETUP_ORGANIZATION = 'Ghostable';
+
+    private const GHOSTABLE_SETUP_PROJECT = 'Primary';
+
+    /**
+     * @var array<int, string>
+     */
+    private const GHOSTABLE_RESHARE_PREP_ENVIRONMENTS = ['primary', 'cli', 'desktop'];
+
+    private ?bool $shouldSeedVirtualKeyFixtures = null;
+
+    private ?bool $shouldPrepareReshareLabAfterSetup = null;
+
+    private ?string $reshareRunId = null;
+
+    private bool $reshareSkipCliBuild = false;
+
+    private string $reshareActorEmail = 'rucci.joe@gmail.com';
+
+    private string $reshareRecipientEmail = 'nick@gmail.com';
+
+    protected $signature = 'app:setup
+        {--force}
+        {--seed-virtual-key-fixtures : Seed synthetic devices/keys for demo browsing (not usable for local key operations).}
+        {--prepare-reshare-lab : After setup, prepare pending local key re-share requests for Ghostable primary/cli/desktop environments.}
+        {--reshare-run-id= : Optional run identifier used when preparing the local re-share lab.}
+        {--reshare-skip-cli-build : Skip CLI build when preparing the local re-share lab.}';
 
     protected $description = 'Run migrations, seeders, and setup default users for local development.';
 
     public function handle()
     {
         if (! $this->option('force')) {
-            if (! $this->confirm('⚠️  This will reset your database. Do you want to continue?')) {
+            if (! $this->confirm('⚠️  Reset local database data now?', false)) {
                 $this->warn('❌ Setup aborted. No changes were made to your database.');
 
                 return;
             }
         }
+
+        $this->resolveGuidedOptions();
 
         $this->resetDatabase();
 
@@ -42,6 +71,16 @@ class AppSetup extends Command
         // $this->seedAviato();
 
         // $this->seedLeeds();
+
+        if ($this->shouldPrepareReshareLab()) {
+            $prepared = $this->prepareLocalReshareLab();
+
+            if ($prepared && $this->shouldLaunchLocalCliAfterSetup()) {
+                $this->newLine();
+                $this->info('🔄 Opening local:cli to fulfill pending key re-share requests...');
+                $this->call('local:cli', ['--action' => 'fulfill-all']);
+            }
+        }
     }
 
     protected function resetDatabase(): void
@@ -60,32 +99,35 @@ class AppSetup extends Command
         $nick = $this->createUser(name: 'Nick', email: 'nick@gmail.com');
 
         $ghostable = $this->createOrganization(
-            name: 'Ghostable',
+            name: self::GHOSTABLE_SETUP_ORGANIZATION,
             owner: $joe,
             planOverride: Plan::ENTERPRISE,
         );
+        $this->enableGuidedKeyReshare($ghostable);
 
         $nick->organizationMembership()->assignToOrganization(organization: $ghostable, role: OrganizationRole::ADMIN);
 
-        $primary = $this->createZeroKnowledgeProject('Primary', $ghostable);
-        $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primary);
+        $primaryProject = $this->createZeroKnowledgeProject(self::GHOSTABLE_SETUP_PROJECT, $ghostable);
+        $primaryEnvironment = $this->createEnvironment('primary', EnvironmentType::PRODUCTION, $primaryProject);
+        $cliEnvironment = $this->createEnvironment('cli', EnvironmentType::STAGING, $primaryProject);
+        $desktopEnvironment = $this->createEnvironment('desktop', EnvironmentType::LOCAL, $primaryProject);
 
-        $joeMac = $this->createDevice($joe, 'Joe MacBook Pro', 'macos');
-        $nickPhone = $this->createDevice($nick, 'Nick iPhone', 'ios');
+        if ($this->seedVirtualKeyFixtures()) {
+            $joeMac = $this->createDevice($joe, 'Joe MacBook Pro', 'macos');
+            $nickPhone = $this->createDevice($nick, 'Nick iPhone', 'ios');
 
-        $this->createEnvironmentKeyWithEnvelope(
-            environment: $production,
-            createdByDevice: $joeMac,
-            recipients: [
-                ['id' => (string) $joeMac->id, 'type' => 'device', 'label' => 'Joe MacBook Pro'],
-                ['id' => (string) $nickPhone->id, 'type' => 'device', 'label' => 'Nick iPhone'],
-            ],
-        );
+            $this->createEnvironmentKeyWithEnvelope(
+                environment: $primaryEnvironment,
+                createdByDevice: $joeMac,
+                recipients: [
+                    ['id' => (string) $joeMac->id, 'type' => 'device', 'label' => 'Joe MacBook Pro'],
+                    ['id' => (string) $nickPhone->id, 'type' => 'device', 'label' => 'Nick iPhone'],
+                ],
+            );
+        }
 
-        $this->createDeploymentToken(name: 'gh-actions', environment: $production, createdBy: $joe, expiresAfter: 90);
-        $this->createDeploymentToken(name: 'render-deploy', environment: $production, createdBy: $joe, expiresAfter: 60);
-
-        $this->createZeroKnowledgeVariables(env: $production, amount: 5, createdBy: $joe);
+        $this->createDeploymentToken(name: 'gh-actions', environment: $primaryEnvironment, createdBy: $joe, expiresAfter: 90);
+        $this->createDeploymentToken(name: 'render-deploy', environment: $primaryEnvironment, createdBy: $joe, expiresAfter: 60);
 
         // $this->createVariables(env: $production, amount: 10, createdBy: $joe);
         // $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
@@ -135,6 +177,7 @@ class AppSetup extends Command
             name: 'Pied Piper',
             owner: $richard,
         );
+        $this->enableGuidedKeyReshare($piedPiper);
 
         $gilfoyle->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::DEVELOPER);
         $dinesh->organizationMembership()->assignToOrganization(organization: $piedPiper, role: OrganizationRole::DEVELOPER);
@@ -150,22 +193,24 @@ class AppSetup extends Command
         $staging = $this->createEnvironment('staging', EnvironmentType::STAGING, $compression, $production);
         $local = $this->createEnvironment('local', EnvironmentType::LOCAL, $compression, $staging);
 
-        $richardLaptop = $this->createDevice($richard, 'Richard MBP', 'macos');
-        $gilfoyleRig = $this->createDevice($gilfoyle, 'Gilfoyle Tower', 'linux');
+        if ($this->seedVirtualKeyFixtures()) {
+            $richardLaptop = $this->createDevice($richard, 'Richard MBP', 'macos');
+            $gilfoyleRig = $this->createDevice($gilfoyle, 'Gilfoyle Tower', 'linux');
 
-        $this->createEnvironmentKeyWithEnvelope(
-            environment: $production,
-            createdByDevice: $richardLaptop,
-            recipients: [
-                ['id' => (string) $richardLaptop->id, 'type' => 'device', 'label' => 'Richard MBP'],
-                ['id' => (string) $gilfoyleRig->id, 'type' => 'device', 'label' => 'Gilfoyle Tower'],
-            ],
-        );
+            $this->createEnvironmentKeyWithEnvelope(
+                environment: $production,
+                createdByDevice: $richardLaptop,
+                recipients: [
+                    ['id' => (string) $richardLaptop->id, 'type' => 'device', 'label' => 'Richard MBP'],
+                    ['id' => (string) $gilfoyleRig->id, 'type' => 'device', 'label' => 'Gilfoyle Tower'],
+                ],
+            );
+
+            $this->createZeroKnowledgeVariables(env: $production, amount: 4, createdBy: $richard);
+        }
 
         $this->createDeploymentToken(name: 'jenkins-prod', environment: $production, createdBy: $richard, expiresAfter: 45);
         $this->createDeploymentToken(name: 'circleci-staging', environment: $staging, createdBy: $gilfoyle, expiresAfter: 45);
-
-        $this->createZeroKnowledgeVariables(env: $production, amount: 4, createdBy: $richard);
 
         $this->createInvite(organization: $piedPiper, sender: $richard, email: 'gavin@hooli.com');
     }
@@ -180,6 +225,7 @@ class AppSetup extends Command
             name: 'Hooli',
             owner: $gavin,
         );
+        $this->enableGuidedKeyReshare($hooli);
         $hooli->forceFill(['is_partner' => true])->save();
 
         $bighead->organizationMembership()->assignToOrganization(organization: $hooli, role: OrganizationRole::DEVELOPER_READ_ONLY);
@@ -191,6 +237,15 @@ class AppSetup extends Command
         $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $box);
 
         $this->seedHooliIntegrationClient($hooli);
+    }
+
+    protected function seedVirtualKeyFixtures(): bool
+    {
+        if ($this->shouldSeedVirtualKeyFixtures === null) {
+            $this->shouldSeedVirtualKeyFixtures = false;
+        }
+
+        return $this->shouldSeedVirtualKeyFixtures;
     }
 
     protected function seedHooliIntegrationClient(Organization $organization): void
@@ -256,5 +311,118 @@ class AppSetup extends Command
         // $production = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $app);
         // $this->createVariables(env: $production, amount: 5, createdBy: $erlich);
         // $this->createSecrets(env: $production, amount: 2, createdBy: $erlich);
+    }
+
+    private function enableGuidedKeyReshare(Organization $organization): void
+    {
+        $organization->features = $organization->features->withOverrides([
+            'guided_key_reshare_v2' => true,
+        ]);
+        $organization->save();
+    }
+
+    private function shouldPrepareReshareLab(): bool
+    {
+        if ($this->shouldPrepareReshareLabAfterSetup === null) {
+            return false;
+        }
+
+        return $this->shouldPrepareReshareLabAfterSetup;
+    }
+
+    private function prepareLocalReshareLab(): bool
+    {
+        $scriptPath = base_path('scripts/local-reshare-lab.sh');
+
+        if (! is_file($scriptPath)) {
+            $this->warn(sprintf('Skipping re-share lab prep: missing script at %s', $scriptPath));
+
+            return false;
+        }
+
+        $this->newLine();
+        $this->info('🧪 Preparing local key re-share requests for Ghostable environments (primary, cli, desktop)...');
+
+        $sharedRunId = trim((string) ($this->reshareRunId ?? ''));
+        if ($sharedRunId === '') {
+            $sharedRunId = now()->format('YmdHis');
+            $this->reshareRunId = $sharedRunId;
+        }
+
+        $args = [
+            'bash',
+            $scriptPath,
+            '--skip-app-setup',
+            '--prepare-only',
+            '--org-name', self::GHOSTABLE_SETUP_ORGANIZATION,
+            '--project-name', self::GHOSTABLE_SETUP_PROJECT,
+            '--actor-email', $this->reshareActorEmail,
+            '--recipient-email', $this->reshareRecipientEmail,
+            '--secret-count', '5',
+            '--run-id', $sharedRunId,
+        ];
+
+        foreach (self::GHOSTABLE_RESHARE_PREP_ENVIRONMENTS as $environmentName) {
+            $args[] = '--env-name';
+            $args[] = $environmentName;
+        }
+
+        if ($this->reshareSkipCliBuild) {
+            $args[] = '--skip-cli-build';
+        }
+
+        $this->line(sprintf('• Environments: %s', implode(', ', self::GHOSTABLE_RESHARE_PREP_ENVIRONMENTS)));
+
+        $process = new Process($args, base_path());
+        $process->setTimeout(null);
+
+        $exitCode = $process->run(function (string $type, string $buffer): void {
+            $this->output->write($buffer);
+        });
+
+        if (! is_int($exitCode) || $exitCode !== 0) {
+            $this->warn('Re-share lab preparation failed for one or more environments.');
+            $this->line('Tip: run `bash scripts/local-reshare-lab.sh --prepare-only --skip-app-setup --org-name Ghostable --project-name Primary --env-name primary --env-name cli --env-name desktop` manually.');
+
+            return false;
+        }
+
+        $this->info('✅ Re-share prep complete for primary, cli, and desktop. Use `php artisan local:cli` to fulfill pending requests.');
+
+        return true;
+    }
+
+    private function resolveGuidedOptions(): void
+    {
+        $this->shouldSeedVirtualKeyFixtures = (bool) $this->option('seed-virtual-key-fixtures');
+        $this->shouldPrepareReshareLabAfterSetup = (bool) $this->option('prepare-reshare-lab');
+        $this->reshareSkipCliBuild = (bool) $this->option('reshare-skip-cli-build');
+
+        $runId = trim((string) ($this->option('reshare-run-id') ?? ''));
+        $this->reshareRunId = $runId !== '' ? $runId : null;
+
+        if ((bool) $this->option('no-interaction') || (bool) $this->option('force')) {
+            return;
+        }
+
+        if (! $this->shouldPrepareReshareLabAfterSetup) {
+            $this->shouldPrepareReshareLabAfterSetup = $this->confirm(
+                'Include default local key re-share prep flow (primary, cli, desktop)?',
+                true
+            );
+        }
+    }
+
+    private function shouldLaunchLocalCliAfterSetup(): bool
+    {
+        if ((bool) $this->option('no-interaction')) {
+            return false;
+        }
+
+        if ((bool) $this->option('force')) {
+            return false;
+        }
+
+        return true;
     }
 }

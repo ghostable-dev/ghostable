@@ -12,6 +12,10 @@ class VantaServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (! config('vanta.enabled', true)) {
+            return;
+        }
+
         Activity::created(function (Activity $activity) {
             SendAuditEvent::dispatch($activity->id);
         });

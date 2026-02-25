@@ -10,6 +10,7 @@ use App\Crypto\Actions\DeleteDevice as DeleteDeviceAction;
 use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Actions\LogDeviceActivity;
 use App\Crypto\Models\Device;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,8 @@ final class DeleteDevice extends Controller
         Device $device,
         EnsureDeviceOwnership $ensureDeviceOwnership,
         DeleteDeviceAction $deleteDevice,
-        LogDeviceActivity $logDeviceActivity
+        LogDeviceActivity $logDeviceActivity,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests
     ): JsonResponse {
         /** @var User $user */
         $user = $request->user();
@@ -41,6 +43,14 @@ final class DeleteDevice extends Controller
                 'source' => 'cli',
                 'ip_address' => $request->ip(),
             ],
+        );
+
+        $manageEnvironmentKeyReshareRequests->cancelForDevice(
+            device: $device,
+            reason: 'device_deleted',
+            actor: $user,
+            request: $request,
+            triggerSource: 'device_delete',
         );
 
         $deleteDevice->handle($device);

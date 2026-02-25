@@ -12,6 +12,7 @@ use App\Crypto\Actions\LogDeviceActivity;
 use App\Crypto\Actions\RegisterDevice as RegisterDeviceAction;
 use App\Crypto\Enums\DeviceClientType;
 use App\Crypto\Enums\DevicePlatform;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use Illuminate\Http\JsonResponse;
 
 final class RegisterDevice extends Controller
@@ -20,7 +21,8 @@ final class RegisterDevice extends Controller
         RegisterDeviceRequest $request,
         RegisterDeviceAction $registerDevice,
         DevicePresenter $presenter,
-        LogDeviceActivity $logDeviceActivity
+        LogDeviceActivity $logDeviceActivity,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests
     ): JsonResponse {
         /** @var User $user */
         $user = $request->user();
@@ -60,6 +62,14 @@ final class RegisterDevice extends Controller
                 'source' => 'cli',
                 'ip_address' => $request->ip(),
             ],
+        );
+
+        $manageEnvironmentKeyReshareRequests->syncForDevice(
+            device: $device,
+            triggerSource: 'device_link',
+            actor: $user,
+            request: $request,
+            notifyActors: true,
         );
 
         return response()->json(

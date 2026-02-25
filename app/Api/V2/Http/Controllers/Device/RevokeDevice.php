@@ -11,6 +11,7 @@ use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Actions\LogDeviceActivity;
 use App\Crypto\Actions\RevokeDevice as RevokeDeviceAction;
 use App\Crypto\Models\Device;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,8 @@ final class RevokeDevice extends Controller
         EnsureDeviceOwnership $ensureDeviceOwnership,
         RevokeDeviceAction $revokeDevice,
         DevicePresenter $presenter,
-        LogDeviceActivity $logDeviceActivity
+        LogDeviceActivity $logDeviceActivity,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests
     ): JsonResponse {
         /** @var User $user */
         $user = $request->user();
@@ -39,6 +41,14 @@ final class RevokeDevice extends Controller
                 'source' => 'cli',
                 'ip_address' => $request->ip(),
             ],
+        );
+
+        $manageEnvironmentKeyReshareRequests->cancelForDevice(
+            device: $revokedDevice,
+            reason: 'device_revoked',
+            actor: $user,
+            request: $request,
+            triggerSource: 'device_revoke',
         );
 
         return response()->json(array_merge(

@@ -162,3 +162,47 @@ test('users on different accounts can push and pull shared environment secrets v
     expect(data_get($downloadActivity->properties, 'device.id'))->toBe((string) $this->collaboratorDevice->id);
     expect(data_get($downloadActivity->properties, 'ip_address'))->toBe('127.0.0.1');
 });
+
+test('pull returns ENV_KEY_RESHARE_REQUIRED when device is missing current key envelope', function (): void {
+    $this->organization->features = $this->organization->features->withOverrides([
+        'guided_key_reshare_v2' => true,
+    ]);
+    $this->organization->save();
+
+    $environmentKey = $this->createEnvironmentKeyWithEnvelope(
+        environment: $this->environment,
+        createdByDevice: $this->device,
+        recipients: [
+            [
+                'id' => (string) $this->device->id,
+                'type' => 'device',
+                'label' => 'Owner device',
+            ],
+        ],
+    );
+
+    Sanctum::actingAs($this->collaborator);
+
+    $response = $this->getJson("{$this->pullEndpoint}?".http_build_query([
+        'device_id' => (string) $this->collaboratorDevice->id,
+    ]));
+
+    $response->assertStatus(409)
+        ->assertJsonPath('error.code', 'ENV_KEY_RESHARE_REQUIRED')
+        ->assertJsonPath('error.required_key_version', $environmentKey->version);
+
+    $pendingRequestId = data_get($response->json(), 'error.pending_request_ids.0');
+
+    expect($pendingRequestId)->toBeString()->not->toBe('');
+
+    $this->assertDatabaseHas('environment_key_reshare_requests', [
+        'id' => $pendingRequestId,
+        'organization_id' => (string) $this->organization->id,
+        'project_id' => (string) $this->project->id,
+        'environment_id' => (string) $this->environment->id,
+        'target_user_id' => (string) $this->collaborator->id,
+        'target_device_id' => (string) $this->collaboratorDevice->id,
+        'required_key_version' => $environmentKey->version,
+        'status' => 'pending',
+    ]);
+});

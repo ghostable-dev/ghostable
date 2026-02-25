@@ -2,6 +2,7 @@
 
 namespace App\Organization;
 
+use App\Environment\Listeners\ReconcileEnvironmentKeyReshareRequestsOnMembershipChange;
 use App\Organization\Enums\OrganizationPermission;
 use App\Organization\Events\InviteAccepted;
 use App\Organization\Events\InviteCreated;
@@ -78,6 +79,11 @@ class OrganizationServiceProvider extends ServiceProvider
         Event::listen(
             MemberRemoved::class,
             SendMembershipActivityNotification::class
+        );
+
+        Event::listen(
+            [MemberRemoved::class, MemberRoleChanged::class],
+            ReconcileEnvironmentKeyReshareRequestsOnMembershipChange::class
         );
 
         Event::listen(

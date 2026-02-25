@@ -104,3 +104,28 @@ test('environment history includes environment key reshare events', function ():
         ->assertJsonPath('data.entries.0.variable.name', 'Environment key')
         ->assertJsonPath('data.entries.0.variable.version', 2);
 });
+
+test('environment history includes key re-share lifecycle events', function (): void {
+    $org = $this->createOrganization('Ghostbusters', $this->user, [$this->member]);
+    $project = $this->createProject('Containment Unit', $org);
+    $env = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
+
+    activity('variable')
+        ->performedOn($env)
+        ->event('environment_key_reshare_requested')
+        ->withProperties([
+            'environment_key' => [
+                'version' => 3,
+            ],
+        ])
+        ->log('Requested key re-share.');
+
+    Sanctum::actingAs($this->member);
+
+    $response = $this->getJson("/api/v2/projects/{$project->id}/environments/{$env->name}/history");
+
+    $response->assertOk()
+        ->assertJsonPath('data.entries.0.operation', 'reshare_requested')
+        ->assertJsonPath('data.entries.0.variable.name', 'Environment key re-share')
+        ->assertJsonPath('data.entries.0.variable.version', 3);
+});

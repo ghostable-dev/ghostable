@@ -13,6 +13,7 @@ use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Actions\VerifyClientPayloadSignature;
 use App\Crypto\Models\Device;
 use App\Environment\Actions\CreateEnvironmentKey as CreateEnvironmentKeyAction;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use App\Environment\Actions\StoreEnvironmentKeyEnvelope;
 use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
@@ -33,6 +34,7 @@ final class CreateEnvironmentKey extends Controller
         string $name,
         CreateEnvironmentKeyAction $createEnvironmentKey,
         StoreEnvironmentKeyEnvelope $storeEnvironmentKeyEnvelope,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests,
         EnvironmentKeyPresenter $presenter,
         EnsureDeviceOwnership $ensureDeviceOwnership,
         VerifyClientPayloadSignature $verifyClientPayloadSignature
@@ -102,10 +104,36 @@ final class CreateEnvironmentKey extends Controller
             ]
         );
 
-        $environmentKey->load('envelope');
-
         /** @var User $user */
         $user = $request->user();
+
+        $manageEnvironmentKeyReshareRequests->markSupersededForEnvironment(
+            environment: $environment,
+            activeKeyVersion: (int) $environmentKey->version,
+            triggerSource: 'manual',
+            actor: $user,
+            request: $request,
+        );
+
+        $manageEnvironmentKeyReshareRequests->completeForEnvelopeRecipients(
+            environment: $environment,
+            environmentKey: $environmentKey,
+            recipients: $recipients,
+            actor: $user,
+            actorDevice: $signingDevice,
+            request: $request,
+            triggerSource: 'manual',
+        );
+
+        $manageEnvironmentKeyReshareRequests->syncForEnvironment(
+            environment: $environment,
+            triggerSource: 'manual',
+            actor: $user,
+            request: $request,
+            notifyActors: true,
+        );
+
+        $environmentKey->load('envelope');
 
         $this->logEnvironmentKeyActivity(
             event: 'environment_key_created',

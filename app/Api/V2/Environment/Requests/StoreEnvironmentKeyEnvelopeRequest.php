@@ -29,6 +29,8 @@ final class StoreEnvironmentKeyEnvelopeRequest extends FormRequest
             'envelope.recipients.*.type' => ['required_with:envelope.recipients', 'string'],
             'envelope.recipients.*.id' => ['required_with:envelope.recipients', 'string'],
             'envelope.recipients.*.edek_b64' => ['required_with:envelope.recipients', 'string'],
+            'request_ids' => ['nullable', 'array'],
+            'request_ids.*' => ['required_with:request_ids', 'uuid'],
             'client_sig' => ['required', 'string', new Base64Encoded],
         ];
     }

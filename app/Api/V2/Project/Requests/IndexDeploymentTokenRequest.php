@@ -16,7 +16,7 @@ final class IndexDeploymentTokenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'environment_id' => ['nullable', 'uuid'],
+            'environment_id' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

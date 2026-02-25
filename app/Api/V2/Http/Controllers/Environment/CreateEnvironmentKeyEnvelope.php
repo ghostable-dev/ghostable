@@ -12,6 +12,7 @@ use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Actions\VerifyClientPayloadSignature;
 use App\Crypto\Models\Device;
+use App\Environment\Actions\ManageEnvironmentKeyReshareRequests;
 use App\Environment\Actions\StoreEnvironmentKeyEnvelope;
 use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
@@ -20,6 +21,7 @@ use App\Organization\Models\Organization;
 use App\Project\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 final class CreateEnvironmentKeyEnvelope extends Controller
@@ -31,6 +33,7 @@ final class CreateEnvironmentKeyEnvelope extends Controller
         Project $project,
         string $name,
         StoreEnvironmentKeyEnvelope $storeEnvironmentKeyEnvelope,
+        ManageEnvironmentKeyReshareRequests $manageEnvironmentKeyReshareRequests,
         EnvironmentKeyPresenter $presenter,
         EnsureDeviceOwnership $ensureDeviceOwnership,
         VerifyClientPayloadSignature $verifyClientPayloadSignature
@@ -73,6 +76,18 @@ final class CreateEnvironmentKeyEnvelope extends Controller
                 'fingerprint' => 'The selected environment key is invalid.',
             ]);
         }
+
+        if (! $this->environmentKeyHasDeviceRecipient($environmentKey, (string) $signingDevice->getKey())) {
+            throw ValidationException::withMessages([
+                'device_id' => 'This device cannot fulfill key re-share requests for the selected environment key.',
+            ]);
+        }
+
+        $previousRecipientIds = $this->recipientIdsByType(
+            is_array($environmentKey->envelope?->recipients)
+                ? $environmentKey->envelope->recipients
+                : null
+        );
 
         $envelopePayload = $data['envelope'];
 
@@ -126,10 +141,42 @@ final class CreateEnvironmentKeyEnvelope extends Controller
             ]
         );
 
-        $environmentKey->load('envelope');
-
         /** @var User $user */
         $user = $request->user();
+
+        $updatedRecipientIds = $this->recipientIdsByType($recipients);
+        $recipientDiff = $this->buildRecipientDiff(
+            before: $previousRecipientIds,
+            after: $updatedRecipientIds,
+            environment: $environment,
+        );
+
+        $manageEnvironmentKeyReshareRequests->completeForEnvelopeRecipients(
+            environment: $environment,
+            environmentKey: $environmentKey,
+            recipients: $recipients,
+            requestIds: collect($data['request_ids'] ?? [])
+                ->map(fn (mixed $requestId): string => (string) $requestId)
+                ->filter()
+                ->values()
+                ->all(),
+            actor: $user,
+            actorDevice: $signingDevice,
+            request: $request,
+            triggerSource: 'manual',
+        );
+
+        $environmentKey->load('envelope');
+
+        Log::info('Environment key re-share recipients updated.', [
+            'environment_key_id' => (string) $environmentKey->getKey(),
+            'environment_id' => (string) $environment->getKey(),
+            'project_id' => (string) $project->getKey(),
+            'organization_id' => (string) $organization->getKey(),
+            'actor_user_id' => (string) $user->getKey(),
+            'actor_device_id' => (string) $signingDevice->getKey(),
+            'recipient_diff' => $recipientDiff,
+        ]);
 
         $this->logEnvironmentKeyActivity(
             event: 'environment_key_reshared',
@@ -144,6 +191,7 @@ final class CreateEnvironmentKeyEnvelope extends Controller
                     'device' => $this->countRecipientsOfType($recipients, 'device'),
                     'deployment' => $this->countRecipientsOfType($recipients, 'deployment'),
                 ],
+                'recipient_diff' => $recipientDiff,
             ],
         );
 
@@ -208,6 +256,30 @@ final class CreateEnvironmentKeyEnvelope extends Controller
         };
     }
 
+    private function environmentKeyHasDeviceRecipient(EnvironmentKey $environmentKey, string $deviceId): bool
+    {
+        $recipients = $environmentKey->envelope?->recipients;
+
+        if (! is_array($recipients) || $recipients === []) {
+            return false;
+        }
+
+        foreach ($recipients as $recipient) {
+            if (! is_array($recipient)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($recipient['type'] ?? ''));
+            $recipientId = (string) ($recipient['id'] ?? '');
+
+            if ($type === 'device' && $recipientId === $deviceId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Build the exact signed payload shape expected by clients:
      * device_id, fingerprint, envelope.
@@ -236,6 +308,9 @@ final class CreateEnvironmentKeyEnvelope extends Controller
             'device_id' => (string) $data['device_id'],
             'fingerprint' => (string) $data['fingerprint'],
             'envelope' => $payloadEnvelope,
+            ...(array_key_exists('request_ids', $data)
+                ? ['request_ids' => is_array($data['request_ids']) ? array_values($data['request_ids']) : $data['request_ids']]
+                : []),
         ];
     }
 
@@ -297,5 +372,164 @@ final class CreateEnvironmentKeyEnvelope extends Controller
         return collect($recipients)
             ->filter(fn (array $recipient): bool => (($recipient['type'] ?? null) === $type))
             ->count();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>|null  $recipients
+     * @return array{device: array<int, string>, deployment: array<int, string>}
+     */
+    private function recipientIdsByType(?array $recipients): array
+    {
+        if (! is_array($recipients)) {
+            return [
+                'device' => [],
+                'deployment' => [],
+            ];
+        }
+
+        $deviceIds = [];
+        $deploymentIds = [];
+
+        foreach ($recipients as $recipient) {
+            if (! is_array($recipient)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($recipient['type'] ?? ''));
+            $id = (string) ($recipient['id'] ?? '');
+
+            if ($id === '') {
+                continue;
+            }
+
+            if ($type === 'device') {
+                $deviceIds[] = $id;
+
+                continue;
+            }
+
+            if ($type === 'deployment') {
+                $deploymentIds[] = $id;
+            }
+        }
+
+        return [
+            'device' => array_values(array_unique($deviceIds)),
+            'deployment' => array_values(array_unique($deploymentIds)),
+        ];
+    }
+
+    /**
+     * @param  array{device: array<int, string>, deployment: array<int, string>}  $before
+     * @param  array{device: array<int, string>, deployment: array<int, string>}  $after
+     * @return array<string, mixed>
+     */
+    private function buildRecipientDiff(array $before, array $after, Environment $environment): array
+    {
+        $deviceAddedIds = array_values(array_diff($after['device'], $before['device']));
+        $deviceRemovedIds = array_values(array_diff($before['device'], $after['device']));
+        $deviceUnchangedIds = array_values(array_intersect($before['device'], $after['device']));
+
+        $deploymentAddedIds = array_values(array_diff($after['deployment'], $before['deployment']));
+        $deploymentRemovedIds = array_values(array_diff($before['deployment'], $after['deployment']));
+        $deploymentUnchangedIds = array_values(array_intersect($before['deployment'], $after['deployment']));
+
+        return [
+            'device' => [
+                'before_count' => count($before['device']),
+                'after_count' => count($after['device']),
+                'unchanged_count' => count($deviceUnchangedIds),
+                'added' => $this->describeDevices($deviceAddedIds),
+                'removed' => $this->describeDevices($deviceRemovedIds),
+            ],
+            'deployment' => [
+                'before_count' => count($before['deployment']),
+                'after_count' => count($after['deployment']),
+                'unchanged_count' => count($deploymentUnchangedIds),
+                'added' => $this->describeDeploymentTokens($deploymentAddedIds, $environment),
+                'removed' => $this->describeDeploymentTokens($deploymentRemovedIds, $environment),
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<int, string>  $deviceIds
+     * @return array<int, array<string, string|null>>
+     */
+    private function describeDevices(array $deviceIds): array
+    {
+        if ($deviceIds === []) {
+            return [];
+        }
+
+        $devices = Device::query()
+            ->with('user')
+            ->whereIn('id', $deviceIds)
+            ->get()
+            ->keyBy(fn (Device $device): string => (string) $device->getKey());
+
+        return collect($deviceIds)
+            ->map(function (string $deviceId) use ($devices): array {
+                /** @var Device|null $device */
+                $device = $devices->get($deviceId);
+
+                if (! $device) {
+                    return [
+                        'id' => $deviceId,
+                        'name' => null,
+                        'platform' => null,
+                        'status' => 'missing',
+                        'user_id' => null,
+                    ];
+                }
+
+                return [
+                    'id' => (string) $device->getKey(),
+                    'name' => $device->name,
+                    'platform' => $device->platform?->value,
+                    'status' => $device->isRevoked() ? 'revoked' : 'active',
+                    'user_id' => $device->user ? (string) $device->user->getKey() : null,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $deploymentTokenIds
+     * @return array<int, array<string, string|null>>
+     */
+    private function describeDeploymentTokens(array $deploymentTokenIds, Environment $environment): array
+    {
+        if ($deploymentTokenIds === []) {
+            return [];
+        }
+
+        $tokens = $environment->deploymentTokens()
+            ->whereIn('id', $deploymentTokenIds)
+            ->get()
+            ->keyBy(fn (DeploymentToken $token): string => (string) $token->getKey());
+
+        return collect($deploymentTokenIds)
+            ->map(function (string $deploymentTokenId) use ($tokens): array {
+                /** @var DeploymentToken|null $token */
+                $token = $tokens->get($deploymentTokenId);
+
+                if (! $token) {
+                    return [
+                        'id' => $deploymentTokenId,
+                        'name' => null,
+                        'status' => 'missing',
+                    ];
+                }
+
+                return [
+                    'id' => (string) $token->getKey(),
+                    'name' => $token->name,
+                    'status' => $token->isRevoked() ? 'revoked' : 'active',
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

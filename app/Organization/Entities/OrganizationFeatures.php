@@ -11,6 +11,7 @@ class OrganizationFeatures extends Data
         public readonly bool $audits = false,
         public readonly bool $integrations = false,
         public readonly bool $advanced_permissions = false,
+        public readonly bool $guided_key_reshare_v2 = false,
     ) {}
 
     /**
@@ -39,6 +40,7 @@ class OrganizationFeatures extends Data
             audits: $overrides['audits'] ?? $this->audits,
             integrations: $overrides['integrations'] ?? $this->integrations,
             advanced_permissions: $overrides['advanced_permissions'] ?? $this->advanced_permissions,
+            guided_key_reshare_v2: $overrides['guided_key_reshare_v2'] ?? $this->guided_key_reshare_v2,
         );
     }
 }

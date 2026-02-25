@@ -165,6 +165,37 @@ test('listing deployment tokens returns project tokens', function (): void {
     expect($allIds)->toContain((string) $second->token->getKey());
 });
 
+test('listing deployment tokens accepts environment name filters for legacy clients', function (): void {
+    Sanctum::actingAs($this->user);
+
+    /** @var DeploymentTokenResult $primaryToken */
+    $primaryToken = app(CreateDeploymentTokenAction::class)->handle(
+        name: 'Primary token',
+        environment: $this->environment,
+        publicKey: base64_encode(random_bytes(32)),
+        user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
+    );
+
+    $secondaryEnvironment = $this->createEnvironment('desktop', EnvironmentType::LOCAL, $this->project);
+
+    app(CreateDeploymentTokenAction::class)->handle(
+        name: 'Desktop token',
+        environment: $secondaryEnvironment,
+        publicKey: base64_encode(random_bytes(32)),
+        user: $this->user,
+        recipient: ($this->makeDeploymentRecipient)(),
+    );
+
+    $response = $this->getJson($this->endpoint.'?environment_id='.$this->environment->name);
+
+    $response->assertOk()->assertJsonPath('meta.count', 1);
+
+    $ids = collect($response->json('data'))->pluck('id')->all();
+
+    expect($ids)->toContain((string) $primaryToken->token->getKey());
+});
+
 test('can rotate a deployment token', function (): void {
     Sanctum::actingAs($this->user);
 

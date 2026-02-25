@@ -51,7 +51,15 @@ final class GetEnvironmentHistory extends Controller
 
         $reshareActivities = Activity::query()
             ->forEnvironmentItself($environment)
-            ->whereIn('event', ['environment_key_created', 'environment_key_reshared'])
+            ->whereIn('event', [
+                'environment_key_created',
+                'environment_key_reshared',
+                'environment_key_reshare_requested',
+                'environment_key_reshare_notified',
+                'environment_key_reshare_completed',
+                'environment_key_reshare_cancelled',
+                'environment_key_reshare_superseded',
+            ])
             ->with('causer')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -147,9 +155,19 @@ final class GetEnvironmentHistory extends Controller
 
     private function presentKeyShareEntry(Activity $activity): array
     {
-        $operation = $activity->event === 'environment_key_reshared' ? 'reshared' : 'created';
+        $operation = match ($activity->event) {
+            'environment_key_reshared' => 'reshared',
+            'environment_key_reshare_requested' => 'reshare_requested',
+            'environment_key_reshare_notified' => 'reshare_notified',
+            'environment_key_reshare_completed' => 'reshare_completed',
+            'environment_key_reshare_cancelled' => 'reshare_cancelled',
+            'environment_key_reshare_superseded' => 'reshare_superseded',
+            default => 'created',
+        };
         $version = (int) data_get($activity->properties, 'environment_key.version', 0);
         $fingerprint = data_get($activity->properties, 'environment_key.fingerprint');
+        $isKeyLifecycle = str_starts_with((string) $operation, 'reshare_');
+        $name = $isKeyLifecycle ? 'Environment key re-share' : 'Environment key';
 
         return [
             'id' => 'activity-'.$activity->id,
@@ -158,7 +176,7 @@ final class GetEnvironmentHistory extends Controller
             'actor' => $this->presentActivityActor($activity->causer),
             'operation' => $operation,
             'variable' => [
-                'name' => 'Environment key',
+                'name' => $name,
                 'version' => $version > 0 ? $version : null,
                 'state' => 'active',
             ],

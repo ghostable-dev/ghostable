@@ -3,6 +3,7 @@
 use App\Api\Usage\Jobs\FoldUsageCounters;
 use App\Auth\Console\Commands\PruneCliLoginSessionsCommand;
 use App\Auth\Http\Middleware\EnsureUserIsActive;
+use App\Environment\Console\Commands\ReconcileEnvironmentKeyReshareRequestsCommand;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers as SyncVantaUsers;
 use App\Messaging\Commands\RunSeriesCampaignCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->job(FoldUsageCounters::class)->everyMinute();
         $schedule->command(RunSeriesCampaignCommand::class, ['name' => 'onboarding'])->hourlyAt(7);
         $schedule->command(PruneCliLoginSessionsCommand::class)->everyFiveMinutes();
+        $schedule->command(ReconcileEnvironmentKeyReshareRequestsCommand::class)->everyThirtyMinutes();
         $schedule->job(new SyncVantaUsers(requirePaidPlan: true))->everyTwoHours();
     })
     ->withCommands([
