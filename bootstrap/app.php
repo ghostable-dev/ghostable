@@ -22,7 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->job(FoldUsageCounters::class)->everyMinute();
         $schedule->command(RunSeriesCampaignCommand::class, ['name' => 'onboarding'])->hourlyAt(7);
         $schedule->command(PruneCliLoginSessionsCommand::class)->everyFiveMinutes();
-        $schedule->command(ReconcileEnvironmentKeyReshareRequestsCommand::class)->everyThirtyMinutes();
+        if (filter_var((string) env('ENV_KEY_RESHARE_RECONCILE_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN)) {
+            $schedule
+                ->command(ReconcileEnvironmentKeyReshareRequestsCommand::class, ['--pending-only' => true, '--no-notify' => true])
+                ->hourly()
+                ->withoutOverlapping()
+                ->onOneServer();
+        }
         $schedule->job(new SyncVantaUsers(requirePaidPlan: true))->everyTwoHours();
     })
     ->withCommands([

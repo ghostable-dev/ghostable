@@ -14,6 +14,7 @@ return [
     App\Integration\Integrations\Slack\SlackServiceProvider::class,
     App\Integration\Integrations\Vanta\VantaServiceProvider::class,
     App\Organization\OrganizationServiceProvider::class,
+    App\Organization\OrganizationAuditWebhookServiceProvider::class,
     App\Project\ProjectServiceProvider::class,
     App\Core\Providers\FilamentPanelProvider::class,
     App\Messaging\MessagingServiceProvider::class,

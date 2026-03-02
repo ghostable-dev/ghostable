@@ -197,6 +197,11 @@ class Organization extends Model
         return $this->hasMany(ApiUsageDaily::class);
     }
 
+    public function auditWebhooks(): HasMany
+    {
+        return $this->hasMany(OrganizationAuditWebhook::class);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

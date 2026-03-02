@@ -3,6 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Account\Models\User;
+use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
 use Illuminate\Support\Arr;
@@ -66,10 +67,11 @@ class StoreEnvironmentSecret
             // Optimistic concurrency (if provided)
             if ($existing !== null && array_key_exists('if_version', $data) && $data['if_version'] !== null) {
                 if ((int) $existing->version !== (int) $data['if_version']) {
-                    abort(409, json_encode([
-                        'error' => 'version_conflict',
-                        'current_version' => $existing->version,
-                    ]));
+                    throw new EnvironmentSecretVersionConflict(
+                        key: (string) $existing->name,
+                        serverVersion: (int) $existing->version,
+                        clientIfVersion: (int) $data['if_version']
+                    );
                 }
             }
 

@@ -80,7 +80,7 @@ final class ManageEnvironmentKeyReshareRequests
             }
         }
 
-        $this->reconcilePendingForOrganization(
+        $this->reconcilePendingRequestsForOrganization(
             organization: $organization,
             triggerSource: $triggerSource,
             actor: $actor,
@@ -625,12 +625,32 @@ final class ManageEnvironmentKeyReshareRequests
             ->values();
     }
 
-    private function reconcilePendingForOrganization(
+    public function reconcilePendingForOrganization(
+        Organization $organization,
+        string $triggerSource = 'reconcile',
+        ?User $actor = null,
+        ?Request $request = null,
+    ): int {
+        if (! $this->isEnabledForOrganization($organization)) {
+            return 0;
+        }
+
+        return $this->reconcilePendingRequestsForOrganization(
+            organization: $organization,
+            triggerSource: $triggerSource,
+            actor: $actor,
+            request: $request,
+        );
+    }
+
+    private function reconcilePendingRequestsForOrganization(
         Organization $organization,
         string $triggerSource,
         ?User $actor,
         ?Request $request
-    ): void {
+    ): int {
+        $transitions = 0;
+
         $pendingRequests = EnvironmentKeyReshareRequest::query()
             ->where('organization_id', $organization->getKey())
             ->where('status', EnvironmentKeyReshareRequestStatus::Pending)
@@ -651,6 +671,7 @@ final class ManageEnvironmentKeyReshareRequests
                     request: $request,
                     cancelReason: 'environment_missing',
                 );
+                $transitions++;
 
                 continue;
             }
@@ -664,6 +685,7 @@ final class ManageEnvironmentKeyReshareRequests
                     request: $request,
                     cancelReason: 'membership_revoked',
                 );
+                $transitions++;
 
                 continue;
             }
@@ -677,6 +699,7 @@ final class ManageEnvironmentKeyReshareRequests
                     request: $request,
                     cancelReason: 'device_unavailable',
                 );
+                $transitions++;
 
                 continue;
             }
@@ -690,6 +713,7 @@ final class ManageEnvironmentKeyReshareRequests
                     request: $request,
                     cancelReason: 'permission_revoked',
                 );
+                $transitions++;
 
                 continue;
             }
@@ -705,6 +729,7 @@ final class ManageEnvironmentKeyReshareRequests
                     request: $request,
                     cancelReason: 'key_unavailable',
                 );
+                $transitions++;
 
                 continue;
             }
@@ -717,6 +742,7 @@ final class ManageEnvironmentKeyReshareRequests
                     actor: $actor,
                     request: $request,
                 );
+                $transitions++;
 
                 continue;
             }
@@ -729,8 +755,11 @@ final class ManageEnvironmentKeyReshareRequests
                     actor: $actor,
                     request: $request,
                 );
+                $transitions++;
             }
         }
+
+        return $transitions;
     }
 
     private function reconcilePendingForEnvironment(

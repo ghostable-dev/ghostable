@@ -25,8 +25,10 @@ class PushEnvironmentRequest extends FormRequest
 
             // Fields *inside* each secret
             'secrets.*.client_sig' => ['required', 'string', new Base64Encoded],
+            'secrets.*.if_version' => ['nullable', 'integer', 'min:0'],
 
             'sync' => ['sometimes', 'boolean'],
+            'force_overwrite' => ['sometimes', 'boolean'],
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Account\Models\User;
+use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Models\EnvironmentSecretVersion;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +26,10 @@ class CreateEnvironmentSecretVersion
         return DB::transaction(function () use ($secret, $changedBy, $expectedVersion) {
             // Optional optimistic lock
             if ($expectedVersion !== null && $secret->version !== $expectedVersion) {
-                throw new \RuntimeException(
-                    "Version conflict: expected {$expectedVersion}, current {$secret->version}"
+                throw new EnvironmentSecretVersionConflict(
+                    key: (string) $secret->name,
+                    serverVersion: (int) $secret->version,
+                    clientIfVersion: (int) $expectedVersion
                 );
             }
 

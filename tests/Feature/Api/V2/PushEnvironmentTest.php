@@ -1,5 +1,6 @@
 <?php
 
+use App\Core\Models\Activity;
 use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
 use Laravel\Sanctum\Sanctum;
@@ -154,4 +155,70 @@ test('push removes secrets when sync is true', function () {
     expect(
         $this->env->envSecrets()->where('name', 'CACHE_DRIVER')->exists()
     )->toBeFalse();
+});
+
+test('push returns deterministic version conflict payload', function () {
+    Sanctum::actingAs($this->ray);
+
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => [
+            ($this->makeSecretPayload)('APP_KEY'),
+        ],
+    ])->assertOk();
+
+    $response = $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => [
+            ($this->makeSecretPayload)('APP_KEY', [
+                'if_version' => 0,
+            ]),
+        ],
+    ]);
+
+    $response
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'version_conflict')
+        ->assertJsonPath('conflicts.0.key', 'APP_KEY')
+        ->assertJsonPath('conflicts.0.server_version', 1)
+        ->assertJsonPath('conflicts.0.client_if_version', 0);
+});
+
+test('push force_overwrite bypasses stale if_version and logs explicit audit event', function () {
+    Sanctum::actingAs($this->ray);
+
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'secrets' => [
+            ($this->makeSecretPayload)('APP_KEY'),
+        ],
+    ])->assertOk();
+
+    $this->postJson($this->endpoint, [
+        'device_id' => (string) $this->device->getKey(),
+        'force_overwrite' => true,
+        'secrets' => [
+            ($this->makeSecretPayload)('APP_KEY', [
+                'if_version' => 0,
+                'ciphertext' => 'ciphertext-APP_KEY-v2',
+                'nonce' => 'nonce-APP_KEY-v2',
+                'claims' => [
+                    'hmac' => 'hmac-APP_KEY-v2',
+                ],
+            ]),
+        ],
+    ])->assertOk();
+
+    $this->env->refresh();
+
+    expect(
+        $this->env->envSecrets()->where('name', 'APP_KEY')->value('version')
+    )->toBe(2);
+
+    expect(
+        Activity::query()
+            ->where('event', 'push_force_overwrite')
+            ->where('subject_id', (string) $this->env->getKey())
+            ->exists()
+    )->toBeTrue();
 });
