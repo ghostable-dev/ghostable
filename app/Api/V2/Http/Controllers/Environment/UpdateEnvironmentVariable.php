@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Http\Controllers\Environment;
 
+use App\Api\V2\Http\Controllers\Environment\Concerns\RespondsWithVersionConflict;
 use App\Api\V2\Http\Requests\UpdateEnvironmentVariableRequest;
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Actions\CreateEnvironmentSecretVersion;
+use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Support\EnvironmentAuditProperties;
 use App\Organization\Enums\OrganizationPermission;
@@ -15,6 +17,8 @@ use Illuminate\Http\JsonResponse;
 
 final class UpdateEnvironmentVariable extends Controller
 {
+    use RespondsWithVersionConflict;
+
     public function __invoke(
         UpdateEnvironmentVariableRequest $request,
         Project $project,
@@ -43,11 +47,15 @@ final class UpdateEnvironmentVariable extends Controller
 
         $secret->is_commented = $isCommented;
 
-        $versioner->handle(
-            secret: $secret,
-            changedBy: $request->user(),
-            expectedVersion: $expectedVersion
-        );
+        try {
+            $versioner->handle(
+                secret: $secret,
+                changedBy: $request->user(),
+                expectedVersion: $expectedVersion
+            );
+        } catch (EnvironmentSecretVersionConflict $exception) {
+            return $this->versionConflictResponse([$exception->toArray()]);
+        }
 
         activity('variable')
             ->performedOn($environment)

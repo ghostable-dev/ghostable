@@ -82,3 +82,19 @@ test('organization admin can test disable and rotate audit webhook', function ()
     expect($webhook->disabled_at)->toBeNull();
     expect($webhook->signing_secret)->not->toBe('original-secret');
 });
+
+test('organization admin can apply local receiver presets', function () {
+    config()->set('audit_webhook_receiver.local_routes_enabled', true);
+    config()->set('audit_webhook_receiver.token', 'local-dev-token');
+
+    $owner = $this->createUser('Owner', 'owner-local-helper@example.com');
+    $this->createOrganization('Ghostbusters', $owner);
+
+    $this->actingAs($owner);
+
+    $expected = url('/local/audit-webhooks/ingest').'?mode=slow&delay_ms=1500&token=local-dev-token';
+
+    Livewire::test(OrganizationAuditWebhooksManager::class)
+        ->call('useLocalReceiver', 'slow')
+        ->assertSet('endpointUrl', $expected);
+});

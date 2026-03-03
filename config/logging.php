@@ -118,6 +118,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'audit_webhook_receiver' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit-webhook-receiver.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,

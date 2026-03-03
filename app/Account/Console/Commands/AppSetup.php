@@ -61,6 +61,7 @@ class AppSetup extends Command
         $this->resolveGuidedOptions();
 
         $this->resetDatabase();
+        $this->ensureLocalAuditWebhookCaptureStorage();
 
         $this->seedGhostable();
 
@@ -91,6 +92,22 @@ class AppSetup extends Command
 
         $this->info('Cleaing cache...');
         $this->call('cache:clear');
+    }
+
+    protected function ensureLocalAuditWebhookCaptureStorage(): void
+    {
+        $driver = strtolower(trim((string) config('audit_webhook_receiver.driver', 'null')));
+        if ($driver !== 'database') {
+            $this->info(sprintf(
+                'Skipping local audit webhook capture table setup (driver: %s).',
+                $driver === '' ? 'null' : $driver,
+            ));
+
+            return;
+        }
+
+        $this->info('Preparing local audit webhook capture storage (driver: database)...');
+        $this->call('local:audit-webhooks:install-captures-table');
     }
 
     protected function seedGhostable(): void

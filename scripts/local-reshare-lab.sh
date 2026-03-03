@@ -380,6 +380,7 @@ for environment_name in "${ENV_NAMES[@]}"; do
 		env push \
 		--env "$environment_name" \
 		--file ".env.${environment_name}" \
+		--conflict-mode warn \
 		--assume-yes
 done
 

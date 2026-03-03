@@ -49,7 +49,7 @@ final class DeliverAuditWebhookActivity implements ShouldQueue
         }
 
         $payload = $delivery->activityPayload($activity, (string) $webhook->organization_id);
-        $delivery->send($webhook, $payload);
+        $delivery->send($webhook, $payload, max(1, $this->attempts()));
     }
 
     public function failed(Throwable $exception): void

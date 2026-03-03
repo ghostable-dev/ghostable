@@ -6,6 +6,7 @@ namespace App\Environment\Actions;
 
 use App\Account\Models\User;
 use App\Environment\Entities\RollbackResultData;
+use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Models\EnvironmentSecretVersion;
 use Illuminate\Support\Facades\DB;
@@ -29,8 +30,10 @@ class RollbackEnvironmentSecret
 
         return DB::transaction(function () use ($secret, $targetVersion, $actor, $expectedVersion) {
             if ($expectedVersion !== null && (int) $secret->version !== $expectedVersion) {
-                throw new RuntimeException(
-                    sprintf('Version conflict: expected %d, current %d', $expectedVersion, $secret->version)
+                throw new EnvironmentSecretVersionConflict(
+                    key: (string) $secret->name,
+                    serverVersion: (int) $secret->version,
+                    clientIfVersion: (int) $expectedVersion,
                 );
             }
 

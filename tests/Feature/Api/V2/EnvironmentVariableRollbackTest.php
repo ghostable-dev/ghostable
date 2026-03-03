@@ -181,7 +181,10 @@ test('rollback rejects version mismatches', function (): void {
 
     $this->postJson($this->endpoint, $payload)
         ->assertStatus(409)
-        ->assertJsonPath('message', 'Version conflict: expected 999, current 3');
+        ->assertJsonPath('error.code', 'version_conflict')
+        ->assertJsonPath('conflicts.0.key', $this->variableName)
+        ->assertJsonPath('conflicts.0.server_version', 3)
+        ->assertJsonPath('conflicts.0.client_if_version', 999);
 });
 
 test('rollback rejects versions that do not belong to the variable', function (): void {

@@ -3,6 +3,7 @@
 use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Jobs\DeliverAuditWebhookActivity;
 use App\Organization\Models\OrganizationAuditWebhook;
+use App\Organization\Models\OrganizationAuditWebhookDelivery;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
@@ -53,6 +54,7 @@ test('non-admin organization member cannot manage audit webhooks', function () {
     ])->assertForbidden();
 
     $this->getJson($this->baseEndpoint)->assertForbidden();
+    $this->getJson("{$this->baseEndpoint}/metrics")->assertForbidden();
 });
 
 test('admin can disable and rotate audit webhook secret', function () {
@@ -113,6 +115,56 @@ test('admin webhook test endpoint sends signed payload', function () {
     });
 });
 
+test('admin webhook test endpoint can flow into local receiver capture storage', function () {
+    Sanctum::actingAs($this->owner);
+    config()->set('audit_webhook_receiver.local_routes_enabled', true);
+    config()->set('audit_webhook_receiver.driver', 'database');
+    $this->artisan('local:audit-webhooks:install-captures-table')->assertSuccessful();
+
+    $localEndpoint = url('/local/audit-webhooks/ingest?mode=ok');
+
+    Http::fake(function (\Illuminate\Http\Client\Request $request) use ($localEndpoint) {
+        if ($request->url() !== $localEndpoint) {
+            return Http::response(['ok' => true], 202);
+        }
+
+        $headers = [
+            'X-Ghostable-Timestamp' => $request->header('X-Ghostable-Timestamp')[0] ?? '',
+            'X-Ghostable-Signature' => $request->header('X-Ghostable-Signature')[0] ?? '',
+            'X-Ghostable-Event' => $request->header('X-Ghostable-Event')[0] ?? '',
+        ];
+
+        $response = $this->postJson(
+            '/local/audit-webhooks/ingest?mode=ok',
+            json_decode($request->body(), true) ?? [],
+            $headers
+        );
+
+        return Http::response($response->json(), $response->status());
+    });
+
+    $create = $this->postJson($this->baseEndpoint, [
+        'name' => 'Local Capture Target',
+        'endpoint_url' => $localEndpoint,
+    ])->assertCreated();
+
+    $webhookId = (string) $create->json('data.id');
+
+    $this->postJson("{$this->baseEndpoint}/{$webhookId}/test")
+        ->assertOk();
+
+    $this->assertDatabaseHas('organization_audit_webhook_deliveries', [
+        'organization_audit_webhook_id' => $webhookId,
+        'status' => 'delivered',
+    ]);
+
+    $this->assertDatabaseHas('local_audit_webhook_captures', [
+        'event_type' => 'webhook.test',
+        'mode' => 'ok',
+        'response_status' => 202,
+    ]);
+});
+
 test('creating an activity dispatches audit webhook delivery job for active endpoints', function () {
     Sanctum::actingAs($this->owner);
 
@@ -141,4 +193,59 @@ test('creating an activity dispatches audit webhook delivery job for active endp
         DeliverAuditWebhookActivity::class,
         fn (DeliverAuditWebhookActivity $job): bool => $job->webhookId === (string) $webhook->id
     );
+});
+
+test('organization admin can fetch webhook delivery metrics', function () {
+    Sanctum::actingAs($this->owner);
+
+    $webhook = OrganizationAuditWebhook::query()->create([
+        'organization_id' => (string) $this->organization->id,
+        'name' => 'Metrics Target',
+        'endpoint_url' => 'https://siem.example.com/ghostable',
+        'signing_secret' => 'secret-key',
+        'status' => OrganizationAuditWebhookStatus::ACTIVE,
+        'created_by' => (string) $this->owner->id,
+        'updated_by' => (string) $this->owner->id,
+    ]);
+
+    OrganizationAuditWebhookDelivery::query()->create([
+        'organization_audit_webhook_id' => (string) $webhook->id,
+        'organization_id' => (string) $this->organization->id,
+        'event_id' => 'evt-1',
+        'event_type' => 'environment.push',
+        'status' => 'delivered',
+        'http_status' => 200,
+        'latency_ms' => 92,
+        'attempt_number' => 1,
+        'delivered_at' => now()->subMinutes(20),
+        'created_at' => now()->subMinutes(20),
+        'updated_at' => now()->subMinutes(20),
+    ]);
+
+    OrganizationAuditWebhookDelivery::query()->create([
+        'organization_audit_webhook_id' => (string) $webhook->id,
+        'organization_id' => (string) $this->organization->id,
+        'event_id' => 'evt-2',
+        'event_type' => 'environment.push',
+        'status' => 'failed',
+        'http_status' => 500,
+        'latency_ms' => 240,
+        'attempt_number' => 1,
+        'error_message' => 'HTTP 500',
+        'created_at' => now()->subMinutes(10),
+        'updated_at' => now()->subMinutes(10),
+    ]);
+
+    $response = $this->getJson("{$this->baseEndpoint}/metrics?window=24h");
+
+    $response
+        ->assertOk()
+        ->assertJsonPath('data.window', '24h')
+        ->assertJsonPath('data.summary.attempted', 2)
+        ->assertJsonPath('data.summary.succeeded', 1)
+        ->assertJsonPath('data.summary.failed', 1)
+        ->assertJsonPath('data.webhooks.0.id', (string) $webhook->id)
+        ->assertJsonPath('data.webhooks.0.attempted', 2)
+        ->assertJsonPath('data.webhooks.0.succeeded', 1)
+        ->assertJsonPath('data.webhooks.0.failed', 1);
 });

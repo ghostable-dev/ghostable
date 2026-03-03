@@ -6,6 +6,9 @@ use App\Auth\Http\Middleware\EnsureUserIsActive;
 use App\Environment\Console\Commands\ReconcileEnvironmentKeyReshareRequestsCommand;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers as SyncVantaUsers;
 use App\Messaging\Commands\RunSeriesCampaignCommand;
+use App\Organization\Console\Commands\InstallLocalAuditWebhookCapturesTableCommand;
+use App\Organization\Console\Commands\PruneLocalAuditWebhookCapturesCommand;
+use App\Organization\Console\Commands\PruneOrganizationAuditWebhookDeliveriesCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,16 +32,38 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->withoutOverlapping()
                 ->onOneServer();
         }
+        if (filter_var((string) env('AUDIT_WEBHOOK_DELIVERY_PRUNE_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN)) {
+            $schedule
+                ->command(PruneOrganizationAuditWebhookDeliveriesCommand::class, [
+                    '--days' => max(1, (int) env('AUDIT_WEBHOOK_DELIVERY_RETENTION_DAYS', 30)),
+                ])
+                ->daily()
+                ->withoutOverlapping()
+                ->onOneServer();
+        }
+        if (config('audit_webhook_receiver.driver') === 'database') {
+            $schedule
+                ->command(PruneLocalAuditWebhookCapturesCommand::class, [
+                    '--days' => max(1, (int) config('audit_webhook_receiver.retention_days', 14)),
+                ])
+                ->daily()
+                ->withoutOverlapping()
+                ->onOneServer();
+        }
         $schedule->job(new SyncVantaUsers(requirePaidPlan: true))->everyTwoHours();
     })
     ->withCommands([
         RunSeriesCampaignCommand::class,
         PruneCliLoginSessionsCommand::class,
+        PruneOrganizationAuditWebhookDeliveriesCommand::class,
+        PruneLocalAuditWebhookCapturesCommand::class,
+        InstallLocalAuditWebhookCapturesTableCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
+            'local/audit-webhooks/ingest',
         ]);
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
     })

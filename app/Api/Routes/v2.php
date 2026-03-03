@@ -36,6 +36,7 @@ use App\Api\V2\Http\Controllers\Organization\DeleteOrganizationInvite;
 use App\Api\V2\Http\Controllers\Organization\DisableOrganizationAuditWebhook;
 use App\Api\V2\Http\Controllers\Organization\GetOrganization;
 use App\Api\V2\Http\Controllers\Organization\GetOrganizationActivity;
+use App\Api\V2\Http\Controllers\Organization\GetOrganizationAuditWebhookMetrics;
 use App\Api\V2\Http\Controllers\Organization\GetOrganizationInvites;
 use App\Api\V2\Http\Controllers\Organization\GetOrganizationKeyReshareRequests;
 use App\Api\V2\Http\Controllers\Organization\GetOrganizationMembers;
@@ -109,6 +110,7 @@ Route::middleware('api.version:v2')->group(function () {
             Route::get('{organization}/permission-matrix', GetOrganizationPermissionMatrix::class);
             Route::prefix('{organization}/audit-webhooks')->group(function () {
                 Route::get('/', ListOrganizationAuditWebhooks::class);
+                Route::get('metrics', GetOrganizationAuditWebhookMetrics::class);
                 Route::post('/', CreateOrganizationAuditWebhook::class);
                 Route::post('{auditWebhook}/rotate-secret', RotateOrganizationAuditWebhookSecret::class);
                 Route::post('{auditWebhook}/disable', DisableOrganizationAuditWebhook::class);

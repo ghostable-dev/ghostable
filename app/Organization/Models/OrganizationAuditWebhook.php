@@ -9,6 +9,7 @@ use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $id
@@ -58,6 +59,11 @@ final class OrganizationAuditWebhook extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(OrganizationAuditWebhookDelivery::class, 'organization_audit_webhook_id');
     }
 
     public function createdBy(): BelongsTo

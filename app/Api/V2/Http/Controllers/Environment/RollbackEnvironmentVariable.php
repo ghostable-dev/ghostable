@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Api\Core\Resources\Environment\RollbackResultResource;
+use App\Api\V2\Http\Controllers\Environment\Concerns\RespondsWithVersionConflict;
 use App\Api\V2\Http\Requests\RollbackEnvironmentVariableRequest;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
@@ -12,6 +13,7 @@ use App\Crypto\Actions\VerifyClientPayloadSignature;
 use App\Crypto\Models\Device;
 use App\Environment\Actions\RollbackEnvironmentSecret;
 use App\Environment\Entities\RollbackResultData;
+use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Models\EnvironmentSecretVersion;
@@ -25,6 +27,8 @@ use RuntimeException;
 
 final class RollbackEnvironmentVariable extends Controller
 {
+    use RespondsWithVersionConflict;
+
     public function __invoke(
         RollbackEnvironmentVariableRequest $request,
         Project $project,
@@ -84,6 +88,8 @@ final class RollbackEnvironmentVariable extends Controller
                 actor: $request->user(),
                 expectedVersion: isset($data['if_version']) ? (int) $data['if_version'] : null
             );
+        } catch (EnvironmentSecretVersionConflict $exception) {
+            return $this->versionConflictResponse([$exception->toArray()]);
         } catch (RuntimeException $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),

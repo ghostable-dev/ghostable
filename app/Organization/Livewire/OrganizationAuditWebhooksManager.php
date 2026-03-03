@@ -6,6 +6,7 @@ use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Models\Organization;
 use App\Organization\Models\OrganizationAuditWebhook;
 use App\Organization\Support\AuditWebhookDelivery;
+use App\Organization\Support\AuditWebhookMetrics;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -15,6 +16,8 @@ use RuntimeException;
 
 class OrganizationAuditWebhooksManager extends Component
 {
+    public string $metricsWindow = '24h';
+
     public string $name = '';
 
     public string $endpointUrl = '';
@@ -26,6 +29,16 @@ class OrganizationAuditWebhooksManager extends Component
     public ?string $statusMessage = null;
 
     public string $statusLevel = 'info';
+
+    public ?string $selectedWebhookId = null;
+
+    public ?string $selectedWebhookName = null;
+
+    public ?string $selectedWebhookEndpoint = null;
+
+    public ?string $selectedWebhookStatus = null;
+
+    public array $selectedWebhookMetrics = [];
 
     #[Computed]
     public function organization(): Organization
@@ -40,11 +53,45 @@ class OrganizationAuditWebhooksManager extends Component
     }
 
     #[Computed]
+    public function localAuditReceiverEnabled(): bool
+    {
+        return (bool) config('audit_webhook_receiver.local_routes_enabled', false);
+    }
+
+    #[Computed]
+    public function localAuditReceiverInboxUrl(): ?string
+    {
+        if (! $this->localAuditReceiverEnabled()) {
+            return null;
+        }
+
+        return route('local.audit-webhooks.inbox');
+    }
+
+    #[Computed]
     public function auditWebhooks()
     {
         return $this->organization->auditWebhooks()
             ->orderByDesc('created_at')
             ->get();
+    }
+
+    #[Computed]
+    public function auditWebhookMetricsPayload(): array
+    {
+        return app(AuditWebhookMetrics::class)->forOrganization(
+            $this->organization,
+            $this->metricsWindow,
+        );
+    }
+
+    public function updatedMetricsWindow(string $value): void
+    {
+        if (! in_array($value, ['24h', '7d', '30d'], true)) {
+            $this->metricsWindow = '24h';
+        }
+
+        $this->refreshSelectedWebhookMetrics();
     }
 
     public function createWebhook(): void
@@ -69,6 +116,7 @@ class OrganizationAuditWebhooksManager extends Component
         ]);
 
         $this->reset(['name', 'endpointUrl']);
+        Flux::modal('create-audit-webhook')->close();
         $this->lastSigningSecret = $secret;
         $this->lastSigningSecretName = $validated['name'];
 
@@ -78,6 +126,75 @@ class OrganizationAuditWebhooksManager extends Component
         );
 
         Flux::toast('Audit webhook created.');
+    }
+
+    public function useLocalReceiver(string $mode = 'ok'): void
+    {
+        $this->authorize('admin', $this->organization);
+
+        if (! $this->localAuditReceiverEnabled()) {
+            return;
+        }
+
+        $resolvedMode = in_array($mode, ['ok', 'fail', 'slow'], true) ? $mode : 'ok';
+        $query = ['mode' => $resolvedMode];
+
+        if ($resolvedMode === 'slow') {
+            $query['delay_ms'] = '1500';
+        }
+
+        $token = trim((string) config('audit_webhook_receiver.token', ''));
+        if ($token !== '') {
+            $query['token'] = $token;
+        }
+
+        $base = url('/local/audit-webhooks/ingest');
+        $this->endpointUrl = $base.'?'.http_build_query($query);
+
+        $this->setStatus(
+            message: 'Local receiver endpoint preset applied.',
+            level: 'success',
+        );
+    }
+
+    public function openWebhookMetrics(string $webhookId): void
+    {
+        $this->authorize('admin', $this->organization);
+
+        $webhook = $this->resolveWebhook($webhookId);
+        if (! $webhook) {
+            return;
+        }
+
+        $this->selectedWebhookId = (string) $webhook->id;
+        $this->selectedWebhookName = $webhook->name;
+        $this->selectedWebhookEndpoint = $webhook->endpoint_url;
+        $this->selectedWebhookStatus = (string) ($webhook->status?->value ?? $webhook->status);
+        $this->refreshSelectedWebhookMetrics();
+
+        $this->modal('audit-webhook-metrics')->show();
+    }
+
+    private function refreshSelectedWebhookMetrics(): void
+    {
+        if (! $this->selectedWebhookId) {
+            $this->selectedWebhookMetrics = [];
+
+            return;
+        }
+
+        $webhook = $this->resolveWebhook($this->selectedWebhookId);
+        if (! $webhook) {
+            $this->selectedWebhookMetrics = [];
+
+            return;
+        }
+
+        $metricsPayload = collect($this->auditWebhookMetricsPayload['webhooks'] ?? [])->keyBy('id');
+        $this->selectedWebhookMetrics = (array) $metricsPayload->get((string) $webhook->id, []);
+        $this->selectedWebhookName = $webhook->name;
+        $this->selectedWebhookEndpoint = $webhook->endpoint_url;
+        $this->selectedWebhookStatus = (string) ($webhook->status?->value ?? $webhook->status);
     }
 
     public function testWebhook(string $webhookId): void

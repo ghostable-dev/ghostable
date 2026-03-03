@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Api\Core\Resources\Environment\PushResultResource;
+use App\Api\V2\Http\Controllers\Environment\Concerns\RespondsWithVersionConflict;
 use App\Api\V2\Http\Requests\PushEnvironmentRequest;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
@@ -24,6 +25,8 @@ use RuntimeException;
 
 final class PushEnvironment extends Controller
 {
+    use RespondsWithVersionConflict;
+
     public function __invoke(
         PushEnvironmentRequest $request,
         Project $project,
@@ -220,20 +223,5 @@ final class PushEnvironment extends Controller
             );
 
         return new PushResultResource($result);
-    }
-
-    /**
-     * @param  array<int, array{key:string, server_version:int, client_if_version:int}>  $conflicts
-     */
-    private function versionConflictResponse(array $conflicts): JsonResponse
-    {
-        return response()->json([
-            'message' => 'One or more variables are out of date. Refresh environment state and retry.',
-            'error' => [
-                'code' => 'version_conflict',
-                'detail' => 'Local variable versions do not match server versions.',
-            ],
-            'conflicts' => $conflicts,
-        ], 409);
     }
 }

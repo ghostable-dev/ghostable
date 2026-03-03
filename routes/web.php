@@ -19,6 +19,7 @@ use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
 use App\Integration\Http\Controllers\LocalOauthTestController;
 use App\Integration\IntegrationRoutes;
+use App\Organization\Http\Controllers\LocalAuditWebhookReceiverController;
 use App\Organization\OrganizationRoutes;
 use App\Project\ProjectRoutes;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,19 @@ if (app()->environment('local')) {
             Route::get('/', [LocalOauthTestController::class, 'show'])->name('show');
             Route::post('start', [LocalOauthTestController::class, 'start'])->name('start');
             Route::get('callback', [LocalOauthTestController::class, 'callback'])->name('callback');
+        });
+}
+
+if (config('audit_webhook_receiver.local_routes_enabled') || app()->environment('testing')) {
+    Route::prefix('local/audit-webhooks')
+        ->name('local.audit-webhooks.')
+        ->group(function () {
+            Route::post('ingest', [LocalAuditWebhookReceiverController::class, 'ingest'])->name('ingest');
+
+            Route::middleware(['auth', 'verified'])->group(function () {
+                Route::get('inbox', [LocalAuditWebhookReceiverController::class, 'inbox'])->name('inbox');
+                Route::delete('inbox', [LocalAuditWebhookReceiverController::class, 'clear'])->name('clear');
+            });
         });
 }
 
