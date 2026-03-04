@@ -54,6 +54,8 @@ jobs:
           path: .
           format: spdx-json
           output-file: artifacts/ghostable-sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v1
