@@ -14,6 +14,7 @@ use App\Core\Http\Controllers\GenerateLearnSitemap;
 use App\Core\Http\Controllers\GeneratePagesSitemap;
 use App\Core\Http\Controllers\GenerateSitemap;
 use App\Core\Http\Controllers\GetDesktopAppcast;
+use App\Core\Http\Controllers\RedirectDesktopDownload;
 use App\Core\Http\Controllers\SecurityIssueController;
 use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
@@ -30,6 +31,7 @@ Route::get('sitemap-blog.xml', GenerateBlogSitemap::class);
 Route::get('sitemap-pages.xml', GeneratePagesSitemap::class);
 Route::get('sitemap-learn.xml', GenerateLearnSitemap::class);
 Route::get('desktop/appcast.xml', GetDesktopAppcast::class)->name('desktop.appcast');
+Route::get('desktop/download', RedirectDesktopDownload::class)->name('desktop.download');
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
 
