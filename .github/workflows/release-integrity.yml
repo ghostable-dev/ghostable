@@ -58,6 +58,7 @@ jobs:
           upload-release-assets: false
 
       - name: Attest build provenance
+        if: ${{ !github.event.repository.private }}
         uses: actions/attest-build-provenance@v1
         with:
           subject-path: |
@@ -65,11 +66,17 @@ jobs:
             artifacts/SHA256SUMS
             artifacts/ghostable-sbom.spdx.json
 
+      - name: Skip provenance attestation (private repository)
+        if: ${{ github.event.repository.private }}
+        run: |
+          echo "Skipping provenance attestation for private repository due GitHub plan limits."
+
       - name: Verify release integrity artifacts
         run: |
           bash scripts/release-integrity-verify.sh artifacts
 
       - name: Verify provenance attestation
+        if: ${{ !github.event.repository.private }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
