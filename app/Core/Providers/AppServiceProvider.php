@@ -6,6 +6,7 @@ use App\Account\Jobs\UpdateLastLogin;
 use App\Account\Models\User;
 use App\Auth\Actions\LogAccountSecurityActivity;
 use App\Auth\Enums\CliLoginSessionStatus;
+use App\Auth\Http\Middleware\EnsureUserIsActive;
 use App\Auth\Models\CliLoginSession;
 use App\Core\Enums\InquiryType;
 use App\Core\Events\InquiryCreated;
@@ -31,6 +32,7 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
 use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
+use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
 use function Illuminate\Events\queueable;
@@ -53,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([]);
         }
+
+        Livewire::addPersistentMiddleware(EnsureUserIsActive::class);
 
         Blade::component('site-schema', SiteSchema::class);
         Blade::component('breadcrumb-schema', BreadcrumbSchema::class);

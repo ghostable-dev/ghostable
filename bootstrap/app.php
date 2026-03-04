@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(PruneCliLoginSessionsCommand::class)->everyFiveMinutes();
         if (filter_var((string) env('ENV_KEY_RESHARE_RECONCILE_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN)) {
             $schedule
-                ->command(ReconcileEnvironmentKeyReshareRequestsCommand::class, ['--pending-only' => true, '--no-notify' => true])
+                ->command(ReconcileEnvironmentKeyReshareRequestsCommand::class, ['--pending-only', '--no-notify'])
                 ->hourly()
                 ->withoutOverlapping()
                 ->onOneServer();
