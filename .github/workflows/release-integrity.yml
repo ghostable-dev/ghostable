@@ -1,0 +1,89 @@
+name: Release Integrity
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to process (defaults to current release tag)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  package-and-attest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="${{ inputs.tag }}"
+          fi
+          if [ -z "$TAG" ]; then
+            echo "No release tag available. Provide workflow_dispatch input 'tag'." >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build integrity bundle
+        run: |
+          mkdir -p artifacts
+          git archive --format=tar.gz --prefix=ghostable-${{ steps.tag.outputs.tag }}/ "${{ steps.tag.outputs.tag }}" > "artifacts/ghostable-${{ steps.tag.outputs.tag }}.tar.gz"
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          shasum -a 256 ghostable-*.tar.gz > SHA256SUMS
+
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: artifacts/ghostable-sbom.spdx.json
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            artifacts/*.tar.gz
+            artifacts/SHA256SUMS
+            artifacts/ghostable-sbom.spdx.json
+
+      - name: Verify release integrity artifacts
+        run: |
+          bash scripts/release-integrity-verify.sh artifacts
+
+      - name: Verify provenance attestation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify artifacts/*.tar.gz --repo "${{ github.repository }}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-integrity
+          path: artifacts/
+
+      - name: Publish integrity assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: |
+            artifacts/*.tar.gz
+            artifacts/SHA256SUMS
+            artifacts/ghostable-sbom.spdx.json
