@@ -4,27 +4,24 @@ namespace App\Filament\Widgets;
 
 use App\Core\Models\Activity;
 use App\Filament\Resources\Core\SecurityActivity\SecurityActivityResource;
+use App\Filament\Widgets\Activity\Concerns\InteractsWithActivityRange;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SecurityActivityStats extends BaseWidget
 {
+    use InteractsWithActivityRange;
+
     protected function getStats(): array
     {
-        $now = now()->timezone(timezone());
-
         $query = SecurityActivityResource::applySecurityScopeTo(Activity::query());
+        $rangeQuery = $this->applyActivityDateRange(clone $query);
+        $label = $this->activityRangeLabel();
 
         return [
-            Stat::make('Security Today', (clone $query)->whereDate('created_at', $now)->count()),
-            Stat::make('Security This Week', (clone $query)->whereBetween('created_at', [
-                $now->copy()->startOfWeek(),
-                $now->copy()->endOfWeek(),
-            ])->count()),
-            Stat::make('Security This Month', (clone $query)->whereBetween('created_at', [
-                $now->copy()->startOfMonth(),
-                $now->copy()->endOfMonth(),
-            ])->count()),
+            Stat::make("Security ({$label})", (clone $rangeQuery)->count()),
+            Stat::make('Active Actors', (clone $rangeQuery)->whereNotNull('causer_id')->distinct('causer_id')->count('causer_id')),
+            Stat::make('Event Types', (clone $rangeQuery)->whereNotNull('event')->distinct('event')->count('event')),
         ];
     }
 }

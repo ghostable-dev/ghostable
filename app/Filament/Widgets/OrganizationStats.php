@@ -2,26 +2,24 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Activity\Concerns\InteractsWithActivityRange;
 use App\Organization\Models\Organization;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class OrganizationStats extends BaseWidget
 {
+    use InteractsWithActivityRange;
+
     protected function getStats(): array
     {
-        $now = now()->timezone(timezone());
+        $rangeQuery = $this->applyActivityDateRange(Organization::query());
+        $label = $this->activityRangeLabel();
 
         return [
-            Stat::make('Organizations Today', Organization::whereDate('created_at', $now)->count()),
-            Stat::make('Organizations This Week', Organization::whereBetween('created_at', [
-                $now->copy()->startOfWeek(),
-                $now->copy()->endOfWeek(),
-            ])->count()),
-            Stat::make('Organizations This Month', Organization::whereBetween('created_at', [
-                $now->copy()->startOfMonth(),
-                $now->copy()->endOfMonth(),
-            ])->count()),
+            Stat::make("Organizations ({$label})", (clone $rangeQuery)->count()),
+            Stat::make("Owners ({$label})", (clone $rangeQuery)->whereNotNull('owner_id')->distinct('owner_id')->count('owner_id')),
+            Stat::make("Without Owner ({$label})", (clone $rangeQuery)->whereNull('owner_id')->count()),
         ];
     }
 }

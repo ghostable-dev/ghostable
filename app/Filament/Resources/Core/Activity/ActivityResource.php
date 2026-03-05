@@ -35,8 +35,8 @@ class ActivityResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'DESC')
-            ->modifyQueryUsing(function ($query) {
-                return $query->where('log_name', '!=', 'notifications');
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                return static::applyActivityScope($query);
             })
             ->columns([
                 DateColumn::make('created_at')
@@ -150,5 +150,15 @@ class ActivityResource extends Resource
         return [
             'index' => ListActivities::route('/'),
         ];
+    }
+
+    protected static function applyActivityScope(Builder $query): Builder
+    {
+        return $query->where('log_name', '!=', 'notifications');
+    }
+
+    public static function applyActivityScopeTo(Builder $query): Builder
+    {
+        return static::applyActivityScope($query);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Organizations\Pages;
 
 use App\Filament\Resources\Organizations\OrganizationResource;
+use App\Filament\Widgets\Activity\OrganizationTimelineChart;
 use App\Filament\Widgets\OrganizationStats;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,7 @@ class ListOrganizations extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
+            OrganizationTimelineChart::class,
             OrganizationStats::make(),
         ];
     }
