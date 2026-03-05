@@ -10,6 +10,7 @@ use App\Auth\Http\Middleware\EnsureUserIsActive;
 use App\Auth\Models\CliLoginSession;
 use App\Core\Enums\InquiryType;
 use App\Core\Events\InquiryCreated;
+use App\Core\Http\Middleware\NormalizeLivewireNotificationsPayload;
 use App\Core\Notifications\InquiryAutoReplyNotification;
 use App\Core\Notifications\NewInquiryNotification;
 use App\Core\View\Components\ActivityCauserDisplay;
@@ -57,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Livewire::addPersistentMiddleware(EnsureUserIsActive::class);
+        Livewire::addPersistentMiddleware(NormalizeLivewireNotificationsPayload::class);
 
         Blade::component('site-schema', SiteSchema::class);
         Blade::component('breadcrumb-schema', BreadcrumbSchema::class);
