@@ -87,6 +87,7 @@ Route::prefix('integrations')
         Route::view('vanta', 'site.integrations.vanta')->name('vanta');
         Route::view('forge', 'site.integrations.forge')->name('forge');
         Route::view('cloud', 'site.integrations.cloud')->name('cloud');
+        Route::view('openclaw', 'site.integrations.openclaw')->name('openclaw');
         Route::view('vapor', 'site.integrations.vapor')->name('vapor');
     });
 

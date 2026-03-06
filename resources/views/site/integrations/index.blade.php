@@ -71,6 +71,15 @@
                             'icon_alt' => 'Laravel Cloud logo',
                         ],
                         [
+                            'name' => 'OpenClaw',
+                            'status' => 'Available',
+                            'description' => 'Generate OpenClaw-ready env files from Ghostable for Docker, CI/CD, and host runtime boot.',
+                            'href' => route('integrations.openclaw'),
+                            'cta' => 'View integration',
+                            'icon' => asset('images/logos/openclaw-icon.svg'),
+                            'icon_alt' => 'OpenClaw logo',
+                        ],
+                        [
                             'name' => 'Laravel Vapor',
                             'status' => 'Available',
                             'description' => 'Push env changes from Ghostable into Vapor (AWS Secrets Manager) using built-in deploy commands.',

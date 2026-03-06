@@ -22,6 +22,7 @@ class GeneratePagesSitemap extends Controller
             ->add($this->vantaIntegration())
             ->add($this->forgeIntegration())
             ->add($this->cloudIntegration())
+            ->add($this->openclawIntegration())
             ->add($this->vaporIntegration())
             ->toResponse(request());
     }
@@ -118,6 +119,14 @@ class GeneratePagesSitemap extends Controller
     private function cloudIntegration(): Url
     {
         return Url::create(route('integrations.cloud'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.7);
+    }
+
+    private function openclawIntegration(): Url
+    {
+        return Url::create(route('integrations.openclaw'))
             ->setLastModificationDate(now())
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
