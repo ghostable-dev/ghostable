@@ -3,6 +3,8 @@
 use App\Api\Usage\Jobs\FoldUsageCounters;
 use App\Auth\Console\Commands\PruneCliLoginSessionsCommand;
 use App\Auth\Http\Middleware\EnsureUserIsActive;
+use App\Console\Commands\FoldDesktopUpdateAnalyticsCommand;
+use App\Console\Commands\PruneDesktopUpdateAnalyticsCommand;
 use App\Environment\Console\Commands\ReconcileEnvironmentKeyReshareRequestsCommand;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers as SyncVantaUsers;
 use App\Messaging\Commands\RunSeriesCampaignCommand;
@@ -23,8 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule) {
         $schedule->job(FoldUsageCounters::class)->everyMinute();
+        $schedule->command(FoldDesktopUpdateAnalyticsCommand::class)->everyFiveMinutes()->withoutOverlapping();
         $schedule->command(RunSeriesCampaignCommand::class, ['name' => 'onboarding'])->hourlyAt(7);
         $schedule->command(PruneCliLoginSessionsCommand::class)->everyFiveMinutes();
+        $schedule->command(PruneDesktopUpdateAnalyticsCommand::class)->daily()->withoutOverlapping()->onOneServer();
         if (filter_var((string) env('ENV_KEY_RESHARE_RECONCILE_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN)) {
             $schedule
                 ->command(ReconcileEnvironmentKeyReshareRequestsCommand::class, ['--pending-only', '--no-notify'])
@@ -64,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
             'local/audit-webhooks/ingest',
+            'desktop/update-events',
         ]);
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
     })

@@ -10,6 +10,11 @@ return [
     'description' => env('DESKTOP_UPDATE_DESCRIPTION', 'Release feed for the Ghostable desktop app.'),
     'language' => env('DESKTOP_UPDATE_LANGUAGE', 'en-US'),
     'link' => env('DESKTOP_UPDATE_LINK', $appUrl),
+    'tracking' => [
+        'signature_ttl_minutes' => (int) env('DESKTOP_UPDATE_TRACKING_SIGNATURE_TTL_MINUTES', 60 * 24 * 7),
+        'anonymize_after_days' => (int) env('DESKTOP_UPDATE_TRACKING_ANONYMIZE_AFTER_DAYS', 7),
+        'prune_after_days' => (int) env('DESKTOP_UPDATE_TRACKING_PRUNE_AFTER_DAYS', 90),
+    ],
 
     'channels' => [
         'stable' => [
