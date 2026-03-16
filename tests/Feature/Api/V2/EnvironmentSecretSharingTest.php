@@ -180,6 +180,9 @@ test('pull returns ENV_KEY_RESHARE_REQUIRED when device is missing current key e
             ],
         ],
     );
+    $environmentKey->forceFill([
+        'rotated_at' => now()->subDay(),
+    ])->save();
 
     Sanctum::actingAs($this->collaborator);
 

@@ -4,6 +4,7 @@ use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Jobs\DeliverAuditWebhookActivity;
 use App\Organization\Models\OrganizationAuditWebhook;
 use App\Organization\Models\OrganizationAuditWebhookDelivery;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
@@ -190,6 +191,40 @@ test('creating an activity dispatches audit webhook delivery job for active endp
         ->log('Queued audit webhook dispatch test');
 
     Queue::assertPushed(
+        DeliverAuditWebhookActivity::class,
+        fn (DeliverAuditWebhookActivity $job): bool => $job->webhookId === (string) $webhook->id
+    );
+});
+
+test('creating an activity during screenshot requests does not dispatch audit webhook delivery jobs', function () {
+    Sanctum::actingAs($this->owner);
+
+    Queue::fake();
+
+    $webhook = OrganizationAuditWebhook::query()->create([
+        'organization_id' => (string) $this->organization->id,
+        'name' => 'Queue Target',
+        'endpoint_url' => 'https://siem.example.com/ghostable',
+        'signing_secret' => 'secret-key',
+        'status' => OrganizationAuditWebhookStatus::ACTIVE,
+        'created_by' => (string) $this->owner->id,
+        'updated_by' => (string) $this->owner->id,
+    ]);
+
+    app()->instance('request', Request::create('/', 'GET', server: [
+        'HTTP_X_GHOSTABLE_SCREENSHOT' => '1',
+    ]));
+
+    activity('organization')
+        ->performedOn($this->organization)
+        ->causedBy($this->owner)
+        ->event('audit_webhook_test_event')
+        ->withProperties([
+            'organization_id' => (string) $this->organization->id,
+        ])
+        ->log('Skipped audit webhook dispatch for screenshot request');
+
+    Queue::assertNotPushed(
         DeliverAuditWebhookActivity::class,
         fn (DeliverAuditWebhookActivity $job): bool => $job->webhookId === (string) $webhook->id
     );

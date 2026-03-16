@@ -3,7 +3,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "screenshots:server": "node scripts/screenshots/server/run.mjs",
+        "screenshots:server:test": "node --test tests/screenshots/server/*.test.mjs"
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.0.7",
@@ -23,6 +25,8 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
-        "@tailwindcss/typography": "^0.5.16"
+        "@tailwindcss/typography": "^0.5.16",
+        "playwright": "^1.54.2",
+        "yaml": "^2.8.1"
     }
 }

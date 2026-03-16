@@ -98,3 +98,16 @@ test('organization admin can apply local receiver presets', function () {
         ->call('useLocalReceiver', 'slow')
         ->assertSet('endpointUrl', $expected);
 });
+
+test('local receiver presets are hidden for screenshot renders', function () {
+    config()->set('audit_webhook_receiver.local_routes_enabled', true);
+
+    $owner = $this->createUser('Owner', 'owner-screenshot@example.com');
+    $this->createOrganization('Ghostbusters', $owner);
+
+    $this->actingAs($owner);
+
+    Livewire::withQueryParams(['screenshot' => '1'])
+        ->test(OrganizationAuditWebhooksManager::class)
+        ->assertSet('localAuditReceiverEnabled', false);
+});

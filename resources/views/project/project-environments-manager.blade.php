@@ -1,5 +1,5 @@
 <x-layouts.project :project="$this->project">
-    <flux:tab.group>
+    <flux:tab.group data-screenshot-ready="project-environments">
         
         {{-- Header --}}
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
@@ -18,40 +18,44 @@
         
         {{-- Environment list view display --}}
         <flux:tab.panel name="list">
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>Name</flux:table.column>
-                    <flux:table.column>Type</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @foreach($this->environments as $env)
-                        <flux:table.row wire:key="list-row-{{ $env->id }}">
-                            <flux:table.cell>{{ $env->name }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge>{{ $env->type->label() }}</flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                <flux:link href="{{ route('environment.variables', $env) }}">
-                                    View
-                                </flux:link>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforeach
-                </flux:table.rows>
-            </flux:table>
+            <div data-screenshot-frame="project-environments-list">
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column>Name</flux:table.column>
+                        <flux:table.column>Type</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @foreach($this->environments as $env)
+                            <flux:table.row wire:key="list-row-{{ $env->id }}">
+                                <flux:table.cell>{{ $env->name }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:badge>{{ $env->type->label() }}</flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:link href="{{ route('environment.variables', $env) }}">
+                                        View
+                                    </flux:link>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </flux:tab.panel>
         
         {{-- Environment board view display --}}
         <flux:tab.panel name="board">
-            <ul 
-                role="list" 
-                class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-                @foreach($this->environments as $env)
-                    <li class="col-span-1" wire:key="board-{{ $env->id }}">
-                        <x-environment.display-card :$env/>
-                    </li>
-                @endforeach
-            </ul>
+            <div data-screenshot-frame="project-environments-board">
+                <ul 
+                    role="list" 
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                    @foreach($this->environments as $env)
+                        <li class="col-span-1" wire:key="board-{{ $env->id }}">
+                            <x-environment.display-card :$env/>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </flux:tab.panel>
         
     </flux:tab.group>

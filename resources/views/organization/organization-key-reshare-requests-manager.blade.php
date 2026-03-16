@@ -1,4 +1,4 @@
-<div class="space-y-6 max-w-4xl" id="key-reshare-requests">
+<div class="space-y-6 max-w-4xl" id="key-reshare-requests" data-screenshot-frame="org-key-reshare-queue">
 
     <x-section>
         <x-slot:title>{{ __('Environment Key Re-share Queue') }}</x-slot:title>

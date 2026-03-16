@@ -158,6 +158,9 @@ test('returns ENV_KEY_RESHARE_REQUIRED when the linked device is missing key acc
             ],
         ],
     );
+    $environmentKey->forceFill([
+        'rotated_at' => now()->subDay(),
+    ])->save();
 
     Sanctum::actingAs($recipient);
 

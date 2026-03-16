@@ -1,4 +1,4 @@
-<section class="w-full">
+<section class="w-full" data-screenshot-ready="org-integrations-settings">
     @include('organization.partials.organization-settings-header')
 
     <x-layouts.organization-settings>
@@ -29,7 +29,7 @@
             </div>
 
             <flux:tab.panel name="connected">
-                <div class="relative space-y-3">
+                <div class="relative space-y-3" data-screenshot-frame="integrations-connected">
                     <div>
                         <p class="text-lg font-semibold text-slate-900">{{ __('Connected Integrations') }}</p>
                         <p class="text-sm text-slate-500">{{ __('Enable or disable integrations for this organization.') }}</p>

@@ -7,6 +7,7 @@ use App\Core\Concerns\CreatesAccountData;
 use App\Environment\Enums\EnvironmentType;
 use App\Integration\Models\Integration;
 use App\Integration\Models\IntegrationClient;
+use App\Organization\Actions\PrepareLocalAuditWebhookCaptureStorage;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
 use Illuminate\Console\Command;
@@ -96,18 +97,7 @@ class AppSetup extends Command
 
     protected function ensureLocalAuditWebhookCaptureStorage(): void
     {
-        $driver = strtolower(trim((string) config('audit_webhook_receiver.driver', 'null')));
-        if ($driver !== 'database') {
-            $this->info(sprintf(
-                'Skipping local audit webhook capture table setup (driver: %s).',
-                $driver === '' ? 'null' : $driver,
-            ));
-
-            return;
-        }
-
-        $this->info('Preparing local audit webhook capture storage (driver: database)...');
-        $this->call('local:audit-webhooks:install-captures-table');
+        app(PrepareLocalAuditWebhookCaptureStorage::class)->handle($this);
     }
 
     protected function seedGhostable(): void

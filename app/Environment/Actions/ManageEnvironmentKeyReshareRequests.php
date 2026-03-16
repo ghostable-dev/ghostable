@@ -1234,7 +1234,6 @@ final class ManageEnvironmentKeyReshareRequests
     {
         /** @var EnvironmentKey|null $environmentKey */
         $environmentKey = $environment->keys()
-            ->whereNull('rotated_at')
             ->orderByDesc('version')
             ->with('envelope')
             ->first();

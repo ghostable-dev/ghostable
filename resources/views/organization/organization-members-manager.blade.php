@@ -1,4 +1,4 @@
-<div class="space-y-6 max-w-4xl">
+<div class="space-y-6 max-w-4xl" data-screenshot-frame="org-members">
     
     <x-section>
         <x-slot:title>{{ __('Organization Members') }}</x-slot:title>

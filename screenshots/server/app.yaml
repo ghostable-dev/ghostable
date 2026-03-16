@@ -1,0 +1,134 @@
+version: 1
+platform: server
+defaults:
+  themes: [light, dark]
+  viewport: desktop-lg
+  output_dir: docs/server
+shots:
+  - id: dashboard-projects-overview
+    tags: [docs, blog, marketing]
+    filename: dashboard-projects-overview
+    target:
+      route: dashboard
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="dashboard-projects"]'
+    capture:
+      mode: clip
+      clip:
+        x: 32
+        y: 108
+        width: 1376
+        height: 820
+  - id: control-plane-environments-board
+    tags: [docs, marketing]
+    filename: control-plane-environments-board
+    target:
+      route: project.environments
+      params:
+        project: alias:project.control-plane
+    actions:
+      - click:
+          role: tab
+          name: Board
+      - wait_for:
+          css: '[data-screenshot-frame="project-environments-board"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="project-environments-board"]'
+      padding: 20
+  - id: control-plane-environments-list
+    tags: [docs, marketing]
+    filename: control-plane-environments-list
+    target:
+      route: project.environments
+      params:
+        project: alias:project.control-plane
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="project-environments"]'
+      - click:
+          role: tab
+          name: List
+      - wait_for:
+          css: '[data-screenshot-frame="project-environments-list"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="project-environments-list"]'
+      padding: 20
+  - id: flagship-env-variables
+    tags: [docs, marketing]
+    filename: flagship-environment-variables
+    target:
+      route: environment.variables
+      params:
+        environment: alias:environment.control-plane.production
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="env-vars"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="env-vars-table"]'
+      padding: 24
+  - id: organization-members
+    tags: [docs, blog]
+    filename: organization-members
+    target:
+      route: organization.settings.members
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="org-members-settings"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="org-members"]'
+      padding: 20
+  - id: organization-members-and-invites
+    tags: [docs, blog]
+    filename: organization-members-and-invites
+    target:
+      route: organization.settings.members
+    actions:
+      - wait_for:
+          css: '[data-screenshot-frame="org-members-and-invites"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="org-members-and-invites"]'
+      padding: 20
+  - id: organization-key-reshare-queue
+    tags: [docs, blog]
+    filename: organization-key-reshare-queue
+    target:
+      route: organization.settings.members
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="org-members-settings"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="org-key-reshare-queue"]'
+      padding: 20
+  - id: organization-integrations-connected
+    tags: [docs, marketing]
+    filename: organization-integrations-connected
+    target:
+      route: organization.settings.integrations
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="org-integrations-settings"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="integrations-connected"]'
+      padding: 20
+  - id: organization-audit-webhooks
+    tags: [docs, blog, marketing]
+    filename: organization-audit-webhooks
+    target:
+      route: organization.settings.notifications
+      query:
+        screenshot: '1'
+    actions:
+      - wait_for:
+          css: '[data-screenshot-ready="org-notifications-settings"]'
+    capture:
+      mode: locator
+      css: '[data-screenshot-frame="organization-audit-webhooks"]'
+      padding: 20

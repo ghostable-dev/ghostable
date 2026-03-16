@@ -1,0 +1,12 @@
+version: 1
+consumer_id: ghostable-web
+adapter: blade
+scan_globs:
+  - resources/views/**/*.blade.php
+asset_dir: public/images/generated/screenshots
+asset_url_prefix: images/generated/screenshots
+render:
+  themes: [light, dark]
+  light_class: block dark:hidden w-full rounded-xl
+  dark_class: hidden dark:block w-full rounded-xl
+  caption_class: mt-3 text-sm text-zinc-500

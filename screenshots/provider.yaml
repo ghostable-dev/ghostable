@@ -1,0 +1,11 @@
+version: 1
+provider_id: ghostable-server
+platform: server
+manifest_glob: screenshots/server/*.yaml
+capture_command:
+  - npm
+  - run
+  - screenshots:server
+  - --
+output_root: storage/app/screenshots/server
+themes: [light, dark]

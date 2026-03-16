@@ -55,7 +55,8 @@ class OrganizationAuditWebhooksManager extends Component
     #[Computed]
     public function localAuditReceiverEnabled(): bool
     {
-        return (bool) config('audit_webhook_receiver.local_routes_enabled', false);
+        return (bool) config('audit_webhook_receiver.local_routes_enabled', false)
+            && ! request()->boolean('screenshot');
     }
 
     #[Computed]

@@ -1,4 +1,4 @@
-<div class="space-y-6 max-w-4xl">
+<div class="space-y-6 max-w-4xl" data-screenshot-frame="organization-audit-webhooks">
     @php
         $metricsPayload = $this->auditWebhookMetricsPayload;
         $metricsSummary = $metricsPayload['summary'] ?? [];

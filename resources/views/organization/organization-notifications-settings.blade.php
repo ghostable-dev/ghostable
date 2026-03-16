@@ -1,4 +1,4 @@
-<section class="w-full">
+<section class="w-full" data-screenshot-ready="org-notifications-settings">
     @include('organization.partials.organization-settings-header')
     <x-layouts.organization-settings>
         <div class="space-y-6">

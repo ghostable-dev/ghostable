@@ -20,6 +20,10 @@ final class OrganizationAuditWebhookServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Activity::created(function (Activity $activity): void {
+            if (request()->headers->get('X-Ghostable-Screenshot') === '1') {
+                return;
+            }
+
             $organizationId = $this->resolveOrganizationId($activity);
 
             if (! $organizationId) {
