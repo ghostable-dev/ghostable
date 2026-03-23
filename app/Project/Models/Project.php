@@ -6,6 +6,7 @@ use App\Environment\Models\Environment;
 use App\Organization\Concerns\HasPermissionOverrides;
 use App\Organization\Contracts\SupportsOverrides;
 use App\Organization\Models\Organization;
+use App\Organization\Models\OrganizationPermissionOverride;
 use App\Organization\Resolvers\ResolveOrganization;
 use App\Project\Entities\ProjectNotificationsData;
 use App\Project\Entities\ProjectStackData;
@@ -13,14 +14,19 @@ use App\Project\Enums\DeploymentProvider;
 use App\Project\Events\ProjectCreated;
 use App\Project\Events\ProjectDeleted;
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\LaravelData\Contracts\BaseData;
+use Spatie\LaravelData\Contracts\TransformableData;
 
 /**
  * @property string $id
@@ -28,16 +34,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $name
  * @property string|null $description
  * @property string $organization_id
- * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property BaseData|TransformableData|null $notifications
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Environment> $environments
+ * @property-read Collection<int, Environment> $environments
  * @property-read int|null $environments_count
  * @property-read Organization $organization
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
+ * @property-read Collection<int, OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  *
  * @method static \Database\Factories\ProjectFactory factory($count = null, $state = [])

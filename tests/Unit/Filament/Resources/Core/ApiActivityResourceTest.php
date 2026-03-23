@@ -3,8 +3,9 @@
 use App\Core\Models\Activity;
 use App\Filament\Resources\Core\ApiActivity\ApiActivityResource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 it('scopes records to api-related activity sources', function (): void {
     activity('variable')->event('push')->withProperties(['source' => 'cli'])->log('CLI pushed environment');

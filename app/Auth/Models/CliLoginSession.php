@@ -7,14 +7,15 @@ use App\Auth\Enums\CliLoginSessionStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string|null $user_id
  * @property CliLoginSessionStatus $status
  * @property string $browser_token
- * @property \Illuminate\Support\Carbon $expires_at
- * @property \Illuminate\Support\Carbon|null $approved_at
+ * @property Carbon $expires_at
+ * @property Carbon|null $approved_at
  */
 class CliLoginSession extends Model
 {

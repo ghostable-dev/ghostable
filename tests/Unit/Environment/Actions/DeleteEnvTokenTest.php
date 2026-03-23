@@ -21,7 +21,7 @@ it('deletes env token and logs activity', function () {
     $token = $environment->createToken('cli');
     $tokenModel = $token->accessToken;
 
-    $mock = \Mockery::mock(LogEnvTokenActivity::class);
+    $mock = Mockery::mock(LogEnvTokenActivity::class);
     $mock->shouldReceive('handle')
         ->once()
         ->with($tokenModel, 'deleted', $user);

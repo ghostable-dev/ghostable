@@ -7,6 +7,7 @@ use App\Messaging\Enums\MessageStatus;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 #[UseEloquentBuilder(MessageBuilder::class)]
 /**
@@ -17,11 +18,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $campaign_key
  * @property MessageStatus $status
  * @property string|null $reason
- * @property \Illuminate\Support\Carbon|null $queued_at
- * @property \Illuminate\Support\Carbon|null $sent_at
+ * @property Carbon|null $queued_at
+ * @property Carbon|null $sent_at
  * @property array<array-key, mixed>|null $meta
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Model|\Eloquent $recipient
  *
  * @method static MessageBuilder<static>|Message failed()

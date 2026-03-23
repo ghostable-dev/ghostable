@@ -1,5 +1,6 @@
 <?php
 
+use App\Api\ApiServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 return [
@@ -126,7 +127,7 @@ return [
     ],
 
     'providers' => ServiceProvider::defaultProviders()->merge([
-        App\Api\ApiServiceProvider::class,
+        ApiServiceProvider::class,
     ])->toArray(),
 
 ];

@@ -1,11 +1,13 @@
 <?php
 
 use App\Environment\Actions\Token\CreateDeploymentToken as CreateDeploymentTokenAction;
+use App\Environment\Actions\Token\DeploymentTokenResult;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\EnvironmentKey;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
@@ -53,7 +55,7 @@ test('deployment token receives environment key envelope in v2 deploy bundle', f
         'recipients' => [],
     ]);
 
-    /** @var \App\Environment\Actions\Token\DeploymentTokenResult $tokenResult */
+    /** @var DeploymentTokenResult $tokenResult */
     $tokenResult = app(CreateDeploymentTokenAction::class)->handle(
         name: 'deploy',
         environment: $this->environment,
@@ -97,7 +99,7 @@ test('deployment token receives environment key envelope in v2 deploy bundle', f
 
     try {
         $payload = json_decode($decodedPayload, true, 512, JSON_THROW_ON_ERROR);
-    } catch (\JsonException $exception) {
+    } catch (JsonException $exception) {
         $this->fail('Failed to decode deployment recipient payload: '.$exception->getMessage());
     }
 

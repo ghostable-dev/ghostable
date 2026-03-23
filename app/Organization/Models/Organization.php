@@ -15,10 +15,13 @@ use App\Organization\Actions\CreateNonConflictingSlug;
 use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
 use App\Organization\Casts\OrganizationLimitsCast;
+use App\Organization\Entities\OrganizationFeatures;
+use App\Organization\Entities\OrganizationLimits;
 use App\Organization\Entities\OrganizationNotificationsData;
 use App\Project\Models\Project;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,8 +29,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Laravel\Cashier\Subscription;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -41,29 +49,29 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $slug
  * @property string $name
  * @property string|null $owner_id
- * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property string|null $slack_webhook_url
  * @property bool $slack_enabled
  * @property bool $is_partner
- * @property \App\Organization\Entities\OrganizationFeatures|null $features
- * @property \App\Organization\Entities\OrganizationLimits|null $limits
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property OrganizationFeatures|null $features
+ * @property OrganizationLimits|null $limits
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, ApiUsageDaily> $apiUsages
+ * @property-read Collection<int, ApiUsageDaily> $apiUsages
  * @property-read int|null $api_usages_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Invite> $invites
+ * @property-read Collection<int, Invite> $invites
  * @property-read int|null $invites_count
  * @property-read int|null $notifications_count
  * @property-read User|null $owner
  * @property-read mixed $plan
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Project> $projects
+ * @property-read Collection<int, Project> $projects
  * @property-read int|null $projects_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
+ * @property-read Collection<int, Subscription> $subscriptions
  * @property-read int|null $subscriptions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\OrganizationFactory factory($count = null, $state = [])

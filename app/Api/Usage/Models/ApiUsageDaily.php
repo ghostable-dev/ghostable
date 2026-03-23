@@ -5,6 +5,7 @@ namespace App\Api\Usage\Models;
 use App\Organization\Models\Organization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,10 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $token_id
  * @property string|null $method
  * @property string $endpoint
- * @property \Illuminate\Support\Carbon $date
+ * @property Carbon $date
  * @property int $count
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Organization|null $organization
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiUsageDaily newModelQuery()

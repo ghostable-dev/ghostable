@@ -3,6 +3,7 @@
 namespace App\Environment\Actions;
 
 use App\Environment\Models\Environment;
+use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Resolvers\EnvironmentAncestryResolver;
 use Illuminate\Support\Collection;
 
@@ -11,7 +12,7 @@ class ResolveEnvironmentSecrets
     /**
      * Resolve secrets across ancestry with "closest env wins".
      *
-     * @return \Illuminate\Support\Collection<\App\Environment\Models\EnvironmentSecret>
+     * @return Collection<EnvironmentSecret>
      */
     public static function handle(Environment $env, array $only = []): Collection
     {

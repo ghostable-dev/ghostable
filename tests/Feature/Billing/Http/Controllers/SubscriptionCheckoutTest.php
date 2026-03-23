@@ -8,6 +8,7 @@ use App\Organization\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Laravel\Cashier\Checkout;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 uses(RefreshDatabase::class);
@@ -29,7 +30,7 @@ it('creates a checkout session', function () {
     {
         public function newSubscription($type, $prices = [])
         {
-            return new class extends \Laravel\Cashier\Checkout
+            return new class extends Checkout
             {
                 public array $sessionOptions;
 

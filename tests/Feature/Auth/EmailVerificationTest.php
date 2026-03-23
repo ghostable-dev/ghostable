@@ -4,12 +4,13 @@ use App\Account\Models\User;
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('email verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();

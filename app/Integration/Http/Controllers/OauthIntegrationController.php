@@ -9,6 +9,8 @@ use App\Integration\Enums\IntegrationStatus;
 use App\Integration\Models\Integration;
 use App\Integration\Support\IntegrationKey;
 use App\Integration\Support\IntegrationSettingsRegistry;
+use App\Integration\Support\Oauth\DrataOauthHandler;
+use App\Integration\Support\Oauth\VantaOauthHandler;
 use App\Organization\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,8 +27,8 @@ class OauthIntegrationController extends Controller
      * @var array<string, class-string<OauthProviderHandler>>
      */
     protected array $handlers = [
-        IntegrationKey::DRATA => \App\Integration\Support\Oauth\DrataOauthHandler::class,
-        IntegrationKey::VANTA => \App\Integration\Support\Oauth\VantaOauthHandler::class,
+        IntegrationKey::DRATA => DrataOauthHandler::class,
+        IntegrationKey::VANTA => VantaOauthHandler::class,
     ];
 
     public function connect(Request $request, string $provider): RedirectResponse

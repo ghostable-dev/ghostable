@@ -2,10 +2,11 @@
 
 use App\Account\Livewire\Password;
 use App\Account\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('password can be updated', function () {
     $user = User::factory()->create([

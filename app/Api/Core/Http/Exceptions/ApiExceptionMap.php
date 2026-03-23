@@ -6,6 +6,7 @@ namespace App\Api\Core\Http\Exceptions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 
@@ -14,7 +15,7 @@ final class ApiExceptionMap
     public static function register(): void
     {
         /** @var object $handler */
-        $handler = app(\Illuminate\Contracts\Debug\ExceptionHandler::class);
+        $handler = app(ExceptionHandler::class);
 
         $handler->renderable(function (ValidationException $e, $request) {
             if (! str_starts_with($request->path(), 'api/v')) {

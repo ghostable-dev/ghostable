@@ -3,6 +3,7 @@
 namespace App\Organization\Models;
 
 use App\Account\Concerns\BelongsToUser;
+use App\Account\Models\User;
 use App\Organization\Builders\OrganizationPermissionOverrideBuilder;
 use App\Organization\Enums\OrganizationPermission;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -17,11 +19,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $target_type
  * @property string $target_id
  * @property OrganizationPermission $permission
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Model|\Eloquent $target
- * @property-read \App\Account\Models\User $user
+ * @property-read User $user
  *
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride forUser(\App\Account\Models\User $user)
  * @method static OrganizationPermissionOverrideBuilder<static>|OrganizationPermissionOverride newModelQuery()

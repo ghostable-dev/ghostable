@@ -5,6 +5,7 @@ namespace App\Core\Models;
 use App\Core\Enums\InquiryType;
 use App\Core\Events\InquiryCreated;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -14,8 +15,8 @@ use Illuminate\Support\Str;
  * @property string $email
  * @property InquiryType $inquiry
  * @property string $message
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Inquiry newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Inquiry newQuery()

@@ -20,7 +20,7 @@ test('environment activity csv can be downloaded', function () {
 
     $streamResponse = response()->streamDownload(fn () => null, 'environment-production-activity.csv');
 
-    $exporter = \Mockery::mock(StreamActivityCsv::class);
+    $exporter = Mockery::mock(StreamActivityCsv::class);
     $exporter->shouldReceive('handle')
         ->once()
         ->withArgs(function ($query, $filename, $context) use ($environment, $project) {

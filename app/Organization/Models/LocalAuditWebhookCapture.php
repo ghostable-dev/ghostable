@@ -6,10 +6,11 @@ namespace App\Organization\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property \Illuminate\Support\Carbon $received_at
+ * @property Carbon $received_at
  * @property string|null $event_id
  * @property string|null $event_type
  * @property string|null $organization_id
@@ -22,8 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $timestamp_header
  * @property string $mode
  * @property int $response_status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 final class LocalAuditWebhookCapture extends Model
 {

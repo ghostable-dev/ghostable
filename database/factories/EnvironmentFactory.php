@@ -9,7 +9,7 @@ use App\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Environment\Models\Environment>
+ * @extends Factory<Environment>
  */
 class EnvironmentFactory extends Factory
 {

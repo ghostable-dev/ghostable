@@ -1,21 +1,39 @@
 <?php
 
+use App\Account\AccountServiceProvider;
+use App\Auth\AuthServiceProdivder;
+use App\Billing\BillingServiceProvider;
+use App\Blog\BlogServiceProvider;
+use App\Core\Providers\AppServiceProvider;
+use App\Core\Providers\FeatureFlagServiceProvider;
+use App\Core\Providers\FilamentPanelProvider;
+use App\Crypto\CryptoServiceProvider;
+use App\Environment\EnvironmentServiceProvider;
+use App\Integration\Integrations\Drata\DrataServiceProvider;
+use App\Integration\Integrations\Slack\SlackServiceProvider;
+use App\Integration\Integrations\Vanta\VantaServiceProvider;
+use App\Integration\IntegrationServiceProvider;
+use App\Messaging\MessagingServiceProvider;
+use App\Organization\OrganizationAuditWebhookServiceProvider;
+use App\Organization\OrganizationServiceProvider;
+use App\Project\ProjectServiceProvider;
+
 return [
-    App\Account\AccountServiceProvider::class,
-    App\Auth\AuthServiceProdivder::class,
-    App\Billing\BillingServiceProvider::class,
-    App\Blog\BlogServiceProvider::class,
-    \App\Crypto\CryptoServiceProvider::class,
-    App\Core\Providers\AppServiceProvider::class,
-    App\Core\Providers\FeatureFlagServiceProvider::class,
-    App\Integration\IntegrationServiceProvider::class,
-    App\Environment\EnvironmentServiceProvider::class,
-    App\Integration\Integrations\Drata\DrataServiceProvider::class,
-    App\Integration\Integrations\Slack\SlackServiceProvider::class,
-    App\Integration\Integrations\Vanta\VantaServiceProvider::class,
-    App\Organization\OrganizationServiceProvider::class,
-    App\Organization\OrganizationAuditWebhookServiceProvider::class,
-    App\Project\ProjectServiceProvider::class,
-    App\Core\Providers\FilamentPanelProvider::class,
-    App\Messaging\MessagingServiceProvider::class,
+    AccountServiceProvider::class,
+    AuthServiceProdivder::class,
+    BillingServiceProvider::class,
+    BlogServiceProvider::class,
+    CryptoServiceProvider::class,
+    AppServiceProvider::class,
+    FeatureFlagServiceProvider::class,
+    IntegrationServiceProvider::class,
+    EnvironmentServiceProvider::class,
+    DrataServiceProvider::class,
+    SlackServiceProvider::class,
+    VantaServiceProvider::class,
+    OrganizationServiceProvider::class,
+    OrganizationAuditWebhookServiceProvider::class,
+    ProjectServiceProvider::class,
+    FilamentPanelProvider::class,
+    MessagingServiceProvider::class,
 ];

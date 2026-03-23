@@ -4,6 +4,7 @@ use App\Account\Models\User;
 use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\Login;
 use App\Auth\Livewire\ResetPassword;
+use App\Auth\Notifications\ResetPasswordNotification;
 use App\Billing\Enums\Plan;
 use App\Core\Models\Activity;
 use App\Organization\Actions\CreatePermissionOverride;
@@ -162,7 +163,7 @@ test('password reset activity is logged', function () {
 
     expect($requestActivity)->not->toBeNull();
 
-    Notification::assertSentTo($user, \App\Auth\Notifications\ResetPasswordNotification::class, function ($notification) use ($user) {
+    Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) use ($user) {
         Livewire::test(ResetPassword::class, ['token' => $notification->token])
             ->set('email', $user->email)
             ->set('password', 'password')

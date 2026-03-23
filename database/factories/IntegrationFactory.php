@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Integration\Models\Integration>
+ * @extends Factory<Integration>
  */
 class IntegrationFactory extends Factory
 {

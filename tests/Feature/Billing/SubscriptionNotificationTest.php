@@ -10,9 +10,10 @@ use App\Billing\Notifications\SubscriptionEndedNotification;
 use App\Billing\Notifications\SubscriptionStartedNotification;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Models\Organization;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('only billing contacts are notified when a subscription starts', function () {
     Notification::fake();

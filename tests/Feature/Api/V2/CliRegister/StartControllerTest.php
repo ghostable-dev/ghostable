@@ -1,10 +1,11 @@
 <?php
 
 use App\Auth\Models\CliLoginSession;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('cli register start creates a session and returns expected payload', function () {
     Carbon::setTestNow(Carbon::parse('2024-01-01 00:00:00'));

@@ -3,8 +3,9 @@
 use App\Filament\Widgets\Activity\DashboardActivityTimelineChart;
 use App\Filament\Widgets\Activity\DashboardApiTimelineChart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 it('hides range filters for the main dashboard activity chart', function (): void {
     $widget = new class extends DashboardActivityTimelineChart

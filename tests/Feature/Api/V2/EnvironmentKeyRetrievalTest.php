@@ -7,10 +7,11 @@ use App\Environment\Actions\Token\CreateDeploymentToken as CreateDeploymentToken
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKey;
 use App\Organization\Enums\OrganizationRole;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = $this->createUser('Dana', 'dana@ghostbusters.com');

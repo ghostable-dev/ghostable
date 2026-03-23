@@ -4,11 +4,12 @@ use App\Account\Models\User;
 use App\Auth\Livewire\ForgotPassword;
 use App\Auth\Livewire\ResetPassword;
 use App\Auth\Notifications\ResetPasswordNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('reset password link screen can be rendered', function () {
     $response = $this->get('/forgot-password');

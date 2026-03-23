@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class ResolveProjectAuditEntries
 {
     /**
-     * @return array{versions: \Illuminate\Support\Collection<int, EnvironmentSecretVersion>, truncated: bool}
+     * @return array{versions: Collection<int, EnvironmentSecretVersion>, truncated: bool}
      */
     public function handle(Collection $environmentIds, int $limit): array
     {

@@ -6,11 +6,16 @@ use App\Account\Builders\MailingListEmailBuilder;
 use App\Account\Entities\NotificationSettings;
 use App\Account\Enums\MailingListEmailSource;
 use App\Messaging\Concerns\ReceivesMessages;
+use App\Messaging\Models\Message;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
 #[UseEloquentBuilder(MailingListEmailBuilder::class)]
 /**
@@ -18,11 +23,11 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property MailingListEmailSource|null $source
  * @property array<array-key, mixed>|null $sourcePayload
- * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Messaging\Models\Message> $messages
+ * @property DatabaseNotificationCollection<int, DatabaseNotification> $notifications
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Message> $messages
  * @property-read int|null $messages_count
  * @property-read int|null $notifications_count
  *

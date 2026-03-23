@@ -3,9 +3,10 @@
 use App\Core\Models\Activity;
 use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');

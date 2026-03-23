@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -19,14 +20,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $signing_secret
  * @property OrganizationAuditWebhookStatus $status
  * @property int $consecutive_failures
- * @property \Illuminate\Support\Carbon|null $last_delivered_at
- * @property \Illuminate\Support\Carbon|null $disabled_at
- * @property \Illuminate\Support\Carbon|null $dead_lettered_at
+ * @property Carbon|null $last_delivered_at
+ * @property Carbon|null $disabled_at
+ * @property Carbon|null $dead_lettered_at
  * @property string|null $last_error
  * @property string|null $created_by
  * @property string|null $updated_by
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 final class OrganizationAuditWebhook extends Model
 {

@@ -5,6 +5,7 @@ namespace App\Organization\Services;
 use App\Account\Models\User;
 use App\Organization\Enums\OrganizationPermission;
 use App\Organization\Enums\OrganizationRole;
+use App\Organization\Events\MemberJoined;
 use App\Organization\Models\Organization;
 use Illuminate\Support\Facades\Cache;
 use LogicException;
@@ -77,7 +78,7 @@ class OrganizationMembership
 
         $this->clearMembershipCache($organization);
 
-        \App\Organization\Events\MemberJoined::dispatch($organization, $this->user);
+        MemberJoined::dispatch($organization, $this->user);
     }
 
     /**

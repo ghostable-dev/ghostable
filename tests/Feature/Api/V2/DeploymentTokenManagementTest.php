@@ -7,9 +7,10 @@ use App\Environment\Actions\Token\DeploymentTokenResult;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\EnvironmentKey;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = $this->createUser('Dana', 'dana@ghostbusters.com');
@@ -107,7 +108,7 @@ test('can create a deployment token', function (): void {
 
     try {
         $recipientPayload = json_decode($decoded, true, 512, JSON_THROW_ON_ERROR);
-    } catch (\JsonException $exception) {
+    } catch (JsonException $exception) {
         $this->fail('Failed to decode deployment recipient payload: '.$exception->getMessage());
     }
 
@@ -240,7 +241,7 @@ test('can rotate a deployment token', function (): void {
 
     try {
         $initialPayload = json_decode($initialDecoded, true, 512, JSON_THROW_ON_ERROR);
-    } catch (\JsonException $exception) {
+    } catch (JsonException $exception) {
         $this->fail('Failed to decode initial deployment recipient payload: '.$exception->getMessage());
     }
 
@@ -299,7 +300,7 @@ test('can rotate a deployment token', function (): void {
 
     try {
         $updatedPayload = json_decode($updatedDecoded, true, 512, JSON_THROW_ON_ERROR);
-    } catch (\JsonException $exception) {
+    } catch (JsonException $exception) {
         $this->fail('Failed to decode updated deployment recipient payload: '.$exception->getMessage());
     }
 

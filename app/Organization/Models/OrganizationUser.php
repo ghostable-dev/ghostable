@@ -5,14 +5,15 @@ namespace App\Organization\Models;
 use App\Organization\Enums\OrganizationRole;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $organization_id
  * @property string $user_id
  * @property OrganizationRole|null $role
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrganizationUser newQuery()

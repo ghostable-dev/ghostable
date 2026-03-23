@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Core\Models\Activity;
 use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = $this->createUser('Dana', 'dana@ghostbusters.com');

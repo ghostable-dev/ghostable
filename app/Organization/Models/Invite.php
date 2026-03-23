@@ -3,6 +3,7 @@
 namespace App\Organization\Models;
 
 use App\Account\Concerns\BelongsToUser;
+use App\Account\Models\User;
 use App\Organization\Builders\InviteBuilder;
 use App\Organization\Enums\InviteStatus;
 use App\Organization\Enums\OrganizationRole;
@@ -14,7 +15,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -24,14 +28,14 @@ use Illuminate\Support\Facades\Notification;
  * @property string|null $user_id
  * @property string $email
  * @property OrganizationRole|null $role
- * @property \Illuminate\Support\Carbon|null $sent_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \App\Organization\Models\Organization|null $organization
- * @property-read \App\Account\Models\User|null $user
+ * @property-read Organization|null $organization
+ * @property-read User|null $user
  *
  * @method static InviteBuilder<static>|Invite accepted()
  * @method static InviteBuilder<static>|Invite expired()

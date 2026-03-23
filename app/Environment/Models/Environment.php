@@ -2,6 +2,7 @@
 
 namespace App\Environment\Models;
 
+use App\Auth\Models\PersonalAccessToken;
 use App\Environment\Entities\EnvironmentNotificationsData;
 use App\Environment\Enums\EnvFileFormat;
 use App\Environment\Enums\EnvironmentType;
@@ -11,17 +12,24 @@ use App\Environment\Events\EnvironmentUpdated;
 use App\Organization\Concerns\HasPermissionOverrides;
 use App\Organization\Contracts\SupportsOverrides;
 use App\Organization\Models\Organization;
+use App\Organization\Models\OrganizationPermissionOverride;
 use App\Project\Models\Project;
+use App\Secret\Models\Secret;
 use Database\Factories\EnvironmentFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\LaravelData\Contracts\BaseData;
+use Spatie\LaravelData\Contracts\TransformableData;
 
 /**
  * @property string $id
@@ -30,16 +38,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $name
  * @property EnvironmentType $type
  * @property EnvFileFormat $file_format
- * @property \Spatie\LaravelData\Contracts\BaseData|\Spatie\LaravelData\Contracts\TransformableData|null $notifications
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property BaseData|TransformableData|null $notifications
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\OrganizationPermissionOverride> $permissionOverrides
+ * @property-read Collection<int, OrganizationPermissionOverride> $permissionOverrides
  * @property-read int|null $permission_overrides_count
  * @property-read Project $project
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
+ * @property-read Collection<int, PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  *
  * @method static \Database\Factories\EnvironmentFactory factory($count = null, $state = [])
@@ -118,7 +126,7 @@ class Environment extends Model implements SupportsOverrides
 
     public function secrets(): HasMany
     {
-        return $this->hasMany(\App\Secret\Models\Secret::class, 'environment_id');
+        return $this->hasMany(Secret::class, 'environment_id');
     }
 
     public function keys(): HasMany

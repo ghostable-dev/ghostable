@@ -2,10 +2,11 @@
 
 use App\Auth\Enums\CliLoginSessionStatus;
 use App\Auth\Models\CliLoginSession;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('cli register poll returns not found for unknown ticket', function () {
     $this->postJson('/api/v2/cli/register/poll', [

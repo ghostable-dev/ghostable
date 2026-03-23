@@ -9,6 +9,7 @@ use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentKey;
 use App\Environment\Models\EnvironmentSecret;
+use Illuminate\Support\Carbon;
 use JsonException;
 
 class BuildEncryptedProjection
@@ -35,7 +36,7 @@ class BuildEncryptedProjection
      *     claims: array,
      *     version?: int,
      *     meta?: array{ line_bytes?: int, is_vapor_secret?: bool, is_commented?: bool },
-     *     updated_at: \Illuminate\Support\Carbon|null,
+     *     updated_at: Carbon|null,
      *     updated_by: string|null,
      *   }>,
      *   environment_key?: array|null,

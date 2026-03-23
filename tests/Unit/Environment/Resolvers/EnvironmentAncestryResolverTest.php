@@ -1,6 +1,8 @@
 <?php
 
+use App\Environment\Models\Environment;
 use App\Environment\Resolvers\EnvironmentAncestryResolver;
+use App\Project\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -8,8 +10,8 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class);
 
 it('resolves ancestry chains correctly', function () {
-    $env = \App\Environment\Models\Environment::factory()
-        ->forProject(\App\Project\Models\Project::factory()->create())
+    $env = Environment::factory()
+        ->forProject(Project::factory()->create())
         ->create();
     $resolver = new EnvironmentAncestryResolver;
 
@@ -19,8 +21,8 @@ it('resolves ancestry chains correctly', function () {
 });
 
 it('bust clears cached descendants', function () {
-    $env = \App\Environment\Models\Environment::factory()
-        ->forProject(\App\Project\Models\Project::factory()->create())
+    $env = Environment::factory()
+        ->forProject(Project::factory()->create())
         ->create();
     $resolver = new EnvironmentAncestryResolver;
 

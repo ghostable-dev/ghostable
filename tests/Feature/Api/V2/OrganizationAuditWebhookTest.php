@@ -4,12 +4,13 @@ use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Jobs\DeliverAuditWebhookActivity;
 use App\Organization\Models\OrganizationAuditWebhook;
 use App\Organization\Models\OrganizationAuditWebhookDelivery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->owner = $this->createUser(name: 'Owner User', email: 'owner-webhooks@example.com');
@@ -99,7 +100,7 @@ test('admin webhook test endpoint sends signed payload', function () {
         ->assertOk()
         ->assertJsonPath('data.status', OrganizationAuditWebhookStatus::ACTIVE->value);
 
-    Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($secret): bool {
+    Http::assertSent(function (Illuminate\Http\Client\Request $request) use ($secret): bool {
         $timestamp = $request->header('X-Ghostable-Timestamp')[0] ?? null;
         $signature = $request->header('X-Ghostable-Signature')[0] ?? null;
         $event = $request->header('X-Ghostable-Event')[0] ?? null;
@@ -124,7 +125,7 @@ test('admin webhook test endpoint can flow into local receiver capture storage',
 
     $localEndpoint = url('/local/audit-webhooks/ingest?mode=ok');
 
-    Http::fake(function (\Illuminate\Http\Client\Request $request) use ($localEndpoint) {
+    Http::fake(function (Illuminate\Http\Client\Request $request) use ($localEndpoint) {
         if ($request->url() !== $localEndpoint) {
             return Http::response(['ok' => true], 202);
         }

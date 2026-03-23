@@ -5,8 +5,9 @@ use App\Api\Usage\Actions\UpsertApiUsageHourly;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 it('upserts hourly usage counts', function () {
     $action = app(UpsertApiUsageHourly::class);

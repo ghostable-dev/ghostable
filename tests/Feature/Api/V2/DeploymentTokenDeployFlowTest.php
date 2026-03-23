@@ -4,9 +4,10 @@ use App\Crypto\Models\Device;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKey;
 use App\Environment\Models\EnvironmentSecret;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->owner = $this->createUser('Janine Melnitz', 'janine@example.com');

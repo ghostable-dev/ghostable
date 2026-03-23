@@ -9,12 +9,16 @@ use App\Account\Actions\UserStatus\UnlockUser;
 use App\Account\Builders\UserBuilder;
 use App\Account\Entities\NotificationSettings;
 use App\Account\Enums\UserStatus;
+use App\Auth\Models\PersonalAccessToken;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
 use App\Crypto\Models\Device;
 use App\Messaging\Concerns\ReceivesMessages;
+use App\Messaging\Models\Message;
 use App\Organization\Concerns\BelongsToOrganizations;
 use App\Organization\Models\Invite;
+use App\Organization\Models\Organization;
+use App\Organization\Models\OrganizationUser;
 use App\Organization\Services\OrganizationMembership;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -27,43 +31,47 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\ActivitylogServiceProvider;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * @property string $id
  * @property string $name
  * @property string $email
- * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property Carbon|null $email_verified_at
  * @property string $password
  * @property UserStatus $status
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
+ * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
- * @property \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property string $timezone
- * @property \Illuminate\Support\Carbon|null $last_login
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon|null $last_login
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $history
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $history
  * @property-read int|null $history_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Messaging\Models\Message> $messages
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Message> $messages
  * @property-read int|null $messages_count
  * @property-read int|null $notifications_count
- * @property-read \App\Organization\Models\OrganizationUser|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $organizations
+ * @property-read OrganizationUser|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Organization> $organizations
  * @property-read int|null $organizations_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Organization\Models\Organization> $ownedOrganizations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Organization> $ownedOrganizations
  * @property-read int|null $owned_organizations_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Auth\Models\PersonalAccessToken> $tokens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])

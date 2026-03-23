@@ -8,10 +8,11 @@ use App\Environment\Enums\EnvironmentKeyReshareRequestStatus;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKeyReshareRequest;
 use App\Organization\Notifications\EnvironmentKeyReshareCompletedNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = $this->createUser('Dana', 'dana@ghostbusters.com');

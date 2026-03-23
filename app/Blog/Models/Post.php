@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
@@ -32,12 +33,12 @@ use Spatie\Sitemap\Tags\Url;
  * @property string|null $meta_title
  * @property string|null $meta_description
  * @property array<array-key, mixed>|null $meta_keywords
- * @property \Illuminate\Support\Carbon|null $posted_at
+ * @property Carbon|null $posted_at
  * @property PostStatus $status
  * @property bool $is_featured
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read mixed $directory
  * @property-read mixed $read_time
  * @property-read mixed $word_count

@@ -6,9 +6,10 @@ use App\Environment\Enums\EnvironmentKeyReshareRequestStatus;
 use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\EnvironmentKeyReshareRequest;
 use App\Organization\Enums\OrganizationRole;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->owner = $this->createUser('Dana', 'dana@ghostable.com');

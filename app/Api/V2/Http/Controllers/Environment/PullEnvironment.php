@@ -138,7 +138,7 @@ final class PullEnvironment extends Controller
             ]);
         }
 
-        /** @var \App\Account\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if ($user) {

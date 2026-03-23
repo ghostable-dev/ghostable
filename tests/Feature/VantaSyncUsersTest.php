@@ -1,10 +1,13 @@
 <?php
 
+use App\Environment\Enums\EnvironmentType;
 use App\Integration\Entities\VantaSettings;
 use App\Integration\Enums\IntegrationStatus;
 use App\Integration\Integrations\Vanta\Actions\SyncUsersAction;
 use App\Integration\Integrations\Vanta\Jobs\SyncUsers;
 use App\Integration\Models\Integration;
+use App\Organization\Actions\CreatePermissionOverride;
+use App\Organization\Enums\OrganizationPermission;
 use App\Organization\Enums\OrganizationRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -258,8 +261,8 @@ test('sync users collapses project overrides into editor permission level', func
     $editor->organizationMembership()->assignToOrganization($organization, OrganizationRole::DEVELOPER_READ_ONLY);
 
     $project = $this->createProject('Override Project', $organization);
-    resolve(\App\Organization\Actions\CreatePermissionOverride::class)
-        ->handle($editor, $project, \App\Organization\Enums\OrganizationPermission::ManageProjectSettings);
+    resolve(CreatePermissionOverride::class)
+        ->handle($editor, $project, OrganizationPermission::ManageProjectSettings);
 
     Integration::factory()
         ->for($organization)
@@ -296,10 +299,10 @@ test('sync users keeps read-only overrides as base permission level', function (
     $reader->organizationMembership()->assignToOrganization($organization, OrganizationRole::DEVELOPER_READ_ONLY);
 
     $project = $this->createProject('Read Project', $organization);
-    $environment = $this->createEnvironment('Read Env', \App\Environment\Enums\EnvironmentType::PRODUCTION, $project);
+    $environment = $this->createEnvironment('Read Env', EnvironmentType::PRODUCTION, $project);
 
-    resolve(\App\Organization\Actions\CreatePermissionOverride::class)
-        ->handle($reader, $environment, \App\Organization\Enums\OrganizationPermission::ViewVariables);
+    resolve(CreatePermissionOverride::class)
+        ->handle($reader, $environment, OrganizationPermission::ViewVariables);
 
     Integration::factory()
         ->for($organization)

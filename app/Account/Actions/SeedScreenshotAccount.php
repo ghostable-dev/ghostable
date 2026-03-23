@@ -23,6 +23,7 @@ use App\Environment\Actions\Token\LogEnvTokenActivity;
 use App\Environment\Entities\RollbackResultData;
 use App\Environment\Enums\EnvironmentKeyReshareRequestStatus;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentKey;
 use App\Environment\Models\EnvironmentKeyReshareRequest;
@@ -84,7 +85,7 @@ final class SeedScreenshotAccount
     /** @var array<string, Invite> */
     private array $invites = [];
 
-    /** @var array<string, \App\Environment\Models\DeploymentToken> */
+    /** @var array<string, DeploymentToken> */
     private array $deploymentTokens = [];
 
     public function __construct(
@@ -1277,8 +1278,8 @@ final class SeedScreenshotAccount
         User $user,
         CarbonImmutable $createdAt,
         int $expiresAfter,
-    ): \App\Environment\Models\DeploymentToken {
-        return $this->withFrozenTime($createdAt, function () use ($key, $name, $environment, $user, $expiresAfter): \App\Environment\Models\DeploymentToken {
+    ): DeploymentToken {
+        return $this->withFrozenTime($createdAt, function () use ($key, $name, $environment, $user, $expiresAfter): DeploymentToken {
             $result = $this->createDeploymentToken->handle(
                 name: $name,
                 environment: $environment,
@@ -1547,7 +1548,7 @@ final class SeedScreenshotAccount
         return $this->environmentKeys[$key];
     }
 
-    private function deploymentToken(string $key): \App\Environment\Models\DeploymentToken
+    private function deploymentToken(string $key): DeploymentToken
     {
         return $this->deploymentTokens[$key];
     }

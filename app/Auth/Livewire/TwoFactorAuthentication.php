@@ -10,6 +10,7 @@ use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -95,7 +96,7 @@ class TwoFactorAuthentication extends Component
 
     public function getQrCodeProperty(): string
     {
-        /** @var \Laravel\Fortify\Contracts\TwoFactorLoginResponse */
+        /** @var TwoFactorLoginResponse */
         return Auth::user()->twoFactorQrCodeSvg();
     }
 

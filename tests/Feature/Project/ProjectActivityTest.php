@@ -33,7 +33,7 @@ test('project activity csv can be downloaded', function () {
 
     $streamResponse = response()->streamDownload(fn () => null, 'project-website-activity.csv');
 
-    $exporter = \Mockery::mock(StreamActivityCsv::class);
+    $exporter = Mockery::mock(StreamActivityCsv::class);
     $exporter->shouldReceive('handle')
         ->once()
         ->withArgs(function ($query, $filename, $context) use ($project) {

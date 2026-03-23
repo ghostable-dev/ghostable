@@ -2,12 +2,13 @@
 
 use App\Account\Models\User;
 use App\Auth\Livewire\Login;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
 use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->ray = $this->createUser(name: 'Ray', email: 'ray@ghostbusters.com');
