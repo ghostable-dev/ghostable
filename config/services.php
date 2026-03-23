@@ -35,6 +35,10 @@ return [
         'site' => env('FATHOM_SITE'),
     ],
 
+    'google_tag' => [
+        'id' => env('GOOGLE_TAG_ID'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],

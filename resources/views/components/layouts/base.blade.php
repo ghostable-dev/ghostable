@@ -3,7 +3,9 @@
     'themeColor' => '#080808',
     'bodyClasses' => '',
     'withTracking' => true,
+    'withGoogleTag' => true,
     'fathomSite' => config('services.fathom.site'),
+    'googleTagId' => config('services.google_tag.id'),
     'withAppearance' => true,
     'canonical' => null
 ])
@@ -36,6 +38,17 @@
     
     @if($withAppearance)
         @fluxAppearance
+    @endif
+
+    @if($withTracking && $withGoogleTag && filled($googleTagId))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleTagId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', @js($googleTagId));
+        </script>
     @endif
     
     @if($withTracking && $fathomSite && app()->environment('production'))

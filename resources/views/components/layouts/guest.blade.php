@@ -1,6 +1,7 @@
 @props([
     'withHeader' => true,
     'withFooter' => true,
+    'withGoogleTag' => true,
     'showPromoBanner' => true,
     'bannerMessage' => 'Vanta integration is live',
     'bannerColors' => [
@@ -11,6 +12,7 @@
 ])
 <x-layouts.base 
     {{ $attributes }}
+    :with-google-tag="$withGoogleTag"
     :with-appearance="false"
     body-classes="bg-accent min-h-dvh flex flex-col">
     @includeWhen($withHeader, 'site.partials.header', [
