@@ -1,4 +1,5 @@
 @php
+    $showPromoBanner = $showPromoBanner ?? true;
     $bannerMessage = $bannerMessage ?? 'Vanta integration is live';
     $bannerColors = array_merge([
         'primary' => '#AC55FF',
@@ -118,21 +119,23 @@
         </div>
     </div>
     </nav>
-    <a
-        href="{{ route('integrations.vanta') }}"
-        class="block text-white"
-        style="background: linear-gradient(120deg, {{ $bannerColors['deep'] }} 0%, {{ $bannerColors['primary'] }} 55%, {{ $bannerColors['deep'] }} 100%);">
-        <div class="mx-auto flex max-w-7xl items-center justify-center gap-3 px-6 py-2 text-xs font-semibold uppercase tracking-[0.28em] sm:text-sm">
-            <span
-                class="rounded-full px-2.5 py-1 text-[0.6rem] sm:text-[0.7rem] tracking-[0.22em]"
-                style="background-color: {{ $bannerColors['cream'] }}22; color: {{ $bannerColors['cream'] }};">
-                Live
-            </span>
-            <span
-                class="normal-case text-sm font-semibold tracking-normal sm:text-base"
-                style="color: {{ $bannerColors['cream'] }};">
-                {{ $bannerMessage }}
-            </span>
-        </div>
-    </a>
+    @if($showPromoBanner)
+        <a
+            href="{{ route('integrations.vanta') }}"
+            class="block text-white"
+            style="background: linear-gradient(120deg, {{ $bannerColors['deep'] }} 0%, {{ $bannerColors['primary'] }} 55%, {{ $bannerColors['deep'] }} 100%);">
+            <div class="mx-auto flex max-w-7xl items-center justify-center gap-3 px-6 py-2 text-xs font-semibold uppercase tracking-[0.28em] sm:text-sm">
+                <span
+                    class="rounded-full px-2.5 py-1 text-[0.6rem] sm:text-[0.7rem] tracking-[0.22em]"
+                    style="background-color: {{ $bannerColors['cream'] }}22; color: {{ $bannerColors['cream'] }};">
+                    Live
+                </span>
+                <span
+                    class="normal-case text-sm font-semibold tracking-normal sm:text-base"
+                    style="color: {{ $bannerColors['cream'] }};">
+                    {{ $bannerMessage }}
+                </span>
+            </div>
+        </a>
+    @endif
 </div>

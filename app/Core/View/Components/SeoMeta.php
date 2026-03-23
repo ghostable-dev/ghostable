@@ -35,7 +35,7 @@ class SeoMeta extends Component
             <meta name="twitter:image:alt" content="{{ $description }}"/>
             <meta name="description" content="{{ $description }}"/>
             <meta name="keywords" content="{{ implode(',', $keywords) }}"/>
-            <meta name="robots" :content="{{ $robots }}"/>
+            <meta name="robots" content="{{ $robots }}"/>
         blade;
     }
 
@@ -47,7 +47,7 @@ class SeoMeta extends Component
     public function sharingImage(): string
     {
         return empty($this->image)
-            ? asset('/og-default_v2.png')
+            ? asset('/og-default_v3.png')
             : $this->image;
     }
 }
