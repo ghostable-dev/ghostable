@@ -1,4 +1,24 @@
 <x-layouts.app :title="__('Dashboard')">
+    @php
+        $googleTagId = config('services.google_tag.id');
+        $accountCreatedLabel = config('services.google_tag.account_created_label');
+        $shouldTrackAccountCreated = request()->boolean('account_created')
+            && filled($googleTagId)
+            && filled($accountCreatedLabel)
+            && auth()->check()
+            && auth()->user()->hasVerifiedEmail();
+    @endphp
+
+    @if($shouldTrackAccountCreated)
+        @include('components.google-tag.script', [
+            'id' => $googleTagId,
+            'event' => 'conversion',
+            'payload' => [
+                'send_to' => "{$googleTagId}/{$accountCreatedLabel}",
+                'transaction_id' => 'account-created-'.auth()->id(),
+            ],
+        ])
+    @endif
 
     {{-- Pending Invites --}}
     <livewire:account.livewire.pending-invites/>
@@ -20,4 +40,3 @@
     @endif
 
 </x-layouts.app>
-

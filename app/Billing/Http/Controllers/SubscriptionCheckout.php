@@ -24,7 +24,12 @@ abstract class SubscriptionCheckout extends Controller
 
         return $subscription
             ->checkout(sessionOptions: [
-                'success_url' => route('organization.settings.billing', $organization),
+                'success_url' => route('organization.settings.billing', [
+                    'organization' => $organization,
+                    'checkout' => 'success',
+                    'plan' => $plan->value,
+                    'checkout_session_id' => '{CHECKOUT_SESSION_ID}',
+                ]),
                 'cancel_url' => route('organization.settings.billing', $organization),
                 'metadata' => [
                     'platform_user_id' => Auth::user()->id,

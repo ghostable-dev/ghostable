@@ -1,4 +1,16 @@
 <section class="w-full">
+    @if($conversion = $this->googleAdsSubscriptionStartedConversion)
+        @include('components.google-tag.script', [
+            'id' => $conversion['google_tag_id'],
+            'event' => 'conversion',
+            'payload' => [
+                'send_to' => $conversion['send_to'],
+                'value' => $conversion['value'],
+                'currency' => $conversion['currency'],
+                'transaction_id' => $conversion['transaction_id'],
+            ],
+        ])
+    @endif
     
     @include('organization.partials.organization-settings-header')
 

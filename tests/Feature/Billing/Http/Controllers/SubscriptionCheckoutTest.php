@@ -54,9 +54,15 @@ it('creates a checkout session', function () {
     $controller = new StandardCheckout;
 
     $checkout = $controller->checkout($organization);
+    parse_str(parse_url($checkout->sessionOptions['success_url'], PHP_URL_QUERY) ?? '', $successQuery);
 
     expect($checkout->sessionOptions['metadata']['platform_user_id'])->toBe($user->id)
-        ->and($checkout->customerOptions['metadata']['platform_organization_id'])->toBe($organization->id);
+        ->and($checkout->customerOptions['metadata']['platform_organization_id'])->toBe($organization->id)
+        ->and($successQuery)->toMatchArray([
+            'checkout' => 'success',
+            'plan' => Plan::STANDARD->value,
+            'checkout_session_id' => '{CHECKOUT_SESSION_ID}',
+        ]);
 });
 
 it('aborts when plan is not billable', function () {

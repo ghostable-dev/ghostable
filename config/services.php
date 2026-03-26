@@ -37,6 +37,8 @@ return [
 
     'google_tag' => [
         'id' => env('GOOGLE_TAG_ID'),
+        'account_created_label' => env('GOOGLE_TAG_ACCOUNT_CREATED_LABEL'),
+        'subscription_started_label' => env('GOOGLE_TAG_SUBSCRIPTION_STARTED_LABEL'),
     ],
 
     'resend' => [

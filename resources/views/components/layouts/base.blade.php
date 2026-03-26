@@ -41,14 +41,7 @@
     @endif
 
     @if($withTracking && $withGoogleTag && filled($googleTagId))
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleTagId }}"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', @js($googleTagId));
-        </script>
+        @include('components.google-tag.script', ['id' => $googleTagId])
     @endif
     
     @if($withTracking && $fathomSite && app()->environment('production'))
