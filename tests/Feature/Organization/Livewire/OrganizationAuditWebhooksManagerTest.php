@@ -1,5 +1,6 @@
 <?php
 
+use App\Billing\Enums\Plan;
 use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Enums\OrganizationRole;
 use App\Organization\Livewire\OrganizationAuditWebhooksManager;
@@ -12,7 +13,7 @@ uses(RefreshDatabase::class);
 
 test('organization admin can create audit webhook and receives signing secret', function () {
     $owner = $this->createUser('Owner', 'owner@example.com');
-    $organization = $this->createOrganization('Ghostbusters', $owner);
+    $organization = $this->createOrganization('Ghostbusters', $owner, planOverride: Plan::SCALE);
 
     $this->actingAs($owner);
 
@@ -36,7 +37,7 @@ test('organization admin can create audit webhook and receives signing secret', 
 
 test('non-admin organization member cannot create audit webhook', function () {
     $owner = $this->createUser('Owner', 'owner@example.com');
-    $organization = $this->createOrganization('Ghostbusters', $owner);
+    $organization = $this->createOrganization('Ghostbusters', $owner, planOverride: Plan::SCALE);
     $developer = $this->createUser('Developer', 'developer@example.com');
     $developer->organizationMembership()->assignToOrganization($organization, OrganizationRole::DEVELOPER);
 
@@ -49,9 +50,23 @@ test('non-admin organization member cannot create audit webhook', function () {
         ->assertForbidden();
 });
 
+test('free-plan organization admin cannot manage audit webhooks', function () {
+    $owner = $this->createUser('Owner', 'owner-free@example.com');
+    $this->createOrganization('Ghostbusters', $owner);
+
+    $this->actingAs($owner);
+
+    Livewire::test(OrganizationAuditWebhooksManager::class)
+        ->assertSeeText('Scale plan required')
+        ->set('name', 'Denied')
+        ->set('endpointUrl', 'https://siem.example.com/ghostable')
+        ->call('createWebhook')
+        ->assertForbidden();
+});
+
 test('organization admin can test disable and rotate audit webhook', function () {
     $owner = $this->createUser('Owner', 'owner@example.com');
-    $organization = $this->createOrganization('Ghostbusters', $owner);
+    $organization = $this->createOrganization('Ghostbusters', $owner, planOverride: Plan::SCALE);
 
     $webhook = OrganizationAuditWebhook::query()->create([
         'organization_id' => (string) $organization->id,
@@ -88,7 +103,7 @@ test('organization admin can apply local receiver presets', function () {
     config()->set('audit_webhook_receiver.token', 'local-dev-token');
 
     $owner = $this->createUser('Owner', 'owner-local-helper@example.com');
-    $this->createOrganization('Ghostbusters', $owner);
+    $this->createOrganization('Ghostbusters', $owner, planOverride: Plan::SCALE);
 
     $this->actingAs($owner);
 

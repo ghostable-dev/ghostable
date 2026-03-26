@@ -8,6 +8,7 @@ use App\Organization\Models\OrganizationAuditWebhook;
 use App\Organization\Support\AuditWebhookDelivery;
 use App\Organization\Support\AuditWebhookMetrics;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -49,7 +50,13 @@ class OrganizationAuditWebhooksManager extends Component
     #[Computed]
     public function canManageAuditWebhooks(): bool
     {
-        return Auth::user()->isOrganizationAdmin($this->organization);
+        return Auth::user()->can('manageAuditWebhooks', $this->organization);
+    }
+
+    #[Computed]
+    public function canAccessAuditWebhooks(): bool
+    {
+        return (bool) ($this->organization->features->audit_webhooks ?? false);
     }
 
     #[Computed]
@@ -72,6 +79,10 @@ class OrganizationAuditWebhooksManager extends Component
     #[Computed]
     public function auditWebhooks()
     {
+        if (! $this->canManageAuditWebhooks) {
+            return new EloquentCollection;
+        }
+
         return $this->organization->auditWebhooks()
             ->orderByDesc('created_at')
             ->get();
@@ -80,6 +91,13 @@ class OrganizationAuditWebhooksManager extends Component
     #[Computed]
     public function auditWebhookMetricsPayload(): array
     {
+        if (! $this->canManageAuditWebhooks) {
+            return [
+                'summary' => [],
+                'webhooks' => [],
+            ];
+        }
+
         return app(AuditWebhookMetrics::class)->forOrganization(
             $this->organization,
             $this->metricsWindow,
@@ -97,7 +115,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function createWebhook(): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -131,7 +149,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function useLocalReceiver(string $mode = 'ok'): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         if (! $this->localAuditReceiverEnabled()) {
             return;
@@ -160,7 +178,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function openWebhookMetrics(string $webhookId): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         $webhook = $this->resolveWebhook($webhookId);
         if (! $webhook) {
@@ -200,7 +218,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function testWebhook(string $webhookId): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         $webhook = $this->resolveWebhook($webhookId);
         if (! $webhook) {
@@ -236,7 +254,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function rotateWebhookSecret(string $webhookId): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         $webhook = $this->resolveWebhook($webhookId);
         if (! $webhook) {
@@ -268,7 +286,7 @@ class OrganizationAuditWebhooksManager extends Component
 
     public function disableWebhook(string $webhookId): void
     {
-        $this->authorize('admin', $this->organization);
+        $this->authorize('manageAuditWebhooks', $this->organization);
 
         $webhook = $this->resolveWebhook($webhookId);
         if (! $webhook) {

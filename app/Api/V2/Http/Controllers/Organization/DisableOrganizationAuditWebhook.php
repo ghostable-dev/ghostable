@@ -22,7 +22,7 @@ final class DisableOrganizationAuditWebhook extends Controller
         Organization $organization,
         OrganizationAuditWebhook $auditWebhook
     ): JsonResponse {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
         $this->ensureWebhookBelongsToOrganization($auditWebhook, $organization);
 
         $auditWebhook->forceFill([

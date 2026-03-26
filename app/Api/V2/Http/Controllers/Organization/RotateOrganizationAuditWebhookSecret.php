@@ -23,7 +23,7 @@ final class RotateOrganizationAuditWebhookSecret extends Controller
         Organization $organization,
         OrganizationAuditWebhook $auditWebhook
     ): JsonResponse {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
         $this->ensureWebhookBelongsToOrganization($auditWebhook, $organization);
 
         $secret = Str::random(64);

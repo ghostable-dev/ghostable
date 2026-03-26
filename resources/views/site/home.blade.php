@@ -248,64 +248,16 @@
             will-change: transform;
         }
 
-        [data-walter-eye] {
-            --walter-eye-base-x: 0px;
-            --walter-eye-base-y: 0px;
+        [data-walter-eye-overlay] {
             --walter-eye-mouse-x: 0px;
             --walter-eye-mouse-y: 0px;
             transform: translate3d(
-                calc(var(--walter-eye-base-x) + var(--walter-eye-mouse-x)),
-                calc(var(--walter-eye-base-y) + var(--walter-eye-mouse-y)),
+                var(--walter-eye-mouse-x),
+                var(--walter-eye-mouse-y),
                 0
             );
             transition: transform 150ms ease-out;
             will-change: transform;
-        }
-
-        [data-walter-eye="left"] {
-            --walter-eye-base-x: 26px;
-            --walter-eye-base-y: 106px;
-        }
-
-        [data-walter-eye="right"] {
-            --walter-eye-base-x: -18px;
-            --walter-eye-base-y: 106px;
-        }
-
-        @media (min-width: 640px) {
-            [data-walter-eye="left"] {
-                --walter-eye-base-x: 30px;
-                --walter-eye-base-y: 138px;
-            }
-
-            [data-walter-eye="right"] {
-                --walter-eye-base-x: -18px;
-                --walter-eye-base-y: 138px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            [data-walter-eye="left"] {
-                --walter-eye-base-x: 40px;
-                --walter-eye-base-y: 174px;
-            }
-
-            [data-walter-eye="right"] {
-                --walter-eye-base-x: -20px;
-                --walter-eye-base-y: 174px;
-            }
-        }
-
-        @media (min-width: 1280px) {
-            [data-walter-eye="left"] {
-                --walter-eye-base-x: 42px;
-                --walter-eye-base-y: 192px;
-            }
-
-            [data-walter-eye="right"] {
-                --walter-eye-base-x: -18px;
-                --walter-eye-base-y: 192px;
-            }
         }
 
         @keyframes ghostable-typed-cursor {
@@ -449,22 +401,17 @@
                 });
             };
 
-            const walterEyes = walterEyeStage ? {
-                left: walterEyeStage.querySelector('[data-walter-eye="left"]'),
-                right: walterEyeStage.querySelector('[data-walter-eye="right"]'),
-            } : null;
+            const walterEyeOverlay = walterEyeStage?.querySelector('[data-walter-eye-overlay]');
             let walterEyeMouseOffsetX = 0;
             let walterEyeMouseOffsetY = 0;
 
             const applyWalterEyeOffsets = () => {
-                if (!walterEyes?.left || !walterEyes?.right) {
+                if (!walterEyeOverlay) {
                     return;
                 }
 
-                walterEyes.left.style.setProperty('--walter-eye-mouse-x', `${walterEyeMouseOffsetX}px`);
-                walterEyes.left.style.setProperty('--walter-eye-mouse-y', `${walterEyeMouseOffsetY}px`);
-                walterEyes.right.style.setProperty('--walter-eye-mouse-x', `${walterEyeMouseOffsetX}px`);
-                walterEyes.right.style.setProperty('--walter-eye-mouse-y', `${walterEyeMouseOffsetY}px`);
+                walterEyeOverlay.style.setProperty('--walter-eye-mouse-x', `${walterEyeMouseOffsetX}px`);
+                walterEyeOverlay.style.setProperty('--walter-eye-mouse-y', `${walterEyeMouseOffsetY}px`);
             };
 
             if (walterEyeFigure && !prefersReducedMotion) {
@@ -1454,20 +1401,11 @@
                         >
 
                         <img
-                            src="{{ asset('images/illustrations/walter-eye.png') }}"
+                            src="{{ asset('images/illustrations/walter-eyes.png') }}"
                             alt=""
                             aria-hidden="true"
-                            data-walter-eye="left"
-                            class="absolute left-[34.75%] top-[25.5%] h-auto w-[1.45rem] sm:left-[35.1%] sm:top-[25.2%] sm:w-[1.85rem] lg:left-[35.25%] lg:top-[25.15%] lg:w-[2.15rem] xl:left-[35.45%] xl:top-[25.05%] xl:w-[2.35rem]"
-                            loading="lazy"
-                        >
-
-                        <img
-                            src="{{ asset('images/illustrations/walter-eye.png') }}"
-                            alt=""
-                            aria-hidden="true"
-                            data-walter-eye="right"
-                            class="absolute left-[58.6%] top-[25.5%] h-auto w-[1.45rem] sm:left-[58.2%] sm:top-[25.2%] sm:w-[1.85rem] lg:left-[57.95%] lg:top-[25.15%] lg:w-[2.15rem] xl:left-[57.7%] xl:top-[25.05%] xl:w-[2.35rem]"
+                            data-walter-eye-overlay
+                            class="pointer-events-none absolute inset-0 h-full w-full"
                             loading="lazy"
                         >
                     </div>

@@ -15,7 +15,7 @@ test('device link blocker stays hidden when user has an active device', function
 
     $component = Livewire::test(DeviceLinkBlocker::class)
         ->assertViewIs('livewire.auth.device-link-blocker')
-        ->assertDontSee('x-cli-device-blocker', false);
+        ->assertDontSee('Getting Started');
 
     expect($component->get('requiresDeviceLink'))->toBeFalse();
 });
@@ -35,7 +35,8 @@ test('device link reminder banner shows when organization has an active device b
 
     $component = Livewire::test(DeviceLinkBlocker::class)
         ->assertViewIs('livewire.auth.device-link-blocker')
-        ->assertSee('Device link needed');
+        ->assertSee('Device link needed')
+        ->assertSee('Set up this device');
 
     expect($component->get('requiresDeviceLink'))->toBeFalse()
         ->and($component->get('showDeviceReminderBanner'))->toBeTrue();
@@ -49,7 +50,10 @@ test('device link blocker shows when neither user nor organization has an active
 
     $component = Livewire::test(DeviceLinkBlocker::class)
         ->assertViewIs('livewire.auth.device-link-blocker')
-        ->assertSee('x-cli-device-blocker', false);
+        ->assertSee('Getting Started')
+        ->assertSee('Download Desktop for macOS')
+        ->assertSee('Desktop')
+        ->assertSee('CLI');
 
     expect($component->get('requiresDeviceLink'))->toBeTrue();
 });
@@ -69,7 +73,7 @@ test('device link blocker stays hidden for billing-only roles when organization 
 
     $component = Livewire::test(DeviceLinkBlocker::class)
         ->assertViewIs('livewire.auth.device-link-blocker')
-        ->assertDontSee('Link your device to unlock encrypted data');
+        ->assertDontSee('Getting Started');
 
     expect($component->get('requiresDeviceLink'))->toBeFalse()
         ->and($component->get('showDeviceReminderBanner'))->toBeFalse();

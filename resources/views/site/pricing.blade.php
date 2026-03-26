@@ -41,6 +41,7 @@
                                 'CLI Access',
                                 'CI/CD Workflows',
                                 'Secrets Management',
+                                'Encrypted Backups',
                                 'Environment Validation',
                                 'Version Tracking'
                             ]"
@@ -74,7 +75,7 @@
                                 'Up to 60,000 API Operations',
                                 'Everything from Standard',
                                 '60 Day Audit History',
-                                //'SOC2 Integrations'
+                                'Signed Audit Webhooks'
                             ]"
                             :integrations="[
                                 ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3']

@@ -52,7 +52,7 @@
                     <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                         <h2 class="text-xl font-semibold text-gray-900">Scope</h2>
                         <ul class="mt-4 space-y-2 text-gray-600 list-disc pl-5">
-                            <li>Systems: Ghostable web app, API, CLI, admin dashboard, and core infrastructure services used to operate the platform.</li>
+                            <li>Systems: Ghostable web app, API, desktop client, CLI, admin dashboard, and core infrastructure services used to operate the platform.</li>
                             <li>Trust Services Criteria: Security, Availability, Confidentiality.</li>
                         </ul>
                     </section>
@@ -67,15 +67,48 @@
                             <li>Incident response procedures with tabletop exercises.</li>
                             <li>Vendor management for critical third-party services.</li>
                         </ul>
+                        <p class="mt-4 text-sm text-gray-500">
+                            Reviewers who want a concern-to-control mapping can use the
+                            <flux:link href="https://docs.ghostable.dev/fundamentals/v2/security-and-operations/security-controls-matrix" target="_blank">
+                                security controls matrix
+                            </flux:link>.
+                        </p>
                     </section>
 
                     <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                         <h2 class="text-xl font-semibold text-gray-900">Zero-Knowledge Architecture</h2>
                         <p class="mt-3 text-gray-600">
-                            Encryption and decryption happen locally in the CLI. Only ciphertext and
+                            Encryption and decryption happen locally in trusted clients, including the desktop app and CLI. Only ciphertext and
                             non-sensitive metadata are stored. This changes how certain controls are
                             implemented, but not the security objectives they serve. For a deeper
                             walkthrough, see our <flux:link href="{{ route('learn.zero-knowledge-encryption') }}">zero-knowledge guide</flux:link>.
+                        </p>
+                    </section>
+
+                    <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900">Release integrity</h2>
+                        <p class="mt-3 text-gray-600">
+                            Ghostable publishes verifiable release evidence for security review workflows, including checksums, software bill of materials artifacts, and signed build provenance where supported. For desktop releases, we also document code-signing and notarization verification steps so teams can validate what they install.
+                        </p>
+                        <p class="mt-4 text-sm text-gray-500">
+                            See
+                            <flux:link href="https://docs.ghostable.dev/fundamentals/v2/security-and-operations/supply-chain-verification" target="_blank">
+                                supply chain verification
+                            </flux:link>
+                            for the current verification workflow.
+                        </p>
+                    </section>
+
+                    <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900">External security monitoring</h2>
+                        <p class="mt-3 text-gray-600">
+                            Ghostable supports signed audit webhook delivery so organizations can forward security-relevant events into their own monitoring stack. Delivery health, retries, failure state, and dead-letter status are exposed so teams can validate that security telemetry is flowing as expected.
+                        </p>
+                        <p class="mt-4 text-sm text-gray-500">
+                            We document integration patterns for Datadog, Splunk, and Elastic in the
+                            <flux:link href="https://docs.ghostable.dev/fundamentals/v2/security-and-operations/siem-audit-webhook-templates" target="_blank">
+                                SIEM audit webhook templates
+                            </flux:link>.
                         </p>
                     </section>
 

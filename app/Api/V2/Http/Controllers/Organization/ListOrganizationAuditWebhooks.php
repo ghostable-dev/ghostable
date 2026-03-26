@@ -13,7 +13,7 @@ final class ListOrganizationAuditWebhooks extends Controller
 {
     public function __invoke(Organization $organization): AnonymousResourceCollection
     {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
 
         $webhooks = $organization->auditWebhooks()
             ->orderBy('created_at', 'desc')

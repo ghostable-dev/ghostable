@@ -19,7 +19,7 @@ final class CreateOrganizationAuditWebhook extends Controller
         CreateOrganizationAuditWebhookRequest $request,
         Organization $organization
     ): JsonResponse {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
 
         $data = $request->validated();
         $secret = Str::random(64);

@@ -43,9 +43,11 @@ test('homepage renders the desktop-first concept without the promo banner', func
     $response->assertSeeText('QUEUE_CONNECTION');
     $response->assertSeeText('Jobs are stuck on sync again after the deploy.');
     $response->assertSee('images/illustrations/walter-head-explode.png', false);
-    $response->assertSee('images/illustrations/walter-eye.png', false);
+    $response->assertSee('images/illustrations/walter-eyes.png', false);
     $response->assertSee('data-walter-eye-stage', false);
     $response->assertSee('data-walter-eye-figure', false);
+    $response->assertSee('data-walter-eye-overlay', false);
+    $response->assertDontSee('images/illustrations/walter-eye.png', false);
     $response->assertDontSeeText('Eye Align');
     $response->assertDontSeeText('What Ghostable replaces it with');
     $response->assertDontSeeText('Slack archaeology');

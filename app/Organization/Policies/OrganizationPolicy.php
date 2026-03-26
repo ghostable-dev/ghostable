@@ -84,6 +84,12 @@ class OrganizationPolicy
             );
     }
 
+    public function manageAuditWebhooks(User $user, Organization $organization): bool
+    {
+        return $organization->features->audit_webhooks
+            && $user->isOrganizationAdmin($organization);
+    }
+
     public function admin(User $user, Organization $organization): bool
     {
         return $user->isOrganizationAdmin($organization);

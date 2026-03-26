@@ -19,6 +19,7 @@ it('returns free features by default', function () {
         ->toBeInstanceOf(OrganizationFeatures::class)
         ->and($organization->features->audits)->toBeFalse()
         ->and($organization->features->integrations)->toBeFalse()
+        ->and($organization->features->audit_webhooks)->toBeFalse()
         ->and($organization->features->advanced_permissions)->toBeFalse()
         ->and($organization->features->guided_key_reshare_v2)->toBeTrue();
 });
@@ -41,6 +42,19 @@ it('returns standard features for standard plans', function () {
         ->toBeInstanceOf(OrganizationFeatures::class)
         ->and($features->audits)->toBeTrue()
         ->and($features->integrations)->toBeTrue()
+        ->and($features->audit_webhooks)->toBeFalse()
         ->and($features->advanced_permissions)->toBeFalse()
         ->and($features->guided_key_reshare_v2)->toBeTrue();
+});
+
+it('returns scale audit webhook access for scale plans', function () {
+    $organization = Mockery::mock(Organization::class);
+    $organization->shouldReceive('getAttribute')->with('plan')->andReturn(Plan::SCALE);
+
+    $cast = new OrganizationFeaturesCast;
+    $features = $cast->get($organization, 'features', null, []);
+
+    expect($features)
+        ->toBeInstanceOf(OrganizationFeatures::class)
+        ->and($features->audit_webhooks)->toBeTrue();
 });

@@ -17,7 +17,7 @@ final class GetOrganizationAuditWebhookMetrics extends Controller
         Organization $organization,
         AuditWebhookMetrics $metrics
     ): JsonResponse {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
 
         $validated = validator($request->query(), [
             'window' => ['nullable', 'in:24h,7d,30d'],

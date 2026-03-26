@@ -29,6 +29,19 @@ test('audit feature can be enabled for free organization', function () {
     expect(Gate::forUser($this->owner)->allows('viewAuditLogs', $organization))->toBeTrue();
 });
 
+test('free organization cannot manage audit webhooks by default', function () {
+    $organization = app(CreateOrganization::class)->handle('Acme', $this->owner);
+
+    expect(Gate::forUser($this->owner)->allows('manageAuditWebhooks', $organization))->toBeFalse();
+});
+
+test('audit webhook feature can be enabled for free organization', function () {
+    $organization = app(CreateOrganization::class)->handle('Acme', $this->owner);
+    $organization->update(['features' => OrganizationFeatures::from(['audit_webhooks' => true])]);
+
+    expect(Gate::forUser($this->owner)->allows('manageAuditWebhooks', $organization))->toBeTrue();
+});
+
 test('free organization cannot manage access controls by default', function () {
     $organization = app(CreateOrganization::class)->handle('Acme', $this->owner);
 

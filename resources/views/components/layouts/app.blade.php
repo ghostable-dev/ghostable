@@ -2,7 +2,8 @@
     'title' => null,
     'breadcrumbs' => null,
     'subheader' => null,
-    'hideHeader' => false
+    'hideHeader' => false,
+    'showDeviceLinkBlocker' => true,
 ])
 
 <x-layouts.base
@@ -96,8 +97,9 @@
     @endif
     
     <div>
-        
-        <livewire:auth.livewire.device-link-blocker />
+        @if($showDeviceLinkBlocker)
+            <livewire:auth.livewire.device-link-blocker />
+        @endif
         
         <div class="bg-zinc-50 dark:bg-zinc-800">
             {{ $subheader ?? '' }}

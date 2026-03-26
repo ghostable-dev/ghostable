@@ -25,13 +25,13 @@
                             <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">Device link needed</span>
                             <div class="space-y-1">
                                 <p class="text-sm text-zinc-600">
-                                    You don’t have a linked device yet. Link one to push and pull environment variables securely with {{ $organization?->name ?? 'your workspace' }}.
+                                    You do not have a trusted device yet. Use Ghostable Desktop on your Mac, or the CLI on other platforms, so you can securely work with {{ $organization?->name ?? 'your workspace' }}.
                                 </p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 md:ml-6">
-                            <flux:button size="sm" variant="primary" x-on:click="$flux.modal('cli-device-blocker').show()">
-                                Link device
+                            <flux:button size="sm" variant="primary" x-on:click="$flux.modal('device-setup-blocker').show()">
+                                Set up this device
                             </flux:button>
                             <flux:button size="sm" variant="ghost" x-on:click="dismissed = true">
                                 Remind me later

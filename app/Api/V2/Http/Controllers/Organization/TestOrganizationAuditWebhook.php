@@ -24,7 +24,7 @@ final class TestOrganizationAuditWebhook extends Controller
         OrganizationAuditWebhook $auditWebhook,
         AuditWebhookDelivery $delivery
     ): JsonResponse {
-        $this->authorize('admin', $organization);
+        $this->authorize('manageAuditWebhooks', $organization);
         $this->ensureWebhookBelongsToOrganization($auditWebhook, $organization);
 
         try {

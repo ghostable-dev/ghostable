@@ -1,5 +1,6 @@
 <?php
 
+use App\Billing\Enums\Plan;
 use App\Organization\Enums\OrganizationAuditWebhookStatus;
 use App\Organization\Jobs\DeliverAuditWebhookActivity;
 use App\Organization\Models\OrganizationAuditWebhook;
@@ -18,7 +19,8 @@ beforeEach(function () {
     $this->organization = $this->createOrganization(
         name: 'Ghostable Audit Webhooks Org',
         owner: $this->owner,
-        members: [$this->member]
+        members: [$this->member],
+        planOverride: Plan::SCALE,
     );
     $this->baseEndpoint = "/api/v2/organizations/{$this->organization->id}/audit-webhooks";
 });
@@ -57,6 +59,25 @@ test('non-admin organization member cannot manage audit webhooks', function () {
 
     $this->getJson($this->baseEndpoint)->assertForbidden();
     $this->getJson("{$this->baseEndpoint}/metrics")->assertForbidden();
+});
+
+test('free-plan organization admin cannot manage audit webhooks', function () {
+    $owner = $this->createUser(name: 'Free Owner', email: 'free-owner-webhooks@example.com');
+    $organization = $this->createOrganization(
+        name: 'Ghostable Free Audit Webhooks Org',
+        owner: $owner,
+    );
+    $baseEndpoint = "/api/v2/organizations/{$organization->id}/audit-webhooks";
+
+    Sanctum::actingAs($owner);
+
+    $this->postJson($baseEndpoint, [
+        'name' => 'Denied',
+        'endpoint_url' => 'https://siem.example.com/ghostable',
+    ])->assertForbidden();
+
+    $this->getJson($baseEndpoint)->assertForbidden();
+    $this->getJson("{$baseEndpoint}/metrics")->assertForbidden();
 });
 
 test('admin can disable and rotate audit webhook secret', function () {
