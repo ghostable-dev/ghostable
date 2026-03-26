@@ -34,14 +34,3 @@ test('locked users are redirected away from the dashboard', function () {
     $response->assertRedirect(route('login'));
     $this->assertGuest();
 });
-
-test('local device setup preview page renders for authenticated users', function () {
-    $user = $this->createUser('Preview User', 'preview@example.com');
-
-    $response = $this->actingAs($user)->get(route('local.previews.device-setup'));
-
-    $response->assertOk();
-    $response->assertSee('Device setup onboarding preview');
-    $response->assertSee('Getting Started');
-    $response->assertSee('Download Desktop for macOS');
-});

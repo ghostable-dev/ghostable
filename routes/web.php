@@ -60,12 +60,6 @@ if (app()->environment('local')) {
         });
 }
 
-if (app()->environment(['local', 'testing'])) {
-    Route::view('local/previews/device-setup', 'local.device-setup-preview')
-        ->middleware(['auth', 'verified'])
-        ->name('local.previews.device-setup');
-}
-
 if (config('audit_webhook_receiver.local_routes_enabled') || app()->environment('testing')) {
     Route::prefix('local/audit-webhooks')
         ->name('local.audit-webhooks.')
