@@ -32,7 +32,7 @@ Identity:
 
 Options:
   --prefix, -p <prefix>       Keychain prefix/device persona
-                              (default: dev.ghostable.local.<email-localpart>)
+                              (default: local.ghostable.local.<email-localpart>)
   --persona-file <path>       Persona mapping file (default: .ghostable-reshare-lab/personas.env)
   --api-base <url>            API base URL (default: https://ghostable.test/api/v2)
   --cli-dir <path>            Path to CLI repo (default: ../cli from ghostable)
@@ -42,8 +42,8 @@ Options:
   --help, -h                  Show help
 
 Persona file format (key=email|prefix|workdir):
-  joe=rucci.joe@gmail.com|dev.ghostable.reshare.actor.main|/Users/you/Herd/ghostable
-  nick=nick@gmail.com|dev.ghostable.reshare.recipient.main
+  joe=rucci.joe@gmail.com|local.ghostable.reshare.actor.main|/Users/you/Herd/ghostable
+  nick=nick@gmail.com|local.ghostable.reshare.recipient.main
 
 Examples:
   bash scripts/local-cli-as.sh \\
@@ -52,12 +52,12 @@ Examples:
 
   bash scripts/local-cli-as.sh \\
     --email rucci.joe@gmail.com \\
-    --prefix dev.ghostable.reshare.actor.main \\
+    --prefix local.ghostable.reshare.actor.main \\
     -- organization list
 
   bash scripts/local-cli-as.sh \\
     --email rucci.joe@gmail.com \\
-    --prefix dev.ghostable.reshare.actor.main \\
+    --prefix local.ghostable.reshare.actor.main \\
     -- env reshare fulfill <request-id> --organization <org-id>
 EOF
 }
@@ -85,7 +85,7 @@ default_prefix_for_email() {
 	if [[ -z "$normalized" ]]; then
 		normalized="user"
 	fi
-	printf 'dev.ghostable.local.%s\n' "$normalized"
+	printf 'local.ghostable.local.%s\n' "$normalized"
 }
 
 load_persona() {

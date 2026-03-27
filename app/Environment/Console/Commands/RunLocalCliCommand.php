@@ -815,7 +815,7 @@ final class RunLocalCliCommand extends Command
             $slug = 'user';
         }
 
-        return 'dev.ghostable.local.'.$slug;
+        return 'local.ghostable.local.'.$slug;
     }
 
     /**
