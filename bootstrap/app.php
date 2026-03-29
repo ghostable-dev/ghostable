@@ -1,5 +1,6 @@
 <?php
 
+use App\Account\Console\Commands\PruneUserInboxNotificationsCommand;
 use App\Api\Usage\Jobs\FoldUsageCounters;
 use App\Auth\Console\Commands\PruneCliLoginSessionsCommand;
 use App\Auth\Http\Middleware\EnsureUserIsActive;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(RunSeriesCampaignCommand::class, ['name' => 'onboarding'])->hourlyAt(7);
         $schedule->command(PruneCliLoginSessionsCommand::class)->everyFiveMinutes();
         $schedule->command(PruneDesktopUpdateAnalyticsCommand::class)->daily()->withoutOverlapping()->onOneServer();
+        $schedule->command(PruneUserInboxNotificationsCommand::class)->daily()->withoutOverlapping()->onOneServer();
         if (filter_var((string) env('ENV_KEY_RESHARE_RECONCILE_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN)) {
             $schedule
                 ->command(ReconcileEnvironmentKeyReshareRequestsCommand::class, ['--pending-only', '--no-notify'])
@@ -59,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         RunSeriesCampaignCommand::class,
         PruneCliLoginSessionsCommand::class,
+        PruneUserInboxNotificationsCommand::class,
         PruneOrganizationAuditWebhookDeliveriesCommand::class,
         PruneLocalAuditWebhookCapturesCommand::class,
         InstallLocalAuditWebhookCapturesTableCommand::class,

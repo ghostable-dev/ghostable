@@ -24,6 +24,10 @@ enum OrganizationPermission: string
     // Variables
     case ViewVariables = 'var:view';
     case EditVariables = 'var:edit';
+    case ViewContext = 'var:view-context';
+    case EditNote = 'var:edit-note';
+    case Comment = 'var:comment';
+    case ViewVersionChangeNotes = 'var:view-version-change-notes';
     case PushFile = 'var:push';
     case ManageValidationRules = 'var:manage-rules';
 
@@ -53,6 +57,10 @@ enum OrganizationPermission: string
 
             self::ViewVariables,
             self::EditVariables,
+            self::ViewContext,
+            self::EditNote,
+            self::Comment,
+            self::ViewVersionChangeNotes,
             self::PushFile,
             self::ManageValidationRules => 'Variables',
 
@@ -87,6 +95,10 @@ enum OrganizationPermission: string
             // Variables
             self::ViewVariables => 'View environment variables',
             self::EditVariables => 'Edit environment variables',
+            self::ViewContext => 'View variable context',
+            self::EditNote => 'Edit variable notes',
+            self::Comment => 'Comment on variables',
+            self::ViewVersionChangeNotes => 'View variable change reasons',
             self::PushFile => 'Push full environment file',
             self::ManageValidationRules => 'Manage validation rules',
 
@@ -121,6 +133,10 @@ enum OrganizationPermission: string
         return [
             self::ViewVariables,
             self::EditVariables,
+            self::ViewContext,
+            self::EditNote,
+            self::Comment,
+            self::ViewVersionChangeNotes,
             self::PushFile,
             self::ManageValidationRules,
             self::ViewSecrets,

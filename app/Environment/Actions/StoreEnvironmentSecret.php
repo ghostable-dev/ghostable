@@ -6,13 +6,15 @@ use App\Account\Models\User;
 use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Services\EnvironmentVariableVersionChangeNoteService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class StoreEnvironmentSecret
 {
     public function __construct(
-        protected CreateEnvironmentSecretVersion $versioner, // your existing action
+        protected CreateEnvironmentSecretVersion $versioner,
+        protected EnvironmentVariableVersionChangeNoteService $changeNoteService,
     ) {}
 
     /**
@@ -23,7 +25,15 @@ class StoreEnvironmentSecret
      *   name:string, ciphertext:string, nonce:string, alg:string,
      *   aad:array, claims:array, client_sig:string,
      *   line_bytes?:int, is_vapor_secret?:bool, is_commented?:bool,
-     *   if_version?:int|null
+     *   if_version?:int|null,
+     *   change_note?: array{
+     *       ciphertext: string,
+     *       nonce: string,
+     *       alg: string,
+     *       aad: array<string, mixed>,
+     *       claims?: array<string, mixed>|null,
+     *       client_sig: string
+     *   }
      * }  $data
      */
     public function handle(
@@ -118,13 +128,21 @@ class StoreEnvironmentSecret
             }
 
             // Append immutable snapshot AND bump the head version atomically
-            $this->versioner->handle(
+            $version = $this->versioner->handle(
                 secret: $secret,
                 changedBy: $actor,
                 expectedVersion: $data['if_version'] ?? null
             );
 
-            return $secret->refresh();
+            if (is_array($data['change_note'] ?? null)) {
+                $this->changeNoteService->upsert(
+                    version: $version,
+                    payload: $data['change_note'],
+                    actor: $actor
+                );
+            }
+
+            return $secret->refresh()->load('latestVersion.changeNote');
         });
     }
 }

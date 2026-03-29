@@ -11,6 +11,7 @@ use App\Project\Models\Project;
 use App\Project\Resolvers\ResolveProject;
 use App\Project\Rules\ProjectRules;
 use App\Project\Support\ProjectStackOptions;
+use App\Support\DesktopDeepLink;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -129,6 +130,12 @@ class ProjectGeneralSettings extends Component
     public function canEdit(): bool
     {
         return Gate::allows('perform', [$this->project, OrganizationPermission::ManageProjectSettings]);
+    }
+
+    #[Computed]
+    public function desktopDeepLink(): ?string
+    {
+        return DesktopDeepLink::forProject($this->project, section: 'settings');
     }
 
     /**

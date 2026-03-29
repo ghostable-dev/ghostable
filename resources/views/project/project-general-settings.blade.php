@@ -14,16 +14,26 @@
                 <x-slot:title>{{ __('Settings') }}</x-slot:title>
                 <x-slot:subheading>{{ __('Update this project\'s configuration.') }}</x-slot:subheading>
                 <x-slot:actions>
-                    @if($this->canEdit)
                         <div class="flex items-center justify-end gap-4">
-                            <flux:button variant="primary" wire:click="updateProject" class="w-full">
+                            @if($this->desktopDeepLink)
+                                <flux:button
+                                    size="sm"
+                                    variant="ghost"
+                                    href="{{ $this->desktopDeepLink }}"
+                                    icon:trailing="arrow-top-right-on-square">
+                                    Open in desktop
+                                </flux:button>
+                            @endif
+
+                            @if($this->canEdit)
+                            <flux:button variant="primary" wire:click="updateProject">
                                 {{ __('Save') }}
                             </flux:button>
                             <x-action-message class="me-3" on="project-updated">
                                 {{ __('Saved.') }}
                             </x-action-message>
+                            @endif
                         </div>
-                    @endif
                 </x-slot:actions>
                 <form class="w-full space-y-6">
                     <flux:input wire:model="name" label="Name" :readonly="!$this->canEdit" required/>

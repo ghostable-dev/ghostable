@@ -4,21 +4,32 @@ declare(strict_types=1);
 
 namespace App\Api\V2\Http\Controllers\Project;
 
+use App\Account\Models\User;
 use App\Api\V2\Http\Controllers\Concerns\PresentsAuditActor;
 use App\Core\Http\Controllers\Controller;
+use App\Core\Models\Activity;
+use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecretVersion;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Actions\BuildProjectAuditSummary;
 use App\Project\Actions\ResolveProjectAuditEntries;
 use App\Project\Models\Project;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 final class GetProjectHistory extends Controller
 {
     use PresentsAuditActor;
 
     private const ENTRY_LIMIT = 100;
+
+    private const CONTEXT_ACTIVITY_EVENTS = [
+        'context_note_updated',
+        'context_comment_added',
+        'context_comment_deleted',
+    ];
 
     public function __invoke(
         Request $request,
@@ -33,11 +44,48 @@ final class GetProjectHistory extends Controller
 
         $entriesResult = $resolveProjectAuditEntries->handle(
             environmentIds: $environmentIds,
-            limit: self::ENTRY_LIMIT,
+            limit: self::ENTRY_LIMIT * 3,
         );
 
-        $entries = $entriesResult['versions']
-            ->map(fn (EnvironmentSecretVersion $version) => $this->presentEntry($version))
+        $contextActivities = $this->resolveContextActivities($environmentIds);
+
+        $combinedEntries = $entriesResult['versions']
+            ->map(fn (EnvironmentSecretVersion $version): array => [
+                ...$this->presentEntry($version),
+                '__sort_at' => $version->created_at?->toImmutable()->valueOf() ?? 0,
+                '__sort_id' => (string) $version->id,
+            ])
+            ->toBase()
+            ->merge(
+                $contextActivities->map(fn (Activity $activity): array => [
+                    ...$this->presentContextActivityEntry($activity),
+                    '__sort_at' => $activity->created_at?->toImmutable()->valueOf() ?? 0,
+                    '__sort_id' => 'activity-'.$activity->id,
+                ])
+            )
+            ->sort(function (array $left, array $right): int {
+                $leftAt = (int) ($left['__sort_at'] ?? 0);
+                $rightAt = (int) ($right['__sort_at'] ?? 0);
+
+                if ($leftAt !== $rightAt) {
+                    return $rightAt <=> $leftAt;
+                }
+
+                $leftId = (string) ($left['__sort_id'] ?? '');
+                $rightId = (string) ($right['__sort_id'] ?? '');
+
+                return strcmp($rightId, $leftId);
+            })
+            ->values();
+
+        $truncated = $combinedEntries->count() > self::ENTRY_LIMIT;
+
+        $entries = $combinedEntries
+            ->take(self::ENTRY_LIMIT)
+            ->map(fn (array $entry): array => array_diff_key($entry, [
+                '__sort_at' => true,
+                '__sort_id' => true,
+            ]))
             ->values();
 
         $summary = $buildProjectAuditSummary->handle(
@@ -56,7 +104,7 @@ final class GetProjectHistory extends Controller
             'entries' => $entries,
             'meta' => [
                 'limit' => self::ENTRY_LIMIT,
-                'truncated' => $entriesResult['truncated'],
+                'truncated' => $truncated,
                 'more_url' => $this->buildMoreUrl($project),
             ],
         ];
@@ -66,7 +114,7 @@ final class GetProjectHistory extends Controller
             project: $project,
             environmentCount: $environmentCount,
             entryCount: $entries->count(),
-            truncated: (bool) $entriesResult['truncated'],
+            truncated: $truncated,
         );
 
         return response()->json(['data' => $payload]);
@@ -76,12 +124,16 @@ final class GetProjectHistory extends Controller
     {
         $secret = $version->secret;
         $environment = $secret?->environment;
+        $variableName = $secret?->name ?? $version->name;
+        $operation = $version->changeNote
+            ? ($version->version === 1 ? 'created_with_reason' : 'updated_with_reason')
+            : ($version->version === 1 ? 'created' : 'updated');
 
         return [
             'id' => (string) $version->id,
             'occurred_at' => optional($version->created_at)->toIso8601String(),
             'actor' => $this->presentAuditActor($version->changedBy),
-            'operation' => $version->version === 1 ? 'created' : 'updated',
+            'operation' => $operation,
             'scope' => [
                 'type' => $environment ? 'environment' : 'project',
                 'environment' => $environment ? [
@@ -91,7 +143,7 @@ final class GetProjectHistory extends Controller
                 ] : null,
             ],
             'variable' => [
-                'name' => $secret?->name ?? $version->name,
+                'name' => $variableName,
                 'version' => (int) $version->version,
                 'state' => $secret?->trashed() ? 'deleted' : 'active',
             ],
@@ -104,6 +156,107 @@ final class GetProjectHistory extends Controller
                 'display' => $version->display_line_bytes,
             ],
             'commented' => (bool) $version->is_commented,
+            'description' => $version->changeNote
+                ? sprintf(
+                    '%s variable "%s" with a reason.',
+                    $version->version === 1 ? 'Created' : 'Updated',
+                    $variableName
+                )
+                : null,
+        ];
+    }
+
+    private function presentContextActivityEntry(Activity $activity): array
+    {
+        $environment = $this->presentActivityEnvironment($activity);
+        $variableName = (string) (data_get($activity->properties, 'variable.name') ?? 'Variable');
+        $version = data_get($activity->properties, 'variable.version');
+
+        return [
+            'id' => 'activity-'.$activity->id,
+            'occurred_at' => optional($activity->created_at)->toIso8601String(),
+            'actor' => $this->presentActivityActor($activity->causer),
+            'operation' => match ($activity->event) {
+                'context_note_updated' => 'note_updated',
+                'context_comment_added' => 'comment_added',
+                'context_comment_deleted' => 'comment_deleted',
+                default => 'updated',
+            },
+            'scope' => [
+                'type' => $environment ? 'environment' : 'project',
+                'environment' => $environment,
+            ],
+            'variable' => [
+                'name' => $variableName,
+                'version' => is_numeric($version) ? (int) $version : null,
+                'state' => 'active',
+            ],
+            'kek' => [
+                'version' => null,
+                'fingerprint' => null,
+            ],
+            'line' => [
+                'bytes' => null,
+                'display' => null,
+            ],
+            'commented' => false,
+            'description' => $activity->description,
+        ];
+    }
+
+    /**
+     * @return Collection<int, Activity>
+     */
+    private function resolveContextActivities(Collection $environmentIds): Collection
+    {
+        if ($environmentIds->isEmpty()) {
+            return collect();
+        }
+
+        return Activity::query()
+            ->whereIn('event', self::CONTEXT_ACTIVITY_EVENTS)
+            ->where('subject_type', (new Environment)->getMorphClass())
+            ->whereIn('subject_id', $environmentIds)
+            ->with('causer')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(self::ENTRY_LIMIT * 3)
+            ->get();
+    }
+
+    /**
+     * @return array{id:string,name:string,type:mixed}|null
+     */
+    private function presentActivityEnvironment(Activity $activity): ?array
+    {
+        $environment = data_get($activity->properties, 'environment');
+
+        if (! is_array($environment)) {
+            return null;
+        }
+
+        $environmentId = data_get($environment, 'id');
+        $environmentName = data_get($environment, 'name');
+
+        if (! is_string($environmentId) || ! is_string($environmentName)) {
+            return null;
+        }
+
+        return [
+            'id' => $environmentId,
+            'name' => $environmentName,
+            'type' => data_get($environment, 'type'),
+        ];
+    }
+
+    private function presentActivityActor(?Model $causer): array
+    {
+        if ($causer instanceof User) {
+            return $this->presentAuditActor($causer);
+        }
+
+        return [
+            'type' => 'system',
         ];
     }
 

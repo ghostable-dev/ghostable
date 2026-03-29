@@ -14,6 +14,9 @@ use App\Crypto\Models\Device;
 use App\Environment\Actions\StoreEnvironmentSecret;
 use App\Environment\Entities\PushResultData;
 use App\Environment\Exceptions\EnvironmentSecretVersionConflict;
+use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Models\EnvironmentSecretVersion;
+use App\Environment\Services\EnvironmentVariableContextActivityService;
 use App\Environment\Support\EnvironmentAuditProperties;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
@@ -33,7 +36,8 @@ final class PushEnvironment extends Controller
         string $name,
         StoreEnvironmentSecret $storeEnvironmentSecret,
         EnsureDeviceOwnership $ensureDeviceOwnership,
-        VerifyClientPayloadSignature $verifyClientPayloadSignature
+        VerifyClientPayloadSignature $verifyClientPayloadSignature,
+        EnvironmentVariableContextActivityService $contextActivityService
     ): JsonResource|JsonResponse {
 
         $env = $project->environmentOrFail($name);
@@ -59,6 +63,7 @@ final class PushEnvironment extends Controller
         $added = 0;
         $updated = 0;
         $removed = 0;
+        $reasonActivities = [];
 
         $existing = $env->envSecrets()->get()->keyBy('name');
         $preflightConflicts = [];
@@ -108,7 +113,8 @@ final class PushEnvironment extends Controller
                 &$existing,
                 &$added,
                 &$updated,
-                &$removed
+                &$removed,
+                &$reasonActivities
             ) {
                 foreach ($secrets as $index => $secretData) {
                     $payloadToVerify = $secretData;
@@ -124,6 +130,7 @@ final class PushEnvironment extends Controller
 
                     $name = $secretData['name'];
                     $previous = $existing->get($name);
+                    $previousVersion = (int) ($previous->version ?? 0);
 
                     if ($forceOverwrite) {
                         unset($secretData['if_version']);
@@ -139,6 +146,20 @@ final class PushEnvironment extends Controller
                         $added++;
                     } elseif ((int) ($secret->version ?? 0) > (int) ($previous->version ?? 0)) {
                         $updated++;
+                    }
+
+                    if (
+                        is_array($secretData['change_note'] ?? null)
+                        && (int) ($secret->version ?? 0) > $previousVersion
+                    ) {
+                        $secret->loadMissing('latestVersion.changeNote');
+
+                        if ($secret->latestVersion?->changeNote) {
+                            $reasonActivities[] = [
+                                'secret_id' => (string) $secret->getKey(),
+                                'version_id' => (string) $secret->latestVersion->getKey(),
+                            ];
+                        }
                     }
 
                     $existing->put($name, $secret);
@@ -177,6 +198,35 @@ final class PushEnvironment extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], 409);
+        }
+
+        foreach ($reasonActivities as $activityContext) {
+            /** @var EnvironmentSecret|null $secret */
+            $secret = EnvironmentSecret::query()
+                ->with('environment.project.organization')
+                ->find($activityContext['secret_id']);
+
+            if (! $secret) {
+                continue;
+            }
+
+            /** @var EnvironmentSecretVersion|null $version */
+            $version = $secret->versions()
+                ->with('changeNote')
+                ->find($activityContext['version_id']);
+
+            if (! $version?->changeNote || ! $request->user()) {
+                continue;
+            }
+
+            $contextActivityService->logVariableUpdatedWithReason(
+                secret: $secret,
+                version: $version,
+                changeNote: $version->changeNote,
+                actor: $request->user(),
+                device: $device,
+                ipAddress: $request->ip(),
+            );
         }
 
         $result = new PushResultData(

@@ -8,6 +8,7 @@
                     <flux:table.column>Version</flux:table.column>
                     <flux:table.column>Size</flux:table.column>
                     <flux:table.column>Changed By</flux:table.column>
+                    <flux:table.column>Reason for change</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach($this->versions as $version)
@@ -22,7 +23,30 @@
                                 {{ $version->displayLineBytes }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ $version->changedBy->email }}
+                                {{ $version->changedBy?->email ?? 'Unknown' }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                @if(! $this->canViewVersionChangeNotes)
+                                    <flux:text size="sm" variant="subtle">
+                                        Locked
+                                    </flux:text>
+                                @elseif($version->changeNote)
+                                    <div class="space-y-2">
+                                        <flux:badge size="sm" color="emerald">
+                                            Encrypted change reason saved
+                                        </flux:badge>
+                                        <flux:text size="sm" variant="subtle">
+                                            Stored as client-side ciphertext. Open in a trusted client to decrypt.
+                                        </flux:text>
+                                        <flux:text size="sm" variant="subtle">
+                                            Saved {{ $version->changeNote->created_at?->timezone(timezone())->format(DT_FORMAT) ?? 'Unknown' }}
+                                        </flux:text>
+                                    </div>
+                                @else
+                                    <flux:text size="sm" variant="subtle">
+                                        No reason saved
+                                    </flux:text>
+                                @endif
                             </flux:table.cell>
                             {{-- <flux:table.cell>
                                 @if($version->id !== $this->secret->latestVersion->id)

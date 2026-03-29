@@ -59,6 +59,10 @@ enum OrganizationRole: string
                 // Variable permissions
                 OrganizationPermission::ViewVariables,
                 OrganizationPermission::EditVariables,
+                OrganizationPermission::ViewContext,
+                OrganizationPermission::EditNote,
+                OrganizationPermission::Comment,
+                OrganizationPermission::ViewVersionChangeNotes,
                 OrganizationPermission::PushFile,
 
                 // Secret permissions
@@ -68,6 +72,8 @@ enum OrganizationRole: string
 
             self::DEVELOPER_READ_ONLY => [
                 OrganizationPermission::ViewVariables,
+                OrganizationPermission::ViewContext,
+                OrganizationPermission::ViewVersionChangeNotes,
                 OrganizationPermission::ViewSecrets,
             ],
 

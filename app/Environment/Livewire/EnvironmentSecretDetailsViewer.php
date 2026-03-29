@@ -5,6 +5,8 @@ namespace App\Environment\Livewire;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Resolvers\ResolveEnvironmentSecret;
 use App\Organization\Enums\OrganizationPermission;
+use App\Support\DesktopDeepLink;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,12 +17,15 @@ class EnvironmentSecretDetailsViewer extends Component
 
     public ?string $environmentSecretId = null;
 
+    public string $tab = 'info';
+
     public const LAUNCH = 'secret-details:launch';
 
     #[On(self::LAUNCH)]
     public function launch(EnvironmentSecret $secret): void
     {
         $this->environmentSecretId = $secret->id;
+        $this->tab = 'info';
 
         $this->authorize('perform', [$secret->environment, OrganizationPermission::ViewVariables]);
 
@@ -45,40 +50,71 @@ class EnvironmentSecretDetailsViewer extends Component
         }
 
         return [
-            'name' => $this->secret->name,
-            'version' => 'v'.$this->secret->version,
+            'Name' => $this->secret->name,
+            'Version' => 'v'.$this->secret->version,
             'Size' => $this->secret->displayLineBytes,
-            'Last Updated' => $this->secret->last_updated_at->timezone(timezone())->format(DT_FORMAT),
-            'By' => $this->secret->lastUpdatedBy->email,
+            'Last Updated' => optional($this->secret->last_updated_at)->timezone(timezone())->format(DT_FORMAT) ?? 'Unknown',
+            'Last Updated By' => $this->secret->lastUpdatedBy?->email ?? 'Unknown',
             'Algorithm' => $this->secret->alg,
         ];
     }
 
+    #[Computed]
+    public function canViewContext(): bool
+    {
+        if (! $this->secret || ! auth()->user()) {
+            return false;
+        }
+
+        return auth()->user()->can('perform', [$this->secret->environment, OrganizationPermission::ViewContext]);
+    }
+
+    #[Computed]
+    public function canEditNote(): bool
+    {
+        if (! $this->canViewContext || ! auth()->user()) {
+            return false;
+        }
+
+        return auth()->user()->can('perform', [$this->secret->environment, OrganizationPermission::EditNote]);
+    }
+
+    #[Computed]
+    public function canComment(): bool
+    {
+        if (! $this->canViewContext || ! auth()->user()) {
+            return false;
+        }
+
+        return auth()->user()->can('perform', [$this->secret->environment, OrganizationPermission::Comment]);
+    }
+
+    #[Computed]
+    public function comments(): Collection
+    {
+        if (! $this->secret || ! $this->canViewContext) {
+            return collect();
+        }
+
+        return $this->secret->comments;
+    }
+
+    #[Computed]
+    public function desktopDeepLink(): ?string
+    {
+        if (! $this->secret) {
+            return null;
+        }
+
+        return DesktopDeepLink::forEnvironment(
+            $this->secret->environment,
+            variableName: $this->secret->name,
+            detailPanel: 'info',
+        );
+    }
+
     public function render()
     {
-        return <<<'BLADE'
-            <flux:modal variant="flyout" wire:model="showing" class="md:w-xl">
-                <div class="space-y-6">
-                    <flux:heading size="lg">Details</flux:heading>
-                    <div class="flow-root">
-                        @if($this->secret)
-                            <dl class="divide-y divide-gray-100 dark:divide-white/10">
-                            @foreach($this->details as $label => $value)
-                                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                                    <dt class="text-sm/6 font-medium text-gray-900 dark:text-gray-100">{{ $label }}</dt>
-                                    <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-400">{{ $value }}</dd>
-                                </div>
-                            @endforeach
-                            </dl>
-                        @endif  
-                    </div>
-                    <div class="flex gap-2 justify-end">
-                        <flux:modal.close>
-                            <flux:button variant="filled">Close</flux:button>
-                        </flux:modal.close>
-                    </div>
-                </div>
-            </flux:modal>
-        BLADE;
+        return view('environment.secret-details-viewer');
     }
 }

@@ -7,6 +7,7 @@ use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Organization\Enums\OrganizationPermission;
+use App\Support\DesktopDeepLink;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -71,6 +72,12 @@ class EnvironmentSecretManager extends Component
         }
 
         return $secrets;
+    }
+
+    #[Computed]
+    public function desktopDeepLink(): ?string
+    {
+        return DesktopDeepLink::forEnvironment($this->environment);
     }
 
     /**

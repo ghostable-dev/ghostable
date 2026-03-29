@@ -17,6 +17,8 @@ test('project settings can be updated and deleted', function () {
     $this->actingAs($user);
 
     Livewire::test(ProjectGeneralSettings::class, ['project' => $project])
+        ->assertSee('Open in desktop')
+        ->assertSeeHtml('ghostable-local://project/'.$org->id.'/'.$project->id.'?org_name=Org&amp;project_name=Website&amp;section=settings')
         ->set('name', 'New Name')
         ->set('description', 'Desc')
         ->set('stack.language', ProjectStackTag::LanguagePHP->value)

@@ -52,8 +52,22 @@ class EnvironmentSecretVersionManager extends Component
         }
 
         return $this->secret->versions()
+            ->with(['changedBy', 'changeNote.createdBy'])
             ->reorder('version', 'desc')
             ->get();
+    }
+
+    #[Computed]
+    public function canViewVersionChangeNotes(): bool
+    {
+        if (! $this->secret || ! auth()->user()) {
+            return false;
+        }
+
+        return auth()->user()->can('perform', [
+            $this->secret->environment,
+            OrganizationPermission::ViewVersionChangeNotes,
+        ]);
     }
 
     public function render()

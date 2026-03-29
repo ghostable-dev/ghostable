@@ -30,6 +30,7 @@ class ResolveProjectAuditEntries
         $versionsQuery = (clone $baseQuery)
             ->with([
                 'changedBy',
+                'changeNote',
                 'secret' => function ($query) {
                     $query->withTrashed()
                         ->select('id', 'environment_id', 'name', 'deleted_at')

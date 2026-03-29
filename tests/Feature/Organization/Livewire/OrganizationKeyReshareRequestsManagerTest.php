@@ -53,7 +53,8 @@ test('actor sees pending key re-share requests in organization queue', function 
         ->assertSee('production')
         ->assertSee('CLI command')
         ->assertSee('ghostable env reshare fulfill')
-        ->assertSee('Open Desktop');
+        ->assertSee('Open in desktop')
+        ->assertSeeHtml('ghostable-local://organization/'.$organization->id.'/key-reshare/');
 });
 
 test('recipient sees waiting state in organization key re-share queue', function (): void {

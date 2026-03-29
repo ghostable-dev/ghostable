@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EnvironmentSecretVersion extends Model
 {
@@ -70,7 +71,8 @@ class EnvironmentSecretVersion extends Model
      */
     public function secret(): BelongsTo
     {
-        return $this->belongsTo(EnvironmentSecret::class, 'environment_secret_id');
+        return $this->belongsTo(EnvironmentSecret::class, 'environment_secret_id')
+            ->withTrashed();
     }
 
     /**
@@ -79,5 +81,10 @@ class EnvironmentSecretVersion extends Model
     public function changedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by');
+    }
+
+    public function changeNote(): HasOne
+    {
+        return $this->hasOne(EnvironmentVariableVersionChangeNote::class, 'environment_secret_version_id');
     }
 }

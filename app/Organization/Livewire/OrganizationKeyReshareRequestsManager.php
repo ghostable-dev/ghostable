@@ -8,6 +8,7 @@ use App\Account\Models\User;
 use App\Environment\Enums\EnvironmentKeyReshareRequestStatus;
 use App\Environment\Models\EnvironmentKeyReshareRequest;
 use App\Organization\Models\Organization;
+use App\Support\DesktopDeepLink;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -73,8 +74,7 @@ class OrganizationKeyReshareRequestsManager extends Component
                     'is_actor' => $canFulfill,
                     'is_recipient' => $isRecipient,
                     'cli_command' => sprintf('ghostable env reshare fulfill %s', (string) $request->getKey()),
-                    'desktop_deep_link' => sprintf(
-                        'ghostable://organization/%s/key-reshare/%s',
+                    'desktop_deep_link' => DesktopDeepLink::forOrganizationKeyReshare(
                         (string) $request->organization_id,
                         (string) $request->getKey(),
                     ),

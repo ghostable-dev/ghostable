@@ -36,9 +36,13 @@ final class GetEnvironmentVariableHistory extends Controller
         abort_unless($secret, 404, 'Variable not found in this environment.');
 
         $secret->loadMissing('latestVersion');
+        $canViewVersionChangeNotes = (bool) $request->user()?->can('perform', [
+            $environment,
+            OrganizationPermission::ViewVersionChangeNotes,
+        ]);
 
         $versions = $secret->versions()
-            ->with('changedBy')
+            ->with(['changedBy', 'changeNote.createdBy'])
             ->orderByDesc('version')
             ->limit(self::ENTRY_LIMIT + 1)
             ->get();
@@ -60,6 +64,21 @@ final class GetEnvironmentVariableHistory extends Controller
                     'display' => $version->display_line_bytes,
                 ],
                 'commented' => (bool) $version->is_commented,
+                'change_note' => $canViewVersionChangeNotes && $version->changeNote
+                    ? [
+                        'id' => (string) $version->changeNote->getKey(),
+                        'created_at' => optional($version->changeNote->created_at)->toIso8601String(),
+                        'actor' => $this->presentAuditActor($version->changeNote->createdBy),
+                        'body' => [
+                            'ciphertext' => $version->changeNote->ciphertext,
+                            'nonce' => $version->changeNote->nonce,
+                            'alg' => $version->changeNote->alg,
+                            'aad' => $version->changeNote->aad,
+                            'claims' => $version->changeNote->claims,
+                            'client_sig' => $version->changeNote->client_sig,
+                        ],
+                    ]
+                    : null,
             ]
         )->values();
 
@@ -84,6 +103,9 @@ final class GetEnvironmentVariableHistory extends Controller
                 'limit' => self::ENTRY_LIMIT,
                 'truncated' => $truncated,
                 'more_url' => $this->buildMoreUrl($environment),
+                'permissions' => [
+                    'view_version_change_notes' => $canViewVersionChangeNotes,
+                ],
             ],
         ];
 

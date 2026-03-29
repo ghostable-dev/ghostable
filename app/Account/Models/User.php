@@ -208,6 +208,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Device::class);
     }
 
+    public function inboxNotifications(): HasMany
+    {
+        return $this->hasMany(UserInboxNotification::class);
+    }
+
     public static function newFactory(): UserFactory
     {
         return UserFactory::new();

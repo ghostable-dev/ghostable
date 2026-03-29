@@ -9,6 +9,17 @@
                         Only ciphertext and metadata are ever stored on Ghostable. This ensures your sensitive values can’t be read, even by us.
                     </div>
                 </x-slot:subheading>
+                <x-slot:actions>
+                    @if($this->desktopDeepLink)
+                        <flux:button
+                            size="sm"
+                            variant="ghost"
+                            href="{{ $this->desktopDeepLink }}"
+                            icon:trailing="arrow-top-right-on-square">
+                            Open in desktop
+                        </flux:button>
+                    @endif
+                </x-slot:actions>
 
                 @if(count($this->variables))
                     <flux:table>

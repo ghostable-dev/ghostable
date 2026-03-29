@@ -26,6 +26,13 @@ class PushEnvironmentRequest extends FormRequest
             // Fields *inside* each secret
             'secrets.*.client_sig' => ['required', 'string', new Base64Encoded],
             'secrets.*.if_version' => ['nullable', 'integer', 'min:0'],
+            'secrets.*.change_note' => ['sometimes', 'array'],
+            'secrets.*.change_note.ciphertext' => ['required_with:secrets.*.change_note', 'string'],
+            'secrets.*.change_note.nonce' => ['required_with:secrets.*.change_note', 'string', 'max:255'],
+            'secrets.*.change_note.alg' => ['required_with:secrets.*.change_note', 'string', 'max:64'],
+            'secrets.*.change_note.aad' => ['required_with:secrets.*.change_note', 'array'],
+            'secrets.*.change_note.claims' => ['nullable', 'array'],
+            'secrets.*.change_note.client_sig' => ['required_with:secrets.*.change_note', 'string', new Base64Encoded],
 
             'sync' => ['sometimes', 'boolean'],
             'force_overwrite' => ['sometimes', 'boolean'],

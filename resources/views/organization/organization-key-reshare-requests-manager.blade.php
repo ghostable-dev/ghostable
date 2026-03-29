@@ -64,11 +64,13 @@
                                     readonly
                                     copyable/>
                                 <div class="flex items-center justify-end">
-                                    <a
-                                        class="inline-flex items-center rounded-md border border-zinc-200 px-2.5 py-1.5 text-sm hover:bg-zinc-50"
-                                        href="{{ $request['desktop_deep_link'] }}">
-                                        Open Desktop
-                                    </a>
+                                    <flux:button
+                                        size="sm"
+                                        variant="ghost"
+                                        href="{{ $request['desktop_deep_link'] }}"
+                                        icon:trailing="arrow-top-right-on-square">
+                                        Open in desktop
+                                    </flux:button>
                                 </div>
                             </div>
                         @elseif($request['is_recipient'])

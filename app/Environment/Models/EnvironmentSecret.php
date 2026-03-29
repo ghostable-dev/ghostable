@@ -120,6 +120,17 @@ class EnvironmentSecret extends Model
         return $this->hasMany(EnvironmentSecretVersion::class, 'environment_secret_id');
     }
 
+    public function note(): HasOne
+    {
+        return $this->hasOne(EnvironmentVariableNote::class, 'environment_secret_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(EnvironmentVariableComment::class, 'environment_secret_id')
+            ->orderBy('created_at');
+    }
+
     public function latestVersion(): HasOne
     {
         return $this->hasOne(EnvironmentSecretVersion::class)
