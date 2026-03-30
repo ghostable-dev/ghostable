@@ -152,6 +152,32 @@ test('a variable can be rolled back to a previous version', function (): void {
     expect(data_get($activity->properties, 'variable.rolled_back_to_version'))->toBe($this->olderVersion->version);
 });
 
+test('rollback activity uses desktop source for desktop devices', function (): void {
+    Sanctum::actingAs($this->user);
+
+    $this->device->forceFill([
+        'client_type' => 'desktop',
+    ])->save();
+
+    $payload = ($this->signPayload)([
+        'device_id' => (string) $this->device->id,
+        'version_id' => (string) $this->olderVersion->id,
+        'if_version' => $this->secret->version,
+    ]);
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->postJson($this->endpoint, $payload)->assertOk();
+
+    $activity = Activity::query()
+        ->where('event', 'rollback')
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'source'))->toBe('desktop');
+});
+
 test('rollback fails when the signature is invalid', function (): void {
     Sanctum::actingAs($this->user);
 

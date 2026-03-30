@@ -210,3 +210,61 @@ test('pull returns ENV_KEY_RESHARE_REQUIRED when device is missing current key e
         'status' => 'pending',
     ]);
 });
+
+test('desktop push and pull activity are recorded with desktop source', function (): void {
+    $this->device->forceFill([
+        'client_type' => 'desktop',
+    ])->save();
+
+    $this->collaboratorDevice->forceFill([
+        'client_type' => 'desktop',
+    ])->save();
+
+    Sanctum::actingAs($this->owner);
+
+    $plaintext = 'CrossTheStreams';
+    $secretPayload = ($this->signPayload)(
+        ($this->makeSecretPayload)('APP_KEY', $plaintext)
+    );
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->postJson($this->pushEndpoint, [
+        'device_id' => (string) $this->device->id,
+        'secrets' => [$secretPayload],
+    ])->assertOk();
+
+    $pushActivity = Activity::query()
+        ->where('subject_type', $this->environment->getMorphClass())
+        ->where('subject_id', $this->environment->id)
+        ->where('event', 'push')
+        ->where('causer_id', $this->owner->id)
+        ->latest()
+        ->first();
+
+    expect($pushActivity)->not->toBeNull();
+    expect(data_get($pushActivity->properties, 'source'))->toBe('desktop');
+    expect($pushActivity->description)->toBe('Pushed "production" environment via desktop.');
+
+    Sanctum::actingAs($this->collaborator);
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->getJson("{$this->pullEndpoint}?".http_build_query([
+        'include_meta' => 1,
+        'include_versions' => 1,
+        'device_id' => (string) $this->collaboratorDevice->id,
+    ]))->assertOk();
+
+    $pullActivity = Activity::query()
+        ->where('subject_type', $this->environment->getMorphClass())
+        ->where('subject_id', $this->environment->id)
+        ->where('event', 'pulled')
+        ->where('causer_id', $this->collaborator->id)
+        ->latest()
+        ->first();
+
+    expect($pullActivity)->not->toBeNull();
+    expect(data_get($pullActivity->properties, 'source'))->toBe('desktop');
+    expect($pullActivity->description)->toBe("Pulled 'production' environment via desktop.");
+});

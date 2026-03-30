@@ -5,6 +5,7 @@ use App\Environment\Models\EnvironmentSecretVersion;
 use App\Environment\Models\EnvironmentVariableVersionChangeNote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -271,4 +272,25 @@ test('environment history marks variable versions with change reasons', function
         ->assertJsonPath('data.entries.0.variable.name', 'APP_KEY')
         ->assertJsonPath('data.entries.0.variable.version', 2)
         ->assertJsonPath('data.entries.0.description', 'Updated variable "APP_KEY" with a reason.');
+});
+
+test('environment history activity uses desktop source when requested by the desktop client', function (): void {
+    $org = $this->createOrganization('Ghostbusters', $this->user, [$this->member]);
+    $project = $this->createProject('Containment Unit', $org);
+    $env = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $project);
+
+    Sanctum::actingAs($this->member);
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->getJson("/api/v2/projects/{$project->id}/environments/{$env->name}/history")
+        ->assertOk();
+
+    $activity = Activity::query()
+        ->where('event', 'history_viewed')
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'source'))->toBe('desktop');
 });

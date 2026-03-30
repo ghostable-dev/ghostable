@@ -60,7 +60,12 @@ final class CreateDeploymentToken extends Controller
 
         $this->logDeploymentTokenActivity(
             event: 'deployment_token_created',
-            message: "Created deployment token \"{$result->token->name}\" for \"{$environment->name}\" via cli.",
+            message: sprintf(
+                'Created deployment token "%s" for "%s" via %s.',
+                $result->token->name,
+                $environment->name,
+                $this->resolveApiActivitySource($request)
+            ),
             deploymentToken: $result->token,
             project: $project,
             environment: $environment,

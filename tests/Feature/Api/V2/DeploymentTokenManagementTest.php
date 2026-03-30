@@ -9,6 +9,7 @@ use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\EnvironmentKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -426,4 +427,42 @@ test('environment tokens cannot manage other projects tokens', function (): void
 
     $this->getJson(sprintf('/api/v2/projects/%s/deploy-tokens', $otherProject->getKey()))
         ->assertForbidden();
+});
+
+test('deployment token activity uses desktop source when requested by the desktop client', function (): void {
+    Sanctum::actingAs($this->user);
+
+    $environmentKey = EnvironmentKey::factory()
+        ->forEnvironment($this->environment)
+        ->create([
+            'fingerprint' => hash('sha256', 'desktop-token-key'),
+        ]);
+
+    $environmentKey->envelope()->create([
+        'ciphertext_b64' => base64_encode(random_bytes(64)),
+        'nonce_b64' => base64_encode(random_bytes(24)),
+        'alg' => 'xchacha20-poly1305',
+        'version' => '1',
+        'recipients' => [],
+    ]);
+
+    $payload = [
+        'name' => 'Desktop token',
+        'environment_id' => (string) $this->environment->getKey(),
+        'public_key' => base64_encode(random_bytes(32)),
+        'expires_after' => 45,
+        'recipient' => ($this->makeDeploymentRecipient)(),
+    ];
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->postJson($this->endpoint, $payload)->assertCreated();
+
+    $activity = Activity::query()
+        ->where('event', 'deployment_token_created')
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'source'))->toBe('desktop');
 });

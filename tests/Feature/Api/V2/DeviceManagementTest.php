@@ -60,6 +60,67 @@ test('can register a device', function () {
     expect(data_get($activity->properties, 'ip_address'))->toBe('127.0.0.1');
 });
 
+test('device activity uses desktop source when desktop clients manage devices', function () {
+    Sanctum::actingAs($this->user);
+
+    $payload = [
+        'public_key' => base64_encode(random_bytes(32)),
+        'public_signing_key' => base64_encode(random_bytes(32)),
+        'platform' => 'macos',
+        'client_type' => 'desktop',
+    ];
+
+    $response = $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->postJson($this->endpoint, $payload);
+
+    $response->assertCreated();
+
+    $deviceId = (string) $response->json('data.id');
+
+    $createActivity = Activity::query()
+        ->where('log_name', 'device')
+        ->where('event', 'created')
+        ->where('subject_id', $deviceId)
+        ->latest()
+        ->first();
+
+    expect($createActivity)->not->toBeNull();
+    expect(data_get($createActivity->properties, 'source'))->toBe('desktop');
+
+    Activity::query()->delete();
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->deleteJson("{$this->endpoint}/{$deviceId}")
+        ->assertOk();
+
+    $revokeActivity = Activity::query()
+        ->where('log_name', 'device')
+        ->where('event', 'revoked')
+        ->latest()
+        ->first();
+
+    expect($revokeActivity)->not->toBeNull();
+    expect(data_get($revokeActivity->properties, 'source'))->toBe('desktop');
+
+    Activity::query()->delete();
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->deleteJson("{$this->endpoint}/{$deviceId}/delete")
+        ->assertOk();
+
+    $deleteActivity = Activity::query()
+        ->where('log_name', 'device')
+        ->where('event', 'deleted')
+        ->latest()
+        ->first();
+
+    expect($deleteActivity)->not->toBeNull();
+    expect(data_get($deleteActivity->properties, 'source'))->toBe('desktop');
+});
+
 test('register device tolerates legacy cli platform payload', function () {
     Sanctum::actingAs($this->user);
 

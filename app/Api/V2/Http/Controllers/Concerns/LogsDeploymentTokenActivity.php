@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 
 trait LogsDeploymentTokenActivity
 {
+    use ResolvesApiActivitySource;
+
     /**
      * @param  array<string, mixed>  $context
      */
@@ -28,9 +30,10 @@ trait LogsDeploymentTokenActivity
         array $context = []
     ): void {
         $environment->loadMissing('project.organization');
+        $source = $request ? $this->resolveApiActivitySource($request) : 'cli';
 
         $properties = [
-            'source' => 'cli',
+            'source' => $source,
             'environment' => EnvironmentAuditProperties::make($environment),
             'project' => [
                 'id' => (string) $project->id,

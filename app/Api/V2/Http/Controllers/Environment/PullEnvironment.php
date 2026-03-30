@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Account\Models\User;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\EnsureDeviceOwnership;
 use App\Crypto\Models\Device;
@@ -19,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 
 final class PullEnvironment extends Controller
 {
+    use ResolvesApiActivitySource;
+
     /**
      * GET /projects/{project}/environments/{name}/pull
      *
@@ -83,7 +86,10 @@ final class PullEnvironment extends Controller
         );
 
         if ($user) {
+            $source = $this->resolveApiActivitySource($request, $device?->client_type?->value);
             $context = [
+                'description' => "Pulled '{$env->name}' environment via {$source}.",
+                'event' => 'pulled',
                 'filters' => [
                     'only' => $onlyNames,
                     'only_count' => count($onlyNames),
@@ -101,7 +107,7 @@ final class PullEnvironment extends Controller
             app(LogEnvironmentDownloaded::class)->handle(
                 environment: $env,
                 user: $user,
-                source: 'cli',
+                source: $source,
                 context: $context,
             );
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Api\V2\Http\Controllers\Concerns\PresentsAuditActor;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 final class GetEnvironmentVariableHistory extends Controller
 {
     use PresentsAuditActor;
+    use ResolvesApiActivitySource;
 
     private const ENTRY_LIMIT = 15;
 
@@ -138,12 +140,14 @@ final class GetEnvironmentVariableHistory extends Controller
             return;
         }
 
+        $source = $this->resolveApiActivitySource($request);
+
         activity('variable')
             ->performedOn($environment)
             ->causedBy($user)
             ->event('variable_history_viewed')
             ->withProperties([
-                'source' => 'cli',
+                'source' => $source,
                 'environment' => EnvironmentAuditProperties::make($environment),
                 'variable' => [
                     'id' => (string) $secret->id,
@@ -164,6 +168,6 @@ final class GetEnvironmentVariableHistory extends Controller
                 ],
                 'ip_address' => $request->ip(),
             ])
-            ->log("Viewed history for variable \"{$secret->name}\" in \"{$environment->name}\" via cli.");
+            ->log("Viewed history for variable \"{$secret->name}\" in \"{$environment->name}\" via {$source}.");
     }
 }

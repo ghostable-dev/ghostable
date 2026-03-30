@@ -68,7 +68,12 @@ final class RotateDeploymentToken extends Controller
 
         $this->logDeploymentTokenActivity(
             event: 'deployment_token_rotated',
-            message: "Rotated deployment token \"{$result->token->name}\" for \"{$environment->name}\" via cli.",
+            message: sprintf(
+                'Rotated deployment token "%s" for "%s" via %s.',
+                $result->token->name,
+                $environment->name,
+                $this->resolveApiActivitySource($request)
+            ),
             deploymentToken: $result->token,
             project: $project,
             environment: $environment,

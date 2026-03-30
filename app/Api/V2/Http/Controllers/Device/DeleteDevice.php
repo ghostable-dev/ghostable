@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Device;
 
 use App\Account\Models\User;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\DeleteDevice as DeleteDeviceAction;
 use App\Crypto\Actions\EnsureDeviceOwnership;
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
 
 final class DeleteDevice extends Controller
 {
+    use ResolvesApiActivitySource;
+
     public function __invoke(
         Request $request,
         Device $device,
@@ -40,7 +43,7 @@ final class DeleteDevice extends Controller
             event: 'deleted',
             user: $user,
             context: [
-                'source' => 'cli',
+                'source' => $this->resolveApiActivitySource($request),
                 'ip_address' => $request->ip(),
             ],
         );

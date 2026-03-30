@@ -7,6 +7,7 @@ namespace App\Api\V2\Http\Controllers\Device;
 use App\Account\Models\User;
 use App\Api\V2\Device\Presenters\DevicePresenter;
 use App\Api\V2\Device\Requests\RegisterDeviceRequest;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Crypto\Actions\LogDeviceActivity;
 use App\Crypto\Actions\RegisterDevice as RegisterDeviceAction;
@@ -17,6 +18,8 @@ use Illuminate\Http\JsonResponse;
 
 final class RegisterDevice extends Controller
 {
+    use ResolvesApiActivitySource;
+
     public function __invoke(
         RegisterDeviceRequest $request,
         RegisterDeviceAction $registerDevice,
@@ -54,12 +57,14 @@ final class RegisterDevice extends Controller
             clientType: $clientType,
         );
 
+        $source = $this->resolveApiActivitySource($request, $clientType);
+
         $logDeviceActivity->handle(
             device: $device,
             event: 'created',
             user: $user,
             context: [
-                'source' => 'cli',
+                'source' => $source,
                 'ip_address' => $request->ip(),
             ],
         );

@@ -3,6 +3,7 @@
 use App\Core\Models\Activity;
 use App\Filament\Resources\Core\ApiActivity\ApiActivityResource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
@@ -37,4 +38,19 @@ it('filters api activity by source', function (): void {
 
     expect($records)->toHaveCount(1);
     expect(data_get($records->first()->properties, 'source'))->toBe('cli');
+});
+
+it('maps desktop source badges to the blue info color', function (): void {
+    expect(ApiActivityResource::sourceColor('desktop'))->toBe('info')
+        ->and(ApiActivityResource::sourceColor('cli'))->toBe('warning')
+        ->and(ApiActivityResource::sourceColor('deploy-api'))->toBe('danger');
+});
+
+it('formats occurred on timestamps in the requested timezone', function (): void {
+    $formatted = ApiActivityResource::formatOccurredOn(
+        Carbon::parse('2026-03-20 18:00:00', 'UTC'),
+        'America/Los_Angeles'
+    );
+
+    expect($formatted)->toBe('Mar 20, 2026 11:00 AM PDT');
 });

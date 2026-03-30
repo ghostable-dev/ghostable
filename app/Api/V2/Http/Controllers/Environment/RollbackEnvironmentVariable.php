@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Api\Core\Resources\Environment\RollbackResultResource;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Api\V2\Http\Controllers\Environment\Concerns\RespondsWithVersionConflict;
 use App\Api\V2\Http\Requests\RollbackEnvironmentVariableRequest;
 use App\Core\Http\Controllers\Controller;
@@ -27,6 +28,7 @@ use RuntimeException;
 
 final class RollbackEnvironmentVariable extends Controller
 {
+    use ResolvesApiActivitySource;
     use RespondsWithVersionConflict;
 
     public function __invoke(
@@ -113,12 +115,14 @@ final class RollbackEnvironmentVariable extends Controller
             return;
         }
 
+        $source = $this->resolveApiActivitySource($request, $device->client_type?->value);
+
         activity('variable')
             ->performedOn($environment)
             ->causedBy($user)
             ->event('rollback')
             ->withProperties([
-                'source' => 'cli',
+                'source' => $source,
                 'environment' => EnvironmentAuditProperties::make($environment),
                 'variable' => [
                     'name' => $result->variableName(),
@@ -140,11 +144,12 @@ final class RollbackEnvironmentVariable extends Controller
                 'ip_address' => $request->ip(),
             ])
             ->log(sprintf(
-                'Rolled back variable "%s" in "%s" to version %d (new head %d).',
+                'Rolled back variable "%s" in "%s" to version %d (new head %d) via %s.',
                 $result->variableName(),
                 $environment->name,
                 $result->rolledBackToVersion(),
-                $result->newVersion()
+                $result->newVersion(),
+                $source
             ));
     }
 }

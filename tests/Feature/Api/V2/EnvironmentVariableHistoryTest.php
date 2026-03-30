@@ -7,6 +7,7 @@ use App\Environment\Models\EnvironmentSecret;
 use App\Environment\Models\EnvironmentSecretVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -90,4 +91,20 @@ test('variable history entries expose version identifiers needed for rollback', 
         ->assertJsonPath('data.entries.0.version_id', (string) $this->secondVersion->id)
         ->assertJsonPath('data.entries.1.version_id', (string) $this->firstVersion->id)
         ->assertJsonPath('data.variable.version_id', (string) $this->secondVersion->id);
+});
+
+test('variable history activity uses desktop source when requested by the desktop client', function (): void {
+    Sanctum::actingAs($this->user);
+
+    $this->withHeaders([
+        'X-Ghostable-Client-Type' => 'desktop',
+    ])->getJson($this->endpoint)->assertOk();
+
+    $activity = Activity::query()
+        ->where('event', 'variable_history_viewed')
+        ->latest()
+        ->first();
+
+    expect($activity)->not->toBeNull();
+    expect(data_get($activity->properties, 'source'))->toBe('desktop');
 });

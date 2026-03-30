@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Api\Core\Resources\Environment\PushResultResource;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Api\V2\Http\Controllers\Environment\Concerns\RespondsWithVersionConflict;
 use App\Api\V2\Http\Requests\PushEnvironmentRequest;
 use App\Core\Http\Controllers\Controller;
@@ -28,6 +29,7 @@ use RuntimeException;
 
 final class PushEnvironment extends Controller
 {
+    use ResolvesApiActivitySource;
     use RespondsWithVersionConflict;
 
     public function __invoke(
@@ -235,8 +237,10 @@ final class PushEnvironment extends Controller
             removed: $removed,
         );
 
+        $source = $this->resolveApiActivitySource($request, $device->client_type?->value);
+
         $properties = [
-            'source' => 'cli',
+            'source' => $source,
             'environment' => EnvironmentAuditProperties::make($env),
             'result' => [
                 'added' => $added,
@@ -268,8 +272,8 @@ final class PushEnvironment extends Controller
             ->withProperties($properties)
             ->log(
                 $forceOverwrite
-                    ? "Force-overwrite pushed \"{$env->name}\" environment via cli."
-                    : "Pushed \"{$env->name}\" environment via cli."
+                    ? "Force-overwrite pushed \"{$env->name}\" environment via {$source}."
+                    : "Pushed \"{$env->name}\" environment via {$source}."
             );
 
         return new PushResultResource($result);

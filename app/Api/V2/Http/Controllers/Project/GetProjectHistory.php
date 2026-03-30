@@ -6,6 +6,7 @@ namespace App\Api\V2\Http\Controllers\Project;
 
 use App\Account\Models\User;
 use App\Api\V2\Http\Controllers\Concerns\PresentsAuditActor;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Core\Models\Activity;
 use App\Environment\Models\Environment;
@@ -22,6 +23,7 @@ use Illuminate\Support\Collection;
 final class GetProjectHistory extends Controller
 {
     use PresentsAuditActor;
+    use ResolvesApiActivitySource;
 
     private const ENTRY_LIMIT = 100;
 
@@ -278,12 +280,14 @@ final class GetProjectHistory extends Controller
             return;
         }
 
+        $source = $this->resolveApiActivitySource($request);
+
         activity('variable')
             ->performedOn($project)
             ->causedBy($user)
             ->event('project_history_viewed')
             ->withProperties([
-                'source' => 'cli',
+                'source' => $source,
                 'project' => [
                     'id' => (string) $project->id,
                     'name' => $project->name,
@@ -299,6 +303,6 @@ final class GetProjectHistory extends Controller
                 ],
                 'ip_address' => $request->ip(),
             ])
-            ->log("Viewed project history for \"{$project->name}\" via cli.");
+            ->log("Viewed project history for \"{$project->name}\" via {$source}.");
     }
 }

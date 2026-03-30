@@ -14,6 +14,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\CarbonInterface;
 
 class ApiActivityResource extends Resource
 {
@@ -51,6 +53,7 @@ class ApiActivityResource extends Resource
             ->columns([
                 DateColumn::make('created_at')
                     ->label('Occurred On')
+                    ->formatStateUsing(fn (mixed $state): string => static::formatOccurredOn($state))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('api_source')
@@ -58,12 +61,7 @@ class ApiActivityResource extends Resource
                     ->getStateUsing(fn (Activity $activity): string => (string) data_get($activity->properties, 'source', 'unknown'))
                     ->formatStateUsing(fn (string $state): string => static::sourceLabel($state))
                     ->badge()
-                    ->colors([
-                        'warning' => static fn (string $state): bool => in_array($state, ['cli', 'CLI'], true),
-                        'success' => static fn (string $state): bool => in_array($state, ['desktop', 'Desktop'], true),
-                        'danger' => static fn (string $state): bool => in_array($state, ['deploy-api', 'Deploy API'], true),
-                        'secondary',
-                    ]),
+                    ->color(fn (string $state): string => static::sourceColor($state)),
                 TextColumn::make('event')
                     ->badge()
                     ->colors([
@@ -200,6 +198,31 @@ class ApiActivityResource extends Resource
     private static function sourceLabel(string $source): string
     {
         return self::SOURCES[$source] ?? ucfirst(str_replace('-', ' ', $source));
+    }
+
+    public static function sourceColor(string $source): string
+    {
+        return match ($source) {
+            'cli', 'CLI' => 'warning',
+            'desktop', 'Desktop' => 'info',
+            'deploy-api', 'Deploy API' => 'danger',
+            default => 'gray',
+        };
+    }
+
+    public static function formatOccurredOn(mixed $state, ?string $targetTimezone = null): string
+    {
+        if ($state === null || $state === '') {
+            return '—';
+        }
+
+        $timestamp = $state instanceof CarbonInterface
+            ? $state
+            : Carbon::parse((string) $state);
+
+        return $timestamp
+            ->timezone($targetTimezone ?? timezone())
+            ->format(DT_FORMAT);
     }
 
     public static function applyApiScopeTo(Builder $query, ?string $source = null): Builder

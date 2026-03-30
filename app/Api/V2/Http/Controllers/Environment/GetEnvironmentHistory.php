@@ -6,6 +6,7 @@ namespace App\Api\V2\Http\Controllers\Environment;
 
 use App\Account\Models\User;
 use App\Api\V2\Http\Controllers\Concerns\PresentsAuditActor;
+use App\Api\V2\Http\Controllers\Concerns\ResolvesApiActivitySource;
 use App\Core\Http\Controllers\Controller;
 use App\Core\Models\Activity;
 use App\Environment\Models\Environment;
@@ -22,6 +23,7 @@ use Illuminate\Support\Collection;
 final class GetEnvironmentHistory extends Controller
 {
     use PresentsAuditActor;
+    use ResolvesApiActivitySource;
 
     private const ENTRY_LIMIT = 60;
 
@@ -387,12 +389,14 @@ final class GetEnvironmentHistory extends Controller
             return;
         }
 
+        $source = $this->resolveApiActivitySource($request);
+
         activity('variable')
             ->performedOn($environment)
             ->causedBy($user)
             ->event('history_viewed')
             ->withProperties([
-                'source' => 'cli',
+                'source' => $source,
                 'environment' => EnvironmentAuditProperties::make($environment),
                 'requested_by' => [
                     'id' => (string) $user->id,
@@ -409,6 +413,6 @@ final class GetEnvironmentHistory extends Controller
                 'summary_snapshot' => $summary,
                 'ip_address' => $request->ip(),
             ])
-            ->log("Viewed environment history for \"{$environment->name}\" via cli.");
+            ->log("Viewed environment history for \"{$environment->name}\" via {$source}.");
     }
 }

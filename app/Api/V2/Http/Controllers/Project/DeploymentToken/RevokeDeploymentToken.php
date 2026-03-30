@@ -47,7 +47,12 @@ final class RevokeDeploymentToken extends Controller
 
         $this->logDeploymentTokenActivity(
             event: 'deployment_token_revoked',
-            message: "Revoked deployment token \"{$token->name}\" for \"{$environment->name}\" via cli.",
+            message: sprintf(
+                'Revoked deployment token "%s" for "%s" via %s.',
+                $token->name,
+                $environment->name,
+                $this->resolveApiActivitySource($request)
+            ),
             deploymentToken: $token,
             project: $project,
             environment: $environment,
