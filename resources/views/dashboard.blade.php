@@ -2,9 +2,16 @@
     @php
         $googleTagId = config('services.google_tag.id');
         $accountCreatedLabel = config('services.google_tag.account_created_label');
+        $xTagId = config('services.x_tag.id');
+        $xAccountCreatedEventId = config('services.x_tag.account_created_event_id');
         $shouldTrackAccountCreated = request()->boolean('account_created')
             && filled($googleTagId)
             && filled($accountCreatedLabel)
+            && auth()->check()
+            && auth()->user()->hasVerifiedEmail();
+        $shouldTrackXAccountCreated = request()->boolean('account_created')
+            && filled($xTagId)
+            && filled($xAccountCreatedEventId)
             && auth()->check()
             && auth()->user()->hasVerifiedEmail();
     @endphp
@@ -17,6 +24,13 @@
                 'send_to' => "{$googleTagId}/{$accountCreatedLabel}",
                 'transaction_id' => 'account-created-'.auth()->id(),
             ],
+        ])
+    @endif
+
+    @if($shouldTrackXAccountCreated)
+        @include('components.x-tag.script', [
+            'id' => $xTagId,
+            'event' => $xAccountCreatedEventId,
         ])
     @endif
 

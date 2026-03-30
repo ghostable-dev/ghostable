@@ -4,8 +4,10 @@
     'bodyClasses' => '',
     'withTracking' => true,
     'withGoogleTag' => true,
+    'withXTag' => true,
     'fathomSite' => config('services.fathom.site'),
     'googleTagId' => config('services.google_tag.id'),
+    'xTagId' => config('services.x_tag.id'),
     'withAppearance' => true,
     'canonical' => null
 ])
@@ -38,6 +40,10 @@
     
     @if($withAppearance)
         @fluxAppearance
+    @endif
+
+    @if($withTracking && $withXTag && filled($xTagId))
+        @include('components.x-tag.script', ['id' => $xTagId])
     @endif
 
     @if($withTracking && $withGoogleTag && filled($googleTagId))

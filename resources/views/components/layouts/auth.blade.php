@@ -3,7 +3,7 @@
     'canonical' => $canonical ?? null
 ])
 
-<x-layouts.guest :title="$title" :canonical="$canonical" :withHeader="false" :withFooter="false" :with-google-tag="false">
+<x-layouts.guest :title="$title" :canonical="$canonical" :withHeader="false" :withFooter="false" :with-google-tag="false" :with-x-tag="false">
     <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
         <div class="flex w-full max-w-sm flex-col gap-2">
             <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>

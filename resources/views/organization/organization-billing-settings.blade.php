@@ -11,6 +11,17 @@
             ],
         ])
     @endif
+
+    @if($conversion = $this->xSubscriptionStartedConversion)
+        @include('components.x-tag.script', [
+            'id' => $conversion['x_tag_id'],
+            'event' => $conversion['event_id'],
+            'payload' => [
+                'value' => $conversion['value'],
+                'currency' => $conversion['currency'],
+            ],
+        ])
+    @endif
     
     @include('organization.partials.organization-settings-header')
 

@@ -62,6 +62,39 @@ class OrganizationBillingSettings extends Component
         ];
     }
 
+    /**
+     * @return array{x_tag_id:string,event_id:string,value:float,currency:string}|null
+     */
+    #[Computed]
+    public function xSubscriptionStartedConversion(): ?array
+    {
+        $xTagId = config('services.x_tag.id');
+        $subscriptionStartedEventId = config('services.x_tag.subscription_started_event_id');
+        $checkoutState = (string) request()->query('checkout');
+        $plan = Plan::tryFrom((string) request()->query('plan'));
+
+        if (
+            blank($xTagId)
+            || blank($subscriptionStartedEventId)
+            || $checkoutState !== 'success'
+            || ! $plan?->isBillable()
+        ) {
+            return null;
+        }
+
+        $value = $this->purchaseConversionValue($plan);
+        if ($value === null) {
+            return null;
+        }
+
+        return [
+            'x_tag_id' => $xTagId,
+            'event_id' => $subscriptionStartedEventId,
+            'value' => $value,
+            'currency' => 'USD',
+        ];
+    }
+
     public function download(string $invoiceId)
     {
         $this->authorize('manageBilling', $this->organization);

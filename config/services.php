@@ -41,6 +41,12 @@ return [
         'subscription_started_label' => env('GOOGLE_TAG_SUBSCRIPTION_STARTED_LABEL'),
     ],
 
+    'x_tag' => [
+        'id' => env('X_TAG_ID'),
+        'account_created_event_id' => env('X_TAG_ACCOUNT_CREATED_EVENT_ID'),
+        'subscription_started_event_id' => env('X_TAG_SUBSCRIPTION_STARTED_EVENT_ID'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],
