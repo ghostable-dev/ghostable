@@ -128,3 +128,19 @@ test('flagship environment contains rich screenshot data', function (): void {
     expect($pendingRequest->environment->name)->toBe('qa');
     expect($pendingRequest->targetUser->email)->toBe('jordan@northstar.test');
 });
+
+test('screenshot seed uses the local audit webhook receiver when local routes are enabled', function (): void {
+    config()->set('audit_webhook_receiver.local_routes_enabled', true);
+    config()->set('audit_webhook_receiver.token', 'local-dev-token');
+
+    $this->artisan('app:seed-screenshot-account', ['--force' => true])
+        ->assertSuccessful();
+
+    $organization = Organization::query()->where('slug', 'northstar-labs')->sole();
+    $webhook = $organization->auditWebhooks()->sole();
+
+    expect($webhook->endpoint_url)->toBe(route('local.audit-webhooks.ingest', [
+        'mode' => 'ok',
+        'token' => 'local-dev-token',
+    ]));
+});

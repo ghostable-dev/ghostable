@@ -1128,7 +1128,7 @@ final class SeedScreenshotAccount
             return OrganizationAuditWebhook::query()->create([
                 'organization_id' => $this->organization->id,
                 'name' => 'Northstar SIEM Relay',
-                'endpoint_url' => 'https://siem.northstar.test/ghostable',
+                'endpoint_url' => $this->resolveScreenshotAuditWebhookEndpointUrl(),
                 'signing_secret' => 'northstar-screenshot-signing-secret',
                 'status' => OrganizationAuditWebhookStatus::ACTIVE,
                 'consecutive_failures' => 0,
@@ -1181,6 +1181,20 @@ final class SeedScreenshotAccount
                 'updated_at' => $this->time(daysAgo: 0, hoursOffset: -3),
             ]);
         });
+    }
+
+    private function resolveScreenshotAuditWebhookEndpointUrl(): string
+    {
+        if (! config('audit_webhook_receiver.local_routes_enabled', false)) {
+            return 'https://siem.northstar.test/ghostable';
+        }
+
+        $query = array_filter([
+            'mode' => 'ok',
+            'token' => trim((string) config('audit_webhook_receiver.token', '')),
+        ], static fn (string $value): bool => $value !== '');
+
+        return route('local.audit-webhooks.ingest', $query);
     }
 
     private function seedApiUsage(): void

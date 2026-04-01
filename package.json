@@ -12,7 +12,7 @@
         "animate.css": "^4.1.1",
         "aos": "^3.0.0-beta.6",
         "autoprefixer": "^10.4.20",
-        "axios": "^1.7.4",
+        "axios": "1.13.6",
         "codex-monorepo": "github:openai/codex",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",

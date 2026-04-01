@@ -17,6 +17,19 @@ test('marketing pages render the google tag when configured', function () {
     $response->assertSee("gtag('config',", false);
 });
 
+test('start free page renders the marketing tags when configured', function () {
+    config()->set('services.google_tag.id', 'AW-18036463032');
+    config()->set('services.x_tag.id', 'o123456');
+
+    $response = $this->get(route('start-free'));
+
+    $response->assertSuccessful();
+    $response->assertSee('https://static.ads-twitter.com/uwt.js', false);
+    $response->assertSee("twq('config', 'o123456')", false);
+    $response->assertSee('https://www.googletagmanager.com/gtag/js?id=AW-18036463032', false);
+    $response->assertSee("gtag('config',", false);
+});
+
 test('auth pages do not render the google tag', function () {
     config()->set('services.google_tag.id', 'AW-18036463032');
     config()->set('services.x_tag.id', 'o123456');

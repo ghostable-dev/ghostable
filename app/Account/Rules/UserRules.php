@@ -11,7 +11,7 @@ class UserRules
     public static function registrationRules(): array
     {
         return [
-            'name' => self::nameRules(),
+            'name' => ['nullable', 'string', 'max:255'],
             'email' => array_merge(self::emailRules(), self::createEmailRules()),
             'password' => self::confirmedPasswordRules(),
             'terms' => ['accepted', 'required'],

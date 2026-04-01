@@ -28,6 +28,10 @@ final class ApiServiceProvider extends ServiceProvider
         $router->pushMiddlewareToGroup('api', EnsureUserIsActive::class);
 
         RateLimiter::for('api', function (Request $request) {
+            if (app()->environment('local') && ($request->user() !== null || $request->bearerToken() !== null)) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(60)->by(
                 $request->user()?->id ?: $request->ip()
             );

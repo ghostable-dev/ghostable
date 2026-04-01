@@ -12,16 +12,14 @@ RUN_ID="${RUN_ID:-$(date +%Y%m%d%H%M%S)}"
 ACTOR_EMAIL="${ACTOR_EMAIL:-rucci.joe@gmail.com}"
 RECIPIENT_EMAIL="${RECIPIENT_EMAIL:-nick@gmail.com}"
 ORGANIZATION_NAME="${ORGANIZATION_NAME:-Ghostable}"
-PROJECT_NAME="${PROJECT_NAME:-Primary}"
-DEFAULT_ENV_NAME="${ENV_NAME:-local-access-${RUN_ID}}"
+PROJECT_NAME="${PROJECT_NAME:-Primary Server}"
+DEFAULT_ENV_NAME="${ENV_NAME:-local}"
 ENV_NAMES=()
 LAB_ROOT="${LAB_ROOT:-${WORKSPACE_DIR}/.ghostable-reshare-lab}"
 ACTOR_PREFIX="${ACTOR_PREFIX:-local.ghostable.reshare.actor.${RUN_ID}}"
 RECIPIENT_PREFIX="${RECIPIENT_PREFIX:-local.ghostable.reshare.recipient.${RUN_ID}}"
 ACTOR_DEVICE_NAME="${ACTOR_DEVICE_NAME:-}"
 RECIPIENT_DEVICE_NAME="${RECIPIENT_DEVICE_NAME:-}"
-SECRET_KEY_NAME="${SECRET_KEY_NAME:-LOCAL_ACCESS_SECRET}"
-SECRET_VALUE="${SECRET_VALUE:-local-access-${RUN_ID}}"
 SECRET_COUNT="${SECRET_COUNT:-5}"
 SKIP_APP_SETUP=0
 SKIP_CLI_BUILD=0
@@ -47,7 +45,7 @@ Options:
   --api-base <url>            Ghostable API base URL (default: https://ghostable.test/api/v2)
   --run-id <id>               Stable identifier used for env + prefixes
   --org-name <name>           Organization name (default: Ghostable)
-  --project-name <name>       Project name (default: Primary)
+  --project-name <name>       Project name (default: Primary Server)
   --env-name <name>           Environment name. Repeat for multiple environments.
   --actor-email <email>       Actor account email (default: rucci.joe@gmail.com)
   --recipient-email <email>   Recipient account email (default: nick@gmail.com)
@@ -61,6 +59,104 @@ EOF
 
 log() {
 	printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$1"
+}
+
+write_env_fixture() {
+	local destination="$1"
+	local environment_name="$2"
+
+	case "$environment_name" in
+	production)
+		cat > "$destination" <<EOF
+APP_NAME="Primary Server"
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:Pqk2Jdr9cYJ4mY5eL1sR0bZ7uD8aW6nF3xC9vT2mH4Q=
+APP_URL=https://primary.ghostable.com
+LOG_CHANNEL=stack
+LOG_LEVEL=info
+DB_CONNECTION=mysql
+DB_HOST=prod-db.use1.internal
+DB_PORT=3306
+DB_DATABASE=primary_server
+DB_USERNAME=primary_server_app
+DB_PASSWORD=prod_db_ghostable_01
+SESSION_DRIVER=database
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+REDIS_CLIENT=phpredis
+REDIS_HOST=prod-cache.use1.internal
+REDIS_PASSWORD=prod_cache_ghostable_01
+REDIS_PORT=6379
+MAIL_MAILER=ses
+MAIL_FROM_ADDRESS=deploys@primary.ghostable.com
+AWS_ACCESS_KEY_ID=AKIAPRIMARYSERVERPROD01
+AWS_SECRET_ACCESS_KEY=primary-server-prod-secret-01
+AWS_DEFAULT_REGION=us-east-1
+STRIPE_SECRET_KEY=sk_live_primary_server_prod_01
+EOF
+		;;
+	staging)
+		cat > "$destination" <<EOF
+APP_NAME="Primary Server"
+APP_ENV=staging
+APP_DEBUG=false
+APP_KEY=base64:Vn4Lq2gJd8T1mC7pS9wF6kR3xY0bH5nN2zQ8uE1tM6A=
+APP_URL=https://staging.primary.ghostable.com
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+DB_CONNECTION=mysql
+DB_HOST=stage-db.use1.internal
+DB_PORT=3306
+DB_DATABASE=primary_server_staging
+DB_USERNAME=primary_server_stage
+DB_PASSWORD=stage_db_ghostable_01
+SESSION_DRIVER=database
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+REDIS_CLIENT=phpredis
+REDIS_HOST=stage-cache.use1.internal
+REDIS_PASSWORD=stage_cache_ghostable_01
+REDIS_PORT=6379
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS=staging@primary.ghostable.com
+AWS_ACCESS_KEY_ID=AKIAPRIMARYSERVERSTAGE01
+AWS_SECRET_ACCESS_KEY=primary-server-stage-secret-01
+AWS_DEFAULT_REGION=us-east-1
+STRIPE_SECRET_KEY=sk_test_primary_server_stage_01
+EOF
+		;;
+	*)
+		cat > "$destination" <<EOF
+APP_NAME="Primary Server"
+APP_ENV=local
+APP_DEBUG=true
+APP_KEY=base64:Rf6Mk3qLd1sP9vB4hT7nW2xC8yJ5uE0aN3zG1rH6mK2=
+APP_URL=http://primary-server.ghostable.test
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=primary_server_local
+DB_USERNAME=primary_server
+DB_PASSWORD=password
+SESSION_DRIVER=database
+CACHE_STORE=redis
+QUEUE_CONNECTION=database
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS=local@primary-server.ghostable.test
+AWS_ACCESS_KEY_ID=AKIAPRIMARYSERVERLOCAL01
+AWS_SECRET_ACCESS_KEY=primary-server-local-secret-01
+AWS_DEFAULT_REGION=us-east-1
+STRIPE_SECRET_KEY=sk_test_primary_server_local_01
+EOF
+		;;
+	esac
 }
 
 fail() {
@@ -314,7 +410,7 @@ log "Ensuring lab environments exist"
 ENV_IDS=()
 for environment_name in "${ENV_NAMES[@]}"; do
 	environment_id="$(
-		PROJECT_ID="$PROJECT_ID" ENV_NAME="$environment_name" run_tinker '$project = \App\Project\Models\Project::query()->findOrFail(getenv("PROJECT_ID")); $existing = $project->environments()->where("name", getenv("ENV_NAME"))->first(); if ($existing) { echo (string) $existing->getKey(); } else { $env = app(\App\Environment\Actions\CreateEnv::class)->handle(name: getenv("ENV_NAME"), type: \App\Environment\Enums\EnvironmentType::LOCAL, project: $project); echo (string) $env->getKey(); }'
+		PROJECT_ID="$PROJECT_ID" ENV_NAME="$environment_name" run_tinker '$project = \App\Project\Models\Project::query()->findOrFail(getenv("PROJECT_ID")); $existing = $project->environments()->where("name", getenv("ENV_NAME"))->first(); if ($existing) { echo (string) $existing->getKey(); } else { $type = match (strtolower((string) getenv("ENV_NAME"))) { "production" => \App\Environment\Enums\EnvironmentType::PRODUCTION, "staging" => \App\Environment\Enums\EnvironmentType::STAGING, default => \App\Environment\Enums\EnvironmentType::LOCAL, }; $env = app(\App\Environment\Actions\CreateEnv::class)->handle(name: getenv("ENV_NAME"), type: $type, project: $project); echo (string) $env->getKey(); }'
 	)"
 	[[ -n "$environment_id" ]] || fail "Failed to create or resolve environment: $environment_name"
 	ENV_IDS+=("$environment_id")
@@ -357,15 +453,7 @@ EOF
 
 log "Preparing actor env files"
 for environment_name in "${ENV_NAMES[@]}"; do
-	{
-		printf '%s=%s\n' "$SECRET_KEY_NAME" "$SECRET_VALUE"
-
-		if ((SECRET_COUNT > 1)); then
-			for index in $(seq 2 "$SECRET_COUNT"); do
-				printf '%s_%02d=%s_%02d\n' "$SECRET_KEY_NAME" "$index" "$SECRET_VALUE" "$index"
-			done
-		fi
-	} > "${ACTOR_DIR}/.env.${environment_name}"
+	write_env_fixture "${ACTOR_DIR}/.env.${environment_name}" "$environment_name"
 done
 
 log "Linking actor device"
@@ -470,8 +558,9 @@ for environment_name in "${ENV_NAMES[@]}"; do
 		--replace \
 		--format alphabetical
 
-	if ! grep -q "^${SECRET_KEY_NAME}=${SECRET_VALUE}$" "${RECIPIENT_DIR}/.env.${environment_name}"; then
-		fail "Recipient pull succeeded but expected secret value was not found in ${RECIPIENT_DIR}/.env.${environment_name}"
+	expected_env_name="$environment_name"
+	if ! grep -q "^APP_ENV=${expected_env_name}$" "${RECIPIENT_DIR}/.env.${environment_name}"; then
+		fail "Recipient pull succeeded but expected APP_ENV=${expected_env_name} was not found in ${RECIPIENT_DIR}/.env.${environment_name}"
 	fi
 done
 

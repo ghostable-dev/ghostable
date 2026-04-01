@@ -75,6 +75,7 @@ if (config('audit_webhook_receiver.local_routes_enabled') || app()->environment(
 
 // Site pages
 Route::get('/', fn () => view('site.home'))->name('home');
+Route::view('start-free', 'site.start-free')->name('start-free');
 Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
 Route::view('trust', 'site.trust')->name('trust');
 Route::get('contact', [ContactController::class, 'create'])->name('contact');

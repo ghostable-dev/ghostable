@@ -25,6 +25,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -170,6 +171,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         ];
     }
 
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value, array $attributes): ?string => filled($value)
+                ? $value
+                : ($attributes['email'] ?? null),
+        );
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->isFounder();
@@ -283,8 +293,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function initials(): string
     {
-        return Str::of($this->name)
+        $source = filled($this->getRawOriginal('name'))
+            ? (string) $this->getRawOriginal('name')
+            : (string) Str::of((string) $this->email)->before('@')->replace(['.', '_', '-'], ' ');
+
+        return Str::of($source)
             ->explode(' ')
+            ->filter(fn (string $segment): bool => $segment !== '')
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
@@ -294,7 +309,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function greeting(string $greeting = 'Hello'): string
     {
-        $first = Str::of($this->name)->explode(' ')->first();
+        if (! filled($this->getRawOriginal('name'))) {
+            return "$greeting,";
+        }
+
+        $first = Str::of((string) $this->getRawOriginal('name'))->explode(' ')->first();
 
         return $first
             ? sprintf('%s %s,', $greeting, $first)

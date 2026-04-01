@@ -2,9 +2,19 @@
 
 namespace App\Account\Console\Commands;
 
+use App\Backup\Support\EnvelopeEncryptor;
 use App\Billing\Enums\Plan;
 use App\Core\Concerns\CreatesAccountData;
+use App\Crypto\Models\Device;
+use App\Environment\Actions\CreateEnvironmentKey;
+use App\Environment\Actions\StoreEnvironmentKeyEnvelope;
+use App\Environment\Actions\StoreEnvironmentSecret;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Models\Environment;
+use App\Environment\Models\EnvironmentKey;
+use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Services\EnvironmentVariableCommentService;
+use App\Environment\Services\EnvironmentVariableNoteService;
 use App\Integration\Models\Integration;
 use App\Integration\Models\IntegrationClient;
 use App\Organization\Actions\PrepareLocalAuditWebhookCaptureStorage;
@@ -21,12 +31,14 @@ class AppSetup extends Command
 
     private const GHOSTABLE_SETUP_ORGANIZATION = 'Ghostable';
 
-    private const GHOSTABLE_SETUP_PROJECT = 'Primary';
+    private const GHOSTABLE_SETUP_PROJECT = 'Marketing Site';
+
+    private const GHOSTABLE_RESHARE_LAB_PROJECT = 'Primary Server';
 
     /**
      * @var array<int, string>
      */
-    private const GHOSTABLE_RESHARE_PREP_ENVIRONMENTS = ['primary', 'cli', 'desktop'];
+    private const GHOSTABLE_RESHARE_PREP_ENVIRONMENTS = ['production', 'staging', 'local'];
 
     private ?bool $shouldSeedVirtualKeyFixtures = null;
 
@@ -43,7 +55,7 @@ class AppSetup extends Command
     protected $signature = 'app:setup
         {--force}
         {--seed-virtual-key-fixtures : Seed synthetic devices/keys for demo browsing (not usable for local key operations).}
-        {--prepare-reshare-lab : After setup, prepare pending local key re-share requests for Ghostable primary/cli/desktop environments.}
+        {--prepare-reshare-lab : After setup, prepare pending local key re-share requests for the Primary Server production/staging/local environments.}
         {--reshare-run-id= : Optional run identifier used when preparing the local re-share lab.}
         {--reshare-skip-cli-build : Skip CLI build when preparing the local re-share lab.}';
 
@@ -114,17 +126,17 @@ class AppSetup extends Command
 
         $nick->organizationMembership()->assignToOrganization(organization: $ghostable, role: OrganizationRole::ADMIN);
 
-        $primaryProject = $this->createZeroKnowledgeProject(self::GHOSTABLE_SETUP_PROJECT, $ghostable);
-        $primaryEnvironment = $this->createEnvironment('primary', EnvironmentType::PRODUCTION, $primaryProject);
-        $cliEnvironment = $this->createEnvironment('cli', EnvironmentType::STAGING, $primaryProject);
-        $desktopEnvironment = $this->createEnvironment('desktop', EnvironmentType::LOCAL, $primaryProject);
+        $marketingSite = $this->createZeroKnowledgeProject(self::GHOSTABLE_SETUP_PROJECT, $ghostable);
+        $productionEnvironment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $marketingSite);
+        $stagingEnvironment = $this->createEnvironment('staging', EnvironmentType::STAGING, $marketingSite);
+        $localEnvironment = $this->createEnvironment('local', EnvironmentType::LOCAL, $marketingSite);
 
         if ($this->seedVirtualKeyFixtures()) {
             $joeMac = $this->createDevice($joe, 'Joe MacBook Pro', 'macos');
             $nickPhone = $this->createDevice($nick, 'Nick iPhone', 'ios');
 
             $this->createEnvironmentKeyWithEnvelope(
-                environment: $primaryEnvironment,
+                environment: $productionEnvironment,
                 createdByDevice: $joeMac,
                 recipients: [
                     ['id' => (string) $joeMac->id, 'type' => 'device', 'label' => 'Joe MacBook Pro'],
@@ -133,8 +145,36 @@ class AppSetup extends Command
             );
         }
 
-        $this->createDeploymentToken(name: 'gh-actions', environment: $primaryEnvironment, createdBy: $joe, expiresAfter: 90);
-        $this->createDeploymentToken(name: 'render-deploy', environment: $primaryEnvironment, createdBy: $joe, expiresAfter: 60);
+        $seedDevice = $this->resolveGhostableSeedDevice($joe);
+
+        [$productionKey, $productionKeyMaterial] = $this->createSeededEnvironmentKeyForDevice($productionEnvironment, $seedDevice);
+        [$stagingKey, $stagingKeyMaterial] = $this->createSeededEnvironmentKeyForDevice($stagingEnvironment, $seedDevice);
+        [$localKey, $localKeyMaterial] = $this->createSeededEnvironmentKeyForDevice($localEnvironment, $seedDevice);
+
+        $this->createDeploymentToken(name: 'vercel-production', environment: $productionEnvironment, createdBy: $joe, expiresAfter: 90);
+        $this->createDeploymentToken(name: 'github-actions-staging', environment: $stagingEnvironment, createdBy: $joe, expiresAfter: 60);
+
+        $this->seedGhostableProductionEnvironmentData(
+            environment: $productionEnvironment,
+            environmentKey: $productionKey,
+            keyMaterial: $productionKeyMaterial,
+            joe: $joe,
+            nick: $nick,
+        );
+        $this->seedGhostableStagingEnvironmentData(
+            environment: $stagingEnvironment,
+            environmentKey: $stagingKey,
+            keyMaterial: $stagingKeyMaterial,
+            joe: $joe,
+            nick: $nick,
+        );
+        $this->seedGhostableLocalEnvironmentData(
+            environment: $localEnvironment,
+            environmentKey: $localKey,
+            keyMaterial: $localKeyMaterial,
+            joe: $joe,
+            nick: $nick,
+        );
 
         // $this->createVariables(env: $production, amount: 10, createdBy: $joe);
         // $this->createSecrets(env: $production, amount: 3, createdBy: $joe);
@@ -286,6 +326,614 @@ class AppSetup extends Command
         $this->info('Redirect URI: '.$redirectUri);
     }
 
+    private function seedGhostableProductionEnvironmentData(
+        Environment $environment,
+        EnvironmentKey $environmentKey,
+        string $keyMaterial,
+        $joe,
+        $nick
+    ): void {
+        $appKey = $this->seedEnvironmentSecretTimeline(
+            environment: $environment,
+            environmentKey: $environmentKey,
+            keyMaterial: $keyMaterial,
+            name: 'APP_KEY',
+            versions: [
+                ['value' => 'base64:x0zAwtwK2WdQ6B0fP2S6mD45bV9uQf3g7s4aY1hJ6L0=', 'actor' => $joe],
+                ['value' => 'base64:e5dJq0x0d0P0t1R0aK+u8Nf2H9wLQ1cM4hW7vN2rA8U=', 'actor' => $joe, 'change_reason' => 'Rotated the application key after the quarterly platform security review.'],
+            ],
+            note: 'Primary application key for session and cookie encryption.',
+            comments: [
+                ['body' => 'Coordinate future rotations with release engineering so browser sessions and worker restarts are handled in the same window.', 'actor' => $joe],
+                ['body' => 'If this changes during an incident, invalidate remembered sessions before reopening public access.', 'actor' => $nick],
+            ],
+        );
+
+        $databasePassword = $this->seedEnvironmentSecretTimeline(
+            environment: $environment,
+            environmentKey: $environmentKey,
+            keyMaterial: $keyMaterial,
+            name: 'DB_PASSWORD',
+            versions: [
+                ['value' => 'gbl_prod_6rxN1Yw3kqM8', 'actor' => $joe],
+                ['value' => 'gbl_prod_8vzR4Lp7naQ2', 'actor' => $joe, 'change_reason' => 'Rotated the primary database credential after the read/write split rollout.'],
+                ['value' => 'gbl_prod_9qyT6Kd2mfP4', 'actor' => $nick, 'change_reason' => 'Rotated again after failover rehearsal to align the replica promotion runbook with production credentials.'],
+            ],
+            note: 'Password for the primary application database user.',
+            comments: [
+                ['body' => 'Keep this credential isolated to the application schema. Analytics and backup users remain separate.', 'actor' => $joe],
+                ['body' => 'Validate migration, Horizon, and queue health immediately after the next credential rotation.', 'actor' => $nick],
+            ],
+        );
+
+        $awsSecret = $this->seedEnvironmentSecretTimeline(
+            environment: $environment,
+            environmentKey: $environmentKey,
+            keyMaterial: $keyMaterial,
+            name: 'AWS_SECRET_ACCESS_KEY',
+            versions: [
+                ['value' => 's3cr3tghostableprodkey0001', 'actor' => $joe],
+                ['value' => 's3cr3tghostableprodkey0002', 'actor' => $nick, 'change_reason' => 'Rotated the application asset key after narrowing S3 write access for deploy automation.'],
+            ],
+            note: 'Application AWS secret used for uploads, backups, and asset publishing.',
+            comments: [
+                ['body' => 'Keep the paired access key synchronized with the IAM policy revision in the deployment checklist.', 'actor' => $joe],
+            ],
+        );
+
+        $this->attachEncryptedSeededComment($appKey, $keyMaterial, 'The last application-key rotation completed without session recovery issues.', $joe);
+        $this->attachEncryptedSeededComment($databasePassword, $keyMaterial, 'Current value is the active credential used by the primary production cluster.', $joe);
+        $this->attachEncryptedSeededComment($awsSecret, $keyMaterial, 'This key currently backs uploads, signed URLs, and release artifact storage.', $nick);
+
+        foreach ([
+            'APP_NAME' => 'Ghostable',
+            'APP_ENV' => 'production',
+            'APP_URL' => 'https://ghostable.com',
+            'ASSET_URL' => 'https://assets.ghostable.com',
+            'DB_CONNECTION' => 'mysql',
+            'DB_HOST' => 'db-primary.use1.ghostable.internal',
+            'DB_PORT' => '3306',
+            'DB_DATABASE' => 'ghostable',
+            'DB_USERNAME' => 'ghostable_app',
+            'CACHE_STORE' => 'redis',
+            'QUEUE_CONNECTION' => 'redis',
+            'SESSION_DRIVER' => 'redis',
+            'SESSION_DOMAIN' => '.ghostable.com',
+            'REDIS_HOST' => 'cache-primary.use1.ghostable.internal',
+            'REDIS_PASSWORD' => 'cache_ghostable_prod_01',
+            'REDIS_PORT' => '6379',
+            'MAIL_MAILER' => 'ses',
+            'MAIL_FROM_ADDRESS' => 'hello@ghostable.com',
+            'MAIL_FROM_NAME' => 'Ghostable',
+            'AWS_ACCESS_KEY_ID' => 'AKIAEXAMPLEGHOSTABLE01',
+            'AWS_DEFAULT_REGION' => 'us-east-1',
+            'SENTRY_LARAVEL_DSN' => 'https://9d6f2a4ce1bb4dd29e5b1234567890ef@o450123456.ingest.sentry.io/4507654322',
+        ] as $name => $value) {
+            $this->seedEnvironmentSecretTimeline(
+                environment: $environment,
+                environmentKey: $environmentKey,
+                keyMaterial: $keyMaterial,
+                name: $name,
+                versions: [['value' => $value, 'actor' => $joe]],
+            );
+        }
+    }
+
+    private function seedGhostableStagingEnvironmentData(
+        Environment $environment,
+        EnvironmentKey $environmentKey,
+        string $keyMaterial,
+        $joe,
+        $nick
+    ): void {
+        foreach ([
+            'APP_NAME' => 'Ghostable',
+            'APP_ENV' => 'staging',
+            'APP_KEY' => 'base64:r2K3hN9cVwQ7xB1dU8kL4aJ0pS6mE3nY5tQ1wR7pL2U=',
+            'APP_URL' => 'https://staging.ghostable.com',
+            'ASSET_URL' => 'https://staging-assets.ghostable.com',
+            'DB_CONNECTION' => 'mysql',
+            'DB_HOST' => 'db-staging.use1.ghostable.internal',
+            'DB_PORT' => '3306',
+            'DB_DATABASE' => 'ghostable_staging',
+            'DB_USERNAME' => 'ghostable_stage',
+            'DB_PASSWORD' => 'gbl_stage_3Mn7Zr6Q',
+            'CACHE_STORE' => 'redis',
+            'QUEUE_CONNECTION' => 'redis',
+            'SESSION_DRIVER' => 'database',
+            'REDIS_HOST' => 'cache-staging.use1.ghostable.internal',
+            'REDIS_PASSWORD' => 'cache_stage_ghostable',
+            'REDIS_PORT' => '6379',
+            'MAIL_MAILER' => 'log',
+            'MAIL_FROM_ADDRESS' => 'staging@ghostable.com',
+            'AWS_ACCESS_KEY_ID' => 'AKIAEXAMPLEGHOSTABLESTAGE',
+            'AWS_SECRET_ACCESS_KEY' => 'stageghostableawssecret01',
+            'AWS_DEFAULT_REGION' => 'us-east-1',
+        ] as $name => $value) {
+            $versions = [['value' => $value, 'actor' => $joe]];
+
+            if ($name === 'APP_URL') {
+                $versions[] = [
+                    'value' => 'https://app.staging.ghostable.com',
+                    'actor' => $nick,
+                    'change_reason' => 'Updated staging to mirror the production app subdomain layout before the release candidate cutover.',
+                ];
+            }
+
+            $this->seedEnvironmentSecretTimeline(
+                environment: $environment,
+                environmentKey: $environmentKey,
+                keyMaterial: $keyMaterial,
+                name: $name,
+                versions: $versions,
+            );
+        }
+    }
+
+    private function seedGhostableLocalEnvironmentData(
+        Environment $environment,
+        EnvironmentKey $environmentKey,
+        string $keyMaterial,
+        $joe,
+        $nick
+    ): void {
+        foreach ([
+            'APP_NAME' => 'Ghostable',
+            'APP_ENV' => 'local',
+            'APP_KEY' => 'base64:q8M4tL2xS0vN7dR5hC1pW9aK6uE3mF0zJ4nQ7rB2xY=',
+            'APP_URL' => 'http://ghostable.test',
+            'DB_CONNECTION' => 'mysql',
+            'DB_HOST' => '127.0.0.1',
+            'DB_PORT' => '3306',
+            'DB_DATABASE' => 'ghostable',
+            'DB_USERNAME' => 'ghostable',
+            'DB_PASSWORD' => 'password',
+            'CACHE_STORE' => 'redis',
+            'QUEUE_CONNECTION' => 'database',
+            'SESSION_DRIVER' => 'database',
+            'REDIS_HOST' => '127.0.0.1',
+            'REDIS_PASSWORD' => 'null',
+            'REDIS_PORT' => '6379',
+            'MAIL_MAILER' => 'log',
+            'MAIL_FROM_ADDRESS' => 'local@ghostable.test',
+            'AWS_ACCESS_KEY_ID' => 'AKIAEXAMPLEGHOSTABLELOCAL',
+            'AWS_SECRET_ACCESS_KEY' => 'ghostable-local-aws-secret-01',
+            'AWS_DEFAULT_REGION' => 'us-east-1',
+        ] as $name => $value) {
+            $versions = [['value' => $value, 'actor' => $joe]];
+
+            if ($name === 'QUEUE_CONNECTION') {
+                $versions[] = [
+                    'value' => 'redis',
+                    'actor' => $nick,
+                    'change_reason' => 'Switched the local queue backend to Redis so background job behavior matches staging more closely.',
+                ];
+            }
+
+            $this->seedEnvironmentSecretTimeline(
+                environment: $environment,
+                environmentKey: $environmentKey,
+                keyMaterial: $keyMaterial,
+                name: $name,
+                versions: $versions,
+            );
+        }
+    }
+
+    private function resolveGhostableSeedDevice($user): Device
+    {
+        $identity = $this->loadLocalDesktopIdentity();
+
+        if ($identity === null) {
+            return $this->createDevice($user, 'Ghostable Seed Desktop', 'macos', 'desktop');
+        }
+
+        /** @var Device|null $device */
+        $device = Device::query()
+            ->whereKey($identity['deviceId'])
+            ->orWhere('public_key', $identity['encryptionPublicKey'])
+            ->first();
+
+        $device ??= new Device;
+
+        $device->forceFill([
+            'id' => $identity['deviceId'],
+            'public_key' => $identity['encryptionPublicKey'],
+            'public_signing_key' => $identity['signingPublicKey'],
+            'name' => $identity['name'] ?: 'Ghostable Desktop',
+            'platform' => $identity['platform'] ?: 'macos',
+            'client_type' => $identity['clientType'] ?: 'desktop',
+            'active' => true,
+            'app_version' => 'local-seed',
+            'last_seen_at' => now(),
+        ]);
+        $device->user()->associate($user);
+        $device->save();
+
+        return $device->fresh();
+    }
+
+    /**
+     * @return array{deviceId: string, name: string, platform: string, clientType: string, signingPublicKey: string, encryptionPublicKey: string}|null
+     */
+    private function loadLocalDesktopIdentity(): ?array
+    {
+        if (PHP_OS_FAMILY !== 'Darwin' || app()->environment('testing')) {
+            return null;
+        }
+
+        $service = sprintf(
+            '%s.desktop.device.identity',
+            trim((string) (getenv('GHOSTABLE_KEYCHAIN_PREFIX') ?: 'local.ghostable'))
+        );
+
+        $process = new Process([
+            'security',
+            'find-generic-password',
+            '-s',
+            $service,
+            '-a',
+            'identity',
+            '-w',
+        ]);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return null;
+        }
+
+        $decoded = json_decode(trim($process->getOutput()), true);
+
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        $deviceId = trim((string) ($decoded['deviceId'] ?? ''));
+        $signingPublicKey = trim((string) ($decoded['signingPublicKey'] ?? ''));
+        $encryptionPublicKey = trim((string) ($decoded['encryptionPublicKey'] ?? ''));
+
+        if ($deviceId === '' || $signingPublicKey === '' || $encryptionPublicKey === '') {
+            return null;
+        }
+
+        return [
+            'deviceId' => $deviceId,
+            'name' => trim((string) ($decoded['name'] ?? 'Ghostable Desktop')),
+            'platform' => trim((string) ($decoded['platform'] ?? 'macos')),
+            'clientType' => trim((string) ($decoded['clientType'] ?? 'desktop')),
+            'signingPublicKey' => $signingPublicKey,
+            'encryptionPublicKey' => $encryptionPublicKey,
+        ];
+    }
+
+    /**
+     * @return array{0: EnvironmentKey, 1: string}
+     */
+    private function createSeededEnvironmentKeyForDevice(Environment $environment, Device $device): array
+    {
+        $keyMaterial = random_bytes(32);
+        $fingerprint = hash('sha256', $keyMaterial);
+
+        $environmentKey = app(CreateEnvironmentKey::class)->handle(
+            environment: $environment,
+            fingerprint: $fingerprint,
+            createdByDevice: $device,
+            version: 1,
+        );
+
+        $dek = random_bytes(32);
+        $nonce = random_bytes(24);
+        $ciphertext = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+            $keyMaterial,
+            '',
+            $nonce,
+            $dek,
+        );
+
+        $recipientEnvelope = app(EnvelopeEncryptor::class)->encrypt(
+            plaintext: $dek,
+            recipientPublicKeyBase64: $device->public_key,
+            meta: [
+                'project_id' => (string) $environment->project_id,
+                'environment' => $environment->name,
+                'key_fingerprint' => $fingerprint,
+            ],
+        );
+
+        app(StoreEnvironmentKeyEnvelope::class)->handle($environmentKey, [
+            'ciphertext_b64' => base64_encode($ciphertext),
+            'nonce_b64' => base64_encode($nonce),
+            'alg' => 'xchacha20-poly1305',
+            'version' => '1',
+            'aad_b64' => null,
+            'recipients' => [[
+                'id' => (string) $device->getKey(),
+                'type' => 'device',
+                'label' => $device->name,
+                'edek_b64' => 'b64:'.base64_encode(json_encode($recipientEnvelope, JSON_THROW_ON_ERROR)),
+            ]],
+        ]);
+
+        return [$environmentKey->fresh(['envelope']), $keyMaterial];
+    }
+
+    /**
+     * @param  array<int, array{
+     *     value: string,
+     *     actor?: mixed,
+     *     change_reason?: string,
+     *     is_commented?: bool,
+     *     is_vapor_secret?: bool
+     * }>  $versions
+     * @param  array<int, array{body: string, actor?: mixed}>  $comments
+     */
+    private function seedEnvironmentSecretTimeline(
+        Environment $environment,
+        EnvironmentKey $environmentKey,
+        string $keyMaterial,
+        string $name,
+        array $versions,
+        ?string $note = null,
+        array $comments = [],
+    ): EnvironmentSecret {
+        $secret = null;
+
+        foreach ($versions as $version) {
+            $changeReason = trim((string) ($version['change_reason'] ?? ''));
+
+            $secret = $this->storeEncryptedSeededSecret(
+                environment: $environment,
+                environmentKey: $environmentKey,
+                keyMaterial: $keyMaterial,
+                name: $name,
+                plaintext: $version['value'],
+                actor: $version['actor'] ?? null,
+                ifVersion: $secret?->version,
+                isCommented: (bool) ($version['is_commented'] ?? false),
+                isVaporSecret: (bool) ($version['is_vapor_secret'] ?? false),
+                changeReason: $changeReason !== '' ? $changeReason : null,
+            );
+        }
+
+        if (! $secret instanceof EnvironmentSecret) {
+            throw new \RuntimeException(sprintf('Failed to seed timeline for secret [%s].', $name));
+        }
+
+        if ($note !== null && trim($note) !== '') {
+            $this->attachEncryptedSeededNote(
+                $secret,
+                $keyMaterial,
+                $note,
+                $versions[array_key_last($versions)]['actor'] ?? null,
+            );
+        }
+
+        foreach ($comments as $comment) {
+            $this->attachEncryptedSeededComment(
+                $secret,
+                $keyMaterial,
+                $comment['body'],
+                $comment['actor'] ?? null,
+            );
+        }
+
+        return $secret->fresh(['note', 'comments', 'versions.changeNote', 'latestVersion.changeNote']);
+    }
+
+    private function storeEncryptedSeededSecret(
+        Environment $environment,
+        EnvironmentKey $environmentKey,
+        string $keyMaterial,
+        string $name,
+        string $plaintext,
+        $actor = null,
+        ?int $ifVersion = null,
+        bool $isCommented = false,
+        bool $isVaporSecret = false,
+        ?string $changeReason = null,
+    ): EnvironmentSecret {
+        $payload = $this->buildEncryptedSecretPayload(
+            environment: $environment,
+            keyMaterial: $keyMaterial,
+            name: $name,
+            plaintext: $plaintext,
+            isCommented: $isCommented,
+            isVaporSecret: $isVaporSecret,
+        );
+
+        if ($ifVersion !== null) {
+            $payload['if_version'] = $ifVersion;
+        }
+
+        if ($changeReason !== null) {
+            $payload['change_note'] = $this->buildEncryptedContextPayload(
+                environment: $environment,
+                keyMaterial: $keyMaterial,
+                variableName: $name,
+                scope: 'change_note',
+                plaintext: $changeReason,
+            );
+        }
+
+        $secret = app(StoreEnvironmentSecret::class)->handle(
+            $environment,
+            $payload,
+            $actor,
+        );
+
+        $secret->forceFill([
+            'env_kek_version' => $environmentKey->version,
+            'env_kek_fingerprint' => $environmentKey->fingerprint,
+        ])->saveQuietly();
+
+        $secret->versions()
+            ->where('version', $secret->version)
+            ->update([
+                'env_kek_version' => $environmentKey->version,
+                'env_kek_fingerprint' => $environmentKey->fingerprint,
+            ]);
+
+        return $secret->fresh(['versions.changeNote']);
+    }
+
+    private function attachEncryptedSeededNote(EnvironmentSecret $secret, string $keyMaterial, string $plaintext, $actor = null): void
+    {
+        app(EnvironmentVariableNoteService::class)->upsert(
+            $secret,
+            $this->buildEncryptedContextPayload(
+                environment: $secret->environment,
+                keyMaterial: $keyMaterial,
+                variableName: $secret->name,
+                scope: 'note',
+                plaintext: $plaintext,
+            ),
+            $actor,
+        );
+    }
+
+    private function attachEncryptedSeededComment(EnvironmentSecret $secret, string $keyMaterial, string $plaintext, $actor = null): void
+    {
+        app(EnvironmentVariableCommentService::class)->create(
+            $secret,
+            $this->buildEncryptedContextPayload(
+                environment: $secret->environment,
+                keyMaterial: $keyMaterial,
+                variableName: $secret->name,
+                scope: 'comment',
+                plaintext: $plaintext,
+            ),
+            $actor,
+        );
+    }
+
+    /**
+     * @return array{name: string, ciphertext: string, nonce: string, alg: string, aad: array<string, string>, claims: array{hmac: string, meta: array<string, mixed>}, client_sig: string, line_bytes: int, is_vapor_secret: bool, is_commented: bool}
+     */
+    private function buildEncryptedSecretPayload(
+        Environment $environment,
+        string $keyMaterial,
+        string $name,
+        string $plaintext,
+        bool $isCommented = false,
+        bool $isVaporSecret = false,
+    ): array {
+        $org = Str::slug((string) $environment->project->organization->name);
+        $project = Str::slug((string) $environment->project->name);
+        $env = Str::slug((string) $environment->name);
+        $aad = [
+            'org' => $org,
+            'project' => $project,
+            'env' => $env,
+            'name' => $name,
+        ];
+        $derived = $this->deriveSeedEncryptionKeys($keyMaterial, "{$org}/{$project}/{$env}");
+        $nonce = random_bytes(24);
+        $ciphertext = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+            $plaintext,
+            $this->encodeSecretAad($aad),
+            $nonce,
+            $derived['enc_key'],
+        );
+
+        return [
+            'name' => $name,
+            'ciphertext' => 'b64:'.base64_encode($ciphertext),
+            'nonce' => 'b64:'.base64_encode($nonce),
+            'alg' => 'xchacha20-poly1305',
+            'aad' => $aad,
+            'claims' => [
+                'hmac' => 'b64:'.base64_encode(hash_hmac('sha256', $plaintext, $derived['hmac_key'], true)),
+                'meta' => [
+                    'value_length' => strlen($plaintext),
+                    'is_vapor_secret' => $isVaporSecret,
+                    'is_commented' => $isCommented,
+                ],
+            ],
+            'client_sig' => base64_encode(random_bytes(64)),
+            'line_bytes' => strlen($plaintext),
+            'is_vapor_secret' => $isVaporSecret,
+            'is_commented' => $isCommented,
+        ];
+    }
+
+    /**
+     * @return array{ciphertext: string, nonce: string, alg: string, aad: array<string, string>, claims: array{hmac: string}, client_sig: string}
+     */
+    private function buildEncryptedContextPayload(
+        Environment $environment,
+        string $keyMaterial,
+        string $variableName,
+        string $scope,
+        string $plaintext,
+    ): array {
+        $org = Str::slug((string) $environment->project->organization->name);
+        $project = Str::slug((string) $environment->project->name);
+        $env = Str::slug((string) $environment->name);
+        $aad = [
+            'env' => $env,
+            'org' => $org,
+            'project' => $project,
+            'scope' => $scope,
+            'variable' => $variableName,
+        ];
+        $derived = $this->deriveSeedEncryptionKeys($keyMaterial, "{$org}/{$project}/{$env}/context/{$variableName}/{$scope}");
+        $nonce = random_bytes(24);
+        $ciphertext = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+            $plaintext,
+            $this->encodeSortedAad($aad),
+            $nonce,
+            $derived['enc_key'],
+        );
+
+        return [
+            'ciphertext' => 'b64:'.base64_encode($ciphertext),
+            'nonce' => 'b64:'.base64_encode($nonce),
+            'alg' => 'xchacha20-poly1305',
+            'aad' => $aad,
+            'claims' => [
+                'hmac' => 'b64:'.base64_encode(hash_hmac('sha256', $plaintext, $derived['hmac_key'], true)),
+            ],
+            'client_sig' => base64_encode(random_bytes(64)),
+        ];
+    }
+
+    /**
+     * @return array{enc_key: string, hmac_key: string}
+     */
+    private function deriveSeedEncryptionKeys(string $keyMaterial, string $context): array
+    {
+        $okm = hash_hkdf('sha256', $keyMaterial, 64, '', "ghostable:{$context}");
+
+        return [
+            'enc_key' => substr($okm, 0, 32),
+            'hmac_key' => substr($okm, 32, 32),
+        ];
+    }
+
+    /**
+     * @param  array{org: string, project: string, env: string, name: string}  $aad
+     */
+    private function encodeSecretAad(array $aad): string
+    {
+        return sprintf(
+            '{"org":"%s","project":"%s","env":"%s","name":"%s"}',
+            addcslashes($aad['org'], "\\\"/\n\r\t"),
+            addcslashes($aad['project'], "\\\"/\n\r\t"),
+            addcslashes($aad['env'], "\\\"/\n\r\t"),
+            addcslashes($aad['name'], "\\\"/\n\r\t"),
+        );
+    }
+
+    /**
+     * @param  array<string, string>  $aad
+     */
+    private function encodeSortedAad(array $aad): string
+    {
+        ksort($aad);
+
+        return (string) json_encode($aad, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    }
+
     protected function seedAviato(): void
     {
         $erlich = $this->createUser(name: 'Erlich Bachman', email: 'erlich@aviato.com');
@@ -347,8 +995,22 @@ class AppSetup extends Command
             return false;
         }
 
+        $organization = Organization::query()
+            ->where('name', self::GHOSTABLE_SETUP_ORGANIZATION)
+            ->first();
+
+        if (! $organization instanceof Organization) {
+            $this->warn(sprintf('Skipping re-share lab prep: organization [%s] was not found.', self::GHOSTABLE_SETUP_ORGANIZATION));
+
+            return false;
+        }
+
+        if (! $organization->projects()->where('name', self::GHOSTABLE_RESHARE_LAB_PROJECT)->exists()) {
+            $this->createZeroKnowledgeProject(self::GHOSTABLE_RESHARE_LAB_PROJECT, $organization);
+        }
+
         $this->newLine();
-        $this->info('🧪 Preparing local key re-share requests for Ghostable environments (primary, cli, desktop)...');
+        $this->info('🧪 Preparing local key re-share requests in the Primary Server project...');
 
         $sharedRunId = trim((string) ($this->reshareRunId ?? ''));
         if ($sharedRunId === '') {
@@ -362,7 +1024,7 @@ class AppSetup extends Command
             '--skip-app-setup',
             '--prepare-only',
             '--org-name', self::GHOSTABLE_SETUP_ORGANIZATION,
-            '--project-name', self::GHOSTABLE_SETUP_PROJECT,
+            '--project-name', self::GHOSTABLE_RESHARE_LAB_PROJECT,
             '--actor-email', $this->reshareActorEmail,
             '--recipient-email', $this->reshareRecipientEmail,
             '--secret-count', '5',
@@ -389,12 +1051,12 @@ class AppSetup extends Command
 
         if (! is_int($exitCode) || $exitCode !== 0) {
             $this->warn('Re-share lab preparation failed for one or more environments.');
-            $this->line('Tip: run `bash scripts/local-reshare-lab.sh --prepare-only --skip-app-setup --org-name Ghostable --project-name Primary --env-name primary --env-name cli --env-name desktop` manually.');
+            $this->line('Tip: run `bash scripts/local-reshare-lab.sh --prepare-only --skip-app-setup --org-name Ghostable --project-name "Primary Server" --env-name production --env-name staging --env-name local` manually.');
 
             return false;
         }
 
-        $this->info('✅ Re-share prep complete for primary, cli, and desktop. Use `php artisan local:cli` to fulfill pending requests.');
+        $this->info('✅ Re-share prep complete for production, staging, and local in Primary Server. Use `php artisan local:cli` to fulfill pending requests.');
 
         return true;
     }
@@ -414,7 +1076,7 @@ class AppSetup extends Command
 
         if (! $this->shouldPrepareReshareLabAfterSetup) {
             $this->shouldPrepareReshareLabAfterSetup = $this->confirm(
-                'Include default local key re-share prep flow (primary, cli, desktop)?',
+                'Include the optional Primary Server re-share prep flow (production, staging, local)?',
                 true
             );
         }

@@ -17,6 +17,9 @@ use App\Environment\Enums\EnvironmentType;
 use App\Environment\Models\DeploymentToken;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentKey;
+use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Services\EnvironmentVariableCommentService;
+use App\Environment\Services\EnvironmentVariableNoteService;
 use App\Environment\Variable\Registry\VariableRegistry;
 use App\Organization\Actions\CreateInvite;
 use App\Organization\Actions\CreateOrganization;
@@ -256,15 +259,13 @@ trait CreatesAccountData
             // We DO NOT do real encryption here—this is seed/demo data. Ciphertext/nonce are random bytes.
             $ciphertext = base64_encode(random_bytes(48));
             $nonce = base64_encode(random_bytes(24));
-            $alg = $defaults['alg'] ?? 'xchacha20poly1305';
+            $alg = $defaults['alg'] ?? 'xchacha20-poly1305';
 
             // AAD matches your client contract: org / project / env / name
             $aad = [
-                'org' => $env->project->organization->slug
-                    ?? (string) $env->project->organization_id,
-                'project' => $env->project->slug
-                    ?? (string) $env->project_id,
-                'env' => $env->slug,
+                'org' => Str::slug((string) $env->project->organization->name),
+                'project' => Str::slug((string) $env->project->name),
+                'env' => Str::slug((string) $env->name),
                 'name' => $name,
             ];
 
@@ -283,7 +284,7 @@ trait CreatesAccountData
             ];
 
             // Minimal client signature marker (demo). Your action doesn’t validate it, so any string is fine.
-            $clientSig = 'dev-seed';
+            $clientSig = base64_encode(random_bytes(64));
 
             $packet = [
                 'name' => $name,
@@ -310,5 +311,142 @@ trait CreatesAccountData
             // Persist via your new action (handles upsert, meta normalization, and versioning).
             $store->handle($env, $packet, $createdBy);
         }
+    }
+
+    /**
+     * @param  array{
+     *     line_bytes?: int,
+     *     is_vapor_secret?: bool,
+     *     is_commented?: bool,
+     *     if_version?: int|null,
+     *     change_note?: array{
+     *         ciphertext: string,
+     *         nonce: string,
+     *         alg: string,
+     *         aad: array<string, mixed>,
+     *         claims?: array<string, mixed>|null,
+     *         client_sig: string
+     *     }
+     * }  $options
+     */
+    protected function upsertSeededZeroKnowledgeSecret(
+        Environment $env,
+        string $name,
+        string $plaintext,
+        ?User $actor = null,
+        array $options = [],
+    ): EnvironmentSecret {
+        /** @var StoreEnvironmentSecret $store */
+        $store = resolve(StoreEnvironmentSecret::class);
+
+        $packet = array_merge(
+            $this->makeSeededEncryptedPayload(
+                plaintext: $plaintext,
+                aad: [
+                    'org' => Str::slug((string) $env->project->organization->name),
+                    'project' => Str::slug((string) $env->project->name),
+                    'env' => Str::slug((string) $env->name),
+                    'name' => $name,
+                ],
+                claims: [
+                    'hmac' => hash_hmac('sha256', $plaintext, 'ghostable-dev-seed-hmac'),
+                    'meta' => [
+                        'value_length' => strlen($plaintext),
+                        'is_vapor_secret' => (bool) ($options['is_vapor_secret'] ?? false),
+                        'is_commented' => (bool) ($options['is_commented'] ?? false),
+                    ],
+                ],
+            ),
+            [
+                'name' => $name,
+            ],
+        );
+
+        foreach (['line_bytes', 'is_vapor_secret', 'is_commented', 'if_version', 'change_note'] as $key) {
+            if (Arr::has($options, $key)) {
+                $packet[$key] = $options[$key];
+            }
+        }
+
+        return $store->handle($env, $packet, $actor);
+    }
+
+    /**
+     * @param  array{claims?: array<string, mixed>|null}  $options
+     */
+    protected function attachSeededSecretNote(
+        EnvironmentSecret $secret,
+        string $plaintext,
+        ?User $actor = null,
+        array $options = [],
+    ): void {
+        resolve(EnvironmentVariableNoteService::class)->upsert(
+            $secret,
+            $this->makeSeededEncryptedPayload(
+                plaintext: $plaintext,
+                aad: [
+                    'scope' => 'note',
+                    'name' => $secret->name,
+                    'environment_secret_id' => (string) $secret->getKey(),
+                ],
+                claims: $options['claims'] ?? null,
+            ),
+            $actor,
+        );
+    }
+
+    /**
+     * @param  array{claims?: array<string, mixed>|null}  $options
+     */
+    protected function attachSeededSecretComment(
+        EnvironmentSecret $secret,
+        string $plaintext,
+        ?User $actor = null,
+        array $options = [],
+    ): void {
+        resolve(EnvironmentVariableCommentService::class)->create(
+            $secret,
+            $this->makeSeededEncryptedPayload(
+                plaintext: $plaintext,
+                aad: [
+                    'scope' => 'comment',
+                    'name' => $secret->name,
+                    'environment_secret_id' => (string) $secret->getKey(),
+                ],
+                claims: $options['claims'] ?? null,
+            ),
+            $actor,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $claims
+     * @return array{
+     *     ciphertext: string,
+     *     nonce: string,
+     *     alg: string,
+     *     aad: array<string, mixed>,
+     *     claims?: array<string, mixed>|null,
+     *     client_sig: string
+     * }
+     */
+    protected function makeSeededEncryptedPayload(
+        string $plaintext,
+        array $aad = [],
+        ?array $claims = null,
+    ): array {
+        $payload = [
+            'ciphertext' => base64_encode(random_bytes(max(32, min(96, strlen($plaintext) + 24)))),
+            'nonce' => base64_encode(random_bytes(24)),
+            'alg' => 'xchacha20-poly1305',
+            'aad' => $aad,
+            'client_sig' => base64_encode(random_bytes(64)),
+        ];
+
+        if ($claims !== null) {
+            $payload['claims'] = $claims;
+        }
+
+        return $payload;
     }
 }
