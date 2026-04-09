@@ -52,7 +52,7 @@
                             ]"/>
                         <x-billing.plan-card 
                             name="Standard" 
-                            price="15" 
+                            price="29" 
                             featured
                             description="Perfect for growing teams that need collaboration and security controls."
                             :features="[
@@ -67,7 +67,7 @@
                             ]"/>
                         <x-billing.plan-card 
                             name="Scale" 
-                            price="50"
+                            price="99"
                             pr=""
                             description="Designed for scaling SaaS teams with advanced compliance and CI/CD needs."
                             :features="[

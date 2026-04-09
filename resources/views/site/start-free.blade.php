@@ -28,7 +28,7 @@
         ],
         [
             'name' => 'Standard',
-            'price' => '$15',
+            'price' => '$29',
             'tone' => 'bg-white text-zinc-950 ring-[10px] ring-brand/28',
             'featured' => true,
             'eyebrow' => 'For growing teams',
@@ -41,7 +41,7 @@
         ],
         [
             'name' => 'Scale',
-            'price' => '$50',
+            'price' => '$99',
             'tone' => 'bg-white text-zinc-950 ring-1 ring-zinc-950/8',
             'featured' => false,
             'eyebrow' => 'For scaling teams',

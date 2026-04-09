@@ -36,7 +36,7 @@
             '30 Day Audit History'
         ]">
         <span class="block mb-4 text-center">
-            <span class="text-xl font-bold tracking-tight text-gray-900">$15</span>
+            <span class="text-xl font-bold tracking-tight text-gray-900">$29</span>
             <span class="text-base text-gray-500">/month</span>
         </span>
         <flux:button 
@@ -54,7 +54,7 @@
             '60 Day Audit History'
         ]">
         <span class="block mb-4 text-center">
-            <span class="text-xl font-bold tracking-tight text-gray-900">$50</span>
+            <span class="text-xl font-bold tracking-tight text-gray-900">$99</span>
             <span class="text-base text-gray-500">/month</span>
         </span>
         <flux:button 

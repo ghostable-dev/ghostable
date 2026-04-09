@@ -7,6 +7,8 @@ test('pricing page lists encrypted backups on the free plan', function () {
     $response->assertSeeText('Pricing that scales with you');
     $response->assertSeeText('Encrypted Backups');
     $response->assertSeeText('Free');
+    $response->assertSeeText('$29');
+    $response->assertSeeText('$99');
 });
 
 test('pricing page lists signed audit webhooks on the scale plan', function () {

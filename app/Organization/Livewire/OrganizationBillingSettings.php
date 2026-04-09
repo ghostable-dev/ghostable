@@ -114,8 +114,8 @@ class OrganizationBillingSettings extends Component
     private function purchaseConversionValue(Plan $plan): ?float
     {
         return match ($plan) {
-            Plan::STANDARD => 15.0,
-            Plan::SCALE => 50.0,
+            Plan::STANDARD => 29.0,
+            Plan::SCALE => 99.0,
             default => null,
         };
     }

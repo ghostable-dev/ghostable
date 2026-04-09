@@ -13,5 +13,7 @@ test('organization billing settings can render', function () {
     $this->actingAs($user);
 
     Livewire::test(OrganizationBillingSettings::class)
-        ->assertViewIs('organization.organization-billing-settings');
+        ->assertViewIs('organization.organization-billing-settings')
+        ->assertSee('$29')
+        ->assertSee('$99');
 });

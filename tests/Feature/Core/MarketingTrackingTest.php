@@ -64,12 +64,39 @@ test('billing subscription return renders the google ads conversion snippet when
     $response->assertSuccessful();
     $response->assertSee('https://static.ads-twitter.com/uwt.js', false);
     $response->assertSee("twq('config', 'o123456')", false);
-    $response->assertSee("twq('event', 'x-subscription-started-123', {\"value\":15,\"currency\":\"USD\"})", false);
+    $response->assertSee("twq('event', 'x-subscription-started-123', {\"value\":29,\"currency\":\"USD\"})", false);
     $response->assertSee('https://www.googletagmanager.com/gtag/js?id=AW-18036463032', false);
     $response->assertSee("gtag('event', 'conversion'", false);
     $response->assertSee('subscribe123', false);
     $response->assertSee('cs_test_123', false);
-    $response->assertSee('15', false);
+    $response->assertSee('29', false);
+    $response->assertSee('USD', false);
+});
+
+test('billing subscription return renders the scale conversion snippet when configured', function () {
+    config()->set('services.google_tag.id', 'AW-18036463032');
+    config()->set('services.google_tag.subscription_started_label', 'subscribe123');
+    config()->set('services.x_tag.id', 'o123456');
+    config()->set('services.x_tag.subscription_started_event_id', 'x-subscription-started-123');
+
+    $user = $this->createUser('Peter', 'peter@example.com');
+    $organization = $this->createOrganization('Ghostbusters', $user);
+
+    $response = $this
+        ->actingAs($user)
+        ->withSession(['current_organization_id' => $organization->id])
+        ->get(route('organization.settings.billing', [
+            'organization' => $organization,
+            'checkout' => 'success',
+            'plan' => 'scale',
+            'checkout_session_id' => 'cs_test_456',
+        ]));
+
+    $response->assertSuccessful();
+    $response->assertSee("twq('event', 'x-subscription-started-123', {\"value\":99,\"currency\":\"USD\"})", false);
+    $response->assertSee('subscribe123', false);
+    $response->assertSee('cs_test_456', false);
+    $response->assertSee('99', false);
     $response->assertSee('USD', false);
 });
 

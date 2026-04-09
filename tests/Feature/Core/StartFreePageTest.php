@@ -16,6 +16,8 @@ test('start free page keeps the signup form and pricing context on the same page
     $response->assertSeeText('No credit card required');
     $response->assertSeeText('SOC 2 aligned');
     $response->assertSeeText('CLI for CI and non-macOS workflows');
+    $response->assertSeeText('$29');
+    $response->assertSeeText('$99');
     $response->assertSeeText('30 day audit history');
     $response->assertSeeText('Signed audit webhooks');
     $response->assertSeeText('Most popular');
