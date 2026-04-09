@@ -17,6 +17,7 @@ use App\Core\View\Components\ActivityCauserDisplay;
 use App\Core\View\Components\ArticleSchema;
 use App\Core\View\Components\BreadcrumbSchema;
 use App\Core\View\Components\FaqSchema;
+use App\Core\View\Components\PricingSchema;
 use App\Core\View\Components\SeoMeta;
 use App\Core\View\Components\SiteSchema;
 use Illuminate\Auth\Events\Login as UserLoggedIn;
@@ -65,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
         Blade::component('breadcrumb-schema', BreadcrumbSchema::class);
         Blade::component('article-schema', ArticleSchema::class);
         Blade::component('faq-schema', FaqSchema::class);
+        Blade::component('pricing-schema', PricingSchema::class);
         Blade::component('seo-meta', SeoMeta::class);
         Blade::component('activity-causer-display', ActivityCauserDisplay::class);
 

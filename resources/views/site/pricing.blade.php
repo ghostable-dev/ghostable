@@ -1,3 +1,72 @@
+@php
+    $plans = [
+        [
+            'name' => 'Free',
+            'heading_id' => 'pricing-plan-free',
+            'price' => 0,
+            'featured' => false,
+            'description' => 'Ideal for individuals and small projects exploring Ghostable.',
+            'pl' => '',
+            'pr' => 'xl:pr-14',
+            'features' => [
+                'Up to 2 Users',
+                'Up to 5,000 API Operations',
+                'Unlimited Projects',
+                'Unlimited Environments',
+                'CLI Access',
+                'CI/CD Workflows',
+                'Secrets Management',
+                'Encrypted Backups',
+                'Environment Validation',
+                'Version Tracking',
+            ],
+            'integrations' => [
+                ['label' => 'Forge', 'accent' => 'rgb(70, 197, 175)', 'fill' => '#111827', 'text' => '#F8F4F3'],
+                ['label' => 'Cloud', 'accent' => '#005cec', 'fill' => '#111827', 'text' => '#F8F4F3'],
+                ['label' => 'Vapor', 'accent' => 'rgb(48, 165, 230)', 'fill' => '#111827', 'text' => '#F8F4F3'],
+            ],
+        ],
+        [
+            'name' => 'Standard',
+            'heading_id' => 'pricing-plan-standard',
+            'price' => 29,
+            'featured' => true,
+            'description' => 'Perfect for growing teams that need collaboration and security controls.',
+            'pl' => 'xl:pl-14',
+            'pr' => 'xl:pr-14',
+            'features' => [
+                'Up to 5 Users',
+                'Up to 25,000 API Operations',
+                'Everything from Free',
+                'Advanced User Permissions',
+                '30 Day Audit History',
+            ],
+            'integrations' => [
+                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3'],
+            ],
+        ],
+        [
+            'name' => 'Scale',
+            'heading_id' => 'pricing-plan-scale',
+            'price' => 99,
+            'featured' => false,
+            'description' => 'Designed for scaling SaaS teams with advanced compliance and CI/CD needs.',
+            'pl' => 'xl:pl-14',
+            'pr' => '',
+            'features' => [
+                'Up to 10 Users',
+                'Up to 60,000 API Operations',
+                'Everything from Standard',
+                '60 Day Audit History',
+                'Signed Audit Webhooks',
+            ],
+            'integrations' => [
+                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3'],
+            ],
+        ],
+    ];
+@endphp
+
 @push('meta')
     <x-seo-meta
         title="Ghostable Pricing"
@@ -12,6 +81,7 @@
             'audit logs',
             'laravel'
         ]"/>
+    <x-pricing-schema :plans="$plans" :url="route('pricing')"/>
 @endpush
 
 <x-layouts.guest title="Pricing" canonical="{{ route('pricing') }}">
@@ -27,61 +97,21 @@
                 that scales as you do. Vanta is included today, with Drata coming soon.</p>
             </div>
             <div class="mt-20 flow-root">
-                    <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
-                        <x-billing.plan-card 
-                            name="Free" 
-                            price="0"
-                            description="Ideal for individuals and small projects exploring Ghostable."
-                            pl=""
-                            :features="[
-                                'Up to 2 Users',
-                                'Up to 5,000 API Operations',
-                                'Unlimited Projects',
-                                'Unlimited Environments',
-                                'CLI Access',
-                                'CI/CD Workflows',
-                                'Secrets Management',
-                                'Encrypted Backups',
-                                'Environment Validation',
-                                'Version Tracking'
-                            ]"
-                            :integrations="[
-                                ['label' => 'Forge', 'accent' => 'rgb(70, 197, 175)', 'fill' => '#111827', 'text' => '#F8F4F3'],
-                                ['label' => 'Cloud', 'accent' => '#005cec', 'fill' => '#111827', 'text' => '#F8F4F3'],
-                                ['label' => 'Vapor', 'accent' => 'rgb(48, 165, 230)', 'fill' => '#111827', 'text' => '#F8F4F3']
-                            ]"/>
-                        <x-billing.plan-card 
-                            name="Standard" 
-                            price="29" 
-                            featured
-                            description="Perfect for growing teams that need collaboration and security controls."
-                            :features="[
-                                'Up to 5 Users',
-                                'Up to 25,000 API Operations',
-                                'Everything from Free',
-                                'Advanced User Permissions',
-                                '30 Day Audit History'
-                            ]"
-                            :integrations="[
-                                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3']
-                            ]"/>
-                        <x-billing.plan-card 
-                            name="Scale" 
-                            price="99"
-                            pr=""
-                            description="Designed for scaling SaaS teams with advanced compliance and CI/CD needs."
-                            :features="[
-                                'Up to 10 Users',
-                                'Up to 60,000 API Operations',
-                                'Everything from Standard',
-                                '60 Day Audit History',
-                                'Signed Audit Webhooks'
-                            ]"
-                            :integrations="[
-                                ['label' => 'Vanta', 'accent' => '#AC55FF', 'fill' => '#240642', 'text' => '#F8F4F3']
-                            ]"/>
+                <div class="isolate -mt-16 grid max-w-sm grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4 dark:divide-white/10">
+                    @foreach ($plans as $plan)
+                        <x-billing.plan-card
+                            :name="$plan['name']"
+                            :heading-id="$plan['heading_id']"
+                            :price="$plan['price']"
+                            :featured="$plan['featured']"
+                            :description="$plan['description']"
+                            :pl="$plan['pl']"
+                            :pr="$plan['pr']"
+                            :features="$plan['features']"
+                            :integrations="$plan['integrations']"/>
+                    @endforeach
                     </div>
-                </div>  
+                </div>
                 
             <div class="relative flex flex-col rounded-3xl bg-white p-2 shadow-md ring-1 ring-black/5">
                 <div class="w-full rounded-2xl bg-zinc-50 p-6">

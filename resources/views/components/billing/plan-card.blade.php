@@ -1,5 +1,6 @@
 @props([
   'name',
+  'headingId' => null,
   'price' => null,
   'altPrice' => null,
   'featured' => false,
@@ -9,9 +10,10 @@
   'pl' => 'xl:pl-14',
   'pr' => 'xl:pr-14'
 ])
-{{-- class="xl:pl-14 xl:pr-14" --}}
-<div class="pt-16 lg:px-8 lg:pt-0 {{ $pl }} {{ $pl }}">
-    <h3 id="tier-basic" class="text-base/7 font-semibold text-gray-900 dark:text-white">{{ $name }}</h3>
+@php($resolvedHeadingId = $headingId ?: 'pricing-plan-'.str($name)->slug())
+
+<div aria-labelledby="{{ $resolvedHeadingId }}" class="pt-16 lg:px-8 lg:pt-0 {{ $pl }} {{ $pr }}">
+    <h3 id="{{ $resolvedHeadingId }}" class="text-base/7 font-semibold text-gray-900 dark:text-white">{{ $name }}</h3>
     @isset($price)
         <p class="mt-2 flex items-baseline gap-x-1">
             <span class="text-5xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ $price }}</span>

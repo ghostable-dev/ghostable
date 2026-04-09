@@ -2,13 +2,14 @@
 
 namespace App\Core\Http\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
 class GeneratePagesSitemap extends Controller
 {
-    public function __invoke()
+    public function __invoke(): Response
     {
         return Sitemap::create()
             ->add($this->home())
@@ -30,7 +31,7 @@ class GeneratePagesSitemap extends Controller
     private function home(): Url
     {
         return Url::create(url('/'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 26))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_ALWAYS)
             ->setPriority(1.0);
     }
@@ -38,16 +39,15 @@ class GeneratePagesSitemap extends Controller
     private function pricing(): Url
     {
         return Url::create(route('pricing'))
-            ->setLastModificationDate(
-                Carbon::create(year: 2026, month: 4, day: 8)
-            )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
+            ->setLastModificationDate($this->modifiedOn(2026, 4, 9))
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.9);
     }
 
     private function trust(): Url
     {
         return Url::create(route('trust'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 26))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.7);
     }
@@ -95,7 +95,7 @@ class GeneratePagesSitemap extends Controller
     private function vantaIntegration(): Url
     {
         return Url::create(route('integrations.vanta'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
     }
@@ -103,7 +103,7 @@ class GeneratePagesSitemap extends Controller
     private function integrationsIndex(): Url
     {
         return Url::create(route('integrations.index'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.75);
     }
@@ -111,7 +111,7 @@ class GeneratePagesSitemap extends Controller
     private function forgeIntegration(): Url
     {
         return Url::create(route('integrations.forge'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
     }
@@ -119,7 +119,7 @@ class GeneratePagesSitemap extends Controller
     private function cloudIntegration(): Url
     {
         return Url::create(route('integrations.cloud'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
     }
@@ -127,7 +127,7 @@ class GeneratePagesSitemap extends Controller
     private function openclawIntegration(): Url
     {
         return Url::create(route('integrations.openclaw'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
     }
@@ -135,8 +135,13 @@ class GeneratePagesSitemap extends Controller
     private function vaporIntegration(): Url
     {
         return Url::create(route('integrations.vapor'))
-            ->setLastModificationDate(now())
+            ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
+    }
+
+    private function modifiedOn(int $year, int $month, int $day): Carbon
+    {
+        return Carbon::create(year: $year, month: $month, day: $day);
     }
 }

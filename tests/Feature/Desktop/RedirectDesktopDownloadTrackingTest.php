@@ -29,6 +29,7 @@ it('tracks unsigned latest download redirects against the current stable release
     $response = $this->get(route('desktop.download'));
 
     $response->assertRedirect('https://cdn.ghostable.dev/desktop/Ghostable-1.2.3.dmg');
+    $response->assertHeader('X-Robots-Tag', 'noindex, nofollow');
 
     $event = DesktopUpdateEvent::query()->sole();
 
@@ -44,6 +45,7 @@ it('tracks signed sparkle downloads before redirecting to the release artifact',
     $response = $this->get(route('desktop.download', $payload));
 
     $response->assertRedirect('https://cdn.ghostable.dev/desktop/Ghostable-3.0.0.zip');
+    $response->assertHeader('X-Robots-Tag', 'noindex, nofollow');
 
     $event = DesktopUpdateEvent::query()->sole();
 

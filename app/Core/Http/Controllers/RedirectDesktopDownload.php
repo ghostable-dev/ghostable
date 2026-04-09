@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 
 final class RedirectDesktopDownload
 {
+    private const string ROBOTS_DIRECTIVE = 'noindex, nofollow';
+
     public function __invoke(
         Request $request,
         DesktopUpdateTrackingSignature $desktopUpdateTrackingSignature,
@@ -46,7 +48,7 @@ final class RedirectDesktopDownload
                 userAgent: $request->userAgent(),
             );
 
-            return redirect()->away($targetUrl);
+            return $this->downloadRedirect($targetUrl);
         }
 
         $downloadUrl = trim((string) config('desktop-updates.channels.stable.download_url'));
@@ -65,7 +67,7 @@ final class RedirectDesktopDownload
             userAgent: $request->userAgent(),
         );
 
-        return redirect()->away($downloadUrl);
+        return $this->downloadRedirect($downloadUrl);
     }
 
     private function nullableString(mixed $value): ?string
@@ -77,5 +79,12 @@ final class RedirectDesktopDownload
         $trimmed = trim((string) $value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function downloadRedirect(string $url): RedirectResponse
+    {
+        return redirect()
+            ->away($url)
+            ->header('X-Robots-Tag', self::ROBOTS_DIRECTIVE);
     }
 }

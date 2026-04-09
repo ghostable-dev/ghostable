@@ -10,6 +10,7 @@ test('desktop download route redirects to the configured stable sparkle url', fu
     $response = $this->get(route('desktop.download'));
 
     $response->assertRedirect('https://cdn.ghostable.dev/desktop/Ghostable-1.2.3.dmg');
+    $response->assertHeader('X-Robots-Tag', 'noindex, nofollow');
 });
 
 test('desktop download route returns 404 when no url is configured', function () {
