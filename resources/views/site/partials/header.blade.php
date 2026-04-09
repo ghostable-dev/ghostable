@@ -7,7 +7,7 @@
         'cream' => '#F8F4F3',
     ], $bannerColors ?? []);
 @endphp
-<div class="sticky top-0 inset-x-0 z-50">
+<header class="sticky top-0 inset-x-0 z-50">
     <nav 
         aria-label="Main"
         class="backdrop-blur-sm bg-black/80 shadow-sm">
@@ -138,4 +138,4 @@
             </div>
         </a>
     @endif
-</div>
+</header>

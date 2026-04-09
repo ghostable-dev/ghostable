@@ -24,6 +24,7 @@
         "resend/resend-php": "^0.19.1",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-data": "^4.15",
+        "spatie/laravel-markdown-response": "1.1.0",
         "spatie/laravel-sitemap": "^7.3",
         "spatie/schema-org": "^3.23",
         "symfony/http-client": "^7.2",
@@ -100,6 +101,7 @@
         }
     },
     "config": {
+        "platform-check": false,
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
@@ -111,6 +113,46 @@
     "minimum-stability": "beta",
     "prefer-stable": true,
     "repositories": {
+        "spatie-laravel-markdown-response": {
+            "type": "package",
+            "package": {
+                "name": "spatie/laravel-markdown-response",
+                "version": "1.1.0",
+                "type": "library",
+                "dist": {
+                    "url": "https://api.github.com/repos/spatie/laravel-markdown-response/zipball/e084d6b94975502d5a2bf3b0bf07e0b3ed91c2d8",
+                    "type": "zip",
+                    "reference": "e084d6b94975502d5a2bf3b0bf07e0b3ed91c2d8"
+                },
+                "source": {
+                    "url": "https://github.com/spatie/laravel-markdown-response.git",
+                    "type": "git",
+                    "reference": "e084d6b94975502d5a2bf3b0bf07e0b3ed91c2d8"
+                },
+                "require": {
+                    "php": "^8.3",
+                    "illuminate/contracts": "^12.0",
+                    "league/html-to-markdown": "^5.1",
+                    "spatie/laravel-package-tools": "^1.16",
+                    "spatie/php-attribute-reader": "^1.0"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Spatie\\MarkdownResponse\\": "src/"
+                    }
+                },
+                "extra": {
+                    "laravel": {
+                        "providers": [
+                            "Spatie\\MarkdownResponse\\MarkdownResponseServiceProvider"
+                        ],
+                        "aliases": {
+                            "Markdown": "Spatie\\MarkdownResponse\\Facades\\Markdown"
+                        }
+                    }
+                }
+            }
+        },
         "flux-pro": {
             "type": "composer",
             "url": "https://composer.fluxui.dev"
