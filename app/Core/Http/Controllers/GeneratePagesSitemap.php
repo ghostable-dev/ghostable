@@ -39,7 +39,7 @@ class GeneratePagesSitemap extends Controller
     {
         return Url::create(route('pricing'))
             ->setLastModificationDate(
-                Carbon::create(year: 2025, month: 9, day: 1)
+                Carbon::create(year: 2026, month: 4, day: 8)
             )->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
             ->setPriority(0.9);
     }
