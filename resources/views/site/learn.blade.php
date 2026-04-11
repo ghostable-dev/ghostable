@@ -69,10 +69,10 @@
 
                 <div class="mt-14 mb-6 border-t border-gray-200"></div>
 
-                
                 @php
                     $activeTag = $activeTag ?? null;
                     $guidesCollection = $learn->guides($activeTag);
+                    $seriesCollection = $learn->series($activeTag);
                     $tutorialsCollection = $learn->tutorials($activeTag);
                     $guides = $guidesCollection->map(function ($guide) {
                         return [
@@ -83,6 +83,30 @@
                             'image' => $guide['image'] ?? null,
                             'image_alt' => $guide['image_alt'] ?? null,
                             'tags' => $guide['tags'],
+                        ];
+                    });
+                    $series = $seriesCollection->map(function ($entry) {
+                        $episode = filled($entry['episode'] ?? null)
+                            ? 'Episode ' . str_pad((string) $entry['episode'], 2, '0', STR_PAD_LEFT)
+                            : null;
+                        $isEnvopolisEpisodeOne = str_contains($entry['href'] ?? '', '/adventures-in-envopolis/works-on-my-machine');
+
+                        return [
+                            'title' => $entry['title'] ?? $entry['display_title'],
+                            'description' => $entry['description'],
+                            'href' => $entry['href'],
+                            'cta' => 'Watch episode',
+                            'tags' => $entry['tags'],
+                            'image' => $isEnvopolisEpisodeOne
+                                ? cdn_asset('learn/adventures-in-envopolis/works-on-my-machine/envopolis-ep01-panel-06-lesson-card-alt.jpg') . '?v=2'
+                                : ($entry['image'] ?? null),
+                            'image_alt' => $isEnvopolisEpisodeOne
+                                ? 'Panel 6: Lesson from Envopolis'
+                                : ($entry['image_alt'] ?? null),
+                            'cover_label' => 'Series',
+                            'cover_note' => $episode,
+                            'cover_eyebrow' => $entry['series'] ?? null,
+                            'cover_title' => $entry['title'],
                         ];
                     });
                     $tutorials = $tutorialsCollection->map(function ($tutorial) {
@@ -109,26 +133,38 @@
                 @endif
 
                 <div class="mx-auto max-w-2xl lg:max-w-6xl">
-                    @if($guidesCollection->isEmpty() && $tutorialsCollection->isEmpty())
+                    @if($guidesCollection->isEmpty() && $seriesCollection->isEmpty() && $tutorialsCollection->isEmpty())
                         <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-gray-700">
-                            No resources match this tag yet. Try clearing the filter or check back soon for new guides and tutorials.
+                            No resources match this tag yet. Try clearing the filter or check back soon for new Learn content.
                         </div>
                     @endif
 
-                    <x-site.resource-section
-                        id="guides"
-                        label="Guides"
-                        title="Guides"
-                        description="Curated playbooks and examples on env vars, secrets, and config hygiene—practical patterns you can copy into your workflow."
-                        :items="$guides"
-                        class="mt-4"
-                    />
+                    @if($guidesCollection->isNotEmpty())
+                        <x-site.resource-section
+                            id="guides"
+                            label="Guides"
+                            title="Guides"
+                            description="Curated playbooks and examples on env vars, secrets, and config hygiene. Practical patterns you can copy into your workflow."
+                            :items="$guides"
+                            class="mt-4"
+                        />
+                    @endif
+                    @if($seriesCollection->isNotEmpty())
+                        <x-site.resource-section
+                            id="series"
+                            label="Adventures in Envopolis"
+                            title="Adventures in Envopolis"
+                            description="Comic-style episodes from Envopolis where tiny config mistakes turn into team-wide chaos, then get unpacked into practical lessons."
+                            :items="$series"
+                            class="mt-4"
+                        />
+                    @endif
                     @if($tutorialsCollection->isNotEmpty())
                         <x-site.resource-section
                             id="tutorials"
                             label="Tutorials"
                             title="Tutorials"
-                            description="Hands-on, step-by-step walkthroughs for common Ghostable workflows—copy the commands, keep your envs healthy."
+                            description="Hands-on, step-by-step walkthroughs for common Ghostable workflows. Copy the commands, keep your envs healthy."
                             :items="$tutorials"
                             class="mt-4"
                         />

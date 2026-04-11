@@ -10,7 +10,7 @@ class LearnRepository
     public function all(?string $tag = null): Collection
     {
         return $this->filterByTag(
-            $this->guides()->concat($this->tutorials()),
+            $this->guides()->concat($this->series())->concat($this->tutorials()),
             $tag
         );
     }
@@ -31,10 +31,18 @@ class LearnRepository
         );
     }
 
+    public function series(?string $tag = null): Collection
+    {
+        return $this->filterByTag(
+            $this->normalizeCollection(config('learn.series', [])),
+            $tag
+        );
+    }
+
     public function findBySlug(string $slug): ?array
     {
         return $this->all()
-            ->first(fn (array $guide) => $guide['slug'] === $slug);
+            ->first(fn (array $resource) => $resource['slug'] === $slug);
     }
 
     public function tagged(string $tag): Collection
@@ -45,7 +53,7 @@ class LearnRepository
     public function tags(): Collection
     {
         return $this->all()
-            ->flatMap(fn (array $guide) => $guide['tags'])
+            ->flatMap(fn (array $resource) => $resource['tags'])
             ->unique()
             ->values();
     }
@@ -61,25 +69,33 @@ class LearnRepository
             return $items;
         }
 
-        return $items->filter(fn (array $guide) => in_array($tag, $guide['tags'], true));
+        return $items->filter(fn (array $resource) => in_array($tag, $resource['tags'], true));
     }
 
-    private function normalize(array $guide): array
+    private function normalize(array $resource): array
     {
-        $slug = $guide['slug'] ?? Str::slug($guide['title'] ?? 'guide');
-        $routeName = $guide['route'] ?? null;
-        $imageUrl = $guide['image'] ?? null;
+        $slug = $resource['slug'] ?? Str::slug($resource['title'] ?? 'guide');
+        $routeName = $resource['route'] ?? null;
+        $imageUrl = $resource['image'] ?? null;
+        $title = $resource['title'] ?? Str::headline($slug);
+        $series = $resource['series'] ?? null;
+        $displayTitle = $series ? "{$series}: {$title}" : $title;
 
         return [
             'slug' => $slug,
-            'title' => $guide['title'] ?? Str::headline($slug),
-            'description' => $guide['description'] ?? '',
+            'title' => $title,
+            'display_title' => $displayTitle,
+            'series' => $series,
+            'episode' => $resource['episode'] ?? null,
+            'description' => $resource['description'] ?? '',
+            'meta_title' => $resource['meta_title'] ?? null,
+            'meta_description' => $resource['meta_description'] ?? null,
             'route' => $routeName,
-            'href' => $routeName ? route($routeName) : ($guide['href'] ?? null),
-            'tags' => collect($guide['tags'] ?? [])->values()->all(),
-            'keywords' => collect($guide['keywords'] ?? [])->values()->all(),
+            'href' => $routeName ? route($routeName) : ($resource['href'] ?? null),
+            'tags' => collect($resource['tags'] ?? [])->values()->all(),
+            'keywords' => collect($resource['keywords'] ?? [])->values()->all(),
             'image' => $imageUrl ? cdn_asset($imageUrl) : null,
-            'image_alt' => $guide['image_alt'] ?? null,
+            'image_alt' => $resource['image_alt'] ?? null,
         ];
     }
 }

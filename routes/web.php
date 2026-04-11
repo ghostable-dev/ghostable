@@ -115,6 +115,8 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
         ->group(function () {
             Route::get('/', fn () => view('site.learn'))->name('index');
             Route::get('tag/{tag}', fn ($tag) => view('site.learn', ['activeTag' => $tag]))->name('tag');
+            Route::view('series/adventures-in-envopolis/works-on-my-machine', 'site.series.adventures-in-envopolis.works-on-my-machine')
+                ->name('series.adventures-in-envopolis.works-on-my-machine');
             Route::view('laravel-env-example', 'site.guides.laravel-env-example')->name('laravel-env-example');
             Route::view('laravel-multi-environment-secrets', 'site.guides.laravel-multi-environment-secrets')->name('laravel-multi-environment-secrets');
             Route::view('env-naming-conventions', 'site.guides.env-naming-conventions')->name('env-naming-conventions');

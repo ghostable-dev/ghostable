@@ -16,13 +16,13 @@ class GenerateLearnSitemap extends Controller
         $sitemap = Sitemap::create()
             ->add($this->learn());
 
-        foreach ($this->learn->all() as $guide) {
-            if (! $guide['href']) {
+        foreach ($this->learn->all() as $resource) {
+            if (! $resource['href']) {
                 continue;
             }
 
             $sitemap->add(
-                Url::create($guide['href'])
+                Url::create($resource['href'])
                     ->setLastModificationDate(Carbon::now())
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                     ->setPriority(0.8)

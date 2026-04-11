@@ -83,6 +83,34 @@ return [
             ],
         ],
     ],
+    'series' => [
+        [
+            'slug' => 'works-on-my-machine-missing-environment-variable',
+            'series' => 'Adventures in Envopolis',
+            'episode' => 1,
+            'title' => 'Works on My Machine',
+            'description' => 'The first Adventures in Envopolis story follows a feature that only worked because one environment variable lived on one laptop.',
+            'meta_title' => 'Works on My Machine and the Missing Environment Variable',
+            'meta_description' => 'A short story about the most common config mistake in software teams: an environment variable that only exists on one developer\'s laptop.',
+            'image' => 'learn/adventures-in-envopolis/works-on-my-machine/envopolis-ep01-panel-06-lesson-card-alt.jpg',
+            'image_alt' => 'Adventures in Envopolis panel 6 lesson card',
+            'route' => 'learn.series.adventures-in-envopolis.works-on-my-machine',
+            'tags' => [
+                'configuration',
+                'env-files',
+                'debugging',
+                'developer-experience',
+            ],
+            'keywords' => [
+                'works on my machine',
+                'environment variables',
+                'config drift',
+                'developer workflows',
+                'secrets management',
+                'deployment risk',
+            ],
+        ],
+    ],
     'tutorials' => [
         [
             'image' => 'learn/validate-your-env-files-with-ghostable.jpg',
