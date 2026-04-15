@@ -201,8 +201,8 @@
             </div>
 
             <section class="relative z-10">
-                <div class="mx-auto max-w-7xl px-6 py-28 lg:px-8 lg:py-32">
-                    <div class="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_26rem]">
+                <div class="mx-auto max-w-7xl px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
+                    <div class="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_26rem] lg:items-center">
                         <div class="max-w-3xl space-y-6">
                             <div class="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/88">
                                 <span class="inline-flex h-2 w-2 rounded-full bg-brand"></span>
@@ -213,12 +213,36 @@
                                 <h1 class="max-w-4xl text-5xl font-medium tracking-[-0.06em] text-pretty sm:text-6xl lg:text-7xl">
                                     Create your
                                     <span class="bg-gradient-to-r from-brand via-brand-light to-brand bg-clip-text text-transparent">free</span>
-                                    Ghostable account and manage env vars without Slack threads, raw files, or CI dashboard digging.
+                                    Ghostable account
                                 </h1>
 
                                 <p class="max-w-2xl text-lg leading-8 text-white/72 sm:text-xl">
-                                    Import an existing .env, validate config before deploys, review changes before you guess, and keep human access separate from automation. Start free now. Upgrade later when your team needs more seats and deeper audit history.
+                                    Manage env vars without Slack threads, raw files, or CI dashboard digging. Import your .env, validate before deploys, and track every change in one place. Start free now. Upgrade when your team grows.
                                 </p>
+                            </div>
+
+                            <div class="max-w-2xl rounded-2xl border border-white/12 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78 sm:px-5 sm:py-4 sm:text-[0.95rem]">
+                                <div class="flex items-center gap-3">
+                                    <img
+                                        src="{{ asset('images/joe-rucci-avatar.jpeg') }}"
+                                        alt="Joe Rucci"
+                                        class="h-9 w-9 shrink-0 rounded-full border border-white/20 object-cover"
+                                        loading="lazy"
+                                    >
+                                    <p>
+                                        Built by the former co-founder of
+                                        <a href="https://curricula.com" target="_blank" rel="noopener noreferrer" class="font-medium text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">
+                                            Curricula
+                                        </a>
+                                        (acquired by
+                                        <a href="https://huntress.com" target="_blank" rel="noopener noreferrer" class="font-medium text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">
+                                            Huntress
+                                        </a>).
+                                        <a href="https://www.youtube.com/watch?v=JBduPv2jajY" target="_blank" rel="noopener noreferrer" class="ml-1 inline-flex items-center font-medium text-white underline decoration-white/35 underline-offset-4 hover:decoration-white">
+                                            Watch the origin story
+                                        </a>.
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="hidden gap-4 md:grid md:grid-cols-3" data-desktop-launch-points>

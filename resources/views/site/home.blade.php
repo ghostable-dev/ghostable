@@ -48,8 +48,8 @@
 
 @push('meta')
     <x-seo-meta
-        title="Ghostable Desktop | Desktop-First .env and Secrets Management for Developers"
-        description="Stop passing around .env files. Ghostable gives developers a desktop app to manage environment variables, validate config, review history, and hand off to CI safely."
+        title="Ghostable Desktop | Desktop-First Environment Management"
+        description="Review variables, validate changes, and track history without touching .env files."
         :keywords="[
             'desktop-first env management',
             'desktop secrets management',
@@ -1046,7 +1046,7 @@
 @endpush
 
 <x-layouts.guest
-    title="Desktop-First .env and Secrets Management for Developers"
+    title="Desktop-First Environment Management"
     canonical="{{ route('home') }}"
     :show-promo-banner="false"
 >
@@ -1062,13 +1062,13 @@
                         Stop passing around .env files.
                     </p>
 
-                    <h1 class="mt-6 max-w-5xl text-5xl font-medium tracking-[-0.07em] text-white sm:text-6xl sm:leading-[0.94] lg:text-[5.7rem] lg:leading-[0.92]">
-                        Desktop-First
-                        <span class="block"><span class="text-brand-light">.env</span> and Secrets Management for Developers</span>
+                    <h1 class="mt-6 max-w-5xl text-5xl font-medium tracking-[-0.07em] text-white sm:text-6xl sm:leading-[0.94] lg:text-[5.5rem] lg:leading-[0.92]">
+                        <span class="lg:block">Desktop-First</span>
+                        <span class="lg:block">Environment Management</span>
                     </h1>
 
                     <p class="mt-8 max-w-3xl text-lg leading-8 text-zinc-300 sm:text-xl">
-                        Most secrets tools are built for storage and pipelines. Ghostable is built for the daily work of managing environments: reviewing variables, fixing bad config, validating changes, checking history, and shipping the right environment. Use the desktop app for day-to-day work. Use the CLI when the job belongs in CI, scripts, or deploy hooks.
+                        Review variables, validate changes, and track history without touching .env files.
                     </p>
 
                     <div class="mt-10 flex flex-wrap items-center gap-4">
@@ -1087,6 +1087,7 @@
                             Sign up
                         </flux:button>
                     </div>
+
                 </div>
 
                 @php
@@ -1336,9 +1337,57 @@
             </div>
         </section>
 
-        <section class="relative border-t border-zinc-200 bg-white pt-24 sm:pt-28" data-walter-eye-stage>
+        <section class="relative bg-white" data-walter-eye-stage>
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
-                <div class="mx-auto max-w-5xl text-center">
+                <section
+                    class="trust-block relative left-1/2 mb-16 w-screen -translate-x-1/2 overflow-hidden border-b border-zinc-200/70 sm:mb-20"
+                    style="background-image: url('{{ asset('images/the-business-of-laravel-background.jpg') }}'); background-size: cover; background-position: center;"
+                >
+                    <div class="absolute inset-0 bg-[linear-gradient(100deg,rgba(6,9,15,0.9)_0%,rgba(10,14,21,0.84)_42%,rgba(10,14,21,0.58)_100%)]"></div>
+
+                    <div class="relative mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-16">
+                        <div class="grid gap-6 lg:grid-cols-2 lg:items-center">
+                            <div class="max-w-xl">
+                                <h2 class="text-3xl font-medium tracking-[-0.04em] text-white sm:text-[2.4rem] sm:leading-[1.02]">
+                                    Why We Built Ghostable
+                                </h2>
+
+                                <p class="mt-4 text-base leading-8 text-zinc-100 sm:text-lg">
+                                    Built by the former co-founder of
+                                    <a href="https://curricula.com" target="_blank" rel="noopener noreferrer" class="font-semibold text-white underline decoration-white/35 underline-offset-4 hover:decoration-white">
+                                        Curricula
+                                    </a>,
+                                    a cybersecurity training platform acquired by
+                                    <a href="https://huntress.com" target="_blank" rel="noopener noreferrer" class="font-semibold text-white underline decoration-white/35 underline-offset-4 hover:decoration-white">
+                                        Huntress
+                                    </a>. Joe sat down with Matt Stauffer on
+                                    <a href="https://www.youtube.com/watch?v=JBduPv2jajY" target="_blank" rel="noopener noreferrer" class="font-semibold text-white underline decoration-white/35 underline-offset-4 hover:decoration-white">
+                                        The Business of Laravel
+                                    </a>
+                                    to discuss why he built Ghostable and the origin story behind the product.
+                                </p>
+                            </div>
+
+                            <div class="lg:justify-self-end lg:w-full">
+                                <div class="w-full overflow-hidden rounded-xl border border-white/20 bg-black/40 shadow-[0_20px_50px_rgba(15,23,42,0.4)]">
+                                    <div class="aspect-video">
+                                        <iframe
+                                            class="h-full w-full"
+                                            src="https://www.youtube.com/embed/JBduPv2jajY?si=k3x7q_9eSN0l00Ge"
+                                            title="The Business of Laravel interview about Ghostable"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            referrerpolicy="strict-origin-when-cross-origin"
+                                            loading="lazy"
+                                            allowfullscreen
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="mx-auto mt-10 max-w-5xl text-center sm:mt-12">
                     <h2 class="text-4xl font-medium tracking-[-0.065em] text-zinc-950 sm:text-6xl sm:leading-[0.95]">
                         Most secrets tools solve storage.
                         <span class="block">The daily work is still a mess.</span>

@@ -8,7 +8,7 @@ test('homepage renders the desktop-first concept without the promo banner', func
     $response->assertSuccessful();
     $response->assertSeeText('Stop passing around .env files.');
     $response->assertSeeText('Desktop-First');
-    $response->assertSeeText('.env and Secrets Management for Developers');
+    $response->assertSeeText('Environment Management');
     $response->assertSee('Download Desktop for macOS');
     $response->assertSee(route('desktop.download'), false);
     $response->assertSee('Sign up');
@@ -141,9 +141,9 @@ test('homepage exposes the new seo metadata and faq schema', function () {
     $response = $this->get(route('home'));
 
     $response->assertSuccessful();
-    $response->assertSee('<title>Desktop-First .env and Secrets Management for Developers | Ghostable</title>', false);
-    $response->assertSee('<meta property="og:title" content="Ghostable Desktop | Desktop-First .env and Secrets Management for Developers"/>', false);
-    $response->assertSee('Stop passing around .env files. Ghostable gives developers a desktop app to manage environment variables, validate config, review history, and hand off to CI safely.', false);
+    $response->assertSee('<title>Desktop-First Environment Management | Ghostable</title>', false);
+    $response->assertSee('<meta property="og:title" content="Ghostable Desktop | Desktop-First Environment Management"/>', false);
+    $response->assertSee('Review variables, validate changes, and track history without touching .env files.', false);
     $response->assertSee('<link rel="canonical" href="'.route('home').'" />', false);
     $response->assertSee('<meta name="robots" content="index,follow"/>', false);
     $response->assertSee('application/ld+json', false);
