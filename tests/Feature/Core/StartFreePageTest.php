@@ -7,7 +7,9 @@ test('start free page keeps the signup form and pricing context on the same page
     $response->assertSeeText('Stop passing around .env files.');
     $response->assertSeeText('Create your');
     $response->assertSeeText('free');
-    $response->assertSeeText('Ghostable account and manage env vars without Slack threads, raw files, or CI dashboard digging.');
+    $response->assertSeeText('Ghostable account');
+    $response->assertSeeText('Manage env vars without Slack threads, raw files, or CI dashboard digging.');
+    $response->assertSeeText('Watch the origin story');
     $response->assertSeeText('Create your account');
     $response->assertSeeText('Create free account');
     $response->assertSeeText('Email address');
