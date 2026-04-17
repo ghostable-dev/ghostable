@@ -6,6 +6,8 @@ use App\Environment\Actions\CreateEnv;
 use App\Environment\Actions\GenerateSuggestedEnvironmentNames;
 use App\Environment\Actions\NormalizeEnvironmentName;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Enums\EnvironmentVariablePromotionRequestStatus;
+use App\Environment\Models\EnvironmentVariablePromotionRequest;
 use App\Environment\Rules\EnvironmentRules;
 use App\Organization\Enums\OrganizationPermission;
 use App\Project\Models\Project;
@@ -60,6 +62,23 @@ class ProjectEnvironmentsManager extends Component
             ->environments()
             ->withCount('envSecrets')
             ->get();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    #[Computed]
+    public function pendingPromotionCountsByEnvironmentId(): array
+    {
+        return EnvironmentVariablePromotionRequest::query()
+            ->where('project_id', $this->project->id)
+            ->where('status', EnvironmentVariablePromotionRequestStatus::Pending)
+            ->whereNotNull('target_environment_id')
+            ->selectRaw('target_environment_id, COUNT(*) as pending_count')
+            ->groupBy('target_environment_id')
+            ->pluck('pending_count', 'target_environment_id')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
     }
 
     /**

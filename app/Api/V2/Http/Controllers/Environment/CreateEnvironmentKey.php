@@ -411,29 +411,117 @@ final class CreateEnvironmentKey extends Controller
 
             return;
         } catch (ValidationException $primaryException) {
-            $fallbackPayload = $request->all();
-            if (! is_array($fallbackPayload)) {
-                throw $primaryException;
+            $signedPayload = $this->signaturePayloadFromSignedRawRequest($request, $signatureBase64);
+
+            if ($signedPayload !== null) {
+                try {
+                    $verifyClientPayloadSignature->handleRawPayload(
+                        payloadJson: $signedPayload,
+                        signatureBase64: $signatureBase64,
+                        device: $device,
+                        attributePath: 'client_sig',
+                        contextLabel: 'environment key'
+                    );
+
+                    return;
+                } catch (ValidationException) {
+                    // keep trying alternate payload shapes
+                }
             }
 
-            unset($fallbackPayload['client_sig']);
+            $fallbackPayloads = [
+                $request->all(),
+                $this->signaturePayloadFromRawJson($request),
+            ];
 
-            if ($fallbackPayload === $primaryPayload) {
-                throw $primaryException;
+            foreach ($fallbackPayloads as $fallbackPayload) {
+                if (! is_array($fallbackPayload)) {
+                    continue;
+                }
+
+                unset($fallbackPayload['client_sig']);
+
+                if ($fallbackPayload === $primaryPayload) {
+                    continue;
+                }
+
+                try {
+                    $verifyClientPayloadSignature->handle(
+                        payload: $fallbackPayload,
+                        signatureBase64: $signatureBase64,
+                        device: $device,
+                        attributePath: 'client_sig',
+                        contextLabel: 'environment key'
+                    );
+
+                    return;
+                } catch (ValidationException) {
+                    // keep trying alternate payload shapes
+                }
             }
 
-            try {
-                $verifyClientPayloadSignature->handle(
-                    payload: $fallbackPayload,
-                    signatureBase64: $signatureBase64,
-                    device: $device,
-                    attributePath: 'client_sig',
-                    contextLabel: 'environment key'
-                );
-            } catch (ValidationException) {
-                throw $primaryException;
-            }
+            throw $primaryException;
         }
+    }
+
+    private function signaturePayloadFromSignedRawRequest(
+        StoreEnvironmentKeyRequest $request,
+        string $signatureBase64
+    ): ?string {
+        $content = trim($request->getContent());
+
+        if ($content === '' || $signatureBase64 === '') {
+            return null;
+        }
+
+        $escapedSig = preg_quote($signatureBase64, '/');
+
+        $withoutClientSig = preg_replace(
+            '/^\{\s*"client_sig"\s*:\s*"'.$escapedSig.'"\s*,\s*/',
+            '{',
+            $content,
+            1,
+            $count
+        );
+
+        if ($count === 1) {
+            return $withoutClientSig;
+        }
+
+        $withoutClientSig = preg_replace(
+            '/,\s*"client_sig"\s*:\s*"'.$escapedSig.'"\s*(?=[}\]])/',
+            '',
+            $content,
+            1,
+            $count
+        );
+
+        if ($count === 1) {
+            return $withoutClientSig;
+        }
+
+        return null;
+    }
+
+    private function signaturePayloadFromRawJson(StoreEnvironmentKeyRequest $request): ?array
+    {
+        $content = $request->getContent();
+
+        if ($content === '') {
+            return null;
+        }
+
+        try {
+            $payload = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        return $payload;
     }
 
     /**

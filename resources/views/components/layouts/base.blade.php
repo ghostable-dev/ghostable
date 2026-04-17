@@ -1,6 +1,6 @@
 @props([
     'title' => 'Secure Environment Management',
-    'themeColor' => '#080808',
+    'themeColor' => '#ffffff',
     'bodyClasses' => '',
     'withTracking' => true,
     'withGoogleTag' => true,
@@ -8,7 +8,7 @@
     'fathomSite' => config('services.fathom.site'),
     'googleTagId' => config('services.google_tag.id'),
     'xTagId' => config('services.x_tag.id'),
-    'withAppearance' => true,
+    'withAppearance' => false,
     'canonical' => null
 ])
 <!DOCTYPE html>
@@ -38,9 +38,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
     
-    @if($withAppearance)
-        @fluxAppearance
-    @endif
+    {{-- Appearance switching is intentionally disabled; server app is light-mode only. --}}
 
     @if($withTracking && $withXTag && filled($xTagId))
         @include('components.x-tag.script', ['id' => $xTagId])

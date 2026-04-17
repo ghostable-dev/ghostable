@@ -10,11 +10,14 @@ use App\Environment\Actions\CreateEnvironmentKey;
 use App\Environment\Actions\StoreEnvironmentKeyEnvelope;
 use App\Environment\Actions\StoreEnvironmentSecret;
 use App\Environment\Enums\EnvironmentType;
+use App\Environment\Enums\EnvironmentVariablePromotionRequestStatus;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentKey;
 use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Models\EnvironmentVariablePromotionRequest;
 use App\Environment\Services\EnvironmentVariableCommentService;
 use App\Environment\Services\EnvironmentVariableNoteService;
+use App\Environment\Services\EnvironmentVariablePromotionNotificationService;
 use App\Integration\Models\Integration;
 use App\Integration\Models\IntegrationClient;
 use App\Organization\Actions\PrepareLocalAuditWebhookCaptureStorage;
@@ -130,6 +133,10 @@ class AppSetup extends Command
         $productionEnvironment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $marketingSite);
         $stagingEnvironment = $this->createEnvironment('staging', EnvironmentType::STAGING, $marketingSite);
         $localEnvironment = $this->createEnvironment('local', EnvironmentType::LOCAL, $marketingSite);
+        $primaryServer = $this->createZeroKnowledgeProject(self::GHOSTABLE_RESHARE_LAB_PROJECT, $ghostable);
+        $primaryProductionEnvironment = $this->createEnvironment('production', EnvironmentType::PRODUCTION, $primaryServer);
+        $this->createEnvironment('staging', EnvironmentType::STAGING, $primaryServer);
+        $primaryLocalEnvironment = $this->createEnvironment('local', EnvironmentType::LOCAL, $primaryServer);
 
         if ($this->seedVirtualKeyFixtures()) {
             $joeMac = $this->createDevice($joe, 'Joe MacBook Pro', 'macos');
@@ -174,6 +181,15 @@ class AppSetup extends Command
             keyMaterial: $localKeyMaterial,
             joe: $joe,
             nick: $nick,
+        );
+        [$nickPromotionDevice, $nickPromotionSigningSecretKey] = $this->createSeedPromotionRequestDevice($nick);
+        $this->seedGhostablePendingPromotionRequest(
+            project: $primaryServer,
+            sourceEnvironment: $primaryLocalEnvironment,
+            targetEnvironment: $primaryProductionEnvironment,
+            requestDevice: $nickPromotionDevice,
+            requestDeviceSigningSecretKey: $nickPromotionSigningSecretKey,
+            requestedBy: $nick,
         );
 
         // $this->createVariables(env: $production, amount: 10, createdBy: $joe);
@@ -518,6 +534,168 @@ class AppSetup extends Command
                 versions: $versions,
             );
         }
+    }
+
+    private function seedGhostablePendingPromotionRequest(
+        $project,
+        Environment $sourceEnvironment,
+        Environment $targetEnvironment,
+        Device $requestDevice,
+        string $requestDeviceSigningSecretKey,
+        $requestedBy
+    ): void {
+        $blankSourceSecret = EnvironmentSecret::query()
+            ->where('environment_id', $sourceEnvironment->getKey())
+            ->where('name', 'APP_URL')
+            ->first();
+
+        $blankEntries = [[
+            'name' => 'APP_URL',
+            'source_if_version' => $blankSourceSecret?->version,
+            'line_bytes' => $blankSourceSecret?->line_bytes,
+            'is_commented' => (bool) ($blankSourceSecret?->is_commented ?? false),
+            'source_value_present' => $blankSourceSecret !== null,
+            'payload' => null,
+        ]];
+
+        $blankPromotionRequest = EnvironmentVariablePromotionRequest::query()->create([
+            'organization_id' => (string) $project->organization_id,
+            'project_id' => (string) $project->getKey(),
+            'source_environment_id' => (string) $sourceEnvironment->getKey(),
+            'target_environment_id' => (string) $targetEnvironment->getKey(),
+            'request_device_id' => (string) $requestDevice->getKey(),
+            'requested_by_user_id' => (string) $requestedBy->getKey(),
+            'status' => EnvironmentVariablePromotionRequestStatus::Pending,
+            'include_values' => false,
+            'target_key_version' => null,
+            'entries' => $blankEntries,
+            'idempotency_key' => (string) Str::uuid(),
+            'entries_hash' => hash(
+                'sha256',
+                json_encode($blankEntries, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: ''
+            ),
+        ]);
+
+        activity('variable')
+            ->performedOn($sourceEnvironment)
+            ->causedBy($requestedBy)
+            ->event('environment_variable_promotion_requested')
+            ->withProperties([
+                'source_environment_id' => (string) $sourceEnvironment->getKey(),
+                'source_environment_name' => $sourceEnvironment->name,
+                'target_environment_id' => (string) $targetEnvironment->getKey(),
+                'target_environment_name' => $targetEnvironment->name,
+                'include_values' => false,
+                'entry_count' => 1,
+            ])
+            ->log(
+                sprintf(
+                    'Requested variable promotion from "%s" to "%s" (%d variables).',
+                    $sourceEnvironment->name,
+                    $targetEnvironment->name,
+                    1
+                )
+            );
+
+        app(EnvironmentVariablePromotionNotificationService::class)
+            ->notifyRequestCreated($blankPromotionRequest, $requestedBy);
+
+        $valueSourceSecret = EnvironmentSecret::query()
+            ->where('environment_id', $sourceEnvironment->getKey())
+            ->where('name', 'APP_DEBUG')
+            ->first();
+
+        $valuePayload = $this->buildEncryptedSecretPayload(
+            environment: $targetEnvironment,
+            keyMaterial: random_bytes(32),
+            name: 'APP_DEBUG',
+            plaintext: 'true',
+            isCommented: (bool) ($valueSourceSecret?->is_commented ?? false),
+            isVaporSecret: (bool) ($valueSourceSecret?->is_vapor_secret ?? false),
+        );
+
+        $valuePayloadToSign = $valuePayload;
+        unset($valuePayloadToSign['client_sig']);
+
+        $payloadSigningJson = json_encode(
+            $valuePayloadToSign,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+        );
+
+        $valuePayload['client_sig'] = base64_encode(
+            sodium_crypto_sign_detached($payloadSigningJson, $requestDeviceSigningSecretKey)
+        );
+
+        $targetKeyVersion = (int) ($targetEnvironment->keys()->max('version') ?? 0);
+
+        $valueEntries = [[
+            'name' => 'APP_DEBUG',
+            'source_if_version' => $valueSourceSecret?->version,
+            'line_bytes' => $valueSourceSecret?->line_bytes,
+            'is_commented' => (bool) ($valueSourceSecret?->is_commented ?? false),
+            'source_value_present' => $valueSourceSecret !== null,
+            'payload' => $valuePayload,
+            'payload_signing_json' => $payloadSigningJson,
+        ]];
+
+        $valuePromotionRequest = EnvironmentVariablePromotionRequest::query()->create([
+            'organization_id' => (string) $project->organization_id,
+            'project_id' => (string) $project->getKey(),
+            'source_environment_id' => (string) $sourceEnvironment->getKey(),
+            'target_environment_id' => (string) $targetEnvironment->getKey(),
+            'request_device_id' => (string) $requestDevice->getKey(),
+            'requested_by_user_id' => (string) $requestedBy->getKey(),
+            'status' => EnvironmentVariablePromotionRequestStatus::Pending,
+            'include_values' => true,
+            'target_key_version' => $targetKeyVersion > 0 ? $targetKeyVersion : null,
+            'entries' => $valueEntries,
+            'idempotency_key' => (string) Str::uuid(),
+            'entries_hash' => hash(
+                'sha256',
+                json_encode($valueEntries, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: ''
+            ),
+        ]);
+
+        activity('variable')
+            ->performedOn($sourceEnvironment)
+            ->causedBy($requestedBy)
+            ->event('environment_variable_promotion_requested')
+            ->withProperties([
+                'source_environment_id' => (string) $sourceEnvironment->getKey(),
+                'source_environment_name' => $sourceEnvironment->name,
+                'target_environment_id' => (string) $targetEnvironment->getKey(),
+                'target_environment_name' => $targetEnvironment->name,
+                'include_values' => true,
+                'entry_count' => 1,
+            ])
+            ->log(
+                sprintf(
+                    'Requested variable promotion from "%s" to "%s" (%d variables).',
+                    $sourceEnvironment->name,
+                    $targetEnvironment->name,
+                    1
+                )
+            );
+
+        app(EnvironmentVariablePromotionNotificationService::class)
+            ->notifyRequestCreated($valuePromotionRequest, $requestedBy);
+    }
+
+    /**
+     * @return array{0: Device, 1: string}
+     */
+    private function createSeedPromotionRequestDevice($user): array
+    {
+        $signingKeyPair = sodium_crypto_sign_keypair();
+        $device = $this->createDevice($user, 'Nick Seed Desktop', 'macos', 'desktop');
+        $device->forceFill([
+            'public_signing_key' => base64_encode(sodium_crypto_sign_publickey($signingKeyPair)),
+        ])->save();
+
+        return [
+            $device->fresh(),
+            sodium_crypto_sign_secretkey($signingKeyPair),
+        ];
     }
 
     private function resolveGhostableSeedDevice($user): Device

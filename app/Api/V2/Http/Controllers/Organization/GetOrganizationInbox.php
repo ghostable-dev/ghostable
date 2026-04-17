@@ -89,6 +89,7 @@ final class GetOrganizationInbox extends Controller
             'project' => is_array(data_get($payload, 'project')) ? data_get($payload, 'project') : null,
             'environment' => is_array(data_get($payload, 'environment')) ? data_get($payload, 'environment') : null,
             'variable' => is_array(data_get($payload, 'variable')) ? data_get($payload, 'variable') : null,
+            'promotion_request' => is_array(data_get($payload, 'promotion_request')) ? data_get($payload, 'promotion_request') : null,
         ];
     }
 

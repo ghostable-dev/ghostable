@@ -13,6 +13,9 @@ class DesktopDeepLink
         Environment $environment,
         ?string $variableName = null,
         ?string $detailPanel = null,
+        ?string $sourceEnvironmentId = null,
+        ?string $sourceEnvironmentName = null,
+        ?string $promotionRequestId = null
     ): ?string {
         $environment->loadMissing('project.organization');
 
@@ -36,6 +39,9 @@ class DesktopDeepLink
                 'environment_name' => $environment->name,
                 'variable' => self::normalized($variableName),
                 'panel' => self::normalized($detailPanel),
+                'source_environment_id' => self::normalized($sourceEnvironmentId),
+                'source_environment_name' => self::normalized($sourceEnvironmentName),
+                'promotion_request_id' => self::normalized($promotionRequestId),
             ],
         );
     }

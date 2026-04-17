@@ -8,7 +8,6 @@
                 ['route' => 'settings.profile', 'label' => 'Profile'],
                 ['route' => 'settings.password', 'label' => 'Password'],
                 ['route' => 'settings.notifications', 'label' => 'Notifications'],
-                ['route' => 'settings.appearance', 'label' => 'Appearance'],
                 ['route' => 'settings.two-factor', 'label' => 'Security'],
             ] as $item)
                 <flux:navlist.item

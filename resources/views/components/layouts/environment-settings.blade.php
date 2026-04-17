@@ -14,6 +14,11 @@
         array_push($links, ['route' => 'environment.settings.notifications', 'label' => 'Notifications']);
         
     @endphp
+
+    <div class="space-y-1">
+        <flux:heading size="xl" level="1">{{ __('Settings') }}</flux:heading>
+        <flux:subheading>{{ __('Manage configuration and access controls for this environment.') }}</flux:subheading>
+    </div>
     
     <div class="flex items-start max-md:flex-col">
         <div class="me-10 w-full pb-4 md:w-[220px]">

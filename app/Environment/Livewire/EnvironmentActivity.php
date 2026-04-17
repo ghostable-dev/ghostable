@@ -95,7 +95,7 @@ class EnvironmentActivity extends Component
     protected function activityQuery(): Builder
     {
         return Activity::forEnvironment($this->environment)
-            ->with('causer');
+            ->with(['causer', 'subject']);
     }
 
     public function render()

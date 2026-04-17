@@ -1,26 +1,31 @@
 <x-layouts.environment :environment="$this->environment">
     
     <div class="space-y-6" data-screenshot-ready="env-vars">
+        @if($this->pendingPromotionRequestCount > 0)
+            <div class="space-y-1">
+                <flux:heading size="lg" level="2">{{ __('Variable Promotion Requests') }}</flux:heading>
+                <flux:subheading>{{ __('Pending cross-environment variable promotions targeting this environment.') }}</flux:subheading>
+            </div>
+
+            <flux:card class="border-zinc-200/80 bg-white shadow-none">
+                <livewire:organization.livewire.organization-variable-promotion-requests-manager
+                    :project-id="$this->environment->project_id"
+                    :target-environment-id="$this->environment->id"
+                    :compact="true" />
+            </flux:card>
+        @endif
+
         <div data-screenshot-frame="env-vars-table">
-            <x-section>
-                <x-slot:title>Variables (Zero-Knowledge)</x-slot:title>
-                <x-slot:subheading>
+            <div class="space-y-1">
+                <flux:heading size="lg" level="2">Variables (Zero-Knowledge)</flux:heading>
+                <flux:subheading>
                     <div class="max-w-xl">
                         Only ciphertext and metadata are ever stored on Ghostable. This ensures your sensitive values can’t be read, even by us.
                     </div>
-                </x-slot:subheading>
-                <x-slot:actions>
-                    @if($this->desktopDeepLink)
-                        <flux:button
-                            size="sm"
-                            variant="ghost"
-                            href="{{ $this->desktopDeepLink }}"
-                            icon:trailing="arrow-top-right-on-square">
-                            Open in desktop
-                        </flux:button>
-                    @endif
-                </x-slot:actions>
+                </flux:subheading>
+            </div>
 
+            <flux:card class="mt-4 border-zinc-200/80 bg-white shadow-none">
                 @if(count($this->variables))
                     <flux:table>
                         <flux:table.columns>
@@ -68,22 +73,12 @@
                                         {{ $secret->lastUpdatedBy->email }}
                                     </flux:table.cell>
                                     <flux:table.cell align="end" class="flex items-center gap-2 justify-end">
-                                        <flux:dropdown position="left">
-                                            <flux:button variant="ghost" icon="ellipsis-vertical"></flux:button>
-                                            <flux:menu>
-                                                <flux:menu.item wire:click="viewDetails('{{ $secret->id }}')">
-                                                    Details
-                                                </flux:menu.item>
-                                                {{-- <flux:menu.item wire:click="viewActivity('{{ $secret->id }}')">
-                                                    Activity
-                                                </flux:menu.item> --}}
-                                                @if($secret->latestVersion->version > 1)
-                                                    <flux:menu.item wire:click="viewVersions('{{ $secret->id }}')">
-                                                        Change Log
-                                                    </flux:menu.item>
-                                                @endif
-                                            </flux:menu>
-                                        </flux:dropdown>
+                                        <flux:button
+                                            variant="ghost"
+                                            icon="information-circle"
+                                            class="text-zinc-400 hover:text-zinc-600"
+                                            wire:click="viewDetails('{{ $secret->id }}')"
+                                            aria-label="View details for {{ $secret->name }}" />
                                     </flux:table.cell>
                                 </flux:table.row>
                             @endforeach
@@ -93,7 +88,7 @@
                     <flux:callout.heading>No secrets</flux:callout.heading>
                     <flux:callout.text>You haven't created any secrets yet.</flux:callout.text>
                 @endif
-            </x-section>
+            </flux:card>
         </div>
     
         <livewire:environment.livewire.environment-secret-activity-feed />

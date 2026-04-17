@@ -1,4 +1,7 @@
-@props(['env'])
+@props([
+    'env',
+    'pendingPromotionRequestCount' => 0,
+])
 
 <flux:callout>
     <flux:callout.heading>
@@ -15,6 +18,11 @@
                 <h2 class="text-lg font-semibold text-gray-900">
                     {{ $env->name }}
                 </h2>
+                @if($pendingPromotionRequestCount > 0)
+                    <flux:badge size="sm" color="yellow">
+                        {{ $pendingPromotionRequestCount }} pending
+                    </flux:badge>
+                @endif
                 @if($env->locked)
                     <flux:badge size="sm" color="red" icon="lock">
                         Locked

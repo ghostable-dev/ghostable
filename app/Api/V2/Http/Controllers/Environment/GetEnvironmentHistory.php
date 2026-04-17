@@ -68,6 +68,10 @@ final class GetEnvironmentHistory extends Controller
                 'environment_key_reshare_completed',
                 'environment_key_reshare_cancelled',
                 'environment_key_reshare_superseded',
+                'environment_variable_promotion_requested',
+                'environment_variable_promotion_approved',
+                'environment_variable_promotion_rejected',
+                'environment_variable_promotion_cancelled',
             ])
             ->with('causer')
             ->orderByDesc('created_at')
@@ -175,6 +179,10 @@ final class GetEnvironmentHistory extends Controller
 
     private function presentKeyShareEntry(Activity $activity): array
     {
+        if (str_starts_with((string) $activity->event, 'environment_variable_promotion_')) {
+            return $this->presentPromotionEntry($activity);
+        }
+
         $operation = match ($activity->event) {
             'environment_key_reshared' => 'reshared',
             'environment_key_reshare_requested' => 'reshare_requested',
@@ -203,6 +211,49 @@ final class GetEnvironmentHistory extends Controller
             'kek' => [
                 'version' => $version > 0 ? $version : null,
                 'fingerprint' => is_string($fingerprint) ? $fingerprint : null,
+            ],
+            'line' => [
+                'bytes' => null,
+                'display' => null,
+            ],
+            'commented' => false,
+            'description' => $activity->description,
+        ];
+    }
+
+    private function presentPromotionEntry(Activity $activity): array
+    {
+        $operation = match ($activity->event) {
+            'environment_variable_promotion_requested' => 'promotion_requested',
+            'environment_variable_promotion_approved' => 'promotion_approved',
+            'environment_variable_promotion_rejected' => 'promotion_rejected',
+            'environment_variable_promotion_cancelled' => 'promotion_cancelled',
+            default => 'promotion_updated',
+        };
+
+        $sourceEnvironmentName = data_get($activity->properties, 'source_environment_name');
+        $targetEnvironmentName = data_get($activity->properties, 'target_environment_name');
+        $name = 'Variable promotion';
+        if (is_string($sourceEnvironmentName) && $sourceEnvironmentName !== '' && is_string($targetEnvironmentName) && $targetEnvironmentName !== '') {
+            $name = sprintf('%s → %s', $sourceEnvironmentName, $targetEnvironmentName);
+        } elseif (is_string($targetEnvironmentName) && $targetEnvironmentName !== '') {
+            $name = sprintf('Promotion → %s', $targetEnvironmentName);
+        }
+
+        return [
+            'id' => 'activity-'.$activity->id,
+            'environment_secret_id' => null,
+            'occurred_at' => optional($activity->created_at)->toIso8601String(),
+            'actor' => $this->presentActivityActor($activity->causer),
+            'operation' => $operation,
+            'variable' => [
+                'name' => $name,
+                'version' => null,
+                'state' => 'active',
+            ],
+            'kek' => [
+                'version' => null,
+                'fingerprint' => null,
             ],
             'line' => [
                 'bytes' => null,

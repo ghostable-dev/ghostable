@@ -57,7 +57,7 @@ class EnvironmentKeyReshareRequiredNotification extends Notification implements 
         /** @var EnvironmentKeyReshareRequest|null $first */
         $first = $requests->first();
 
-        $dashboardUrl = route('organization.settings.members').'?tab=key-reshare-requests#key-reshare-requests';
+        $dashboardUrl = route('organization.settings.notifications').'#key-reshare-requests';
 
         return [
             'title' => 'Environment key re-share required',

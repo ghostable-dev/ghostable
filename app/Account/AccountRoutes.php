@@ -2,7 +2,6 @@
 
 namespace App\Account;
 
-use App\Account\Livewire\Appearance;
 use App\Account\Livewire\NotificationManager;
 use App\Account\Livewire\Password;
 use App\Account\Livewire\Profile;
@@ -14,6 +13,11 @@ class AccountRoutes
 {
     public static function web(): void
     {
+        // Temporarily disabled until server inbox UX is finalized.
+        // Route::middleware(['auth', 'verified'])
+        //     ->get('inbox', ServerInbox::class)
+        //     ->name('inbox');
+
         Route::middleware('auth')
             ->prefix('settings')
             ->name('settings.')
@@ -21,7 +25,6 @@ class AccountRoutes
                 Route::redirect('/', 'profile');
                 Route::get('profile', Profile::class)->name('profile');
                 Route::get('password', Password::class)->name('password');
-                Route::get('appearance', Appearance::class)->name('appearance');
                 Route::get('notifications', UserNotificationsManager::class)->name('notifications');
             });
 

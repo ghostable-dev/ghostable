@@ -33,6 +33,20 @@ final class GetProjectHistory extends Controller
         'context_comment_deleted',
     ];
 
+    private const LIFECYCLE_ACTIVITY_EVENTS = [
+        'environment_key_created',
+        'environment_key_reshared',
+        'environment_key_reshare_requested',
+        'environment_key_reshare_notified',
+        'environment_key_reshare_completed',
+        'environment_key_reshare_cancelled',
+        'environment_key_reshare_superseded',
+        'environment_variable_promotion_requested',
+        'environment_variable_promotion_approved',
+        'environment_variable_promotion_rejected',
+        'environment_variable_promotion_cancelled',
+    ];
+
     public function __invoke(
         Request $request,
         Project $project,
@@ -50,6 +64,7 @@ final class GetProjectHistory extends Controller
         );
 
         $contextActivities = $this->resolveContextActivities($environmentIds);
+        $lifecycleActivities = $this->resolveLifecycleActivities($environmentIds);
 
         $combinedEntries = $entriesResult['versions']
             ->map(fn (EnvironmentSecretVersion $version): array => [
@@ -61,6 +76,13 @@ final class GetProjectHistory extends Controller
             ->merge(
                 $contextActivities->map(fn (Activity $activity): array => [
                     ...$this->presentContextActivityEntry($activity),
+                    '__sort_at' => $activity->created_at?->toImmutable()->valueOf() ?? 0,
+                    '__sort_id' => 'activity-'.$activity->id,
+                ])
+            )
+            ->merge(
+                $lifecycleActivities->map(fn (Activity $activity): array => [
+                    ...$this->presentLifecycleActivityEntry($activity),
                     '__sort_at' => $activity->created_at?->toImmutable()->valueOf() ?? 0,
                     '__sort_id' => 'activity-'.$activity->id,
                 ])
@@ -206,6 +228,49 @@ final class GetProjectHistory extends Controller
         ];
     }
 
+    private function presentLifecycleActivityEntry(Activity $activity): array
+    {
+        $environment = $this->presentActivityEnvironment($activity);
+
+        if ($environment === null && $activity->subject instanceof Environment) {
+            $environment = [
+                'id' => (string) $activity->subject->getKey(),
+                'name' => $activity->subject->name,
+                'type' => $activity->subject->type->value,
+            ];
+        }
+
+        return [
+            'id' => 'activity-'.$activity->id,
+            'occurred_at' => optional($activity->created_at)->toIso8601String(),
+            'actor' => $this->presentActivityActor($activity->causer),
+            'operation' => $this->resolveLifecycleOperation((string) $activity->event),
+            'scope' => [
+                'type' => $environment ? 'environment' : 'project',
+                'environment' => $environment,
+            ],
+            'variable' => [
+                'name' => $this->resolveLifecycleVariableName($activity),
+                'version' => null,
+                'state' => 'active',
+            ],
+            'kek' => [
+                'version' => is_numeric(data_get($activity->properties, 'environment_key.version'))
+                    ? (int) data_get($activity->properties, 'environment_key.version')
+                    : null,
+                'fingerprint' => is_string(data_get($activity->properties, 'environment_key.fingerprint'))
+                    ? data_get($activity->properties, 'environment_key.fingerprint')
+                    : null,
+            ],
+            'line' => [
+                'bytes' => null,
+                'display' => null,
+            ],
+            'commented' => false,
+            'description' => $activity->description,
+        ];
+    }
+
     /**
      * @return Collection<int, Activity>
      */
@@ -220,6 +285,26 @@ final class GetProjectHistory extends Controller
             ->where('subject_type', (new Environment)->getMorphClass())
             ->whereIn('subject_id', $environmentIds)
             ->with('causer')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(self::ENTRY_LIMIT * 3)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Activity>
+     */
+    private function resolveLifecycleActivities(Collection $environmentIds): Collection
+    {
+        if ($environmentIds->isEmpty()) {
+            return collect();
+        }
+
+        return Activity::query()
+            ->whereIn('event', self::LIFECYCLE_ACTIVITY_EVENTS)
+            ->where('subject_type', (new Environment)->getMorphClass())
+            ->whereIn('subject_id', $environmentIds)
+            ->with(['causer', 'subject'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit(self::ENTRY_LIMIT * 3)
@@ -260,6 +345,40 @@ final class GetProjectHistory extends Controller
         return [
             'type' => 'system',
         ];
+    }
+
+    private function resolveLifecycleOperation(string $event): string
+    {
+        return match ($event) {
+            'environment_key_created' => 'key_created',
+            'environment_key_reshared' => 'key_reshared',
+            'environment_key_reshare_requested' => 'key_reshare_requested',
+            'environment_key_reshare_notified' => 'key_reshare_notified',
+            'environment_key_reshare_completed' => 'key_reshare_completed',
+            'environment_key_reshare_cancelled' => 'key_reshare_cancelled',
+            'environment_key_reshare_superseded' => 'key_reshare_superseded',
+            'environment_variable_promotion_requested' => 'promotion_requested',
+            'environment_variable_promotion_approved' => 'promotion_approved',
+            'environment_variable_promotion_rejected' => 'promotion_rejected',
+            'environment_variable_promotion_cancelled' => 'promotion_cancelled',
+            default => 'updated',
+        };
+    }
+
+    private function resolveLifecycleVariableName(Activity $activity): string
+    {
+        if (str_starts_with((string) $activity->event, 'environment_variable_promotion_')) {
+            $sourceEnvironmentName = data_get($activity->properties, 'source_environment_name');
+            $targetEnvironmentName = data_get($activity->properties, 'target_environment_name');
+
+            if (is_string($sourceEnvironmentName) && $sourceEnvironmentName !== '' && is_string($targetEnvironmentName) && $targetEnvironmentName !== '') {
+                return sprintf('Promotion %s → %s', $sourceEnvironmentName, $targetEnvironmentName);
+            }
+
+            return 'Variable promotion';
+        }
+
+        return 'Environment key';
     }
 
     private function buildMoreUrl(Project $project): string

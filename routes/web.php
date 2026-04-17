@@ -39,6 +39,7 @@ Route::post('desktop/update-events', ReportDesktopUpdateEvent::class)
     ->name('desktop.update-events');
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
+Route::view('projects', 'projects')->middleware(['auth', 'verified'])->name('projects');
 
 Route::middleware('auth')->get('cli-login/{browserToken}', ApproveCliLogin::class)->name('cli-login.approve');
 

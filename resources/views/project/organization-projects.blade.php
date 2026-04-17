@@ -1,5 +1,5 @@
 <section class="w-full" data-screenshot-ready="dashboard-projects">
-    <div class="relative mb-6 w-full">
+    <div class="relative mb-6 w-full -mt-2">
         <flux:heading size="xl" level="1">{{ __('All Projects') }}</flux:heading>
         <flux:subheading size="lg" class="mb-6">{{ __('Browse and manage your organization\'s projects.') }}</flux:subheading>
         <flux:separator variant="subtle" />

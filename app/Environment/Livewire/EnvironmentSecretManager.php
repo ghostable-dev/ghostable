@@ -3,12 +3,16 @@
 namespace App\Environment\Livewire;
 
 use App\Environment\Actions\ResolveEnvironmentSecrets;
+use App\Environment\Enums\EnvironmentVariablePromotionRequestStatus;
 use App\Environment\Models\Environment;
 use App\Environment\Models\EnvironmentSecret;
+use App\Environment\Models\EnvironmentVariablePromotionRequest;
 use App\Environment\Resolvers\ResolveEnvironment;
 use App\Organization\Enums\OrganizationPermission;
 use App\Support\DesktopDeepLink;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -78,6 +82,24 @@ class EnvironmentSecretManager extends Component
     public function desktopDeepLink(): ?string
     {
         return DesktopDeepLink::forEnvironment($this->environment);
+    }
+
+    #[Computed]
+    public function pendingPromotionRequestCount(): int
+    {
+        $user = Auth::user();
+        $canApprove = Gate::forUser($user)->allows('perform', [$this->environment, OrganizationPermission::EditVariables]);
+
+        $query = EnvironmentVariablePromotionRequest::query()
+            ->where('organization_id', $this->environment->project->organization_id)
+            ->where('target_environment_id', $this->environment->getKey())
+            ->where('status', EnvironmentVariablePromotionRequestStatus::Pending);
+
+        if (! $canApprove) {
+            $query->where('requested_by_user_id', $user->getKey());
+        }
+
+        return (int) $query->count();
     }
 
     /**

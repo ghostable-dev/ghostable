@@ -55,6 +55,13 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Stick to existing directory structure; don't create new base folders without approval.
 - Do not change the application's dependencies without approval.
 
+## Project-Specific References
+
+- For environment key signing/verification behavior used by key creation and key re-share flows, see
+  `agents/environment-key-signature-contract.md`.
+- For overall repository purpose, clients, and zero-knowledge/server role context, see
+  `agents/repository-overview.md`.
+
 ## Frontend Bundling
 
 - If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.

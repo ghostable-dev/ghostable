@@ -29,19 +29,26 @@ class OrganizationCreateModal extends Component
     public function render()
     {
         return <<<'BLADE'
-            <flux:modal name="create-organization" class="md:w-96">
-                <form wire:submit="create" class="space-y-6">
+            <flux:modal name="create-organization" class="md:w-96" style="background:#ffffff;color:#18181b;">
+                <form wire:submit="create" class="space-y-6" style="color:#18181b;">
                     <div>
-                        <flux:heading size="lg">Create Organization</flux:heading>
-                        <flux:text class="mt-2"></flux:text>
+                        <h2 style="font-size:1.125rem;line-height:1.5rem;font-weight:600;color:#18181b;">Create Organization</h2>
                     </div>
                     <div>
-                        <flux:input label="Name" wire:model="name" required />
+                        <label for="create-organization-name" style="display:block;margin-bottom:0.5rem;font-size:0.875rem;font-weight:500;color:#18181b;">
+                            Name
+                        </label>
+                        <input
+                            id="create-organization-name"
+                            type="text"
+                            wire:model="name"
+                            required
+                            style="display:block;width:100%;border-radius:0.375rem;border:1px solid #d4d4d8;background:#ffffff;padding:0.5rem 0.75rem;font-size:0.875rem;color:#18181b;" />
                     </div>
                     <div class="flex gap-2">
                         <flux:spacer />
                         <flux:modal.close>
-                            <flux:button variant="ghost">Cancel</flux:button>
+                            <flux:button variant="ghost" style="color:#18181b;">Cancel</flux:button>
                         </flux:modal.close>
                         <flux:button type="submit" variant="primary">Create organization</flux:button>
                     </div>

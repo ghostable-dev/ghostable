@@ -1,5 +1,34 @@
 <x-layouts.project :project="$this->project">
+    @php
+        $pendingPromotionCountsByEnvironmentId = $this->pendingPromotionCountsByEnvironmentId;
+        $hasPendingPromotionRequests = collect($pendingPromotionCountsByEnvironmentId)->sum() > 0;
+    @endphp
+
     <flux:tab.group data-screenshot-ready="project-environments">
+        <div class="space-y-2 mb-4">
+            <flux:heading size="xl" level="1" class="!leading-tight truncate font-semibold">
+                {{ $this->project->name }}
+            </flux:heading>
+            <flux:subheading>{{ __('Create environments, override permissions, and manage project-level settings.') }}</flux:subheading>
+        </div>
+
+        @if($hasPendingPromotionRequests)
+            <div class="mb-4">
+                <flux:heading size="lg" level="2">{{ __('Variable Promotion Requests') }}</flux:heading>
+                <flux:subheading>{{ __('Pending cross-environment variable promotions that require review.') }}</flux:subheading>
+            </div>
+
+            <flux:card class="border-zinc-200/80 bg-white shadow-none">
+                <livewire:organization.livewire.organization-variable-promotion-requests-manager
+                    :project-id="$this->project->id"
+                    :compact="true" />
+            </flux:card>
+        @endif
+
+        <div class="mt-10 mb-4">
+            <flux:heading size="lg" level="2">{{ __('Environments') }}</flux:heading>
+            <flux:subheading>{{ __('Create and manage environments for this project.') }}</flux:subheading>
+        </div>
         
         {{-- Header --}}
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
@@ -19,27 +48,39 @@
         {{-- Environment list view display --}}
         <flux:tab.panel name="list">
             <div data-screenshot-frame="project-environments-list">
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Name</flux:table.column>
-                        <flux:table.column>Type</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
-                        @foreach($this->environments as $env)
-                            <flux:table.row wire:key="list-row-{{ $env->id }}">
-                                <flux:table.cell>{{ $env->name }}</flux:table.cell>
-                                <flux:table.cell>
-                                    <flux:badge>{{ $env->type->label() }}</flux:badge>
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    <flux:link href="{{ route('environment.variables', $env) }}">
-                                        View
-                                    </flux:link>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforeach
-                    </flux:table.rows>
-                </flux:table>
+                <flux:card class="border-zinc-200/80 bg-white shadow-none">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>Name</flux:table.column>
+                            <flux:table.column>Type</flux:table.column>
+                            <flux:table.column></flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach($this->environments as $env)
+                                <flux:table.row wire:key="list-row-{{ $env->id }}">
+                                    <flux:table.cell>
+                                        <div class="flex items-center gap-2">
+                                            <span>{{ $env->name }}</span>
+                                            @if(($pendingPromotionCountsByEnvironmentId[$env->id] ?? 0) > 0)
+                                                <flux:badge color="yellow" size="sm">
+                                                    {{ $pendingPromotionCountsByEnvironmentId[$env->id] }} pending
+                                                </flux:badge>
+                                            @endif
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:badge>{{ $env->type->label() }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <flux:link href="{{ route('environment.variables', $env) }}">
+                                            View
+                                        </flux:link>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </flux:card>
             </div>
         </flux:tab.panel>
         
@@ -51,7 +92,9 @@
                     class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                     @foreach($this->environments as $env)
                         <li class="col-span-1" wire:key="board-{{ $env->id }}">
-                            <x-environment.display-card :$env/>
+                            <x-environment.display-card
+                                :$env
+                                :pending-promotion-request-count="$pendingPromotionCountsByEnvironmentId[$env->id] ?? 0" />
                         </li>
                     @endforeach
                 </ul>

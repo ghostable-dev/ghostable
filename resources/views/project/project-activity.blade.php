@@ -27,9 +27,25 @@
                         <flux:table.rows>
                             @foreach ($this->activities as $activity)
                                 <flux:table.row>
-                                    <flux:table.cell>{{ ucfirst($activity->event) }}</flux:table.cell>
+                                    @php
+                                        $eventLabel = $activity->event
+                                            ? str($activity->event)->replace(['_', '-'], ' ')->title()->toString()
+                                            : 'Unknown';
+                                        $subjectTypeLabel = $activity->subject_type
+                                            ? class_basename($activity->subject_type)
+                                            : 'System';
+                                        $subjectLabel = (is_object($activity->subject) && isset($activity->subject->name) && filled($activity->subject->name))
+                                            ? $activity->subject->name
+                                            : null;
+                                    @endphp
+                                    <flux:table.cell>{{ $eventLabel }}</flux:table.cell>
                                     <flux:table.cell>
-                                        <flux:badge size="sm">{{ $activity->subject_type }}</flux:badge>
+                                        <div class="flex items-center gap-2">
+                                            <flux:badge size="sm">{{ $subjectTypeLabel }}</flux:badge>
+                                            @if($subjectLabel)
+                                                <span>{{ $subjectLabel }}</span>
+                                            @endif
+                                        </div>
                                     </flux:table.cell>
                                     <flux:table.cell>
                                         <x-activity-causer-display :causer="$activity->causer"/>

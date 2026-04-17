@@ -93,7 +93,7 @@ class ProjectActivity extends Component
     protected function activityQuery(): Builder
     {
         return Activity::forProject($this->project)
-            ->with('causer');
+            ->with(['causer', 'subject']);
     }
 
     public function render()

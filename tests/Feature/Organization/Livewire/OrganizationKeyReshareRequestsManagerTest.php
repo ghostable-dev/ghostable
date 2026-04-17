@@ -48,11 +48,10 @@ test('actor sees pending key re-share requests in organization queue', function 
     $this->actingAs($owner);
 
     Livewire::test(OrganizationKeyReshareRequestsManager::class)
-        ->assertSee('Environment Key Re-share Queue')
+        ->assertSee('Scope')
         ->assertSee('Containment Unit')
         ->assertSee('production')
-        ->assertSee('CLI command')
-        ->assertSee('ghostable env reshare fulfill')
+        ->assertSee('Action needed')
         ->assertSee('Open in desktop')
         ->assertSeeHtml('ghostable-local://organization/'.$organization->id.'/key-reshare/');
 });
@@ -95,6 +94,7 @@ test('recipient sees waiting state in organization key re-share queue', function
     $this->actingAs($recipient);
 
     Livewire::test(OrganizationKeyReshareRequestsManager::class)
-        ->assertSee('Environment Key Re-share Queue')
-        ->assertSee('Waiting for an environment manager to re-share keys.');
+        ->assertSee('Scope')
+        ->assertSee('Waiting')
+        ->assertSee('Waiting for manager');
 });

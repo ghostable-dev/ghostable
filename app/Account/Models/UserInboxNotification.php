@@ -41,7 +41,17 @@ class UserInboxNotification extends Model
 
     public const EVENT_CONTEXT_COMMENT_ADDED = 'context_comment_added';
 
+    public const EVENT_ENVIRONMENT_VARIABLE_PROMOTION_REQUESTED = 'environment_variable_promotion_requested';
+
+    public const EVENT_ENVIRONMENT_VARIABLE_PROMOTION_APPROVED = 'environment_variable_promotion_approved';
+
+    public const EVENT_ENVIRONMENT_VARIABLE_PROMOTION_REJECTED = 'environment_variable_promotion_rejected';
+
+    public const EVENT_ENVIRONMENT_VARIABLE_PROMOTION_CANCELLED = 'environment_variable_promotion_cancelled';
+
     public const REFERENCE_ENVIRONMENT_VARIABLE_COMMENT = 'environment_variable_comment';
+
+    public const REFERENCE_ENVIRONMENT_VARIABLE_PROMOTION_REQUEST = 'environment_variable_promotion_request';
 
     protected $fillable = [
         'user_id',

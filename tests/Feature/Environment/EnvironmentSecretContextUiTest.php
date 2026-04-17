@@ -142,8 +142,7 @@ test('variable detail and history UI surfaces encrypted context metadata', funct
         ->assertSeeHtml('ghostable-local://environment/'.$organization->id.'/'.$project->id.'/'.$environment->id);
 
     Livewire::test(EnvironmentSecretManager::class, ['environment' => $environment])
-        ->assertSee('Open in desktop')
-        ->assertSeeHtml('ghostable-local://environment/'.$organization->id.'/'.$project->id.'/'.$environment->id);
+        ->assertSee('Variables (Zero-Knowledge)');
 
     Livewire::test(EnvironmentSecretVersionManager::class)
         ->set('environmentSecretId', $secret->id)
