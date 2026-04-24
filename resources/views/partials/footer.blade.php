@@ -13,12 +13,6 @@
                         <flux:icon.github variant="mini"/>
                     </flux:link>
                     <flux:link 
-                        href="{{ config('contact.social.discord') }}" 
-                        variant="subtle" 
-                        target="_blank">
-                        <flux:icon.discord variant="mini"/>
-                    </flux:link>
-                    <flux:link 
                         href="{{ config('contact.social.x') }}" 
                         variant="subtle" 
                         target="_blank">

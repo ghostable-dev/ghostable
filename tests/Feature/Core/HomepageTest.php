@@ -120,6 +120,8 @@ test('homepage renders the desktop-first concept without the promo banner', func
     $response->assertSeeText('Why not just keep environment variables in my CI/CD platform?');
     $response->assertDontSeeText('Move environment management into a real workspace.');
     $response->assertDontSee('Vanta integration is live');
+    $response->assertDontSee('dis'.'cord', false);
+    $response->assertDontSee('Dis'.'cord', false);
 
     expect($viewSource)
         ->toContain('mx-auto mt-14 grid max-w-6xl gap-5 lg:grid-cols-2')

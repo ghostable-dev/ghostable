@@ -43,7 +43,6 @@ abstract class SchemaGenerator extends Component
             ])
             ->sameAs(array_filter([
                 config('contact.social.github'),
-                config('contact.social.discord'),
                 config('contact.social.linkedin'),
                 config('contact.social.x'),
                 config('contact.social.youtube'),

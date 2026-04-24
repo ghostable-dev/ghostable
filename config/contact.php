@@ -27,6 +27,5 @@ return [
         'x' => 'https://x.com/ghostable_dev',
         'youtube' => 'https://www.youtube.com/@ghostable-dev',
         'github' => 'https://github.com/ghostable-dev',
-        'discord' => 'https://discord.gg/Wa7E9WAdss',
     ],
 ];

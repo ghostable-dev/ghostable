@@ -81,6 +81,7 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
     Route::view('start-free', 'site.start-free')->name('start-free');
     Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
     Route::view('trust', 'site.trust')->name('trust');
+    Route::view('openclaw-environment-variables', 'site.openclaw-environment-variables')->name('openclaw-environment-variables');
     Route::get('contact', [ContactController::class, 'create'])->name('contact');
     Route::get('security', [SecurityIssueController::class, 'create'])->name('security.report');
     Route::view('privacy', 'site.privacy')->name('privacy');

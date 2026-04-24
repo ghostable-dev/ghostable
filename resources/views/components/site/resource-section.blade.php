@@ -17,8 +17,7 @@
     $gridColumnsClass = match (true) {
         $count === 1 => 'lg:grid-cols-1',
         $count === 2 => 'lg:grid-cols-2',
-        $count === 3 => 'lg:grid-cols-3',
-        default => 'lg:grid-cols-3 xl:grid-cols-4',
+        default => 'lg:grid-cols-3',
     };
 @endphp
 

@@ -82,6 +82,27 @@ return [
                 'screaming snake case env',
             ],
         ],
+        [
+            'image' => 'learn/open-claw.jpg',
+            'image_alt' => 'OpenClaw environment variables guide cover image',
+            'slug' => 'openclaw-environment-variables',
+            'title' => 'OpenClaw Environment Variables: Setup, Secrets, and Best Practices',
+            'description' => 'A practical guide to OpenClaw env files, secret handling, local workflows, team access, and safer deployment with Ghostable.',
+            'route' => 'openclaw-environment-variables',
+            'tags' => [
+                'openclaw',
+                'env-files',
+                'secrets-management',
+                'configuration',
+            ],
+            'keywords' => [
+                'openclaw environment variables',
+                'openclaw env setup',
+                'openclaw secrets management',
+                'openclaw env file',
+                'openclaw security',
+            ],
+        ],
     ],
     'series' => [
         [
