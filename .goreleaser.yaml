@@ -1,0 +1,87 @@
+version: 2
+
+project_name: ghostable
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: ghostable
+    main: ./cmd/ghostable
+    binary: ghostable
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/ghostable-dev/beta/internal/app.version={{ .Version }}
+
+archives:
+  - id: ghostable
+    ids:
+      - ghostable
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  github:
+    owner: ghostable-dev
+    name: beta
+
+homebrew_casks:
+  - name: ghostable
+    ids:
+      - ghostable
+    binaries:
+      - ghostable
+    homepage: "https://github.com/ghostable-dev/beta"
+    description: "Local-first encrypted environment management CLI"
+    directory: Casks
+    caveats: |
+      If macOS blocks the binary because it is not notarized, remove the quarantine
+      attribute manually after installation:
+
+        xattr -dr com.apple.quarantine "$(brew --prefix)/bin/ghostable"
+    repository:
+      owner: ghostable-dev
+      name: homebrew-ghostable
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: ghostable-release-bot
+      email: release-bot@ghostable.dev
+    commit_msg_template: "Update ghostable Homebrew cask to {{ .Tag }}"

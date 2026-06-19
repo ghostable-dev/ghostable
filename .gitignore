@@ -17,6 +17,7 @@
 # Local build output
 /ghostable
 /tmp/
+/dist/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

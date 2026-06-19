@@ -17,7 +17,7 @@ import (
 	"github.com/ghostable-dev/beta/internal/store"
 )
 
-const version = "v0.1.0-go"
+var version = "dev"
 
 type Runner struct {
 	args        []string
