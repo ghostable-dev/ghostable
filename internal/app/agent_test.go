@@ -1,0 +1,155 @@
+package app
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"strings"
+	"testing"
+
+	"github.com/ghostable-dev/beta/internal/prompt"
+	"github.com/ghostable-dev/beta/internal/store"
+)
+
+func TestRunAgentCredentialCreateCreatesToken(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "agent", "credential", "create",
+		"--name", "build",
+		"--kind", "access",
+		"--grant", "default:reader",
+		"--json",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	var result store.AutomationCredentialResult
+	if err := json.Unmarshal(output.Bytes(), &result); err != nil {
+		t.Fatalf("parse output JSON: %v\n%s", err, output.String())
+	}
+	if result.Credential.Name != "build" || result.Credential.Kind != "access" {
+		t.Fatalf("unexpected credential summary: %#v", result.Credential)
+	}
+	if !strings.HasPrefix(result.Token, "ghostable_credential_") {
+		t.Fatalf("expected credential token prefix, got %q", result.Token)
+	}
+	if result.EnvironmentVariable != "GHOSTABLE_CI_TOKEN" {
+		t.Fatalf("unexpected env var: %s", result.EnvironmentVariable)
+	}
+
+	encoded := strings.TrimPrefix(result.Token, "ghostable_credential_")
+	tokenBytes, err := base64.RawURLEncoding.DecodeString(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var token map[string]interface{}
+	if err := json.Unmarshal(tokenBytes, &token); err != nil {
+		t.Fatal(err)
+	}
+	if token["kind"] != "access" || token["name"] != "build" {
+		t.Fatalf("unexpected token payload: %#v", token)
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	devices, err := repo.Devices()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(devices) != 2 {
+		t.Fatalf("expected local device plus credential device, got %d", len(devices))
+	}
+}
+
+func TestRunAgentsAlias(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "agents", "capabilities", "--json"}, strings.NewReader(""), &output, &output)
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "ghostable.agent-capabilities.v1") {
+		t.Fatalf("expected agent capabilities output, got:\n%s", output.String())
+	}
+}
+
+func TestRunAgentCredentialCreateUsesSelectors(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	input := strings.NewReader("build\n2\n1\n1\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "agent", "credential", "create"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	if !strings.Contains(text, "Select credential kind") {
+		t.Fatalf("expected credential kind selector, got:\n%s", text)
+	}
+	if !strings.Contains(text, "Select an environment to grant") {
+		t.Fatalf("expected credential grant selector, got:\n%s", text)
+	}
+	if !strings.Contains(text, "ghostable_credential_") {
+		t.Fatalf("expected credential token output, got:\n%s", text)
+	}
+}
+
+func TestRunDeviceCreateDefaultsToAccessKind(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "device", "create",
+		"--name", "access-bot",
+		"--grant", "default:reader",
+		"--json",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	var result store.AutomationCredentialResult
+	if err := json.Unmarshal(output.Bytes(), &result); err != nil {
+		t.Fatalf("parse output JSON: %v\n%s", err, output.String())
+	}
+	if result.Credential.Kind != "access" {
+		t.Fatalf("expected access credential kind, got %q", result.Credential.Kind)
+	}
+}
+
+func TestRunAgentCredentialCreateNormalizesDeployKindToAccess(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "agent", "credential", "create",
+		"--name", "old-deploy-name",
+		"--kind", "deploy",
+		"--grant", "default:reader",
+		"--json",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	var result store.AutomationCredentialResult
+	if err := json.Unmarshal(output.Bytes(), &result); err != nil {
+		t.Fatalf("parse output JSON: %v\n%s", err, output.String())
+	}
+	if result.Credential.Kind != "access" {
+		t.Fatalf("expected deploy alias to normalize to access, got %q", result.Credential.Kind)
+	}
+}

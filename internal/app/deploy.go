@@ -1,0 +1,75 @@
+package app
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/ghostable-dev/beta/internal/cli"
+)
+
+func (r *Runner) runDeploy(args []string) error {
+	if len(args) > 0 && isHelpArg(args[0]) {
+		r.printDeployHelp()
+		return nil
+	}
+	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+		switch args[0] {
+		case "vapor":
+			return r.runDeployVapor(args[1:])
+		case "forge":
+			return fmt.Errorf("`ghostable deploy forge` is not implemented in the Go client yet")
+		case "cloud", "laravel-cloud":
+			return fmt.Errorf("`ghostable deploy cloud` is not implemented in the Go client yet")
+		}
+	}
+	return r.runDeployWrite(args)
+}
+
+func (r *Runner) runDeployWrite(args []string) error {
+	fs := newFlagSet("deploy", r.errOut)
+	env := fs.String("env", "", "Environment name")
+	file := fs.String("file", ".env", "Output file")
+	var only cli.Strings
+	fs.Var(&only, "only", "Only include these keys")
+	dryRun := fs.Bool("dry-run", false, "Do not write the env file")
+	merge := fs.Bool("merge", false, "Merge into an existing env file instead of replacing it")
+	backup := fs.Bool("backup", false, "Create a backup before writing")
+	jsonOut := fs.Bool("json", false, "Print deploy result as JSON")
+	positionals, err := cli.Parse(fs, args, cli.BoolFlags("dry-run", "merge", "backup", "json"))
+	if err != nil {
+		return err
+	}
+	if len(positionals) > 1 {
+		return fmt.Errorf("usage: ghostable deploy [environment] [options]")
+	}
+	if *env == "" && len(positionals) == 1 {
+		*env = positionals[0]
+	}
+
+	return r.pullEnvironmentFile(environmentPullRequest{
+		Environment: *env,
+		File:        *file,
+		Only:        only,
+		DryRun:      *dryRun,
+		Replace:     !*merge,
+		Backup:      *backup,
+		JSON:        *jsonOut,
+		SkipEvent:   true,
+		Deploy:      true,
+	})
+}
+
+func (r *Runner) printDeployHelp() {
+	fmt.Fprintln(r.out, "Usage: ghostable deploy [environment] [options]")
+	fmt.Fprintln(r.out)
+	fmt.Fprintln(r.out, "Decrypt an environment into a local .env file for deploy scripts.")
+	fmt.Fprintln(r.out)
+	fmt.Fprintln(r.out, warn("Options:"))
+	fmt.Fprintln(r.out, "  --env <ENV>       Environment name")
+	fmt.Fprintln(r.out, "  --file <PATH>     Output file (default .env)")
+	fmt.Fprintln(r.out, "  --only <KEYS>     Only include these keys; may be repeated or comma-separated")
+	fmt.Fprintln(r.out, "  --merge           Merge into the existing file instead of replacing it")
+	fmt.Fprintln(r.out, "  --backup          Create a backup before writing")
+	fmt.Fprintln(r.out, "  --dry-run         Show what would be written without changing files")
+	fmt.Fprintln(r.out, "  --json            Print deploy result as JSON")
+}
