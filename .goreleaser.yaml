@@ -42,6 +42,16 @@ archives:
     files:
       - README.md
       - LICENSE
+  - id: ghostable-npm
+    ids:
+      - ghostable
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_npm_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE
 
 checksum:
   name_template: checksums.txt
@@ -76,6 +86,28 @@ release:
   github:
     owner: ghostable-dev
     name: beta
+
+npms:
+  - name: "@ghostable/beta"
+    ids:
+      - ghostable-npm
+    description: "Local-first encrypted environment management CLI"
+    homepage: "https://github.com/ghostable-dev/beta"
+    keywords:
+      - ghostable
+      - cli
+      - env
+      - secrets
+      - laravel
+      - forge
+    license: MIT
+    author: "Ghostable LLC"
+    repository: "https://github.com/ghostable-dev/beta"
+    bugs: "https://github.com/ghostable-dev/beta/issues"
+    access: public
+    tag: latest
+    format: tar.gz
+    disable: '{{ not (isEnvSet "NPM_TOKEN") }}'
 
 homebrew_casks:
   - name: ghostable

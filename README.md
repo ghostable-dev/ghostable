@@ -27,6 +27,15 @@ brew tap ghostable-dev/ghostable
 brew install --cask ghostable
 ```
 
+Node/npm projects:
+
+```sh
+npm install @ghostable/beta
+```
+
+This installs a project-local `ghostable` binary at
+`node_modules/.bin/ghostable`.
+
 Other platforms can download the matching archive from the
 [latest release](https://github.com/ghostable-dev/beta/releases/latest) and put
 the `ghostable` binary on `PATH`.
@@ -117,15 +126,17 @@ the updated `.ghostable/` files, then run:
 ghostable deploy production
 ```
 
-For Laravel Forge, commit the `.ghostable/` directory, make sure `ghostable` is
-available on the server's `PATH`, and store the deploy credential outside the
+For Laravel Forge, install Ghostable as an npm package in the project, commit
+the `.ghostable/` directory, and store the deploy credential outside the
 application directory, such as `/home/forge/.ghostable-ci-token` with `0600`
-permissions. Then load it in the deploy script after the code has been updated
+permissions. Then load it in the deploy script after dependencies are installed
 but before Laravel commands that read `.env`:
 
 ```sh
+npm ci
 export GHOSTABLE_CI_TOKEN="$(cat "$HOME/.ghostable-ci-token")"
-ghostable deploy production
+npx --no-install ghostable deploy production
+npm run build
 $FORGE_PHP artisan migrate --force
 ```
 
