@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -28,8 +28,11 @@ jobs:
         run: GOOS=windows GOARCH=amd64 go test -c ./internal/security -o /tmp/ghostable-security.test.exe
 
       - name: Check GoReleaser config
+        if: github.event_name == 'push'
         uses: goreleaser/goreleaser-action@v7
         with:
-          distribution: goreleaser
+          distribution: goreleaser-pro
           version: "~> v2"
           args: check
+        env:
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
