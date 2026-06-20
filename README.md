@@ -10,6 +10,33 @@ grants live under `.ghostable/` and are intended to be committed to git. Private
 device keys are stored outside the repository in the platform's native secret
 store when available, or in a restrictive file-backed identity store otherwise.
 
+## Install
+
+Install Ghostable once, then run it inside each project you want to manage.
+
+macOS:
+
+```sh
+brew tap ghostable-dev/ghostable
+brew install --cask ghostable
+```
+
+Other platforms can download the matching archive from the
+[latest release](https://github.com/ghostable-dev/beta/releases/latest) and put
+the `ghostable` binary on `PATH`.
+
+## Getting Started
+
+From your project directory:
+
+```sh
+ghostable setup
+```
+
+`setup` is interactive. It prompts for project and device details, creates the
+`default` environment, and asks whether to seed that environment from an
+existing `.env` file.
+
 ## Build
 
 ```sh
@@ -19,7 +46,6 @@ make build
 ## Basic Flow
 
 ```sh
-ghostable setup --name "My App"
 ghostable env push --env default --file .env --reason "Initial default baseline"
 ghostable env pull --env default --file .env
 ghostable env diff --env default --file .env
@@ -84,6 +110,26 @@ the updated `.ghostable/` files, then run:
 ```sh
 ghostable deploy production
 ```
+
+For Laravel Forge, commit the `.ghostable/` directory, make sure `ghostable` is
+available on the server's `PATH`, and store the deploy credential outside the
+application directory, such as `/home/forge/.ghostable-ci-token` with `0600`
+permissions. Then load it in the deploy script after the code has been updated
+but before Laravel commands that read `.env`:
+
+```sh
+export GHOSTABLE_CI_TOKEN="$(cat "$HOME/.ghostable-ci-token")"
+ghostable deploy production
+$FORGE_PHP artisan migrate --force
+```
+
+For Laravel Cloud, do not rely on `ghostable deploy` inside Cloud deploy
+commands to persist a generated `.env` file. Laravel Cloud deploy commands run
+on Cloud infrastructure just before a deployment goes live, but filesystem
+changes made there are not persisted to the application. Until Ghostable has a
+native Laravel Cloud environment sync command, use Ghostable as the source of
+truth locally and copy/sync the values into Laravel Cloud's environment variable
+settings.
 
 ## Secret Scanning
 
