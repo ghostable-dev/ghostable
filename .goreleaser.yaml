@@ -46,6 +46,21 @@ archives:
 checksum:
   name_template: checksums.txt
 
+notarize:
+  macos:
+    - enabled: '{{ and (isEnvSet "MACOS_SIGN_P12") (isEnvSet "MACOS_SIGN_PASSWORD") (isEnvSet "MACOS_NOTARY_KEY") (isEnvSet "MACOS_NOTARY_KEY_ID") (isEnvSet "MACOS_NOTARY_ISSUER_ID") }}'
+      ids:
+        - ghostable
+      sign:
+        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
+        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"
+        wait: true
+        timeout: 20m
+
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
@@ -71,11 +86,6 @@ homebrew_casks:
     homepage: "https://github.com/ghostable-dev/beta"
     description: "Local-first encrypted environment management CLI"
     directory: Casks
-    caveats: |
-      If macOS blocks the binary because it is not notarized, remove the quarantine
-      attribute manually after installation:
-
-        xattr -dr com.apple.quarantine "$(brew --prefix)/bin/ghostable"
     repository:
       owner: ghostable-dev
       name: homebrew-ghostable
