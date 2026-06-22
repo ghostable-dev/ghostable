@@ -102,16 +102,18 @@ type LocalKeyRecord struct {
 }
 
 type LocalIdentityRecord struct {
-	Schema                  string `json:"schema"`
-	ProjectID               string `json:"projectId"`
-	DeviceID                string `json:"deviceId"`
-	Name                    string `json:"name,omitempty"`
-	Platform                string `json:"platform,omitempty"`
-	CreatedAt               string `json:"createdAt"`
-	SigningPublicKeyB64     string `json:"signingPublicKeyB64"`
-	SigningPrivateKeyB64    string `json:"signingPrivateKeyB64"`
-	EncryptionPublicKeyB64  string `json:"encryptionPublicKeyB64"`
-	EncryptionPrivateKeyB64 string `json:"encryptionPrivateKeyB64"`
+	Schema                  string   `json:"schema"`
+	ProjectID               string   `json:"projectId"`
+	DeviceID                string   `json:"deviceId"`
+	Name                    string   `json:"name,omitempty"`
+	Platform                string   `json:"platform,omitempty"`
+	CreatedAt               string   `json:"createdAt"`
+	SigningPublicKeyB64     string   `json:"signingPublicKeyB64"`
+	SigningPrivateKeyB64    string   `json:"signingPrivateKeyB64"`
+	EncryptionPublicKeyB64  string   `json:"encryptionPublicKeyB64"`
+	EncryptionPrivateKeyB64 string   `json:"encryptionPrivateKeyB64"`
+	TrustedPolicySigners    []string `json:"trustedPolicySigners,omitempty"`
+	TrustedPolicyVersion    int      `json:"trustedPolicyVersion,omitempty"`
 }
 
 type Policy struct {
@@ -121,8 +123,15 @@ type Policy struct {
 	UpdatedAt    string                       `json:"updatedAt"`
 	Owners       []string                     `json:"owners"`
 	Environments map[string]EnvironmentPolicy `json:"environments"`
+	Revoked      map[string]DeviceRevocation  `json:"revoked,omitempty"`
 	DeviceID     string                       `json:"device_id,omitempty"`
 	ClientSig    string                       `json:"client_sig,omitempty"`
+}
+
+type DeviceRevocation struct {
+	DeviceID          string `json:"deviceId"`
+	RevokedAt         string `json:"revokedAt"`
+	RevokedByDeviceID string `json:"revokedByDeviceId"`
 }
 
 type EnvironmentPolicy struct {

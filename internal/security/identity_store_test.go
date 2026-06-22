@@ -19,3 +19,11 @@ func TestIdentityStorePathUsesKeystoreOverride(t *testing.T) {
 		t.Fatalf("expected override path %s, got %s", expected, path)
 	}
 }
+
+func TestMacOSSecurityPathIgnoresPATH(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
+
+	if path := macOSSecurityPath(); path != macOSSecurityExecutable {
+		t.Fatalf("expected trusted security path %s, got %s", macOSSecurityExecutable, path)
+	}
+}

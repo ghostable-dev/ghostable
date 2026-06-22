@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ghostable-dev/beta/internal/cli"
+	"github.com/ghostable-dev/beta/internal/store"
 	"github.com/ghostable-dev/beta/internal/validation"
 )
 
@@ -110,10 +111,15 @@ func (r *Runner) runSchemaFileSave(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(*file), 0o755); err != nil {
+	root, err := schemaProjectRoot()
+	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(*file, content, 0o644); err != nil {
+	path, err := resolveSchemaFilePath(root, *file)
+	if err != nil {
+		return err
+	}
+	if err := writeSchemaFile(root, *file, path, content); err != nil {
 		return err
 	}
 	if *jsonOut {
@@ -134,7 +140,15 @@ func (r *Runner) runSchemaFileDelete(args []string) error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(selectedFile)
+	root, err := schemaProjectRoot()
+	if err != nil {
+		return err
+	}
+	path, err := resolveSchemaFilePath(root, selectedFile)
+	if err != nil {
+		return err
+	}
+	err = os.Remove(path)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -179,7 +193,15 @@ func (r *Runner) runSchemaRule(args []string) error {
 		return err
 	}
 
-	rules, err := loadSchemaRules(*file)
+	root, err := schemaProjectRoot()
+	if err != nil {
+		return err
+	}
+	path, err := resolveSchemaFilePath(root, *file)
+	if err != nil {
+		return err
+	}
+	rules, err := loadSchemaRules(path)
 	if err != nil {
 		return err
 	}
@@ -187,7 +209,7 @@ func (r *Runner) runSchemaRule(args []string) error {
 		return err
 	}
 	removeEmptySchemaRules(rules)
-	if err := validation.WriteRules(*file, rules); err != nil {
+	if err := writeSchemaRules(root, *file, path, rules); err != nil {
 		return err
 	}
 	if *jsonOut {
@@ -279,14 +301,22 @@ func (r *Runner) runSchemaKey(args []string) error {
 	if _, err := cli.Parse(fs, args[1:], cli.BoolFlags("json")); err != nil {
 		return err
 	}
-	rules, err := loadSchemaRules(*file)
+	root, err := schemaProjectRoot()
+	if err != nil {
+		return err
+	}
+	path, err := resolveSchemaFilePath(root, *file)
+	if err != nil {
+		return err
+	}
+	rules, err := loadSchemaRules(path)
 	if err != nil {
 		return err
 	}
 	if err := r.applySchemaKeyCommand(args[0], rules, *key, *oldKey, *newKey); err != nil {
 		return err
 	}
-	if err := validation.WriteRules(*file, rules); err != nil {
+	if err := writeSchemaRules(root, *file, path, rules); err != nil {
 		return err
 	}
 	if *jsonOut {
@@ -459,6 +489,141 @@ func loadSchemaRules(file string) (map[string][]validation.Rule, error) {
 		return map[string][]validation.Rule{}, nil
 	}
 	return validation.ParseFile(file)
+}
+
+func schemaProjectRoot() (string, error) {
+	repo, err := store.OpenProject(".")
+	if err != nil {
+		return "", err
+	}
+	return repo.Root, nil
+}
+
+func resolveSchemaFilePath(root string, file string) (string, error) {
+	trimmed := strings.TrimSpace(file)
+	if trimmed == "" {
+		return "", fmt.Errorf("schema file path is required")
+	}
+	path := repoFilePath(root, trimmed)
+	absoluteRoot, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if !pathInsideDirectory(absoluteRoot, absolutePath) {
+		return "", fmt.Errorf("schema file path %q must stay inside the project", file)
+	}
+	if err := ensureSchemaFilePathContained(absoluteRoot, absolutePath, file); err != nil {
+		return "", err
+	}
+	return absolutePath, nil
+}
+
+func ensureSchemaFilePathContained(absoluteRoot string, absolutePath string, displayPath string) error {
+	realRoot, err := filepath.EvalSymlinks(absoluteRoot)
+	if err != nil {
+		return err
+	}
+	if err := ensureSchemaParentContained(absoluteRoot, realRoot, filepath.Dir(absolutePath), displayPath); err != nil {
+		return err
+	}
+	info, err := os.Lstat(absolutePath)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("refusing to write through symlinked schema file %q", displayPath)
+		}
+		if info.IsDir() {
+			return fmt.Errorf("schema file path %q is a directory", displayPath)
+		}
+		return nil
+	}
+	if !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func ensureSchemaParentContained(absoluteRoot string, realRoot string, parent string, displayPath string) error {
+	existingParent, err := nearestExistingSchemaPath(absoluteRoot, parent)
+	if err != nil {
+		return err
+	}
+	realParent, err := filepath.EvalSymlinks(existingParent)
+	if err != nil {
+		return err
+	}
+	if !pathInsideDirectory(realRoot, realParent) {
+		return fmt.Errorf("schema file path %q must stay inside the project", displayPath)
+	}
+	return nil
+}
+
+func nearestExistingSchemaPath(absoluteRoot string, path string) (string, error) {
+	current := path
+	for {
+		info, err := os.Lstat(current)
+		if err == nil {
+			if info.Mode()&os.ModeSymlink == 0 && !info.IsDir() {
+				return "", fmt.Errorf("schema file parent path %q is not a directory", current)
+			}
+			return current, nil
+		}
+		if !os.IsNotExist(err) {
+			return "", err
+		}
+		if current == absoluteRoot {
+			return absoluteRoot, nil
+		}
+		next := filepath.Dir(current)
+		if next == current {
+			return "", fmt.Errorf("schema file path is outside the project")
+		}
+		current = next
+	}
+}
+
+func prepareSchemaFileWrite(root string, displayPath string, path string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	absoluteRoot, err := filepath.Abs(root)
+	if err != nil {
+		return err
+	}
+	return ensureSchemaFilePathContained(absoluteRoot, path, displayPath)
+}
+
+func writeSchemaFile(root string, displayPath string, path string, content []byte) error {
+	if err := prepareSchemaFileWrite(root, displayPath, path); err != nil {
+		return err
+	}
+	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write(content); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
+}
+
+func writeSchemaRules(root string, displayPath string, path string, rules map[string][]validation.Rule) error {
+	if err := prepareSchemaFileWrite(root, displayPath, path); err != nil {
+		return err
+	}
+	return validation.WriteRules(path, rules)
 }
 
 func parseSchemaRule(value string) validation.Rule {

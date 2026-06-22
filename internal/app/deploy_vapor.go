@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -85,10 +86,11 @@ func (r *Runner) runDeployVapor(args []string) error {
 		return nil
 	}
 
-	if _, err := exec.LookPath("vapor"); err != nil {
-		return fmt.Errorf("Vapor CLI not found on PATH; install the Laravel Vapor CLI before running `ghostable deploy vapor`")
+	vaporPath, err := resolveVaporBinary(repo.Root)
+	if err != nil {
+		return err
 	}
-	if err := syncVaporDeployPlan(plan); err != nil {
+	if err := syncVaporDeployPlan(plan, vaporPath); err != nil {
 		return err
 	}
 	plan.Synced = true
@@ -141,23 +143,31 @@ func buildVaporDeployPlan(repo store.Repository, env string, vaporEnv string) (v
 	return plan, nil
 }
 
-func syncVaporDeployPlan(plan vaporDeployPlan) error {
+func syncVaporDeployPlan(plan vaporDeployPlan, vaporPath string) error {
 	if len(plan.Variables) > 0 {
-		if err := syncVaporEnvironmentVariables(plan.VaporEnvironment, plan.Variables, plan.EnvVars); err != nil {
+		if err := syncVaporEnvironmentVariables(vaporPath, plan.VaporEnvironment, plan.Variables, plan.EnvVars); err != nil {
 			return err
 		}
 	}
 	if len(plan.Secrets) > 0 {
-		if err := syncVaporSecrets(plan.VaporEnvironment, plan.Secrets, plan.VaporSecrets); err != nil {
+		if err := syncVaporSecrets(vaporPath, plan.VaporEnvironment, plan.Secrets, plan.VaporSecrets); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func syncVaporEnvironmentVariables(vaporEnv string, variables map[string]string, order []string) error {
-	envPath := vaporEnvironmentFile(vaporEnv)
-	if err := runVaporCommand("pull Vapor environment", "env:pull", vaporEnv, "--file="+envPath); err != nil {
+func syncVaporEnvironmentVariables(vaporPath string, vaporEnv string, variables map[string]string, order []string) error {
+	envPath, err := createTemporaryVaporEnvironmentFile(vaporEnv)
+	if err != nil {
+		return err
+	}
+	defer removeVaporEnvironmentFile(envPath)
+
+	if err := runVaporCommand(vaporPath, "pull Vapor environment", "env:pull", vaporEnv, "--file="+envPath); err != nil {
+		return err
+	}
+	if err := ensureVaporEnvironmentFileIsRegular(envPath); err != nil {
 		return err
 	}
 
@@ -171,20 +181,89 @@ func syncVaporEnvironmentVariables(vaporEnv string, variables map[string]string,
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(envPath, []byte(next), 0o600); err != nil {
+	if err := writeVaporEnvironmentFile(envPath, []byte(next)); err != nil {
 		return err
 	}
 
-	return runVaporCommand("push Vapor environment", "env:push", vaporEnv, "--file="+envPath)
+	if err := runVaporCommand(vaporPath, "push Vapor environment", "env:push", vaporEnv, "--file="+envPath); err != nil {
+		return err
+	}
+	return removeVaporEnvironmentFile(envPath)
 }
 
-func syncVaporSecrets(vaporEnv string, secrets map[string]string, order []string) error {
+func createTemporaryVaporEnvironmentFile(vaporEnv string) (string, error) {
+	temp, err := os.CreateTemp("", "ghostable-vapor-"+vaporEnv+"-*.env")
+	if err != nil {
+		return "", err
+	}
+	path := temp.Name()
+	if err := temp.Close(); err != nil {
+		_ = os.Remove(path)
+		return "", err
+	}
+	return path, nil
+}
+
+func ensureVaporEnvironmentFileIsRegular(path string) error {
+	info, err := os.Lstat(path)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("refusing to use symlinked Vapor environment file %s", path)
+		}
+		if info.IsDir() {
+			return fmt.Errorf("Vapor environment file %s is a directory", path)
+		}
+		return nil
+	}
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
+}
+
+func writeVaporEnvironmentFile(path string, content []byte) error {
+	if err := ensureVaporEnvironmentFileIsRegular(path); err != nil {
+		return err
+	}
+	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write(content); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
+}
+
+func removeVaporEnvironmentFile(path string) error {
+	if err := ensureVaporEnvironmentFileIsRegular(path); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func syncVaporSecrets(vaporPath string, vaporEnv string, secrets map[string]string, order []string) error {
 	for _, key := range order {
 		tempFile, err := writeVaporSecretTempFile(secrets[key])
 		if err != nil {
 			return err
 		}
-		err = runVaporCommand("sync Vapor Secret "+key, "secret", vaporEnv, "--name="+key, "--file="+tempFile)
+		err = runVaporCommand(vaporPath, "sync Vapor Secret "+key, "secret", vaporEnv, "--name="+key, "--file="+tempFile)
 		_ = os.Remove(tempFile)
 		if err != nil {
 			return err
@@ -216,11 +295,61 @@ func writeVaporSecretTempFile(value string) (string, error) {
 	return path, nil
 }
 
-func runVaporCommand(action string, args ...string) error {
+func resolveVaporBinary(projectRoot string) (string, error) {
+	path, err := exec.LookPath("vapor")
+	if err != nil {
+		return "", fmt.Errorf("Vapor CLI not found on PATH; install the Laravel Vapor CLI before running `ghostable deploy vapor`")
+	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if vaporBinaryInsideProject(projectRoot, absolutePath) {
+		return "", fmt.Errorf("refusing to run Vapor CLI from project path %s; put a trusted Vapor executable earlier on PATH outside this repository", absolutePath)
+	}
+	info, err := os.Stat(absolutePath)
+	if err != nil {
+		return "", err
+	}
+	if info.IsDir() {
+		return "", fmt.Errorf("Vapor CLI path %s is a directory", absolutePath)
+	}
+	return absolutePath, nil
+}
+
+func vaporBinaryInsideProject(projectRoot string, vaporPath string) bool {
+	absoluteRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		return false
+	}
+	absolutePath, err := filepath.Abs(vaporPath)
+	if err != nil {
+		return false
+	}
+	if pathInsideDirectory(absoluteRoot, absolutePath) {
+		return true
+	}
+	realRoot, rootErr := filepath.EvalSymlinks(absoluteRoot)
+	realPath, pathErr := filepath.EvalSymlinks(absolutePath)
+	if rootErr != nil || pathErr != nil {
+		return false
+	}
+	return pathInsideDirectory(realRoot, realPath)
+}
+
+func pathInsideDirectory(root string, target string) bool {
+	relative, err := filepath.Rel(root, target)
+	if err != nil {
+		return false
+	}
+	return relative == "." || (!filepath.IsAbs(relative) && relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)))
+}
+
+func runVaporCommand(vaporPath string, action string, args ...string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), vaporCommandTimeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "vapor", args...)
+	cmd := exec.CommandContext(ctx, vaporPath, args...)
 	output, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
 		return fmt.Errorf("%s: Vapor CLI timed out", action)

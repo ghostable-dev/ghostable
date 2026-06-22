@@ -188,6 +188,26 @@ func TestScanSkipsSymlinkedDirectories(t *testing.T) {
 	}
 }
 
+func TestScanSkipsSymlinkedFilesOutsideRoot(t *testing.T) {
+	root := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "outside.env")
+	if err := os.WriteFile(outside, []byte("OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(root, "linked-secret.env")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Skipf("symlink not supported: %v", err)
+	}
+
+	result, err := Scan(Options{Root: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Findings) != 0 {
+		t.Fatalf("expected symlinked outside file to be skipped, got %#v", result.Findings)
+	}
+}
+
 func syntheticCredential(prefix string, bodyLength int) string {
 	body := "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"
 	repeated := strings.Repeat(body, bodyLength/len(body)+1)

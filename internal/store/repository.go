@@ -285,7 +285,7 @@ func (r Repository) History(env string, key string, action string, limit int) ([
 
 func (r Repository) verifyEvent(event domain.Event) error {
 	if event.ClientSig == "" {
-		return nil
+		return fmt.Errorf("event %s is missing a signature", event.Action)
 	}
 	signerID := event.SignerDeviceID
 	if signerID == "" {
@@ -338,6 +338,19 @@ func (r Repository) JoinDevice(name string, platform string) (domain.DeviceRecor
 	if err != nil {
 		return domain.DeviceRecord{}, false, err
 	}
+	policy, err := r.readPolicyFile()
+	if err != nil {
+		return domain.DeviceRecord{}, false, fmt.Errorf("verify existing policy before joining device: %w", err)
+	}
+	policySigner, err := r.verifyPolicySignature(policy)
+	if err != nil {
+		return domain.DeviceRecord{}, false, fmt.Errorf("verify existing policy before joining device: %w", err)
+	}
+	if policy.Version < 1 {
+		return domain.DeviceRecord{}, false, fmt.Errorf("verify existing policy before joining device: policy version is required")
+	}
+	identity.TrustedPolicySigners = trustedPolicySigners(policySigner)
+	identity.TrustedPolicyVersion = policy.Version
 	if err := r.identityStore.Save(identity); err != nil {
 		return domain.DeviceRecord{}, false, err
 	}
@@ -488,6 +501,7 @@ func (r Repository) CreateAutomationCredential(name string, kind string, grants 
 	if err != nil {
 		return AutomationCredentialResult{}, err
 	}
+	identity.TrustedPolicySigners = trustedPolicySigners(r.DeviceID())
 	if err := r.writeDevice(device); err != nil {
 		return AutomationCredentialResult{}, err
 	}
@@ -497,6 +511,7 @@ func (r Repository) CreateAutomationCredential(name string, kind string, grants 
 			return AutomationCredentialResult{}, err
 		}
 	}
+	identity.TrustedPolicyVersion = r.trustedPolicyVersion()
 
 	payload := automationCredentialToken{
 		Schema:      automationCredentialSchema,
@@ -710,6 +725,14 @@ func (r Repository) RevokeDevice(deviceID string, env string) (DeviceRevokeResul
 		policy.Owners = removeValue(policy.Owners, deviceID)
 		files = append(files, filepath.Join(".ghostable", "policy.json"))
 	}
+	if policy.Revoked == nil {
+		policy.Revoked = map[string]domain.DeviceRevocation{}
+	}
+	policy.Revoked[deviceID] = domain.DeviceRevocation{
+		DeviceID:          deviceID,
+		RevokedAt:         security.Now(),
+		RevokedByDeviceID: r.DeviceID(),
+	}
 
 	for _, envName := range r.grantEnvironmentNames(env) {
 		entry := policy.Environments[envName]
@@ -723,6 +746,15 @@ func (r Repository) RevokeDevice(deviceID string, env string) (DeviceRevokeResul
 			return DeviceRevokeResult{}, err
 		}
 		files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(envName), "access", idFileName(deviceID)))
+		if isOwner || grantRemovedFromEnvironment(removed, deviceID, envName) {
+			rotatedFiles, err := r.rotateEnvironmentKey(envName, policy)
+			if err != nil {
+				return DeviceRevokeResult{}, err
+			}
+			for _, file := range rotatedFiles {
+				files = appendUnique(files, file)
+			}
+		}
 		if err := r.recordEvent("device.revoked", envName, "", map[string]interface{}{"deviceId": deviceID}); err != nil {
 			return DeviceRevokeResult{}, err
 		}
@@ -740,6 +772,128 @@ func (r Repository) RevokeDevice(deviceID string, env string) (DeviceRevokeResul
 		Removed:     removed,
 		Files:       files,
 		Revoked:     true,
+	}, nil
+}
+
+func grantRemovedFromEnvironment(removed []DeviceGrant, deviceID string, env string) bool {
+	for _, grant := range removed {
+		if grant.DeviceID == deviceID && grant.Environment == env {
+			return true
+		}
+	}
+	return false
+}
+
+type variableRotationRecord struct {
+	record    domain.ValueRecord
+	plaintext string
+}
+
+func (r Repository) rotateEnvironmentKey(env string, policy domain.Policy) ([]string, error) {
+	values, err := r.readVariableRotationRecords(env)
+	if err != nil {
+		return nil, err
+	}
+	previousKey, err := r.readEnvironmentKey(env)
+	if err != nil {
+		return nil, err
+	}
+	nextKey, envKey, dek, err := security.RotateEnvironmentKey(r.Manifest.ID, env, r.Identity, previousKey)
+	if err != nil {
+		return nil, err
+	}
+
+	deviceIDs := policyDeviceIDs(policy, env)
+	grants := make([]domain.AccessGrantRecord, 0, len(deviceIDs))
+	for _, deviceID := range deviceIDs {
+		device, err := r.readDevice(deviceID)
+		if err != nil {
+			return nil, err
+		}
+		grant, err := security.NewAccessGrant(r.Manifest.ID, env, r.Identity, device, dek, nextKey)
+		if err != nil {
+			return nil, err
+		}
+		grants = append(grants, grant)
+	}
+
+	rotatedValues := make([]domain.ValueRecord, 0, len(values))
+	for _, value := range values {
+		record, err := r.buildRotatedValueRecord(value, nextKey, envKey)
+		if err != nil {
+			return nil, err
+		}
+		rotatedValues = append(rotatedValues, record)
+	}
+
+	files := []string{}
+	if err := writeJSONAtomic(filepath.Join(r.environmentDir(env), "key.json"), nextKey, 0o644); err != nil {
+		return nil, err
+	}
+	files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(env), "key.json"))
+	for _, grant := range grants {
+		if err := r.writeAccessGrant(env, grant); err != nil {
+			return nil, err
+		}
+		files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(env), "access", idFileName(grant.DeviceID)))
+	}
+	for _, record := range rotatedValues {
+		if err := writeJSONAtomic(r.valuePath(env, record.Key), record, 0o600); err != nil {
+			return nil, err
+		}
+		files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(env), "values", filepath.Base(r.valuePath(env, record.Key))))
+	}
+	return files, nil
+}
+
+func (r Repository) readVariableRotationRecords(env string) ([]variableRotationRecord, error) {
+	valueRecords, err := r.readEnvironmentValueRecords(env)
+	if err != nil {
+		return nil, err
+	}
+	records := make([]variableRotationRecord, 0, len(valueRecords))
+	for _, record := range valueRecords {
+		plaintext, _, err := r.decryptRecord(record)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, variableRotationRecord{
+			record:    record,
+			plaintext: plaintext,
+		})
+	}
+	return records, nil
+}
+
+func (r Repository) buildRotatedValueRecord(value variableRotationRecord, envKeyRecord domain.EnvironmentKeyRecord, envKey []byte) (domain.ValueRecord, error) {
+	version := value.record.Version
+	if version < 1 {
+		version = 1
+	}
+	vaporSecret := value.record.Secret.IsVaporSecret != nil && *value.record.Secret.IsVaporSecret
+	secret, err := security.BuildSecret(security.BuildSecretInput{
+		ProjectID:            r.Manifest.ID,
+		Environment:          value.record.Environment,
+		Key:                  value.record.Key,
+		Plaintext:            value.plaintext,
+		EnvironmentKey:       envKey,
+		EnvironmentKeyRecord: envKeyRecord,
+		Identity:             r.Identity,
+		Commented:            value.record.Secret.IsCommented,
+		VaporSecret:          vaporSecret,
+	})
+	if err != nil {
+		return domain.ValueRecord{}, err
+	}
+	return domain.ValueRecord{
+		Schema:            domain.ValueSchema,
+		ProjectID:         r.Manifest.ID,
+		Environment:       value.record.Environment,
+		Key:               value.record.Key,
+		Version:           version,
+		UpdatedAt:         security.Now(),
+		UpdatedByDeviceID: r.DeviceID(),
+		Secret:            secret,
 	}, nil
 }
 
@@ -799,17 +953,25 @@ func (r Repository) grantEnvironmentNames(env string) []string {
 func policyDeviceIDs(policy domain.Policy, env string) []string {
 	ids := []string{}
 	for _, id := range policy.Owners {
-		ids = appendUnique(ids, id)
+		if !policyDeviceRevoked(policy, id) {
+			ids = appendUnique(ids, id)
+		}
 	}
 	entry := policy.Environments[env]
 	for _, id := range entry.Grantors {
-		ids = appendUnique(ids, id)
+		if !policyDeviceRevoked(policy, id) {
+			ids = appendUnique(ids, id)
+		}
 	}
 	for _, id := range entry.Writers {
-		ids = appendUnique(ids, id)
+		if !policyDeviceRevoked(policy, id) {
+			ids = appendUnique(ids, id)
+		}
 	}
 	for _, id := range entry.Readers {
-		ids = appendUnique(ids, id)
+		if !policyDeviceRevoked(policy, id) {
+			ids = appendUnique(ids, id)
+		}
 	}
 	sort.Strings(ids)
 	return ids
@@ -872,6 +1034,9 @@ func (r Repository) ShareDevice(deviceID string, env string, role string) error 
 	policy, err := r.readPolicy()
 	if err != nil {
 		return err
+	}
+	if policyDeviceRevoked(policy, deviceID) {
+		return fmt.Errorf("device %s has been revoked; join again with a new device identity", deviceID)
 	}
 	envs := []string{env}
 	if env == "" || env == "all" {
@@ -1119,12 +1284,22 @@ func (r Repository) accessRequestState(request domain.AccessRequest, review *dom
 	}
 	granted, err := r.accessRequestAlreadyGranted(request.DeviceID, request.Environment, request.Role)
 	if err != nil {
+		if isPolicyTrustError(err) {
+			return "pending", nil
+		}
 		return "", err
 	}
 	if granted {
 		return "granted", nil
 	}
 	return "pending", nil
+}
+
+func isPolicyTrustError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "policy signer") && strings.Contains(err.Error(), "not trusted")
 }
 
 func (r Repository) readAccessRequests(includeReviewed bool) (AccessRequestList, error) {
@@ -1239,6 +1414,28 @@ func (r Repository) verifyAccessRequestReview(request domain.AccessRequest, revi
 	}
 	if !security.VerifyCanonical(review, device.SigningKey.PublicKey, review.ClientSig) {
 		return fmt.Errorf("access request review signature could not be verified")
+	}
+	if err := r.requireAccessRequestReviewAuthority(request, review.ReviewedByDeviceID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Repository) requireAccessRequestReviewAuthority(request domain.AccessRequest, reviewerDeviceID string) error {
+	policy, err := r.readPolicy()
+	if err != nil {
+		return err
+	}
+	if request.Role == "owner" {
+		if policyDeviceRevoked(policy, reviewerDeviceID) || !contains(policy.Owners, reviewerDeviceID) {
+			return fmt.Errorf("device %s is not authorized to review owner access requests", reviewerDeviceID)
+		}
+		return nil
+	}
+	for _, envName := range r.grantEnvironmentNames(request.Environment) {
+		if !canGrant(policy, envName, reviewerDeviceID) {
+			return fmt.Errorf("device %s is not authorized to review access requests for %s", reviewerDeviceID, envName)
+		}
 	}
 	return nil
 }
@@ -1463,7 +1660,7 @@ func (r Repository) decryptRecord(record domain.ValueRecord) (string, string, er
 }
 
 func (r Repository) ensureEnvironmentDirs(env string) error {
-	if err := validateName("environment", env); err != nil {
+	if err := validateEnvironmentName(env); err != nil {
 		return err
 	}
 	dirs := []string{
@@ -1475,6 +1672,9 @@ func (r Repository) ensureEnvironmentDirs(env string) error {
 		filepath.Join(r.Root, ".ghostable", "events"),
 	}
 	for _, dir := range dirs {
+		if err := ensureGhostableStatePath(dir); err != nil {
+			return err
+		}
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
@@ -1483,7 +1683,7 @@ func (r Repository) ensureEnvironmentDirs(env string) error {
 }
 
 func (r Repository) requireEnvironment(env string) error {
-	if err := validateName("environment", env); err != nil {
+	if err := validateEnvironmentName(env); err != nil {
 		return err
 	}
 	if _, ok := r.Manifest.Environments[env]; !ok {
@@ -1548,6 +1748,55 @@ func (r Repository) resolveProjectPath(file string) string {
 	return filepath.Join(r.Root, file)
 }
 
+func (r Repository) resolveProjectOutputPath(file string) (string, error) {
+	path := r.resolveProjectPath(file)
+	absoluteRoot, err := filepath.Abs(r.Root)
+	if err != nil {
+		return "", err
+	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if !pathIsInsideDirectory(absoluteRoot, absolutePath) {
+		return "", fmt.Errorf("dotenv output path %q must stay inside the project", file)
+	}
+
+	realRoot, err := filepath.EvalSymlinks(absoluteRoot)
+	if err != nil {
+		return "", err
+	}
+	realParent, err := filepath.EvalSymlinks(filepath.Dir(absolutePath))
+	if err != nil {
+		return "", err
+	}
+	if !pathIsInsideDirectory(realRoot, realParent) {
+		return "", fmt.Errorf("dotenv output path %q must stay inside the project", file)
+	}
+
+	info, err := os.Lstat(absolutePath)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("refusing to write through symlinked dotenv output %q", file)
+		}
+		if !info.Mode().IsRegular() {
+			return "", fmt.Errorf("dotenv output path %q must be a regular file", file)
+		}
+	} else if !os.IsNotExist(err) {
+		return "", err
+	}
+
+	return absolutePath, nil
+}
+
+func pathIsInsideDirectory(root string, path string) bool {
+	relative, err := filepath.Rel(root, path)
+	if err != nil {
+		return false
+	}
+	return relative == "." || (!filepath.IsAbs(relative) && relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)))
+}
+
 func (r Repository) writeDevice(device domain.DeviceRecord) error {
 	if err := os.MkdirAll(filepath.Join(r.Root, ".ghostable", "devices"), 0o755); err != nil {
 		return err
@@ -1563,6 +1812,9 @@ func (r Repository) readDevice(deviceID string) (domain.DeviceRecord, error) {
 	if err := security.VerifyDeviceRecord(device); err != nil {
 		return device, err
 	}
+	if device.ID != deviceID {
+		return device, fmt.Errorf("device file for %s contains %s and does not match requested device", deviceID, device.ID)
+	}
 	return device, nil
 }
 
@@ -1571,6 +1823,17 @@ func (r Repository) localDeviceRecord() (domain.DeviceRecord, error) {
 }
 
 func (r Repository) readPolicy() (domain.Policy, error) {
+	policy, err := r.readPolicyFile()
+	if err != nil {
+		return policy, err
+	}
+	if err := r.verifyTrustedPolicy(policy); err != nil {
+		return policy, err
+	}
+	return policy, nil
+}
+
+func (r Repository) readPolicyFile() (domain.Policy, error) {
 	var policy domain.Policy
 	err := readJSON(filepath.Join(r.Root, ".ghostable", "policy.json"), &policy)
 	if err != nil {
@@ -1579,22 +1842,137 @@ func (r Repository) readPolicy() (domain.Policy, error) {
 	if policy.ProjectID != r.Manifest.ID {
 		return policy, fmt.Errorf("policy project id does not match this project")
 	}
-	if policy.DeviceID != "" && policy.ClientSig != "" {
-		if !contains(policy.Owners, policy.DeviceID) {
-			return policy, fmt.Errorf("policy was signed by non-owner device %s", policy.DeviceID)
-		}
-		device, err := r.readDevice(policy.DeviceID)
-		if err != nil {
-			return policy, err
-		}
-		if !security.VerifyCanonical(policy, device.SigningKey.PublicKey, policy.ClientSig) {
-			return policy, fmt.Errorf("policy signature could not be verified")
+	return policy, nil
+}
+
+func (r Repository) verifyTrustedPolicy(policy domain.Policy) error {
+	signerDeviceID, err := r.verifyPolicySignature(policy)
+	if err != nil {
+		return err
+	}
+	if !r.trustsPolicySigner(signerDeviceID) {
+		if !r.bootstrapPolicySignerForTrustedVersion(policy, signerDeviceID) {
+			return fmt.Errorf("policy signer %s is not trusted by this local identity", signerDeviceID)
 		}
 	}
-	return policy, err
+	if err := r.verifyPolicyVersion(policy); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Repository) verifyPolicySignature(policy domain.Policy) (string, error) {
+	if policy.DeviceID == "" || policy.ClientSig == "" {
+		return "", fmt.Errorf("policy is not signed")
+	}
+	if !contains(policy.Owners, policy.DeviceID) {
+		return "", fmt.Errorf("policy was signed by non-owner device %s", policy.DeviceID)
+	}
+	device, err := r.readDevice(policy.DeviceID)
+	if err != nil {
+		return "", err
+	}
+	if !security.VerifyCanonical(policy, device.SigningKey.PublicKey, policy.ClientSig) {
+		return "", fmt.Errorf("policy signature could not be verified")
+	}
+	return policy.DeviceID, nil
+}
+
+func (r Repository) trustsPolicySigner(deviceID string) bool {
+	if deviceID == "" {
+		return false
+	}
+	if contains(r.Identity.TrustedPolicySigners, deviceID) {
+		return true
+	}
+	if r.canPersistTrustedPolicyVersion() {
+		identity, err := r.identityStore.Load(r.Manifest.ID)
+		if err == nil && identity.DeviceID == r.DeviceID() && contains(identity.TrustedPolicySigners, deviceID) {
+			return true
+		}
+	}
+	return len(r.Identity.TrustedPolicySigners) == 0 && deviceID == r.DeviceID()
+}
+
+func (r Repository) bootstrapPolicySignerForTrustedVersion(policy domain.Policy, signerDeviceID string) bool {
+	if signerDeviceID == "" || !contains(policy.Owners, signerDeviceID) {
+		return false
+	}
+	identity := r.Identity
+	if r.canPersistTrustedPolicyVersion() {
+		if storedIdentity, err := r.identityStore.Load(r.Manifest.ID); err == nil && storedIdentity.DeviceID == r.DeviceID() {
+			identity = storedIdentity
+		}
+	}
+	if len(identity.TrustedPolicySigners) > 0 || identity.TrustedPolicyVersion == 0 || identity.TrustedPolicyVersion != policy.Version {
+		return false
+	}
+	identity.TrustedPolicySigners = trustedPolicySigners(signerDeviceID)
+	if !r.canPersistTrustedPolicyVersion() {
+		return true
+	}
+	return r.identityStore.Save(identity) == nil
+}
+
+func (r Repository) verifyPolicyVersion(policy domain.Policy) error {
+	if policy.Version < 1 {
+		return fmt.Errorf("policy version is required")
+	}
+	trustedVersion := r.trustedPolicyVersion()
+	if trustedVersion > 0 && policy.Version < trustedVersion {
+		return fmt.Errorf("policy version %d is older than trusted local policy version %d", policy.Version, trustedVersion)
+	}
+	if policy.Version > trustedVersion {
+		return r.rememberTrustedPolicyVersion(policy.Version)
+	}
+	return nil
+}
+
+func (r Repository) trustedPolicyVersion() int {
+	trustedVersion := r.Identity.TrustedPolicyVersion
+	if !r.canPersistTrustedPolicyVersion() {
+		return trustedVersion
+	}
+	identity, err := r.identityStore.Load(r.Manifest.ID)
+	if err != nil || identity.DeviceID != r.DeviceID() {
+		return trustedVersion
+	}
+	if identity.TrustedPolicyVersion > trustedVersion {
+		return identity.TrustedPolicyVersion
+	}
+	return trustedVersion
+}
+
+func (r Repository) rememberTrustedPolicyVersion(version int) error {
+	if !r.canPersistTrustedPolicyVersion() {
+		return nil
+	}
+	identity := r.Identity
+	if storedIdentity, err := r.identityStore.Load(r.Manifest.ID); err == nil {
+		if storedIdentity.DeviceID != r.DeviceID() {
+			return nil
+		}
+		identity = storedIdentity
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if version <= identity.TrustedPolicyVersion {
+		return nil
+	}
+	identity.TrustedPolicyVersion = version
+	return r.identityStore.Save(identity)
+}
+
+func (r Repository) canPersistTrustedPolicyVersion() bool {
+	return r.DeviceID() != "" && r.identityPath != "" && r.identityPath != automationCredentialEnvironmentVariable
 }
 
 func (r Repository) signAndWritePolicy(policy domain.Policy) error {
+	if policy.Version < 1 {
+		policy.Version = 1
+	} else if policy.ClientSig != "" {
+		policy.Version++
+	}
 	policy.DeviceID = r.DeviceID()
 	policy.ClientSig = ""
 	signature, err := security.SignCanonical(policy, r.Identity)
@@ -1602,7 +1980,10 @@ func (r Repository) signAndWritePolicy(policy domain.Policy) error {
 		return err
 	}
 	policy.ClientSig = signature
-	return writeJSONAtomic(filepath.Join(r.Root, ".ghostable", "policy.json"), policy, 0o644)
+	if err := writeJSONAtomic(filepath.Join(r.Root, ".ghostable", "policy.json"), policy, 0o644); err != nil {
+		return err
+	}
+	return r.rememberTrustedPolicyVersion(policy.Version)
 }
 
 func (r Repository) createEnvironmentKey(env string, device domain.DeviceRecord) error {
@@ -1647,6 +2028,13 @@ func (r Repository) readAccessGrant(env string, deviceID string) (domain.AccessG
 	}
 	if grant.ProjectID != r.Manifest.ID || grant.Environment != env || grant.DeviceID != deviceID {
 		return grant, fmt.Errorf("access grant for %s/%s is not bound to this project", env, deviceID)
+	}
+	envKey, err := r.readEnvironmentKey(env)
+	if err != nil {
+		return grant, err
+	}
+	if grant.EnvKeyVersion != envKey.Version || grant.EnvKeyFingerprint != envKey.Fingerprint {
+		return grant, fmt.Errorf("access grant for %s/%s does not match current environment key", env, deviceID)
 	}
 	signer, err := r.readDevice(grant.GrantedByDeviceID)
 	if err != nil {
@@ -1735,6 +2123,13 @@ func (r Repository) verifyValueRecord(record domain.ValueRecord) error {
 	}
 	if !canWrite(policy, record.Environment, record.UpdatedByDeviceID) {
 		return fmt.Errorf("value %s was signed by a device without write access", record.Key)
+	}
+	envKey, err := r.readEnvironmentKey(record.Environment)
+	if err != nil {
+		return err
+	}
+	if record.Secret.EnvKekVersion != envKey.Version || record.Secret.EnvKekFingerprint != envKey.Fingerprint {
+		return fmt.Errorf("value %s does not match current environment key", record.Key)
 	}
 	if !security.VerifySecretBody(record.Secret, device.SigningKey.PublicKey, record.Secret.ClientSig) {
 		return fmt.Errorf("value %s has an invalid device signature", record.Key)
@@ -1853,6 +2248,9 @@ func (r Repository) recordEvent(action string, env string, key string, details m
 }
 
 func writeManifest(path string, project domain.ProjectManifest) error {
+	if err := ensureGhostableStatePath(path); err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -1877,6 +2275,9 @@ func writeManifest(path string, project domain.ProjectManifest) error {
 }
 
 func writeJSONAtomic(path string, value interface{}, mode os.FileMode) error {
+	if err := ensureGhostableStatePath(path); err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -1885,6 +2286,79 @@ func writeJSONAtomic(path string, value interface{}, mode os.FileMode) error {
 		return err
 	}
 	content = append(content, '\n')
+	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+
+	if _, err := temp.Write(content); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, mode); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
+}
+
+func ensureGhostableStatePath(path string) error {
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	for _, statePath := range ghostableStateComponentPaths(absolutePath) {
+		info, err := os.Lstat(statePath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("refusing to use symlinked Ghostable state path %s", statePath)
+		}
+	}
+	return nil
+}
+
+func ghostableStateComponentPaths(absolutePath string) []string {
+	cleanPath := filepath.Clean(absolutePath)
+	volume := filepath.VolumeName(cleanPath)
+	pathWithoutVolume := strings.TrimPrefix(cleanPath, volume)
+	isAbsolute := strings.HasPrefix(pathWithoutVolume, string(os.PathSeparator))
+	parts := strings.Split(strings.Trim(pathWithoutVolume, string(os.PathSeparator)), string(os.PathSeparator))
+
+	current := volume
+	if isAbsolute {
+		current += string(os.PathSeparator)
+	}
+	paths := []string{}
+	inGhostableState := false
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		if current == "" || strings.HasSuffix(current, string(os.PathSeparator)) {
+			current += part
+		} else {
+			current = filepath.Join(current, part)
+		}
+		if part == ".ghostable" {
+			inGhostableState = true
+		}
+		if inGhostableState {
+			paths = append(paths, current)
+		}
+	}
+	return paths
+}
+
+func writeFileAtomic(path string, content []byte, mode os.FileMode) error {
 	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
 	if err != nil {
 		return err
@@ -1919,6 +2393,21 @@ func validateName(label string, name string) error {
 	}
 	if !namePattern.MatchString(name) {
 		return fmt.Errorf("%s name %q may only contain letters, numbers, dots, dashes, and underscores", label, name)
+	}
+	return nil
+}
+
+func validateEnvironmentName(name string) error {
+	if err := validateName("environment", name); err != nil {
+		return err
+	}
+	return validateEnvironmentPathSegment(name)
+}
+
+func validateEnvironmentPathSegment(name string) error {
+	segment := environmentPathSegment(name)
+	if segment == "." || segment == ".." || strings.Trim(segment, ".") == "" {
+		return fmt.Errorf("environment name %q resolves to unsafe path segment %q", name, segment)
 	}
 	return nil
 }
@@ -2095,6 +2584,18 @@ func appendUnique(values []string, value string) []string {
 	return append(values, value)
 }
 
+func trustedPolicySigners(deviceIDs ...string) []string {
+	signers := make([]string, 0, len(deviceIDs))
+	for _, deviceID := range deviceIDs {
+		if strings.TrimSpace(deviceID) == "" {
+			continue
+		}
+		signers = appendUnique(signers, deviceID)
+	}
+	sort.Strings(signers)
+	return signers
+}
+
 func removeValue(values []string, value string) []string {
 	next := values[:0]
 	for _, existing := range values {
@@ -2115,6 +2616,9 @@ func contains(values []string, value string) bool {
 }
 
 func canRead(policy domain.Policy, env string, deviceID string) bool {
+	if policyDeviceRevoked(policy, deviceID) {
+		return false
+	}
 	if contains(policy.Owners, deviceID) {
 		return true
 	}
@@ -2125,6 +2629,9 @@ func canRead(policy domain.Policy, env string, deviceID string) bool {
 }
 
 func canWrite(policy domain.Policy, env string, deviceID string) bool {
+	if policyDeviceRevoked(policy, deviceID) {
+		return false
+	}
 	if contains(policy.Owners, deviceID) {
 		return true
 	}
@@ -2133,9 +2640,20 @@ func canWrite(policy domain.Policy, env string, deviceID string) bool {
 }
 
 func canGrant(policy domain.Policy, env string, deviceID string) bool {
+	if policyDeviceRevoked(policy, deviceID) {
+		return false
+	}
 	if contains(policy.Owners, deviceID) {
 		return true
 	}
 	envPolicy := policy.Environments[env]
 	return contains(envPolicy.Grantors, deviceID)
+}
+
+func policyDeviceRevoked(policy domain.Policy, deviceID string) bool {
+	if policy.Revoked == nil {
+		return false
+	}
+	revocation, ok := policy.Revoked[deviceID]
+	return ok && revocation.DeviceID == deviceID
 }
