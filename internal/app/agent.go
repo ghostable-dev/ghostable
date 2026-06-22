@@ -17,11 +17,6 @@ var agentCommandOptions = []commandOption{
 	{Label: "instructions", Description: "Print agent guidance"},
 	{Label: "capabilities", Description: "List machine-readable capabilities"},
 	{Label: "init", Description: "Write AGENTS.md guidance"},
-	{Label: "credential", Description: "Create automation credentials"},
-}
-
-var agentCredentialCommandOptions = []commandOption{
-	{Label: "create", Description: "Create a credential token"},
 }
 
 func (r *Runner) runAgent(args []string) error {
@@ -48,8 +43,6 @@ func (r *Runner) runAgent(args []string) error {
 		return r.runAgentCapabilities(args[1:])
 	case "init":
 		return r.runAgentInit(args[1:])
-	case "credential":
-		return r.runAgentCredential(args[1:])
 	default:
 		return fmt.Errorf("unknown agent command %q", args[0])
 	}
@@ -57,7 +50,7 @@ func (r *Runner) runAgent(args []string) error {
 }
 
 func (r *Runner) printAgentHelp() {
-	fmt.Fprintln(r.out, "Usage: ghostable agent <init|instructions|capabilities|credential> [options]")
+	fmt.Fprintln(r.out, "Usage: ghostable agent <init|instructions|capabilities> [options]")
 	fmt.Fprintln(r.out)
 	fmt.Fprintln(r.out, warn("Commands:"))
 	printCommandDescriptions(r.out, agentCommandOptions)
@@ -75,7 +68,7 @@ func (r *Runner) runAgentCapabilities(args []string) error {
 			"status --json",
 			"env list --json",
 			"env diff --json",
-			"env validate --json",
+			"validate --json",
 			"env push --json --reason",
 			"env pull --json",
 			"deploy <env> --json",
@@ -83,13 +76,13 @@ func (r *Runner) runAgentCapabilities(args []string) error {
 			"var push --json --reason",
 			"var vapor-secret --env <env> --key <key> --json",
 			"scan --json",
-			"device create --name <name> --kind ci --grant <env>:reader --json",
+			"access create --name <name> --kind ci --grant <env>:reader --json",
 		},
 		"safety": []string{
 			"Do not print secrets unless the user explicitly asks for --show-values.",
 			"Prefer JSON output for machine-readable workflows.",
 			"Record a --reason when changing encrypted state.",
-			"Run env validate before pushing significant changes.",
+			"Run validate before pushing significant changes.",
 			"Treat .env files as local-only unless the repository policy says otherwise.",
 		},
 	}
@@ -124,46 +117,10 @@ func (r *Runner) runAgentInit(args []string) error {
 	return nil
 }
 
-func (r *Runner) runAgentCredential(args []string) error {
-	if len(args) == 0 {
-		if !r.interactive {
-			r.printAgentCredentialHelp()
-			return nil
-		}
-		selected, err := r.selectCommand("Select a credential command", agentCredentialCommandOptions)
-		if err != nil {
-			return err
-		}
-		args = append(args, selected)
-	}
-	if isHelpArg(args[0]) {
-		r.printAgentCredentialHelp()
-		return nil
-	}
-
-	switch args[0] {
-	case "create":
-		return r.runAgentCredentialCreate(args[1:])
-	default:
-		return fmt.Errorf("unknown agent credential command %q", args[0])
-	}
-}
-
-func (r *Runner) printAgentCredentialHelp() {
-	fmt.Fprintln(r.out, "Usage: ghostable agent credential <create> [options]")
-	fmt.Fprintln(r.out)
-	fmt.Fprintln(r.out, warn("Commands:"))
-	printCommandDescriptions(r.out, agentCredentialCommandOptions)
-}
-
-func (r *Runner) runAgentCredentialCreate(args []string) error {
-	return r.runAutomationCredentialCreate(args, "ci", "agent credential create")
-}
-
 func (r *Runner) runAutomationCredentialCreate(args []string, defaultKind string, commandName string) error {
 	fs := newFlagSet(commandName, r.errOut)
 	name := fs.String("name", "", "Credential label")
-	kind := fs.String("kind", "", "Credential use: agent, ci, access")
+	kind := fs.String("kind", "", "Credential use: deploy, ci, access")
 	var grants cli.Strings
 	fs.Var(&grants, "grant", "Environment permission ENV:reader or ENV:writer; may be repeated")
 	jsonOut := fs.Bool("json", false, "Print credential creation result as JSON")
@@ -179,7 +136,7 @@ func (r *Runner) runAutomationCredentialCreate(args []string, defaultKind string
 	if err != nil {
 		return err
 	}
-	selectedKind, err := r.selectChoice("Select credential kind", []string{"agent", "ci", "access"}, *kind, defaultKind, "kind")
+	selectedKind, err := r.selectChoice("Select credential kind", []string{"deploy", "ci", "access"}, *kind, defaultKind, "kind")
 	if err != nil {
 		return err
 	}
@@ -358,8 +315,8 @@ func agentInstructions() string {
 		"- Prefer `ghostable ... --json` for machine-readable workflows.",
 		"- Do not print secret values unless the user explicitly asks for `--show-values`.",
 		"- Prefer `ghostable env diff --env <env> --json` before changing encrypted state.",
-		"- Include `--reason` when pushing, syncing, deleting, or copying variables.",
-		"- Run `ghostable env validate --env <env> --json` before commits that change `.ghostable`.",
+		"- Include `--reason` when pushing, syncing, deleting, or promoting variables.",
+		"- Run `ghostable validate --env <env> --json` before commits that change `.ghostable`.",
 		"- Run `ghostable scan --json` before commits to catch hard-coded secrets.",
 		"- Keep local `.env*` files out of git unless the project explicitly documents otherwise.",
 		"",

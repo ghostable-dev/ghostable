@@ -66,7 +66,8 @@ make build
 ghostable env push --env default --file .env --reason "Initial default baseline"
 ghostable env pull --env default --file .env
 ghostable env diff --env default --file .env
-ghostable env validate --env default
+ghostable env diff --from staging --to production
+ghostable validate --env default
 ghostable review --base origin/main --env production
 ghostable deploy production
 ghostable scan
@@ -82,15 +83,15 @@ Automation and agents should pass flags and prefer `--json`.
 - `setup` initializes `.ghostable/`, a local device record, policy, layout files,
   and a private local device identity.
 - `status` prints project, environment, device, and value counts.
-- `env list|create|delete|push|sync|copy|pull|diff|validate|history`
+- `env list|create|delete|push|sync|pull|diff|history`
   manages environment-level workflows.
+- `validate` checks environment values against schema rules.
 - `review` checks whether code changes and encrypted ENV metadata agree.
 - `deploy [environment]` writes decrypted values to `.env` for deploy scripts.
-- `env duplicate|rename|layout generate|file save` supports desktop and agent
-  workflows.
-- `var push|pull|delete|history|context` manages a single variable.
+- `var push|pull|promote|delete|history|context|vapor-secret` manages a single
+  variable.
 - `schema file|rule|key` manages local validation schema files.
-- `device create|join|list|status|share|grants|revoke` manages local device
+- `device create|join|list|status|approvers|share|grants|revoke` manages local device
   records, scoped automation devices, and policy grants.
 - `agent init|instructions|capabilities` emits safe instructions for coding
   agents.
@@ -129,7 +130,7 @@ Deploy systems can use a scoped automation credential instead of a local device
 identity:
 
 ```sh
-ghostable agent credential create --name deploy-bot --kind deploy --grant production:reader
+ghostable access create --name deploy-bot --kind deploy --grant production:reader
 ```
 
 Store the returned token as `GHOSTABLE_CI_TOKEN` in the deploy system, commit

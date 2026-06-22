@@ -114,6 +114,236 @@ func TestRunEnvDuplicatePromptsForEnvironmentType(t *testing.T) {
 	}
 }
 
+func TestRunEnvCopyIsUnknown(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "copy"}, strings.NewReader(""), &output, &output)
+
+	err := runner.Run()
+	if err == nil {
+		t.Fatal("expected env copy to be unknown")
+	}
+	if !strings.Contains(err.Error(), `unknown env command "copy"`) {
+		t.Fatalf("expected env copy to be unknown, got %v", err)
+	}
+}
+
+func TestRunEnvValidateIsUnknown(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "validate"}, strings.NewReader(""), &output, &output)
+
+	err := runner.Run()
+	if err == nil {
+		t.Fatal("expected env validate to be unknown")
+	}
+	if !strings.Contains(err.Error(), `unknown env command "validate"`) {
+		t.Fatalf("expected env validate to be unknown, got %v", err)
+	}
+}
+
+func TestEnvHelpHidesInternalCommands(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "--help"}, strings.NewReader(""), &output, &output)
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	text := stripAppColorCodes(output.String())
+	if strings.Contains(text, "\n  file") || strings.Contains(text, "Save env file content") {
+		t.Fatalf("did not expect hidden env file command in help:\n%s", text)
+	}
+	if strings.Contains(text, "\n  duplicate") || strings.Contains(text, "Create an environment from another") {
+		t.Fatalf("did not expect hidden env duplicate command in help:\n%s", text)
+	}
+	if strings.Contains(text, "\n  layout") || strings.Contains(text, "Manage environment key order") {
+		t.Fatalf("did not expect hidden env layout command in help:\n%s", text)
+	}
+}
+
+func TestRunEnvDiffWithFromAndToComparesEnvironments(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateEnvironment("staging", "staging"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("staging", "ALPHA", "two", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("staging", "BETA", "two", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "diff", "--from", "default", "--to", "staging", "--show-values"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvDiff(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Diff:",
+		success("default"),
+		success("staging"),
+		"~ ALPHA",
+		"=one -> two",
+		"- BETA",
+		"=two",
+		"0 added, 1 changed, 1 removed, 0 unchanged",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected env diff output to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
+func TestRunEnvDiffRequiresDifferentSourceAndTarget(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "diff", "--from", "default", "--to", "default"}, strings.NewReader(""), &output, &output)
+
+	err := runner.runEnvDiff(runner.args[3:])
+	if err == nil {
+		t.Fatal("expected same source and target to fail")
+	}
+	if !strings.Contains(err.Error(), "target environment must be different from source environment") {
+		t.Fatalf("expected same-environment error, got %v", err)
+	}
+}
+
+func TestRunEnvDiffPromptsForSourceAndTargetEnvironments(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateEnvironment("production", "production"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateEnvironment("staging", "staging"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("staging", "ALPHA", "two", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("1\n1\n2\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "diff"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runEnvDiff(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Compare",
+		"Select source environment",
+		"Select target environment",
+		"Diff:",
+		success("default"),
+		success("staging"),
+		"1 changed",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected interactive env diff output to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
+func TestRunEnvDiffCanPromptForFileComparison(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateEnvironment("staging", "staging"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("ALPHA=two\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("2\n1\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "diff", "--show-values"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runEnvDiff(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Compare",
+		"env file",
+		"Select an environment",
+		"Diff:",
+		success(".env"),
+		success("default"),
+		"~ ALPHA",
+		"=two -> one",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected interactive file diff output to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
+func TestRunEnvDiffWithEnvAndFileKeepsFileComparison(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("ALPHA=two\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "diff", "--env", "default", "--file", ".env", "--show-values"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvDiff(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Diff:",
+		success(".env"),
+		success("default"),
+		"~ ALPHA",
+		"=two -> one",
+		"0 added, 1 changed, 0 removed, 0 unchanged",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected file diff output to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
 func TestRunEnvCreateFromEnvDefaultsToNonSensitiveValues(t *testing.T) {
 	root := setupRepoForEnvCommandTest(t)
 	repo, err := store.Open(root)
@@ -354,6 +584,21 @@ func TestRunEnvFileSaveRejectsOutsideProjectPath(t *testing.T) {
 	}
 	if _, err := os.Stat(outside); !os.IsNotExist(err) {
 		t.Fatalf("env file save should not write outside project, stat err: %v", err)
+	}
+}
+
+func TestRunEnvFileSaveRequiresExplicitInputs(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "file", "save", "--file", ".env.generated"}, strings.NewReader(""), &output, &output)
+
+	err := runner.Run()
+	if err == nil {
+		t.Fatal("expected missing content-base64 to fail")
+	}
+	if !strings.Contains(err.Error(), "--file and --content-base64 are required") {
+		t.Fatalf("expected missing content-base64 error, got %v", err)
 	}
 }
 
