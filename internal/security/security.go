@@ -137,6 +137,9 @@ func VerifyDeviceRecord(record domain.DeviceRecord) error {
 	if record.Schema != domain.DeviceSchema {
 		return fmt.Errorf("device %s has an invalid schema", record.ID)
 	}
+	if record.Status != "active" {
+		return fmt.Errorf("device %s is not active", record.ID)
+	}
 	publicKey, err := UB64(record.SigningKey.PublicKey)
 	if err != nil {
 		return err
@@ -271,6 +274,38 @@ func NewEnvironmentKey(projectID string, envName string, identity domain.LocalId
 		return domain.EnvironmentKeyRecord{}, domain.AccessGrantRecord{}, nil, err
 	}
 	return record, grant, envKey, nil
+}
+
+func RotateEnvironmentKey(projectID string, envName string, identity domain.LocalIdentityRecord, previous domain.EnvironmentKeyRecord) (domain.EnvironmentKeyRecord, []byte, []byte, error) {
+	envKey, err := RandomBytes(secretKeySize)
+	if err != nil {
+		return domain.EnvironmentKeyRecord{}, nil, nil, err
+	}
+	dek, err := RandomBytes(secretKeySize)
+	if err != nil {
+		return domain.EnvironmentKeyRecord{}, nil, nil, err
+	}
+	encryptedKey, err := EncryptXChaCha(dek, envKey, nil)
+	if err != nil {
+		return domain.EnvironmentKeyRecord{}, nil, nil, err
+	}
+	now := Now()
+	version := previous.Version + 1
+	if version < 1 {
+		version = 1
+	}
+	record := domain.EnvironmentKeyRecord{
+		Schema:            domain.EnvironmentKeySchema,
+		ProjectID:         projectID,
+		Environment:       envName,
+		Version:           version,
+		Fingerprint:       Fingerprint(envKey),
+		EncryptedKey:      encryptedKey,
+		CreatedByDeviceID: identity.DeviceID,
+		CreatedAt:         now,
+		UpdatedAt:         now,
+	}
+	return record, envKey, dek, nil
 }
 
 func NewAccessGrant(projectID string, envName string, identity domain.LocalIdentityRecord, device domain.DeviceRecord, dek []byte, envKey domain.EnvironmentKeyRecord) (domain.AccessGrantRecord, error) {

@@ -125,8 +125,10 @@ func (s IdentityStore) filePath(projectID string) string {
 	return filepath.Join(s.fileRoot, safe+".json")
 }
 
+const macOSSecurityExecutable = "/usr/bin/security"
+
 func (s IdentityStore) loadKeychain(projectID string) (domain.LocalIdentityRecord, error) {
-	output, err := exec.Command("security", "find-generic-password", "-w", "-s", keychainService(projectID), "-a", keychainAccount(projectID)).Output()
+	output, err := exec.Command(macOSSecurityPath(), "find-generic-password", "-w", "-s", keychainService(projectID), "-a", keychainAccount(projectID)).Output()
 	if err != nil {
 		return domain.LocalIdentityRecord{}, os.ErrNotExist
 	}
@@ -152,8 +154,8 @@ func (s IdentityStore) saveKeychain(identity domain.LocalIdentityRecord) error {
 	encoded := base64.StdEncoding.EncodeToString(content)
 	service := keychainService(identity.ProjectID)
 	account := keychainAccount(identity.ProjectID)
-	_ = exec.Command("security", "delete-generic-password", "-s", service, "-a", account).Run()
-	cmd := exec.Command("security", "add-generic-password", "-U", "-s", service, "-a", account, "-w", encoded)
+	_ = exec.Command(macOSSecurityPath(), "delete-generic-password", "-s", service, "-a", account).Run()
+	cmd := exec.Command(macOSSecurityPath(), "add-generic-password", "-U", "-s", service, "-a", account, "-w", encoded)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("unable to save Ghostable identity in macOS Keychain: %s", strings.TrimSpace(string(output)))
 	}
@@ -161,11 +163,15 @@ func (s IdentityStore) saveKeychain(identity domain.LocalIdentityRecord) error {
 }
 
 func (s IdentityStore) deleteKeychain(projectID string) error {
-	err := exec.Command("security", "delete-generic-password", "-s", keychainService(projectID), "-a", keychainAccount(projectID)).Run()
+	err := exec.Command(macOSSecurityPath(), "delete-generic-password", "-s", keychainService(projectID), "-a", keychainAccount(projectID)).Run()
 	if err != nil {
 		return nil
 	}
 	return nil
+}
+
+func macOSSecurityPath() string {
+	return macOSSecurityExecutable
 }
 
 func keychainService(projectID string) string {

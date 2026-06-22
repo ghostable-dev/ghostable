@@ -46,7 +46,7 @@ func (r Repository) CreateEnvironment(name string, envType string) (EnvironmentR
 	if err := r.requireOwner(); err != nil {
 		return EnvironmentResult{}, err
 	}
-	if err := validateName("environment", name); err != nil {
+	if err := validateEnvironmentName(name); err != nil {
 		return EnvironmentResult{}, err
 	}
 	if envType == "" {
@@ -54,6 +54,9 @@ func (r Repository) CreateEnvironment(name string, envType string) (EnvironmentR
 	}
 	if _, ok := r.Manifest.Environments[name]; ok {
 		return EnvironmentResult{Environment: r.Manifest.Environments[name], Created: false}, nil
+	}
+	if err := r.requireEnvironmentStoragePathAvailable(name, ""); err != nil {
+		return EnvironmentResult{}, err
 	}
 
 	env := domain.Environment{Name: name, Type: envType}
@@ -97,6 +100,9 @@ func (r Repository) DeleteEnvironment(name string) error {
 	if len(r.Manifest.Environments) <= 1 {
 		return fmt.Errorf("cannot delete the last environment")
 	}
+	if err := ensureGhostableStatePath(r.environmentDir(name)); err != nil {
+		return err
+	}
 
 	delete(r.Manifest.Environments, name)
 	if err := writeManifest(r.ManifestPath, r.Manifest); err != nil {
@@ -121,11 +127,20 @@ func (r Repository) RenameEnvironment(source string, target string, reason strin
 	if err := r.requireEnvironment(source); err != nil {
 		return err
 	}
-	if err := validateName("environment", target); err != nil {
+	if err := validateEnvironmentName(target); err != nil {
 		return err
 	}
 	if _, exists := r.Manifest.Environments[target]; exists {
 		return fmt.Errorf("environment %q already exists", target)
+	}
+	if err := r.requireEnvironmentStoragePathAvailable(target, source); err != nil {
+		return err
+	}
+	if err := ensureGhostableStatePath(r.environmentDir(source)); err != nil {
+		return err
+	}
+	if err := ensureGhostableStatePath(r.environmentDir(target)); err != nil {
+		return err
 	}
 
 	env := r.Manifest.Environments[source]
@@ -162,4 +177,42 @@ func (r Repository) RenameEnvironment(source string, target string, reason strin
 		"to":     target,
 		"reason": reason,
 	})
+}
+
+func (r Repository) requireEnvironmentStoragePathAvailable(name string, except string) error {
+	targetPath := environmentPathSegment(name)
+	names := sortedEnvironmentNames(r.Manifest.Environments)
+	for _, existing := range names {
+		if existing == except {
+			continue
+		}
+		if environmentPathSegment(existing) == targetPath {
+			return fmt.Errorf("environment %q conflicts with existing environment %q after storage path normalization", name, existing)
+		}
+	}
+	return nil
+}
+
+func validateEnvironmentStoragePathUniqueness(environments map[string]domain.Environment) error {
+	seen := map[string]string{}
+	for _, name := range sortedEnvironmentNames(environments) {
+		if err := validateEnvironmentPathSegment(name); err != nil {
+			return err
+		}
+		path := environmentPathSegment(name)
+		if existing, ok := seen[path]; ok {
+			return fmt.Errorf("environment %q conflicts with existing environment %q after storage path normalization", name, existing)
+		}
+		seen[path] = name
+	}
+	return nil
+}
+
+func sortedEnvironmentNames(environments map[string]domain.Environment) []string {
+	names := make([]string, 0, len(environments))
+	for name := range environments {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }

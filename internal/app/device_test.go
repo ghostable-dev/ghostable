@@ -7,9 +7,73 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/prompt"
 	"github.com/ghostable-dev/beta/internal/store"
 )
+
+func TestPrintAccessDeviceRowsStripsTerminalControlSequences(t *testing.T) {
+	var output bytes.Buffer
+	printAccessDeviceRows(&output, []domain.DeviceRecord{{
+		ID:        "device-1234567890",
+		Name:      "prod\x1b[31m\nspoof",
+		Platform:  "darwin\x1b]0;owned\a",
+		Status:    "active\x1b[2J",
+		CreatedAt: "2026-01-01T00:00:00Z",
+	}}, "device-1234567890", false)
+
+	text := stripAppColorCodes(output.String())
+	assertNoTerminalControls(t, text)
+	if !strings.Contains(text, "prod[31m spoof") {
+		t.Fatalf("expected sanitized device name in output, got:\n%s", text)
+	}
+	if !strings.Contains(text, "darwin]0;owned") {
+		t.Fatalf("expected sanitized platform in output, got:\n%s", text)
+	}
+}
+
+func TestPrintStatusDeviceRowsStripsTerminalControlSequences(t *testing.T) {
+	var output bytes.Buffer
+	runner := &Runner{out: &output}
+	repo := store.Repository{Identity: domain.LocalIdentityRecord{DeviceID: "device-1"}}
+	printStatusDeviceRows(runner, repo, []domain.DeviceRecord{{
+		ID:       "device-1",
+		Name:     "owner\x1b[2J\nspoof",
+		Platform: "linux\x1b]2;owned\a",
+		Status:   "active\x1b[31m",
+	}})
+
+	text := stripAppColorCodes(output.String())
+	assertNoTerminalControls(t, text)
+	if !strings.Contains(text, "owner[2J spoof") {
+		t.Fatalf("expected sanitized device name in output, got:\n%s", text)
+	}
+	if !strings.Contains(text, "linux]2;owned") {
+		t.Fatalf("expected sanitized platform in output, got:\n%s", text)
+	}
+}
+
+func stripAppColorCodes(value string) string {
+	replacer := strings.NewReplacer(
+		"\x1b[31m", "",
+		"\x1b[32m", "",
+		"\x1b[33m", "",
+		"\x1b[0m", "",
+	)
+	return replacer.Replace(value)
+}
+
+func assertNoTerminalControls(t *testing.T, value string) {
+	t.Helper()
+	for _, r := range value {
+		if r == '\n' || r == '\r' || r == '\t' {
+			continue
+		}
+		if r < 0x20 || (r >= 0x7f && r <= 0x9f) {
+			t.Fatalf("expected no terminal control characters in %q", value)
+		}
+	}
+}
 
 func TestRunDeviceGrantsAndRevoke(t *testing.T) {
 	setupRepoForEnvCommandTest(t)

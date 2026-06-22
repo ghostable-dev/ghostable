@@ -127,25 +127,13 @@ func (r Repository) ReadVariables(env string) (map[string]domain.Variable, error
 		return nil, err
 	}
 
-	valuesDir := r.valuesDir(env)
-	entries, err := os.ReadDir(valuesDir)
+	records, err := r.readEnvironmentValueRecords(env)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return map[string]domain.Variable{}, nil
-		}
 		return nil, err
 	}
 
 	variables := make(map[string]domain.Variable)
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") {
-			continue
-		}
-
-		record, err := r.readValueRecord(filepath.Join(valuesDir, entry.Name()))
-		if err != nil {
-			return nil, err
-		}
+	for _, record := range records {
 		value, note, err := r.decryptRecord(record)
 		if err != nil {
 			return nil, err
@@ -163,6 +151,43 @@ func (r Repository) ReadVariables(env string) (map[string]domain.Variable, error
 	}
 
 	return variables, nil
+}
+
+func (r Repository) readEnvironmentValueRecords(env string) ([]domain.ValueRecord, error) {
+	valuesDir := r.valuesDir(env)
+	entries, err := os.ReadDir(valuesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []domain.ValueRecord{}, nil
+		}
+		return nil, err
+	}
+
+	seen := map[string]string{}
+	records := make([]domain.ValueRecord, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+
+		record, err := r.readValueRecord(filepath.Join(valuesDir, entry.Name()))
+		if err != nil {
+			return nil, err
+		}
+		if existingFile, exists := seen[record.Key]; exists {
+			return nil, fmt.Errorf("duplicate value record for %s in %s and %s", record.Key, existingFile, entry.Name())
+		}
+		seen[record.Key] = entry.Name()
+		if record.Environment != env {
+			return nil, fmt.Errorf("value %s belongs to environment %s, not %s", record.Key, record.Environment, env)
+		}
+		expectedName := filepath.Base(r.valuePath(env, record.Key))
+		if entry.Name() != expectedName {
+			return nil, fmt.Errorf("value %s is stored in %s but expected %s", record.Key, entry.Name(), expectedName)
+		}
+		records = append(records, record)
+	}
+	return records, nil
 }
 
 func (r Repository) GetVariable(env string, key string) (domain.Variable, bool, error) {
@@ -313,7 +338,10 @@ func (r Repository) Pull(env string, options PullOptions) (PullResult, string, e
 			options.File = ".env"
 		}
 	}
-	path := r.resolveProjectPath(options.File)
+	path, err := r.resolveProjectOutputPath(options.File)
+	if err != nil {
+		return PullResult{}, "", err
+	}
 	existing := ""
 	if content, err := os.ReadFile(path); err == nil {
 		existing = string(content)
@@ -348,13 +376,13 @@ func (r Repository) Pull(env string, options PullOptions) (PullResult, string, e
 
 	if existing != "" && options.Backup {
 		backupPath := fmt.Sprintf("%s.ghostable-backup-%s", path, time.Now().UTC().Format("20060102T150405Z"))
-		if err := os.WriteFile(backupPath, []byte(existing), 0o600); err != nil {
+		if err := writeFileAtomic(backupPath, []byte(existing), 0o600); err != nil {
 			return PullResult{}, "", err
 		}
 		result.BackupFile = backupPath
 	}
 
-	if err := os.WriteFile(path, []byte(next), 0o600); err != nil {
+	if err := writeFileAtomic(path, []byte(next), 0o600); err != nil {
 		return PullResult{}, "", err
 	}
 

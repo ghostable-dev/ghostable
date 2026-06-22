@@ -337,11 +337,11 @@ func (r *Runner) selectChoice(label string, choices []string, provided string, f
 }
 
 func deviceLabel(device domain.DeviceRecord) string {
-	name := strings.TrimSpace(device.Name)
+	name := strings.TrimSpace(terminalSafeText(device.Name))
 	if name == "" {
 		name = "Unnamed device"
 	}
-	platform := strings.TrimSpace(device.Platform)
+	platform := strings.TrimSpace(terminalSafeText(device.Platform))
 	id := device.ID
 	if len(id) > 18 {
 		id = id[:18] + "..."
@@ -350,6 +350,26 @@ func deviceLabel(device domain.DeviceRecord) string {
 		return fmt.Sprintf("%s (%s, %s)", name, platform, id)
 	}
 	return fmt.Sprintf("%s (%s)", name, id)
+}
+
+func terminalSafeText(value string) string {
+	var builder strings.Builder
+	changed := false
+	for _, r := range value {
+		switch {
+		case r == '\n' || r == '\r' || r == '\t':
+			builder.WriteRune(' ')
+			changed = true
+		case r < 0x20 || (r >= 0x7f && r <= 0x9f):
+			changed = true
+		default:
+			builder.WriteRune(r)
+		}
+	}
+	if !changed {
+		return value
+	}
+	return builder.String()
 }
 
 func (r *Runner) ask(label string, value string, defaultValue string, missingFlag string) (string, error) {

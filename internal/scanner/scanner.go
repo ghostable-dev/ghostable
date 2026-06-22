@@ -111,9 +111,13 @@ func absoluteScanTarget(root string, scanPath string) string {
 }
 
 func scanPath(root string, target string, options Options, result *Result) error {
-	info, err := os.Stat(target)
+	info, err := os.Lstat(target)
 	if err != nil {
 		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		result.Skipped++
+		return nil
 	}
 
 	if !info.IsDir() {
@@ -138,7 +142,11 @@ func scanPath(root string, target string, options Options, result *Result) error
 		if entry.IsDir() {
 			return nil
 		}
-		info, err := os.Stat(filePath)
+		if entry.Type()&os.ModeSymlink != 0 {
+			result.Skipped++
+			return nil
+		}
+		info, err := entry.Info()
 		if err != nil {
 			result.Skipped++
 			return nil
@@ -152,6 +160,10 @@ func scanPath(root string, target string, options Options, result *Result) error
 }
 
 func scanFile(root string, filePath string, info os.FileInfo, options Options, result *Result) error {
+	if !scanPathContained(root, filePath) {
+		result.Skipped++
+		return nil
+	}
 	if info.Size() > options.MaxBytes {
 		result.Skipped++
 		return nil
@@ -187,6 +199,22 @@ func scanFile(root string, filePath string, info os.FileInfo, options Options, r
 		}
 	}
 	return scanner.Err()
+}
+
+func scanPathContained(root string, filePath string) bool {
+	realRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return false
+	}
+	realPath, err := filepath.EvalSymlinks(filePath)
+	if err != nil {
+		return false
+	}
+	relative, err := filepath.Rel(realRoot, realPath)
+	if err != nil {
+		return false
+	}
+	return relative == "." || (!filepath.IsAbs(relative) && relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)))
 }
 
 func NormalizeLevel(value string) string {

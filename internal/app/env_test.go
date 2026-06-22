@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -338,6 +339,21 @@ func TestRunEnvPushAcceptsAbsoluteFilePath(t *testing.T) {
 	}
 	if !exists || variable.Value != "Ghostable" {
 		t.Fatalf("expected absolute file env push to store APP_NAME, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRunEnvFileSaveRejectsOutsideProjectPath(t *testing.T) {
+	setupRepoForEnvCommandTest(t)
+	outside := filepath.Join(t.TempDir(), ".env.outside")
+	content := base64.StdEncoding.EncodeToString([]byte("APP_NAME=Ghostable\n"))
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "file", "save", "--file", outside, "--content-base64", content}, strings.NewReader(""), &output, &output)
+	if err := runner.Run(); err == nil || !strings.Contains(err.Error(), "must stay inside the project") {
+		t.Fatalf("expected outside env file save path to be rejected, got %v", err)
+	}
+	if _, err := os.Stat(outside); !os.IsNotExist(err) {
+		t.Fatalf("env file save should not write outside project, stat err: %v", err)
 	}
 }
 

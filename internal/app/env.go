@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -993,7 +994,15 @@ func (r *Runner) runEnvFile(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(*file, content, 0o600); err != nil {
+	repo, err := r.openRepo()
+	if err != nil {
+		return err
+	}
+	path, err := resolveEnvFileSavePath(repo.Root, *file)
+	if err != nil {
+		return err
+	}
+	if err := writeEnvFileSave(path, content); err != nil {
 		return err
 	}
 	if *jsonOut {
@@ -1001,6 +1010,64 @@ func (r *Runner) runEnvFile(args []string) error {
 	}
 	fmt.Fprintln(r.out, success(fmt.Sprintf("Saved %s.", *file)))
 	return nil
+}
+
+func resolveEnvFileSavePath(root string, file string) (string, error) {
+	path := repoFilePath(root, file)
+	absoluteRoot, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if !pathInsideDirectory(absoluteRoot, absolutePath) {
+		return "", fmt.Errorf("env file save path %q must stay inside the project", file)
+	}
+	realRoot, err := filepath.EvalSymlinks(absoluteRoot)
+	if err != nil {
+		return "", err
+	}
+	realParent, err := filepath.EvalSymlinks(filepath.Dir(absolutePath))
+	if err != nil {
+		return "", err
+	}
+	if !pathInsideDirectory(realRoot, realParent) {
+		return "", fmt.Errorf("env file save path %q must stay inside the project", file)
+	}
+	info, err := os.Lstat(absolutePath)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("refusing to write through symlinked env file %q", file)
+		}
+		if info.IsDir() {
+			return "", fmt.Errorf("env file save path %q is a directory", file)
+		}
+	} else if !os.IsNotExist(err) {
+		return "", err
+	}
+	return absolutePath, nil
+}
+
+func writeEnvFileSave(path string, content []byte) error {
+	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write(content); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
 }
 
 func (r *Runner) printEnvFileHelp() {

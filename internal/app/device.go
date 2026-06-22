@@ -864,7 +864,7 @@ func printDeviceGrantRows(r *Runner, grants []store.DeviceGrant, full bool) {
 	for _, grant := range grants {
 		envWidth = max(envWidth, len(grant.Environment))
 		roleWidth = max(roleWidth, len(grant.Role))
-		deviceWidth = max(deviceWidth, len(grant.DeviceName))
+		deviceWidth = max(deviceWidth, len(terminalSafeText(grant.DeviceName)))
 		platformWidth = max(platformWidth, len(statusGrantPlatform(grant)))
 		statusWidth = max(statusWidth, len(deviceStatusDisplay(grant.Status)))
 	}
@@ -899,7 +899,7 @@ func printDeviceGrantRows(r *Runner, grants []store.DeviceGrant, full bool) {
 			coloredCell(grant.Environment, envWidth, success),
 			coloredCell(grant.Role, roleWidth, success),
 			deviceWidth,
-			grant.DeviceName,
+			terminalSafeText(grant.DeviceName),
 			platformWidth,
 			statusGrantPlatform(grant),
 			coloredCell(status, statusWidth, deviceStatusColor),
@@ -1234,6 +1234,7 @@ func printAccessDeviceRows(out io.Writer, devices []domain.DeviceRecord, current
 }
 
 func coloredCell(value string, width int, color func(string) string) string {
+	value = terminalSafeText(value)
 	return color(value) + strings.Repeat(" ", max(0, width-len(value)))
 }
 
@@ -1245,6 +1246,7 @@ func currentColor(value string) string {
 }
 
 func deviceStatusDisplay(value string) string {
+	value = strings.TrimSpace(terminalSafeText(value))
 	if strings.TrimSpace(value) == "" {
 		return "-"
 	}
@@ -1311,8 +1313,9 @@ func filterDeviceGrants(grants []store.DeviceGrant, deviceID string) []store.Dev
 }
 
 func statusGrantPlatform(grant store.DeviceGrant) string {
-	if strings.TrimSpace(grant.Platform) == "" {
+	platform := strings.TrimSpace(terminalSafeText(grant.Platform))
+	if platform == "" {
 		return "-"
 	}
-	return grant.Platform
+	return platform
 }

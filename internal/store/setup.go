@@ -28,6 +28,9 @@ func Setup(root string, options SetupOptions) (Repository, bool, error) {
 		return Repository{}, false, err
 	}
 	project := projectManifestFromSetup(projectID, options)
+	if err := validateEnvironmentStoragePathUniqueness(project.Environments); err != nil {
+		return Repository{}, false, err
+	}
 
 	if err := os.MkdirAll(filepath.Join(root, ".ghostable"), 0o755); err != nil {
 		return Repository{}, false, err
@@ -100,6 +103,7 @@ func setupRepository(root string, manifestPath string, project domain.ProjectMan
 	if err != nil {
 		return Repository{}, domain.DeviceRecord{}, err
 	}
+	identity.TrustedPolicySigners = trustedPolicySigners(identity.DeviceID)
 	if err := identityStore.Save(identity); err != nil {
 		return Repository{}, domain.DeviceRecord{}, err
 	}
@@ -217,6 +221,9 @@ func openProjectManifest(start string) (openedProjectManifest, error) {
 	if err != nil {
 		return openedProjectManifest{}, err
 	}
+	if err := ensureGhostableStatePath(manifestPath); err != nil {
+		return openedProjectManifest{}, err
+	}
 
 	file, err := os.Open(manifestPath)
 	if err != nil {
@@ -230,6 +237,9 @@ func openProjectManifest(start string) (openedProjectManifest, error) {
 	}
 	if project.ID == "" {
 		return openedProjectManifest{}, fmt.Errorf("Ghostable manifest is missing an id")
+	}
+	if err := validateEnvironmentStoragePathUniqueness(project.Environments); err != nil {
+		return openedProjectManifest{}, err
 	}
 
 	return openedProjectManifest{

@@ -314,7 +314,7 @@ func printStatusDeviceRows(r *Runner, repo store.Repository, devices []domain.De
 	for _, device := range devices {
 		nameWidth = max(nameWidth, len(statusDeviceName(device)))
 		platformWidth = max(platformWidth, len(statusDevicePlatform(device)))
-		statusWidth = max(statusWidth, len(device.Status))
+		statusWidth = max(statusWidth, len(deviceStatusDisplay(device.Status)))
 	}
 
 	fmt.Fprintf(r.out, "  %-*s  %-*s  %-*s  %-7s  %s\n", nameWidth, "Name", platformWidth, "Platform", statusWidth, "Status", "Current", "ID")
@@ -324,13 +324,14 @@ func printStatusDeviceRows(r *Runner, repo store.Repository, devices []domain.De
 		if device.ID == repo.DeviceID() {
 			current = "yes"
 		}
+		status := deviceStatusDisplay(device.Status)
 		fmt.Fprintf(r.out, "  %-*s  %-*s  %-*s  %-7s  %s\n",
 			nameWidth,
 			statusDeviceName(device),
 			platformWidth,
 			statusDevicePlatform(device),
 			statusWidth,
-			device.Status,
+			status,
 			current,
 			statusShortID(device.ID),
 		)
@@ -361,7 +362,7 @@ func statusStack(project domain.ProjectManifest) string {
 }
 
 func statusDeviceName(device domain.DeviceRecord) string {
-	name := strings.TrimSpace(device.Name)
+	name := strings.TrimSpace(terminalSafeText(device.Name))
 	if name == "" {
 		return "Unnamed device"
 	}
@@ -369,7 +370,7 @@ func statusDeviceName(device domain.DeviceRecord) string {
 }
 
 func statusDevicePlatform(device domain.DeviceRecord) string {
-	platform := strings.TrimSpace(device.Platform)
+	platform := strings.TrimSpace(terminalSafeText(device.Platform))
 	if platform == "" {
 		return "-"
 	}
