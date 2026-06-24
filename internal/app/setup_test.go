@@ -89,7 +89,7 @@ func TestNormalizeDefaultDeviceName(t *testing.T) {
 
 func TestRunSetupSeedsDefaultEnvironmentFromDotenvWhenConfirmed(t *testing.T) {
 	root := setupTempWorkdir(t)
-	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_KEY=super-secret\nAPP_NAME=Ghostable\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("app-key=super-secret\napp name=Ghostable\n# disabled-key=off\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -109,7 +109,7 @@ func TestRunSetupSeedsDefaultEnvironmentFromDotenvWhenConfirmed(t *testing.T) {
 	if seedPrompt < 0 || banner < 0 || seedPrompt > banner {
 		t.Fatalf("expected .env prompt before banner:\n%s", text)
 	}
-	if !strings.Contains(text, "Imported 2 variables from .env into default.") {
+	if !strings.Contains(text, "Imported 3 variables from .env into default.") {
 		t.Fatalf("expected import summary in output:\n%s", text)
 	}
 
@@ -126,6 +126,12 @@ func TestRunSetupSeedsDefaultEnvironmentFromDotenvWhenConfirmed(t *testing.T) {
 	}
 	if values["APP_NAME"].Value != "Ghostable" {
 		t.Fatalf("unexpected APP_NAME value: %#v", values["APP_NAME"])
+	}
+	if values["DISABLED_KEY"].Value != "off" || !values["DISABLED_KEY"].Commented {
+		t.Fatalf("expected commented seed value, got %#v", values["DISABLED_KEY"])
+	}
+	if _, exists := values["app-key"]; exists {
+		t.Fatalf("did not expect raw app-key to be stored: %#v", values)
 	}
 }
 

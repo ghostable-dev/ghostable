@@ -504,12 +504,11 @@ type BuildSecretInput struct {
 	Environment          string
 	Key                  string
 	Plaintext            string
+	ChangeReason         string
 	EnvironmentKey       []byte
 	EnvironmentKeyRecord domain.EnvironmentKeyRecord
 	Identity             domain.LocalIdentityRecord
 	PreviousVersion      int
-	Commented            bool
-	VaporSecret          bool
 }
 
 func BuildSecret(input BuildSecretInput) (domain.SecretBody, error) {
@@ -535,13 +534,12 @@ func BuildSecret(input BuildSecretInput) (domain.SecretBody, error) {
 		EnvKekVersion:     input.EnvironmentKeyRecord.Version,
 		EnvKekFingerprint: input.EnvironmentKeyRecord.Fingerprint,
 		LineBytes:         len([]byte(input.Plaintext)),
-		IsCommented:       input.Commented,
-	}
-	if input.VaporSecret {
-		secret.IsVaporSecret = &input.VaporSecret
 	}
 	if input.PreviousVersion > 0 {
 		secret.IfVersion = &input.PreviousVersion
+	}
+	if reason := strings.TrimSpace(input.ChangeReason); reason != "" {
+		secret.Change = &domain.ValueChangeContext{Reason: reason}
 	}
 	if err := SignSecretBody(&secret, input.Identity); err != nil {
 		return domain.SecretBody{}, err

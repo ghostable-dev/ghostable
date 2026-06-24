@@ -2,6 +2,7 @@ package review
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -261,6 +262,50 @@ func TestReviewReportsProgressPhases(t *testing.T) {
 		if !containsString(phases, expected) {
 			t.Fatalf("expected progress phase %q in %#v", expected, phases)
 		}
+	}
+}
+
+func TestReviewReportsInvalidChangedKeyMetadataSignature(t *testing.T) {
+	root, repo := setupReviewGitRepo(t)
+	if err := repo.SetVariable("production", "APP_KEY", "secret", "test"); err != nil {
+		t.Fatal(err)
+	}
+	commitAll(t, root, "baseline")
+
+	files, err := filepath.Glob(filepath.Join(root, ".ghostable", "environments", "production", "keys", "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 {
+		t.Fatalf("expected one key metadata file, got %#v", files)
+	}
+	content, err := os.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record domain.EnvironmentKeyMetadataRecord
+	if err := json.Unmarshal(content, &record); err != nil {
+		t.Fatal(err)
+	}
+	record.Status = domain.KeyStatusCommented
+	tampered, err := json.MarshalIndent(record, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(files[0], append(tampered, '\n'), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := Review(context.Background(), ReviewInput{
+		Root:         root,
+		BaseRef:      "HEAD",
+		Environments: []string{"production"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFinding(report.Errors, "key_metadata_invalid", "") {
+		t.Fatalf("expected invalid key metadata error, got %#v", report.Errors)
 	}
 }
 

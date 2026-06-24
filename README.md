@@ -80,7 +80,7 @@ Automation and agents should pass flags and prefer `--json`.
 
 ## Commands
 
-- `setup` initializes `.ghostable/`, a local device record, policy, layout files,
+- `setup` initializes `.ghostable/`, a local device record, policy, key metadata files,
   and a private local device identity.
 - `status` prints project, environment, device, and value counts.
 - `env list|create|delete|push|sync|pull|diff|history`
@@ -206,6 +206,7 @@ scan:
     - .git/**
     - node_modules/**
     - .ghostable/environments/**/values/**
+    - .ghostable/environments/**/keys/**
 ```
 
 Findings are redacted by default. Use `--json` for machine-readable output.
@@ -220,12 +221,20 @@ Committed project files:
 .ghostable/ghostable.yaml
 .ghostable/policy.json
 .ghostable/devices/*.json
-.ghostable/environments/<env>/layout.json
+.ghostable/environments/<env>/keys/*.json
 .ghostable/environments/<env>/values/*.json
 .ghostable/events/*.json
 .ghostable/schema.yaml
 .ghostable/schemas/<env>.yaml
 ```
+
+Key metadata `position` values are sparse sortable ranks, not dense line
+numbers. Generated layouts use gaps such as `1000`, `2000`, and `3000` so a
+new key can usually be added without rewriting every existing key metadata
+file.
+
+Value records may include a signed plaintext `change.reason` so reviewers can
+understand why an encrypted value changed without exposing the secret.
 
 Local-only private identity:
 
@@ -256,7 +265,8 @@ are created with `0600` permissions.
   events, and value payloads are signed with Ed25519.
 - Secret values are never printed unless `--show-values` is provided.
 - `var push` without `--file` uses a no-echo terminal prompt on Unix systems.
-- `.ghostable/environments/**/values/**` is ignored by the scanner to avoid
+- `.ghostable/environments/**/values/**` and
+  `.ghostable/environments/**/keys/**` are ignored by the scanner to avoid
   inspecting encrypted payloads as source text.
 
 ## Implementation Notes

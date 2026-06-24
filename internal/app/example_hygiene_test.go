@@ -386,6 +386,9 @@ func TestRunHygieneRotateChangesEnvironmentKeyAndKeepsValuesReadable(t *testing.
 	if err := repo.SetVariable("default", "APP_KEY", "base64:secret", "test"); err != nil {
 		t.Fatal(err)
 	}
+	if err := repo.SetVariableNote("default", "APP_KEY", "rotate after launch"); err != nil {
+		t.Fatal(err)
+	}
 	before, err := repo.ReadEnvironmentKeyMetadata("default")
 	if err != nil {
 		t.Fatal(err)
@@ -412,7 +415,7 @@ func TestRunHygieneRotateChangesEnvironmentKeyAndKeepsValuesReadable(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !exists || variable.Value != "base64:secret" {
+	if !exists || variable.Value != "base64:secret" || variable.Note != "rotate after launch" {
 		t.Fatalf("expected value to remain readable, got exists=%v variable=%#v", exists, variable)
 	}
 }

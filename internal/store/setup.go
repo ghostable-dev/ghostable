@@ -146,9 +146,6 @@ func (r Repository) initializeSetupEnvironments(device domain.DeviceRecord, poli
 		if err := r.ensureEnvironmentDirs(env.Name); err != nil {
 			return err
 		}
-		if err := r.writeLayout(env.Name, map[string]int{}); err != nil {
-			return err
-		}
 		policy.Environments[env.Name] = emptyEnvironmentPolicy()
 		if err := r.createEnvironmentKey(env.Name, device); err != nil {
 			return err

@@ -44,3 +44,52 @@ func TestParseStringIgnoresDisabledComments(t *testing.T) {
 		t.Fatalf("unexpected APP_NAME: %q", values["APP_NAME"])
 	}
 }
+
+func TestParseStringFormatsKeysAndKeepsLastValue(t *testing.T) {
+	values, err := ParseString("app-name=old\nAPP_NAME=new\n1password=secret\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if values["APP_NAME"] != "new" {
+		t.Fatalf("expected normalized APP_NAME to use last value, got %#v", values)
+	}
+	if values["_1PASSWORD"] != "secret" {
+		t.Fatalf("expected digit-leading key to be normalized, got %#v", values)
+	}
+	if _, ok := values["app-name"]; ok {
+		t.Fatalf("did not expect raw app-name key, got %#v", values)
+	}
+}
+
+func TestMergeFormatsExistingKeys(t *testing.T) {
+	next, err := Merge("app-name=Old\n", map[string]string{"APP_NAME": "New"}, []string{"APP_NAME"}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if next != "APP_NAME=New\n" {
+		t.Fatalf("expected existing key to be normalized during merge, got %q", next)
+	}
+}
+
+func TestMergeRemovesEarlierDuplicateFormattedKeys(t *testing.T) {
+	next, err := Merge("app-name=Old\nAPP_NAME=Older\nOTHER=value\n", map[string]string{"APP_NAME": "New"}, []string{"APP_NAME"}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := "APP_NAME=New\nOTHER=value\n"
+	if next != expected {
+		t.Fatalf("expected duplicate formatted keys to collapse to last key, got %q", next)
+	}
+}
+
+func TestFormatKeyMatchesManualEntryRules(t *testing.T) {
+	formatted, changed, err := FormatKey("bad key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if formatted != "BAD_KEY" || !changed {
+		t.Fatalf("expected bad key to format as BAD_KEY, got formatted=%q changed=%v", formatted, changed)
+	}
+}

@@ -7,10 +7,10 @@ const (
 	DeviceSchema         = "ghostable.device.v1"
 	AccessRequestSchema  = "ghostable.access-request.v1"
 	EnvironmentKeySchema = "ghostable.environment-key.v1"
+	KeyMetadataSchema    = "ghostable.environment-key-metadata.v1"
 	AccessGrantSchema    = "ghostable.access-grant.v1"
 	SuppressionSchema    = "ghostable.suppression.v1"
 	PolicySchema         = "ghostable.policy.v1"
-	LayoutSchema         = "ghostable.layout.v1"
 	ValueSchema          = "ghostable.value.v1"
 	LegacyValueSchema    = "ghostable.value.go.v1"
 	EventSchema          = "ghostable.event.v1"
@@ -21,6 +21,8 @@ const (
 	DefaultActivity      = "minimal"
 	DefaultDeviceName    = "Local device"
 	GhostableOrgScope    = "ghostable"
+	KeyStatusActive      = "active"
+	KeyStatusCommented   = "commented"
 )
 
 type ProjectManifest struct {
@@ -141,12 +143,25 @@ type EnvironmentPolicy struct {
 	Grantors []string `json:"grantors"`
 }
 
-type Layout struct {
-	Schema      string         `json:"schema"`
-	ProjectID   string         `json:"projectId"`
-	Environment string         `json:"environment"`
-	UpdatedAt   string         `json:"updatedAt"`
-	Keys        map[string]int `json:"keys"`
+type EnvironmentKeyMetadataRecord struct {
+	Schema            string             `json:"schema"`
+	ProjectID         string             `json:"projectId"`
+	Environment       string             `json:"environment"`
+	Key               string             `json:"key"`
+	Status            string             `json:"status"`
+	Position          int64              `json:"position,omitempty"`
+	Deploy            *KeyDeployMetadata `json:"deploy,omitempty"`
+	EncryptedNote     *EncryptedPayload  `json:"encryptedNote,omitempty"`
+	CreatedByDeviceID string             `json:"createdByDeviceId,omitempty"`
+	CreatedAt         string             `json:"createdAt,omitempty"`
+	UpdatedByDeviceID string             `json:"updatedByDeviceId,omitempty"`
+	UpdatedAt         string             `json:"updatedAt,omitempty"`
+	SignerDeviceID    string             `json:"device_id,omitempty"`
+	ClientSig         string             `json:"client_sig,omitempty"`
+}
+
+type KeyDeployMetadata struct {
+	LaravelVaporSecret *bool `json:"laravelVaporSecret,omitempty"`
 }
 
 type EncryptedPayload struct {
@@ -215,21 +230,23 @@ type ValueRecord struct {
 }
 
 type SecretBody struct {
-	Name              string                 `json:"name"`
-	Env               string                 `json:"env"`
-	Ciphertext        string                 `json:"ciphertext"`
-	Nonce             string                 `json:"nonce"`
-	Alg               string                 `json:"alg"`
-	AAD               SecretAAD              `json:"aad"`
-	Claims            map[string]string      `json:"claims"`
-	IfVersion         *int                   `json:"if_version,omitempty"`
-	EnvKekVersion     int                    `json:"env_kek_version,omitempty"`
-	EnvKekFingerprint string                 `json:"env_kek_fingerprint,omitempty"`
-	LineBytes         int                    `json:"line_bytes,omitempty"`
-	IsVaporSecret     *bool                  `json:"is_vapor_secret,omitempty"`
-	IsCommented       bool                   `json:"is_commented,omitempty"`
-	ChangeNote        map[string]interface{} `json:"change_note,omitempty"`
-	ClientSig         string                 `json:"client_sig,omitempty"`
+	Name              string              `json:"name"`
+	Env               string              `json:"env"`
+	Ciphertext        string              `json:"ciphertext"`
+	Nonce             string              `json:"nonce"`
+	Alg               string              `json:"alg"`
+	AAD               SecretAAD           `json:"aad"`
+	Claims            map[string]string   `json:"claims"`
+	IfVersion         *int                `json:"if_version,omitempty"`
+	EnvKekVersion     int                 `json:"env_kek_version,omitempty"`
+	EnvKekFingerprint string              `json:"env_kek_fingerprint,omitempty"`
+	LineBytes         int                 `json:"line_bytes,omitempty"`
+	Change            *ValueChangeContext `json:"change,omitempty"`
+	ClientSig         string              `json:"client_sig,omitempty"`
+}
+
+type ValueChangeContext struct {
+	Reason string `json:"reason,omitempty"`
 }
 
 type SecretAAD struct {

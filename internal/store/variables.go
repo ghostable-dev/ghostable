@@ -13,6 +13,20 @@ import (
 )
 
 func (r Repository) PutVariables(env string, values map[string]string, options PutOptions) (PushResult, error) {
+	inputs := make(map[string]VariablePutInput, len(values))
+	for key, value := range values {
+		inputs[key] = VariablePutInput{Value: value}
+	}
+	return r.PutVariablesWithMetadata(env, inputs, options)
+}
+
+type VariablePutInput struct {
+	Value       string
+	Commented   *bool
+	VaporSecret *bool
+}
+
+func (r Repository) PutVariablesWithMetadata(env string, inputs map[string]VariablePutInput, options PutOptions) (PushResult, error) {
 	if err := r.requireEnvironment(env); err != nil {
 		return PushResult{}, err
 	}
@@ -26,12 +40,12 @@ func (r Repository) PutVariables(env string, values map[string]string, options P
 	}
 
 	result := PushResult{Environment: env}
-	if err := r.writeIncomingVariables(env, values, current, &result); err != nil {
+	if err := r.writeIncomingVariables(env, inputs, current, options.Reason, &result); err != nil {
 		return PushResult{}, err
 	}
 
 	if options.Sync {
-		if err := r.deleteMissingVariables(env, values, current, options.Reason, &result); err != nil {
+		if err := r.deleteMissingVariables(env, inputs, current, options.Reason, &result); err != nil {
 			return PushResult{}, err
 		}
 	}
@@ -49,34 +63,57 @@ func (r Repository) PutVariables(env string, values map[string]string, options P
 	return result, nil
 }
 
-func (r Repository) writeIncomingVariables(env string, incoming map[string]string, current map[string]domain.Variable, result *PushResult) error {
-	for key, value := range incoming {
+func (r Repository) writeIncomingVariables(env string, incoming map[string]VariablePutInput, current map[string]domain.Variable, reason string, result *PushResult) error {
+	for key, input := range incoming {
 		if err := validateKey(key); err != nil {
 			return err
 		}
 
 		existing, exists := current[key]
-		result.addChangedVariable(key, exists, existing.Value != value)
-		if exists && existing.Value == value {
+		commented := false
+		if exists {
+			commented = existing.Commented
+		}
+		if input.Commented != nil {
+			commented = *input.Commented
+		}
+		vaporSecret := existing.VaporSecret
+		if input.VaporSecret != nil {
+			vaporSecret = *input.VaporSecret
+		}
+		valueChanged := !exists || existing.Value != input.Value
+		commentedChanged := exists && existing.Commented != commented
+		vaporSecretChanged := exists && input.VaporSecret != nil && existing.VaporSecret != vaporSecret
+		metadataChanged := commentedChanged || vaporSecretChanged
+
+		result.addChangedVariable(key, exists, valueChanged || metadataChanged)
+		if exists && !valueChanged && !metadataChanged {
 			continue
 		}
-
-		note := ""
-		commented := false
-		vaporSecret := false
-		if exists {
-			note = existing.Note
-			commented = existing.Commented
-			vaporSecret = existing.VaporSecret
+		if exists && !valueChanged {
+			status := domain.KeyStatusActive
+			if commented {
+				status = domain.KeyStatusCommented
+			}
+			if err := r.updateKeyMetadata(env, key, func(record *domain.EnvironmentKeyMetadataRecord) error {
+				record.Status = status
+				if input.VaporSecret != nil {
+					setKeyMetadataLaravelVaporSecret(record, vaporSecret)
+				}
+				return nil
+			}); err != nil {
+				return err
+			}
+			continue
 		}
-		if err := r.writeVariable(writeVariableInput{
+		if err := r.writeVariableWithMetadata(writeVariableWithMetadataInput{
 			Environment: env,
 			Key:         key,
-			Value:       value,
-			Note:        note,
+			Value:       input.Value,
 			Existing:    exists,
+			Reason:      reason,
 			Commented:   commented,
-			VaporSecret: vaporSecret,
+			VaporSecret: input.VaporSecret,
 		}); err != nil {
 			return err
 		}
@@ -95,7 +132,7 @@ func (result *PushResult) addChangedVariable(key string, exists bool, changed bo
 	}
 }
 
-func (r Repository) deleteMissingVariables(env string, incoming map[string]string, current map[string]domain.Variable, reason string, result *PushResult) error {
+func (r Repository) deleteMissingVariables(env string, incoming map[string]VariablePutInput, current map[string]domain.Variable, reason string, result *PushResult) error {
 	for key := range current {
 		if _, ok := incoming[key]; ok {
 			continue
@@ -131,10 +168,25 @@ func (r Repository) ReadVariables(env string) (map[string]domain.Variable, error
 	if err != nil {
 		return nil, err
 	}
+	keyMetadata, err := r.keyMetadataByKey(env)
+	if err != nil {
+		return nil, err
+	}
 
 	variables := make(map[string]domain.Variable)
 	for _, record := range records {
-		value, note, err := r.decryptRecord(record)
+		value, _, err := r.decryptRecord(record)
+		if err != nil {
+			return nil, err
+		}
+		metadata, ok := keyMetadata[record.Key]
+		if !ok {
+			return nil, fmt.Errorf("key metadata for %s was not found in %s", record.Key, env)
+		}
+		if err := r.verifyKeyMetadata(metadata); err != nil {
+			return nil, err
+		}
+		note, err := r.decryptKeyMetadataNote(metadata)
 		if err != nil {
 			return nil, err
 		}
@@ -143,8 +195,8 @@ func (r Repository) ReadVariables(env string) (map[string]domain.Variable, error
 			Value:       value,
 			HasValue:    true,
 			Sensitive:   record.Schema == domain.ValueSchema || record.Sensitive,
-			Commented:   record.Secret.IsCommented,
-			VaporSecret: record.Secret.IsVaporSecret != nil && *record.Secret.IsVaporSecret,
+			Commented:   metadata.Status == domain.KeyStatusCommented,
+			VaporSecret: keyMetadataLaravelVaporSecret(metadata),
 			Note:        note,
 			UpdatedAt:   record.UpdatedAt,
 		}
@@ -174,18 +226,31 @@ func (r Repository) ReadVariableMetadata(env string) ([]VariableMetadata, error)
 	if err != nil {
 		return nil, err
 	}
+	keyMetadata, err := r.keyMetadataByKey(env)
+	if err != nil {
+		return nil, err
+	}
 
 	variables := make([]VariableMetadata, 0, len(records))
 	for _, record := range records {
 		signatureErr := r.verifyValueRecordMetadata(record)
+		keyRecord, ok := keyMetadata[record.Key]
+		if !ok && signatureErr == nil {
+			signatureErr = fmt.Errorf("key metadata for %s was not found in %s", record.Key, env)
+		}
+		if ok {
+			if err := r.verifyKeyMetadata(keyRecord); err != nil && signatureErr == nil {
+				signatureErr = err
+			}
+		}
 		metadata := VariableMetadata{
 			Environment:       record.Environment,
 			Key:               record.Key,
 			Version:           record.Version,
 			UpdatedAt:         record.UpdatedAt,
 			UpdatedByDeviceID: record.UpdatedByDeviceID,
-			VaporSecret:       record.Secret.IsVaporSecret != nil && *record.Secret.IsVaporSecret,
-			Commented:         record.Secret.IsCommented,
+			VaporSecret:       ok && keyMetadataLaravelVaporSecret(keyRecord),
+			Commented:         ok && keyRecord.Status == domain.KeyStatusCommented,
 			ValidSignature:    signatureErr == nil,
 		}
 		if signatureErr != nil {
@@ -252,6 +317,40 @@ type VariableWriteOptions struct {
 	VaporSecret *bool
 }
 
+type writeVariableWithMetadataInput struct {
+	Environment string
+	Key         string
+	Value       string
+	Existing    bool
+	Reason      string
+	Commented   bool
+	VaporSecret *bool
+}
+
+func (r Repository) writeVariableWithMetadata(input writeVariableWithMetadataInput) error {
+	if err := r.writeVariable(writeVariableInput{
+		Environment: input.Environment,
+		Key:         input.Key,
+		Value:       input.Value,
+		Existing:    input.Existing,
+		Reason:      input.Reason,
+	}); err != nil {
+		return err
+	}
+
+	status := domain.KeyStatusActive
+	if input.Commented {
+		status = domain.KeyStatusCommented
+	}
+	return r.updateKeyMetadata(input.Environment, input.Key, func(record *domain.EnvironmentKeyMetadataRecord) error {
+		record.Status = status
+		if input.VaporSecret != nil {
+			setKeyMetadataLaravelVaporSecret(record, *input.VaporSecret)
+		}
+		return nil
+	})
+}
+
 func (r Repository) SetVariable(env string, key string, value string, reason string) error {
 	return r.SetVariableWithOptions(env, key, value, VariableWriteOptions{Reason: reason})
 }
@@ -267,28 +366,21 @@ func (r Repository) SetVariableWithOptions(env string, key string, value string,
 	if err != nil {
 		return err
 	}
-	note := ""
 	commented := false
-	vaporSecret := false
 	if exists {
-		note = current.Note
 		commented = current.Commented
-		vaporSecret = current.VaporSecret
 	}
 	if options.Commented != nil {
 		commented = *options.Commented
 	}
-	if options.VaporSecret != nil {
-		vaporSecret = *options.VaporSecret
-	}
-	if err := r.writeVariable(writeVariableInput{
+	if err := r.writeVariableWithMetadata(writeVariableWithMetadataInput{
 		Environment: env,
 		Key:         key,
 		Value:       value,
-		Note:        note,
 		Existing:    exists,
+		Reason:      options.Reason,
 		Commented:   commented,
-		VaporSecret: vaporSecret,
+		VaporSecret: options.VaporSecret,
 	}); err != nil {
 		return err
 	}
@@ -307,35 +399,50 @@ func (r Repository) SetVariableCommented(env string, key string, value string, c
 }
 
 func (r Repository) SetVariableVaporSecret(env string, key string, vaporSecret bool, reason string) error {
-	current, exists, err := r.GetVariable(env, key)
+	_, exists, err := r.GetVariable(env, key)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return fmt.Errorf("variable %q was not found in %s", key, env)
 	}
-	return r.SetVariableWithOptions(env, key, current.Value, VariableWriteOptions{
-		Reason:      reason,
-		VaporSecret: &vaporSecret,
-	})
+	if err := r.updateKeyMetadata(env, key, func(record *domain.EnvironmentKeyMetadataRecord) error {
+		setKeyMetadataLaravelVaporSecret(record, vaporSecret)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return r.recordEvent("variable.metadata.updated", env, key, map[string]interface{}{"reason": reason, "vaporSecret": vaporSecret})
+}
+
+func keyMetadataLaravelVaporSecret(record domain.EnvironmentKeyMetadataRecord) bool {
+	return record.Deploy != nil &&
+		record.Deploy.LaravelVaporSecret != nil &&
+		*record.Deploy.LaravelVaporSecret
+}
+
+func setKeyMetadataLaravelVaporSecret(record *domain.EnvironmentKeyMetadataRecord, vaporSecret bool) {
+	if record.Deploy == nil {
+		record.Deploy = &domain.KeyDeployMetadata{}
+	}
+	record.Deploy.LaravelVaporSecret = &vaporSecret
 }
 
 func (r Repository) SetVariableNote(env string, key string, note string) error {
-	current, exists, err := r.GetVariable(env, key)
+	_, exists, err := r.GetVariable(env, key)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return fmt.Errorf("variable %q was not found in %s", key, env)
 	}
-	if err := r.writeVariable(writeVariableInput{
-		Environment: env,
-		Key:         key,
-		Value:       current.Value,
-		Note:        note,
-		Existing:    true,
-		Commented:   current.Commented,
-		VaporSecret: current.VaporSecret,
+	encryptedNote, err := r.encryptKeyMetadataNote(env, key, note)
+	if err != nil {
+		return err
+	}
+	if err := r.updateKeyMetadata(env, key, func(record *domain.EnvironmentKeyMetadataRecord) error {
+		record.EncryptedNote = encryptedNote
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -359,7 +466,7 @@ func (r Repository) DeleteVariable(env string, key string, reason string) error 
 		}
 		return err
 	}
-	_ = r.removeLayoutKey(env, key)
+	_ = r.removeKeyMetadata(env, key)
 	return r.recordEvent("variable.deleted", env, key, map[string]interface{}{"reason": reason})
 }
 
@@ -370,7 +477,10 @@ func (r Repository) Pull(env string, options PullOptions) (PullResult, string, e
 	}
 
 	values := make(map[string]string)
-	order := r.layoutOrder(env)
+	order, err := r.keyMetadataOrder(env)
+	if err != nil {
+		return PullResult{}, "", err
+	}
 	only := stringSet(options.Only)
 	for key, variable := range variables {
 		if len(only) > 0 && !only[key] {

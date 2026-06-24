@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -913,7 +912,11 @@ func (r Repository) rotateEnvironmentKey(env string, policy domain.Policy) ([]st
 	if err != nil {
 		return nil, err
 	}
-	previousKey, err := r.readEnvironmentKey(env)
+	previousKey, previousEnvKey, err := r.loadEnvironmentKey(env)
+	if err != nil {
+		return nil, err
+	}
+	keyMetadataRotations, err := r.readKeyMetadataRotationRecords(env, previousEnvKey)
 	if err != nil {
 		return nil, err
 	}
@@ -944,6 +947,14 @@ func (r Repository) rotateEnvironmentKey(env string, policy domain.Policy) ([]st
 		}
 		rotatedValues = append(rotatedValues, record)
 	}
+	rotatedKeyMetadata := make([]domain.EnvironmentKeyMetadataRecord, 0, len(keyMetadataRotations))
+	for _, rotation := range keyMetadataRotations {
+		record, err := buildRotatedKeyMetadataRecord(rotation, envKey)
+		if err != nil {
+			return nil, err
+		}
+		rotatedKeyMetadata = append(rotatedKeyMetadata, record)
+	}
 
 	files := []string{}
 	if err := writeJSONAtomic(filepath.Join(r.environmentDir(env), "key.json"), nextKey, 0o644); err != nil {
@@ -961,6 +972,12 @@ func (r Repository) rotateEnvironmentKey(env string, policy domain.Policy) ([]st
 			return nil, err
 		}
 		files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(env), "values", filepath.Base(r.valuePath(env, record.Key))))
+	}
+	for _, record := range rotatedKeyMetadata {
+		if err := r.writeKeyMetadata(record); err != nil {
+			return nil, err
+		}
+		files = appendUnique(files, filepath.Join(".ghostable", "environments", environmentPathSegment(env), "keys", filepath.Base(r.keyMetadataPath(env, record.Key))))
 	}
 	return files, nil
 }
@@ -989,7 +1006,6 @@ func (r Repository) buildRotatedValueRecord(value variableRotationRecord, envKey
 	if version < 1 {
 		version = 1
 	}
-	vaporSecret := value.record.Secret.IsVaporSecret != nil && *value.record.Secret.IsVaporSecret
 	secret, err := security.BuildSecret(security.BuildSecretInput{
 		ProjectID:            r.Manifest.ID,
 		Environment:          value.record.Environment,
@@ -998,8 +1014,6 @@ func (r Repository) buildRotatedValueRecord(value variableRotationRecord, envKey
 		EnvironmentKey:       envKey,
 		EnvironmentKeyRecord: envKeyRecord,
 		Identity:             r.Identity,
-		Commented:            value.record.Secret.IsCommented,
-		VaporSecret:          vaporSecret,
 	})
 	if err != nil {
 		return domain.ValueRecord{}, err
@@ -1684,10 +1698,8 @@ type writeVariableInput struct {
 	Environment string
 	Key         string
 	Value       string
-	Note        string
 	Existing    bool
-	Commented   bool
-	VaporSecret bool
+	Reason      string
 }
 
 func (r Repository) writeVariable(input writeVariableInput) error {
@@ -1709,12 +1721,11 @@ func (r Repository) writeVariable(input writeVariableInput) error {
 		Environment:          input.Environment,
 		Key:                  input.Key,
 		Plaintext:            input.Value,
+		ChangeReason:         input.Reason,
 		EnvironmentKey:       envKey,
 		EnvironmentKeyRecord: envKeyRecord,
 		Identity:             r.Identity,
 		PreviousVersion:      previousVersion,
-		Commented:            input.Commented,
-		VaporSecret:          input.VaporSecret,
 	})
 	if err != nil {
 		return err
@@ -1733,7 +1744,7 @@ func (r Repository) writeVariable(input writeVariableInput) error {
 	if err := writeJSONAtomic(r.valuePath(input.Environment, input.Key), record, 0o600); err != nil {
 		return err
 	}
-	return r.addLayoutKey(input.Environment, input.Key)
+	return nil
 }
 
 func (r Repository) readValueRecord(path string) (domain.ValueRecord, error) {
@@ -1796,7 +1807,7 @@ func (r Repository) ensureEnvironmentDirs(env string) error {
 		r.environmentDir(env),
 		r.accessDir(env),
 		r.valuesDir(env),
-		filepath.Join(r.environmentDir(env), "deploy"),
+		r.keyMetadataDir(env),
 		filepath.Join(r.Root, ".ghostable", "devices"),
 		filepath.Join(r.Root, ".ghostable", "events"),
 	}
@@ -2385,82 +2396,6 @@ func (r Repository) readVerifiedPolicyMetadata() (domain.Policy, error) {
 		return policy, fmt.Errorf("policy version is required")
 	}
 	return policy, nil
-}
-
-func (r Repository) writeLayout(env string, keys map[string]int) error {
-	layout := domain.Layout{
-		Schema:      domain.LayoutSchema,
-		ProjectID:   r.Manifest.ID,
-		Environment: env,
-		UpdatedAt:   security.Now(),
-		Keys:        keys,
-	}
-	return writeJSONAtomic(filepath.Join(r.environmentDir(env), "layout.json"), layout, 0o644)
-}
-
-func (r Repository) readLayout(env string) (domain.Layout, error) {
-	var layout domain.Layout
-	err := readJSON(filepath.Join(r.environmentDir(env), "layout.json"), &layout)
-	if errors.Is(err, os.ErrNotExist) {
-		layout = domain.Layout{
-			Schema:      domain.LayoutSchema,
-			ProjectID:   r.Manifest.ID,
-			Environment: env,
-			Keys:        map[string]int{},
-		}
-		return layout, nil
-	}
-	return layout, err
-}
-
-func (r Repository) addLayoutKey(env string, key string) error {
-	layout, err := r.readLayout(env)
-	if err != nil {
-		return err
-	}
-	if layout.Keys == nil {
-		layout.Keys = map[string]int{}
-	}
-	if _, ok := layout.Keys[key]; ok {
-		return nil
-	}
-	layout.Keys[key] = len(layout.Keys) + 1
-	return r.writeLayout(env, layout.Keys)
-}
-
-func (r Repository) removeLayoutKey(env string, key string) error {
-	layout, err := r.readLayout(env)
-	if err != nil {
-		return err
-	}
-	delete(layout.Keys, key)
-	return r.writeLayout(env, layout.Keys)
-}
-
-func (r Repository) layoutOrder(env string) []string {
-	layout, err := r.readLayout(env)
-	if err != nil {
-		return nil
-	}
-	type item struct {
-		key  string
-		rank int
-	}
-	items := make([]item, 0, len(layout.Keys))
-	for key, rank := range layout.Keys {
-		items = append(items, item{key: key, rank: rank})
-	}
-	sort.Slice(items, func(i, j int) bool {
-		if items[i].rank == items[j].rank {
-			return items[i].key < items[j].key
-		}
-		return items[i].rank < items[j].rank
-	})
-	order := make([]string, 0, len(items))
-	for _, item := range items {
-		order = append(order, item.key)
-	}
-	return order
 }
 
 func (r Repository) recordEvent(action string, env string, key string, details map[string]interface{}) error {
