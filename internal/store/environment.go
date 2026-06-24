@@ -32,14 +32,42 @@ func (r Repository) GenerateLayout(env string, keys []string) error {
 	if err := r.requireEnvironment(env); err != nil {
 		return err
 	}
-	ranks := make(map[string]int, len(keys))
+	if err := r.requireWrite(env); err != nil {
+		return err
+	}
+	ranks := make(map[string]int64, len(keys))
 	for index, key := range keys {
 		if key == "" {
 			continue
 		}
-		ranks[key] = index + 1
+		if err := validateKey(key); err != nil {
+			return err
+		}
+		ranks[key] = int64(index+1) * keyMetadataPositionStep
 	}
-	return r.writeLayout(env, ranks)
+	existing, err := r.readEnvironmentKeyMetadataRecords(env)
+	if err != nil {
+		return err
+	}
+	for _, record := range existing {
+		if _, ok := ranks[record.Key]; ok {
+			continue
+		}
+		record.Position = 0
+		if err := r.writeKeyMetadata(record); err != nil {
+			return err
+		}
+	}
+	for key, position := range ranks {
+		rank := position
+		if err := r.updateKeyMetadata(env, key, func(record *domain.EnvironmentKeyMetadataRecord) error {
+			record.Position = rank
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r Repository) AddLayoutKey(env string, key string) error {
@@ -52,7 +80,7 @@ func (r Repository) AddLayoutKey(env string, key string) error {
 	if err := validateKey(key); err != nil {
 		return err
 	}
-	return r.addLayoutKey(env, key)
+	return r.updateKeyMetadata(env, key, nil)
 }
 
 func (r Repository) CreateEnvironment(name string, envType string) (EnvironmentResult, error) {
@@ -78,9 +106,6 @@ func (r Repository) CreateEnvironment(name string, envType string) (EnvironmentR
 		return EnvironmentResult{}, err
 	}
 	if err := r.ensureEnvironmentDirs(name); err != nil {
-		return EnvironmentResult{}, err
-	}
-	if err := r.writeLayout(name, map[string]int{}); err != nil {
 		return EnvironmentResult{}, err
 	}
 	policy, err := r.readPolicy()
@@ -165,20 +190,8 @@ func (r Repository) RenameEnvironment(source string, target string, reason strin
 		return err
 	}
 
-	values, err := r.ReadVariables(target)
-	if err == nil {
-		for key, variable := range values {
-			if err := r.writeVariable(writeVariableInput{
-				Environment: target,
-				Key:         key,
-				Value:       variable.Value,
-				Note:        variable.Note,
-				Existing:    true,
-				Commented:   variable.Commented,
-			}); err != nil {
-				return err
-			}
-		}
+	if err := r.rewriteKeyMetadataEnvironment(target, source, target); err != nil {
+		return err
 	}
 
 	if err := writeManifest(r.ManifestPath, r.Manifest); err != nil {

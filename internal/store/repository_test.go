@@ -110,6 +110,45 @@ func TestRepositoryEncryptsAndPullsVariables(t *testing.T) {
 	}
 }
 
+func TestRepositoryStoresSignedValueChangeReason(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "rotating leaked beta key"); err != nil {
+		t.Fatal(err)
+	}
+
+	record := readValueRecordForTest(t, repo, "local", "APP_KEY")
+	if record.Secret.Change == nil || record.Secret.Change.Reason != "rotating leaked beta key" {
+		t.Fatalf("expected signed value change reason, got %#v", record.Secret.Change)
+	}
+	if err := repo.verifyValueRecord(record); err != nil {
+		t.Fatalf("expected value change reason to be signed with value body: %v", err)
+	}
+	content, err := os.ReadFile(repo.valuePath("local", "APP_KEY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(content), "rotating leaked beta key") {
+		t.Fatalf("expected change reason to be reviewable in value file, got:\n%s", string(content))
+	}
+	if strings.Contains(string(content), "super-secret-value") {
+		t.Fatal("plaintext secret leaked into encrypted value file")
+	}
+	if strings.Contains(string(content), "change_note") {
+		t.Fatalf("did not expect legacy loose change_note field, got:\n%s", string(content))
+	}
+}
+
 func TestRepositoryLeaveDeviceRejectsLastOwner(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
@@ -378,6 +417,404 @@ func TestRepositoryReportsTamperedVariableMetadataSignature(t *testing.T) {
 	}
 	if !strings.Contains(metadata[0].SignatureError, "not bound") {
 		t.Fatalf("expected binding error, got %#v", metadata[0])
+	}
+}
+
+func TestRepositoryWritesSignedKeyMetadataForVariables(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	commented := true
+	vaporSecret := true
+	if err := repo.SetVariableWithOptions("local", "APP_KEY", "super-secret-value", VariableWriteOptions{
+		Reason:      "test",
+		Commented:   &commented,
+		VaporSecret: &vaporSecret,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	record := readKeyMetadataRecordForTest(t, repo, "local", "APP_KEY")
+	if record.Schema != domain.KeyMetadataSchema {
+		t.Fatalf("expected key metadata schema, got %s", record.Schema)
+	}
+	if record.Status != domain.KeyStatusCommented {
+		t.Fatalf("expected commented metadata status, got %#v", record)
+	}
+	if record.Deploy == nil || record.Deploy.LaravelVaporSecret == nil || !*record.Deploy.LaravelVaporSecret {
+		t.Fatalf("expected Vapor Secret deploy metadata, got %#v", record.Deploy)
+	}
+	metadataJSON, err := os.ReadFile(repo.keyMetadataPath("local", "APP_KEY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(metadataJSON), `"deploy"`) || !strings.Contains(string(metadataJSON), `"laravelVaporSecret": true`) {
+		t.Fatalf("expected flat Vapor deploy metadata, got:\n%s", string(metadataJSON))
+	}
+	if strings.Contains(string(metadataJSON), `"providerDeploy"`) || strings.Contains(string(metadataJSON), `"laravelVapor"`) {
+		t.Fatalf("did not expect legacy nested provider metadata, got:\n%s", string(metadataJSON))
+	}
+	if record.Position == 0 {
+		t.Fatalf("expected key metadata position, got %#v", record)
+	}
+	if record.ClientSig == "" {
+		t.Fatalf("expected signed key metadata, got %#v", record)
+	}
+	if err := repo.verifyKeyMetadata(record); err != nil {
+		t.Fatalf("expected valid key metadata signature: %v", err)
+	}
+
+	valueRecord := readValueRecordForTest(t, repo, "local", "APP_KEY")
+	encoded, err := json.Marshal(valueRecord.Secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(encoded), "is_vapor_secret") || strings.Contains(string(encoded), "is_commented") {
+		t.Fatalf("value secret should not own key metadata, got %s", string(encoded))
+	}
+}
+
+func TestRepositoryOmitsEmptyKeyDeployMetadata(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_NAME", "Ghostable", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(repo.keyMetadataPath("local", "APP_NAME"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(content), `"deploy"`) || strings.Contains(string(content), `"providerDeploy"`) {
+		t.Fatalf("expected normal key metadata to omit deploy metadata, got:\n%s", string(content))
+	}
+}
+
+func TestRepositoryReportsTamperedKeyMetadataSignature(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	record := readKeyMetadataRecordForTest(t, repo, "local", "APP_KEY")
+	record.Status = domain.KeyStatusCommented
+	writeKeyMetadataRecordForTest(t, repo, record)
+
+	projectRepo, err := OpenProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata, err := projectRepo.ReadVariableMetadata("local")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(metadata) != 1 {
+		t.Fatalf("expected one metadata entry, got %#v", metadata)
+	}
+	if metadata[0].ValidSignature {
+		t.Fatalf("expected tampered key metadata signature to be invalid: %#v", metadata[0])
+	}
+	if !strings.Contains(metadata[0].SignatureError, "invalid device signature") {
+		t.Fatalf("expected invalid signature error, got %#v", metadata[0])
+	}
+	if _, err := repo.ReadVariables("local"); err == nil || !strings.Contains(err.Error(), "invalid device signature") {
+		t.Fatalf("expected ReadVariables to reject tampered key metadata, got %v", err)
+	}
+}
+
+func TestRepositoryRejectsKeyMetadataStoredAtWrongPath(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(repo.keyMetadataPath("local", "APP_KEY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrongPath := repo.keyMetadataPath("local", "OTHER_KEY")
+	if err := os.WriteFile(wrongPath, content, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := repo.VerifyKeyMetadataFile(wrongPath); err == nil || !strings.Contains(err.Error(), "not bound") {
+		t.Fatalf("expected wrong-path key metadata to be rejected, got %v", err)
+	}
+}
+
+func TestRepositoryStoresEncryptedKeyMetadataNote(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariableNote("local", "APP_KEY", "rotate after launch"); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(repo.keyMetadataPath("local", "APP_KEY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(content), "rotate after launch") {
+		t.Fatal("plaintext note leaked into key metadata file")
+	}
+	variables, err := repo.ReadVariables("local")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if variables["APP_KEY"].Note != "rotate after launch" {
+		t.Fatalf("expected decrypted note, got %#v", variables["APP_KEY"])
+	}
+}
+
+func TestRepositoryVaporSecretMetadataDoesNotRewriteValue(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+	before := readValueRecordForTest(t, repo, "local", "APP_KEY")
+	if err := repo.SetVariableVaporSecret("local", "APP_KEY", true, "metadata only"); err != nil {
+		t.Fatal(err)
+	}
+	after := readValueRecordForTest(t, repo, "local", "APP_KEY")
+	if after.Version != before.Version || after.UpdatedAt != before.UpdatedAt || after.Secret.ClientSig != before.Secret.ClientSig {
+		t.Fatalf("expected metadata-only update not to rewrite value, before=%#v after=%#v", before, after)
+	}
+	variable, exists, err := repo.GetVariable("local", "APP_KEY")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || !variable.VaporSecret {
+		t.Fatalf("expected Vapor Secret metadata to be readable, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRepositoryDeleteVariableRemovesKeyMetadata(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(repo.keyMetadataPath("local", "APP_KEY")); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.DeleteVariable("local", "APP_KEY", "cleanup"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(repo.keyMetadataPath("local", "APP_KEY")); !os.IsNotExist(err) {
+		t.Fatalf("expected key metadata to be removed, stat err: %v", err)
+	}
+}
+
+func TestRepositoryUsesKeyMetadataForLayoutOrderAndKeyOnlyEntries(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "BETA", "two", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.GenerateLayout("local", []string{"BETA", "ALPHA", "SCHEMA_ONLY"}); err != nil {
+		t.Fatal(err)
+	}
+
+	expectedPositions := map[string]int64{
+		"BETA":        1000,
+		"ALPHA":       2000,
+		"SCHEMA_ONLY": 3000,
+	}
+	for key, expectedPosition := range expectedPositions {
+		record := readKeyMetadataRecordForTest(t, repo, "local", key)
+		if record.Position != expectedPosition {
+			t.Fatalf("expected sparse position %d for %s, got %#v", expectedPosition, key, record)
+		}
+	}
+
+	result, content, err := repo.Pull("local", PullOptions{File: ".env", DryRun: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Written != 2 {
+		t.Fatalf("expected only stored values to be pulled, got %#v", result)
+	}
+	if strings.Index(content, "BETA=two") > strings.Index(content, "ALPHA=one") {
+		t.Fatalf("expected BETA before ALPHA from metadata order, got:\n%s", content)
+	}
+	keyOnly := readKeyMetadataRecordForTest(t, repo, "local", "SCHEMA_ONLY")
+	if keyOnly.Position == 0 {
+		t.Fatalf("expected key-only metadata position, got %#v", keyOnly)
+	}
+	variables, err := repo.ReadVariables("local")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := variables["SCHEMA_ONLY"]; exists {
+		t.Fatalf("did not expect key-only metadata to create a value, got %#v", variables)
+	}
+}
+
+func TestRepositoryAppendsSparseKeyMetadataWithoutRepositioningExistingKeys(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.GenerateLayout("local", []string{"ALPHA", "BETA"}); err != nil {
+		t.Fatal(err)
+	}
+	beforeAlpha := readKeyMetadataRecordForTest(t, repo, "local", "ALPHA")
+	beforeBeta := readKeyMetadataRecordForTest(t, repo, "local", "BETA")
+
+	if err := repo.AddLayoutKey("local", "GAMMA"); err != nil {
+		t.Fatal(err)
+	}
+
+	afterAlpha := readKeyMetadataRecordForTest(t, repo, "local", "ALPHA")
+	afterBeta := readKeyMetadataRecordForTest(t, repo, "local", "BETA")
+	gamma := readKeyMetadataRecordForTest(t, repo, "local", "GAMMA")
+	if afterAlpha.Position != beforeAlpha.Position || afterBeta.Position != beforeBeta.Position {
+		t.Fatalf("expected existing positions to stay stable, before alpha=%d beta=%d after alpha=%d beta=%d", beforeAlpha.Position, beforeBeta.Position, afterAlpha.Position, afterBeta.Position)
+	}
+	if gamma.Position != 3000 {
+		t.Fatalf("expected appended key to use next sparse position, got %#v", gamma)
+	}
+}
+
+func TestRepositoryPullRejectsTamperedKeyOnlyMetadata(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.AddLayoutKey("local", "SCHEMA_ONLY"); err != nil {
+		t.Fatal(err)
+	}
+
+	record := readKeyMetadataRecordForTest(t, repo, "local", "SCHEMA_ONLY")
+	record.Status = domain.KeyStatusCommented
+	writeKeyMetadataRecordForTest(t, repo, record)
+
+	if _, _, err := repo.Pull("local", PullOptions{File: ".env", DryRun: true}); err == nil || !strings.Contains(err.Error(), "invalid device signature") {
+		t.Fatalf("expected pull to reject tampered key-only metadata, got %v", err)
+	}
+}
+
+func TestRepositoryPullFormatsManuallyEditedKeys(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_NAME", "Ghostable", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("app-name=Old\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, _, err := repo.Pull("local", PullOptions{File: ".env"}); err != nil {
+		t.Fatal(err)
+	}
+	content, err := os.ReadFile(filepath.Join(root, ".env"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != "APP_NAME=Ghostable\n" {
+		t.Fatalf("expected pull to normalize existing key, got %q", string(content))
 	}
 }
 
@@ -1122,4 +1559,40 @@ func writePolicyForTest(t *testing.T, root string, policy domain.Policy) {
 	if err := writeJSONAtomic(filepath.Join(root, ".ghostable", "policy.json"), policy, 0o644); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func readKeyMetadataRecordForTest(t *testing.T, repo Repository, env string, key string) domain.EnvironmentKeyMetadataRecord {
+	t.Helper()
+
+	content, err := os.ReadFile(repo.keyMetadataPath(env, key))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record domain.EnvironmentKeyMetadataRecord
+	if err := json.Unmarshal(content, &record); err != nil {
+		t.Fatal(err)
+	}
+	return record
+}
+
+func writeKeyMetadataRecordForTest(t *testing.T, repo Repository, record domain.EnvironmentKeyMetadataRecord) {
+	t.Helper()
+
+	content, err := json.MarshalIndent(record, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(repo.keyMetadataPath(record.Environment, record.Key), append(content, '\n'), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func readValueRecordForTest(t *testing.T, repo Repository, env string, key string) domain.ValueRecord {
+	t.Helper()
+
+	var record domain.ValueRecord
+	if err := readJSON(repo.valuePath(env, key), &record); err != nil {
+		t.Fatal(err)
+	}
+	return record
 }

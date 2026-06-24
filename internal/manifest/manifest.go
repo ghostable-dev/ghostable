@@ -37,6 +37,7 @@ func New(projectID string, name string, envs []domain.Environment) domain.Projec
 			"dist/**",
 			"build/**",
 			".ghostable/environments/**/values/**",
+			".ghostable/environments/**/keys/**",
 		},
 	}
 }

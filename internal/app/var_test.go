@@ -2,13 +2,11 @@ package app
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/prompt"
 	"github.com/ghostable-dev/beta/internal/store"
 )
@@ -97,6 +95,65 @@ func TestRunVarPushSelectsVariableFromFile(t *testing.T) {
 		t.Fatal(err)
 	} else if exists {
 		t.Fatal("did not expect unselected file variable to be stored")
+	}
+}
+
+func TestRunVarPushFromFilePromptsForChangeReason(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	envFile := filepath.Join(root, ".env.seed")
+	if err := os.WriteFile(envFile, []byte("ALPHA=one\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("rotating beta credential\nn\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "push", "--env", "default", "--file", ".env.seed", "--key", "ALPHA"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runVarPush(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "Reason for this change") {
+		t.Fatalf("expected change reason prompt, got:\n%s", output.String())
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := readValueRecordForAppTest(t, repo, "default", "ALPHA")
+	if record.Secret.Change == nil || record.Secret.Change.Reason != "rotating beta credential" {
+		t.Fatalf("expected prompted change reason in value record, got %#v", record.Secret.Change)
+	}
+}
+
+func TestRunVarPushJSONDoesNotPromptForChangeReason(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	envFile := filepath.Join(root, ".env.seed")
+	if err := os.WriteFile(envFile, []byte("ALPHA=one\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "push", "--env", "default", "--file", ".env.seed", "--key", "ALPHA", "--json"}, strings.NewReader(""), &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(strings.NewReader(""), &output)
+
+	if err := runner.runVarPush(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(output.String(), "Reason for this change") {
+		t.Fatalf("did not expect change reason prompt in JSON mode, got:\n%s", output.String())
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := readValueRecordForAppTest(t, repo, "default", "ALPHA")
+	if record.Secret.Change != nil {
+		t.Fatalf("did not expect JSON mode to store a prompted change reason, got %#v", record.Secret.Change)
 	}
 }
 
@@ -301,6 +358,38 @@ func TestRunVarPushAcceptsAbsoluteFilePath(t *testing.T) {
 	}
 }
 
+func TestRunVarPushFormatsFileKey(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	envFile := filepath.Join(t.TempDir(), ".env.seed")
+	if err := os.WriteFile(envFile, []byte("app-name=Ghostable\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "push", "--env", "default", "--key", "app-name", "--file", envFile, "--json"}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runVarPush(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	variable, exists, err := repo.GetVariable("default", "APP_NAME")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Value != "Ghostable" {
+		t.Fatalf("expected formatted file key to be stored, got exists=%v variable=%#v", exists, variable)
+	}
+	if _, exists, err := repo.GetVariable("default", "app-name"); err != nil {
+		t.Fatal(err)
+	} else if exists {
+		t.Fatal("did not expect raw app-name key to be stored")
+	}
+}
+
 func TestRunVarPushStoresCommentedFileVariable(t *testing.T) {
 	root := setupRepoForVarCommandTest(t)
 	envFile := filepath.Join(t.TempDir(), ".env.seed")
@@ -389,6 +478,144 @@ func TestRunVarVaporSecretTogglesMetadata(t *testing.T) {
 	}
 	if !strings.Contains(output.String(), `"vaporSecret": false`) {
 		t.Fatalf("expected JSON payload to include disabled Vapor Secret state, got:\n%s", output.String())
+	}
+}
+
+func TestRunVarContextCanSkipMissingNote(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "GOONIES", "never-say-die", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("n\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "context", "--env", "default", "--key", "GOONIES"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runVarContext(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "GOONIES has no note. Add one now?") || !strings.Contains(output.String(), "GOONIES has no note.") {
+		t.Fatalf("expected add-note prompt and no-note output, got:\n%s", output.String())
+	}
+	if strings.Contains(output.String(), "Variable note:") {
+		t.Fatalf("did not expect note entry prompt when add-note was declined, got:\n%s", output.String())
+	}
+
+	variable, exists, err := repo.GetVariable("default", "GOONIES")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Note != "" {
+		t.Fatalf("expected missing note to stay empty, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRunVarContextCanAddMissingNote(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "GOONIES", "never-say-die", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("y\nowned by data team\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "context", "--env", "default", "--key", "GOONIES"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runVarContext(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "GOONIES has no note. Add one now?") ||
+		!strings.Contains(output.String(), "Variable note:") ||
+		!strings.Contains(output.String(), "GOONIES note: owned by data team") {
+		t.Fatalf("expected add-note prompt and saved note output, got:\n%s", output.String())
+	}
+
+	variable, exists, err := repo.GetVariable("default", "GOONIES")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Note != "owned by data team" {
+		t.Fatalf("expected prompted note to be stored, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRunVarContextCanUpdateExistingNote(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariableNote("default", "ALPHA", "old note"); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("2\nupdated note\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "context", "--env", "default", "--key", "ALPHA"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runVarContext(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "Variable note") ||
+		!strings.Contains(output.String(), "Update note") ||
+		!strings.Contains(output.String(), "ALPHA note: updated note") {
+		t.Fatalf("expected update-note choice and output, got:\n%s", output.String())
+	}
+
+	variable, exists, err := repo.GetVariable("default", "ALPHA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Note != "updated note" {
+		t.Fatalf("expected note to be updated, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRunVarContextNoteFlagCanClearNote(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariableNote("default", "ALPHA", "temporary note"); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "context", "--env", "default", "--key", "ALPHA", "--note="}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runVarContext(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "ALPHA has no note.") {
+		t.Fatalf("expected cleared note output, got:\n%s", output.String())
+	}
+
+	variable, exists, err := repo.GetVariable("default", "ALPHA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Note != "" {
+		t.Fatalf("expected note to be cleared, got exists=%v variable=%#v", exists, variable)
 	}
 }
 
@@ -512,16 +739,9 @@ func TestRunVarPromotePromptsForKeyOnlyPromotion(t *testing.T) {
 	if len(values) != 0 {
 		t.Fatalf("did not expect key-only promotion to write values, got %#v", values)
 	}
-	var layout domain.Layout
-	content, err := os.ReadFile(filepath.Join(root, ".ghostable", "environments", "staging", "layout.json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := json.Unmarshal(content, &layout); err != nil {
-		t.Fatal(err)
-	}
-	if layout.Keys["ALPHA"] == 0 {
-		t.Fatalf("expected ALPHA in staging layout, got %#v", layout.Keys)
+	keyMetadata := readKeyMetadataForTest(t, root, "staging")
+	if keyMetadata["ALPHA"].Position == 0 {
+		t.Fatalf("expected ALPHA in staging key metadata, got %#v", keyMetadata)
 	}
 }
 

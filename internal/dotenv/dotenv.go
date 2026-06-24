@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 var keyPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
@@ -69,6 +70,51 @@ func IsValidKey(key string) bool {
 	return keyPattern.MatchString(key)
 }
 
+func FormatKey(key string) (string, bool, error) {
+	original := strings.TrimSpace(key)
+	if original == "" {
+		return "", false, fmt.Errorf("variable key is required")
+	}
+
+	var builder strings.Builder
+	lastUnderscore := false
+	hasAlphaNumeric := false
+	for _, r := range original {
+		switch {
+		case unicode.IsLetter(r):
+			builder.WriteRune(unicode.ToUpper(r))
+			lastUnderscore = false
+			hasAlphaNumeric = true
+		case unicode.IsDigit(r):
+			builder.WriteRune(r)
+			lastUnderscore = false
+			hasAlphaNumeric = true
+		case r == '_':
+			if !lastUnderscore {
+				builder.WriteRune('_')
+				lastUnderscore = true
+			}
+		default:
+			if !lastUnderscore {
+				builder.WriteRune('_')
+				lastUnderscore = true
+			}
+		}
+	}
+
+	formatted := builder.String()
+	if formatted != "" && formatted[0] >= '0' && formatted[0] <= '9' {
+		formatted = "_" + formatted
+	}
+	if !hasAlphaNumeric {
+		return "", false, fmt.Errorf("variable key must include at least one letter or number")
+	}
+	if !IsValidKey(formatted) {
+		return "", false, fmt.Errorf("use letters, numbers, and underscores")
+	}
+	return formatted, formatted != original, nil
+}
+
 func Render(values map[string]string, order []string) string {
 	keys := orderedKeys(values, order)
 	lines := make([]string, 0, len(keys))
@@ -88,15 +134,41 @@ func Merge(existing string, values map[string]string, order []string, replace bo
 		return "", err
 	}
 
-	lines := append([]string(nil), parsed.Lines...)
+	updates := map[int]string{}
+	removals := map[int]bool{}
 	written := make(map[string]bool)
 	for key, entry := range parsed.Entries {
 		value, ok := values[key]
 		if !ok {
 			continue
 		}
-		lines[entry.Line-1] = fmt.Sprintf("%s%s=%s", exportPrefix(entry.Export), key, FormatValue(value))
+		updates[entry.Line-1] = fmt.Sprintf("%s%s=%s", exportPrefix(entry.Export), key, FormatValue(value))
 		written[key] = true
+	}
+
+	for index, line := range parsed.Lines {
+		entry, ok := parseLine(line, index+1)
+		if !ok {
+			continue
+		}
+		if _, ok := values[entry.Key]; !ok {
+			continue
+		}
+		effectiveEntry := parsed.Entries[entry.Key]
+		if entry.Line != effectiveEntry.Line {
+			removals[index] = true
+		}
+	}
+
+	lines := make([]string, 0, len(parsed.Lines))
+	for index, line := range parsed.Lines {
+		if removals[index] {
+			continue
+		}
+		if updated, ok := updates[index]; ok {
+			line = updated
+		}
+		lines = append(lines, line)
 	}
 
 	for _, key := range orderedKeys(values, order) {
@@ -152,8 +224,8 @@ func parseLine(line string, lineNumber int) (Entry, bool) {
 		return Entry{}, false
 	}
 
-	key = strings.TrimSpace(key)
-	if !IsValidKey(key) {
+	key, _, err := FormatKey(key)
+	if err != nil {
 		return Entry{}, false
 	}
 

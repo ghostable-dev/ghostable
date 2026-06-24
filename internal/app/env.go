@@ -431,7 +431,7 @@ func (r *Runner) runEnvPush(args []string, syncMode bool) error {
 	env := fs.String("env", "", "Environment name")
 	file := fs.String("file", "", "Path to .env file")
 	syncFlag := fs.Bool("sync", syncMode, "Delete stored variables absent from the local file")
-	reason := fs.String("reason", "", "Reason stored in signed local events")
+	reason := fs.String("reason", "", "Reason stored in signed value changes and local events")
 	assumeYes := fs.Bool("assume-yes", false, "Skip summary output")
 	fs.BoolVar(assumeYes, "y", false, "Skip summary output")
 	jsonOut := fs.Bool("json", false, "Print transfer summary as JSON")
@@ -449,11 +449,22 @@ func (r *Runner) runEnvPush(args []string, syncMode bool) error {
 	if *file == "" {
 		*file = envFileDefault(selected)
 	}
-	values, err := readDotenvFile(repoFilePath(repo.Root, *file))
+	values, err := readDotenvVariableInputs(repoFilePath(repo.Root, *file))
 	if err != nil {
 		return err
 	}
-	result, err := repo.PutVariables(selected, values, storePut(*reason, *syncFlag))
+	changeReason := *reason
+	if strings.TrimSpace(changeReason) == "" && r.interactive && !*jsonOut {
+		current, err := repo.ReadVariables(selected)
+		if err != nil {
+			return err
+		}
+		changeReason, err = r.maybePromptValueChangeReason(changeReason, *jsonOut, variableInputsChangeStoredValues(current, values))
+		if err != nil {
+			return err
+		}
+	}
+	result, err := repo.PutVariablesWithMetadata(selected, values, storePut(changeReason, *syncFlag))
 	if err != nil {
 		return err
 	}
@@ -469,6 +480,16 @@ func (r *Runner) runEnvPush(args []string, syncMode bool) error {
 
 func pushResultChangedKeys(result store.PushResult) bool {
 	return len(result.Created) > 0 || len(result.Deleted) > 0
+}
+
+func variableInputsChangeStoredValues(current map[string]domain.Variable, incoming map[string]store.VariablePutInput) bool {
+	for key, input := range incoming {
+		variable, exists := current[key]
+		if !exists || variable.Value != input.Value {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *Runner) runEnvPull(args []string) error {
@@ -1043,12 +1064,17 @@ func readDotenvFile(file string) (map[string]string, error) {
 	return dotenv.ParseString(string(content))
 }
 
-func readDotenvValuesAndKeys(file string) (map[string]string, []string, error) {
+func readDotenvVariableInputs(file string) (map[string]store.VariablePutInput, error) {
+	values, _, err := readDotenvVariableInputsAndKeys(file)
+	return values, err
+}
+
+func readDotenvVariableInputsAndKeys(file string) (map[string]store.VariablePutInput, []string, error) {
 	parsed, err := readDotenvEntries(file)
 	if err != nil {
 		return nil, nil, err
 	}
-	values := make(map[string]string, len(parsed.Entries))
+	values := make(map[string]store.VariablePutInput, len(parsed.Entries))
 	keys := make([]string, 0, len(parsed.Entries))
 	entries := make([]dotenv.Entry, 0, len(parsed.Entries))
 	for _, entry := range parsed.Entries {
@@ -1058,10 +1084,11 @@ func readDotenvValuesAndKeys(file string) (map[string]string, []string, error) {
 		return entries[i].Line < entries[j].Line
 	})
 	for _, entry := range entries {
-		if entry.Disabled {
-			continue
+		commented := entry.Disabled
+		values[entry.Key] = store.VariablePutInput{
+			Value:     entry.Value,
+			Commented: &commented,
 		}
-		values[entry.Key] = entry.Value
 		keys = append(keys, entry.Key)
 	}
 	return values, keys, nil
@@ -1086,21 +1113,21 @@ func seedEnvironment(repo store.Repository, input environmentSeedInput) (environ
 		}
 		return seedEnvironmentFromVariables(repo, input.target, variables, input.mode, input.reason)
 	case input.sourceFile != "":
-		values, keys, err := readDotenvValuesAndKeys(input.sourceFile)
+		values, keys, err := readDotenvVariableInputsAndKeys(input.sourceFile)
 		if err != nil {
 			return result, err
 		}
-		return seedEnvironmentFromValues(repo, input.target, values, keys, input.mode, input.reason)
+		return seedEnvironmentFromInputs(repo, input.target, values, keys, input.mode, input.reason)
 	default:
 		return result, nil
 	}
 }
 
 func seedEnvironmentFromVariables(repo store.Repository, target string, variables map[string]domain.Variable, mode string, reason string) (environmentSeedResult, error) {
-	return seedEnvironmentFromValues(repo, target, valuesFromVariables(variables), variableKeys(variables), mode, reason)
+	return seedEnvironmentFromInputs(repo, target, variableInputsFromVariables(variables), variableKeys(variables), mode, reason)
 }
 
-func seedEnvironmentFromValues(repo store.Repository, target string, values map[string]string, keys []string, mode string, reason string) (environmentSeedResult, error) {
+func seedEnvironmentFromInputs(repo store.Repository, target string, values map[string]store.VariablePutInput, keys []string, mode string, reason string) (environmentSeedResult, error) {
 	result := emptyEnvironmentSeedResult()
 
 	if mode == "keys-only" {
@@ -1112,9 +1139,9 @@ func seedEnvironmentFromValues(repo store.Repository, target string, values map[
 	}
 
 	if mode == "insensitive" {
-		values = filterInsensitive(values)
+		values = filterInsensitiveVariableInputs(values)
 	}
-	pushed, err := repo.PutVariables(target, values, storePut(reason, false))
+	pushed, err := repo.PutVariablesWithMetadata(target, values, storePut(reason, false))
 	if err != nil {
 		return result, err
 	}
@@ -1122,16 +1149,26 @@ func seedEnvironmentFromValues(repo store.Repository, target string, values map[
 	return result, nil
 }
 
-func valuesFromVariables(variables map[string]domain.Variable) map[string]string {
-	values := make(map[string]string, len(variables))
+func variableInputsFromVariables(variables map[string]domain.Variable) map[string]store.VariablePutInput {
+	values := make(map[string]store.VariablePutInput, len(variables))
 	for key, variable := range variables {
-		values[key] = variable.Value
+		commented := variable.Commented
+		var vaporSecret *bool
+		if variable.VaporSecret {
+			enabled := true
+			vaporSecret = &enabled
+		}
+		values[key] = store.VariablePutInput{
+			Value:       variable.Value,
+			Commented:   &commented,
+			VaporSecret: vaporSecret,
+		}
 	}
 	return values
 }
 
-func filterInsensitive(values map[string]string) map[string]string {
-	filtered := make(map[string]string, len(values))
+func filterInsensitiveVariableInputs(values map[string]store.VariablePutInput) map[string]store.VariablePutInput {
+	filtered := make(map[string]store.VariablePutInput, len(values))
 	for key, value := range values {
 		if looksSensitiveSeedKey(key) {
 			continue

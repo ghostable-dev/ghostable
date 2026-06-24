@@ -750,6 +750,70 @@ func TestRunEnvCreateFromEnvDefaultsToNonSensitiveValues(t *testing.T) {
 	}
 }
 
+func TestRunEnvCreateFromEnvCopiesKeyMetadata(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	commented := true
+	vaporSecret := true
+	if err := repo.SetVariableWithOptions("default", "APP_KEY", "secret", store.VariableWriteOptions{
+		Reason:      "test",
+		Commented:   &commented,
+		VaporSecret: &vaporSecret,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "create", "staging", "--from-env", "default", "--seed", "all"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvCreate(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	repo, err = store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	variable, exists, err := repo.GetVariable("staging", "APP_KEY")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Value != "secret" || !variable.Commented || !variable.VaporSecret {
+		t.Fatalf("expected value and key metadata to be copied, got exists=%v variable=%#v", exists, variable)
+	}
+}
+
+func TestRunEnvCreateFromFileCopiesCommentedMetadata(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	envFile := filepath.Join(root, ".env.seed")
+	if err := os.WriteFile(envFile, []byte("# APP_KEY=secret\nAPP_NAME=Ghostable\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "create", "staging", "--from-file", ".env.seed", "--seed", "all"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvCreate(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	variables, err := repo.ReadVariables("staging")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if variables["APP_KEY"].Value != "secret" || !variables["APP_KEY"].Commented {
+		t.Fatalf("expected commented file seed metadata, got %#v", variables["APP_KEY"])
+	}
+	if variables["APP_NAME"].Value != "Ghostable" || variables["APP_NAME"].Commented {
+		t.Fatalf("expected active file seed metadata, got %#v", variables["APP_NAME"])
+	}
+}
+
 func TestRunEnvCreateFromEnvCanCopyKeysOnly(t *testing.T) {
 	root := setupRepoForEnvCommandTest(t)
 	repo, err := store.Open(root)
@@ -780,16 +844,9 @@ func TestRunEnvCreateFromEnvCanCopyKeysOnly(t *testing.T) {
 	if len(values) != 0 {
 		t.Fatalf("did not expect values to be copied: %#v", values)
 	}
-	var layout domain.Layout
-	content, err := os.ReadFile(filepath.Join(root, ".ghostable", "environments", "staging", "layout.json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := json.Unmarshal(content, &layout); err != nil {
-		t.Fatal(err)
-	}
-	if len(layout.Keys) != 2 || layout.Keys["APP_NAME"] == 0 || layout.Keys["APP_KEY"] == 0 {
-		t.Fatalf("expected key layout to be copied, got %#v", layout.Keys)
+	keyMetadata := readKeyMetadataForTest(t, root, "staging")
+	if len(keyMetadata) != 2 || keyMetadata["APP_NAME"].Position == 0 || keyMetadata["APP_KEY"].Position == 0 {
+		t.Fatalf("expected key metadata positions to be copied, got %#v", keyMetadata)
 	}
 	if !strings.Contains(output.String(), `Created "staging" environment and seeded key layout from default with 2 keys.`) {
 		t.Fatalf("expected key layout seed summary, got:\n%s", output.String())
@@ -914,7 +971,7 @@ func TestRunEnvListJSONIncludesSummaryFields(t *testing.T) {
 func TestRunEnvPushAcceptsAbsoluteFilePath(t *testing.T) {
 	root := setupRepoForEnvCommandTest(t)
 	envFile := filepath.Join(t.TempDir(), ".env.seed")
-	if err := os.WriteFile(envFile, []byte("APP_NAME=Ghostable\n"), 0o600); err != nil {
+	if err := os.WriteFile(envFile, []byte("app-name=Ghostable\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -934,6 +991,78 @@ func TestRunEnvPushAcceptsAbsoluteFilePath(t *testing.T) {
 	}
 	if !exists || variable.Value != "Ghostable" {
 		t.Fatalf("expected absolute file env push to store APP_NAME, got exists=%v variable=%#v", exists, variable)
+	}
+	if _, exists, err := repo.GetVariable("default", "app-name"); err != nil {
+		t.Fatal(err)
+	} else if exists {
+		t.Fatal("did not expect raw app-name key to be stored")
+	}
+}
+
+func TestRunEnvPushPromptsOnceForBatchChangeReason(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	envFile := filepath.Join(t.TempDir(), ".env.seed")
+	if err := os.WriteFile(envFile, []byte("ALPHA=one\nBETA=two\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	input := &oneByteReader{reader: strings.NewReader("seeded from shared env file\nn\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "push", "--env", "default", "--file", envFile}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runEnvPush(runner.args[3:], false); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(output.String(), "Reason for this change") != 1 {
+		t.Fatalf("expected one batch change reason prompt, got:\n%s", output.String())
+	}
+
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"ALPHA", "BETA"} {
+		record := readValueRecordForAppTest(t, repo, "default", key)
+		if record.Secret.Change == nil || record.Secret.Change.Reason != "seeded from shared env file" {
+			t.Fatalf("expected prompted batch reason for %s, got %#v", key, record.Secret.Change)
+		}
+	}
+}
+
+func TestRunEnvPushUpdatesCommentedMetadataWithoutValueChange(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "APP_KEY", "secret", "test"); err != nil {
+		t.Fatal(err)
+	}
+	before := readValueRecordForAppTest(t, repo, "default", "APP_KEY")
+
+	envFile := filepath.Join(t.TempDir(), ".env.seed")
+	if err := os.WriteFile(envFile, []byte("# APP_KEY=secret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "push", "--env", "default", "--file", envFile, "--assume-yes", "--json"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvPush(runner.args[3:], false); err != nil {
+		t.Fatal(err)
+	}
+
+	variable, exists, err := repo.GetVariable("default", "APP_KEY")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || !variable.Commented {
+		t.Fatalf("expected env push to update commented metadata, got exists=%v variable=%#v", exists, variable)
+	}
+	after := readValueRecordForAppTest(t, repo, "default", "APP_KEY")
+	if after.Version != before.Version || after.Secret.ClientSig != before.Secret.ClientSig {
+		t.Fatalf("expected commented-only env push not to rewrite value, before=%#v after=%#v", before, after)
 	}
 }
 
@@ -1026,6 +1155,52 @@ func setupRepoForEnvCommandTest(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return root
+}
+
+func readKeyMetadataForTest(t *testing.T, root string, env string) map[string]domain.EnvironmentKeyMetadataRecord {
+	t.Helper()
+
+	files, err := filepath.Glob(filepath.Join(root, ".ghostable", "environments", env, "keys", "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata := map[string]domain.EnvironmentKeyMetadataRecord{}
+	for _, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var record domain.EnvironmentKeyMetadataRecord
+		if err := json.Unmarshal(content, &record); err != nil {
+			t.Fatal(err)
+		}
+		metadata[record.Key] = record
+	}
+	return metadata
+}
+
+func readValueRecordForAppTest(t *testing.T, repo store.Repository, env string, key string) domain.ValueRecord {
+	t.Helper()
+
+	files, err := filepath.Glob(filepath.Join(repo.Root, ".ghostable", "environments", "*", "values", "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var record domain.ValueRecord
+		if err := json.Unmarshal(content, &record); err != nil {
+			t.Fatal(err)
+		}
+		if record.Environment == env && record.Key == key {
+			return record
+		}
+	}
+	t.Fatalf("value record for %s in %s was not found", key, env)
+	return domain.ValueRecord{}
 }
 
 type oneByteReader struct {

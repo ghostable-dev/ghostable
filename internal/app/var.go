@@ -3,10 +3,8 @@ package app
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"sort"
 	"strings"
-	"unicode"
 
 	"github.com/ghostable-dev/beta/internal/cli"
 	"github.com/ghostable-dev/beta/internal/domain"
@@ -28,8 +26,6 @@ var variablePromotionModeOptions = []commandOption{
 	{Label: "value", Description: "Promote the value and variable flags"},
 	{Label: "key only", Value: "key-only", Description: "Add the key to target layout without copying its value"},
 }
-
-var manualVariableKeyPattern = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)
 
 func (r *Runner) runVar(args []string) error {
 	if len(args) == 0 {
@@ -82,7 +78,7 @@ func (r *Runner) runVarPush(args []string) error {
 	env := fs.String("env", "", "Environment name")
 	key := fs.String("key", "", "Variable name")
 	file := fs.String("file", "", "Path to .env file")
-	reason := fs.String("reason", "", "Reason stored in signed local events")
+	reason := fs.String("reason", "", "Reason stored in signed value changes and local events")
 	vaporSecret := fs.Bool("vapor-secret", false, "Mark this variable as a Laravel Vapor Secret")
 	noVaporSecret := fs.Bool("no-vapor-secret", false, "Unmark this variable as a Laravel Vapor Secret")
 	jsonOut := fs.Bool("json", false, "Print mutation result as JSON")
@@ -131,7 +127,7 @@ func (r *Runner) runVarPush(args []string) error {
 	if !r.interactive {
 		return fmt.Errorf("pass --file so the value does not appear in shell history")
 	}
-	_, existed, err := repo.GetVariable(selected, variableKey)
+	current, existed, err := repo.GetVariable(selected, variableKey)
 	if err != nil {
 		return err
 	}
@@ -139,9 +135,14 @@ func (r *Runner) runVarPush(args []string) error {
 	if err != nil {
 		return err
 	}
+	valueChanged := !existed || current.Value != value
+	changeReason, err := r.maybePromptValueChangeReason(*reason, *jsonOut, valueChanged)
+	if err != nil {
+		return err
+	}
 
 	if err := repo.SetVariableWithOptions(selected, variableKey, value, store.VariableWriteOptions{
-		Reason:      *reason,
+		Reason:      changeReason,
 		VaporSecret: vaporSecretOverride,
 	}); err != nil {
 		return err
@@ -209,6 +210,13 @@ func (r *Runner) tryVarPushFromFile(input varPushFileInput) (varPushFileResult, 
 	}
 
 	variableKey := strings.TrimSpace(input.providedKey)
+	if variableKey != "" {
+		formattedKey, _, err := formatManualVariableKey(variableKey)
+		if err != nil {
+			return varPushFileResult{}, err
+		}
+		variableKey = formattedKey
+	}
 	if variableKey == "" {
 		if len(values) == 0 && input.fallbackOnMissingKey {
 			return varPushFileResult{newVariableOnly: true}, nil
@@ -227,12 +235,17 @@ func (r *Runner) tryVarPushFromFile(input varPushFileInput) (varPushFileResult, 
 		}
 		return varPushFileResult{}, fmt.Errorf("%s was not found in %s", variableKey, input.file)
 	}
-	_, existed, err := input.repo.GetVariable(input.environment, variableKey)
+	current, existed, err := input.repo.GetVariable(input.environment, variableKey)
+	if err != nil {
+		return varPushFileResult{}, err
+	}
+	valueChanged := !existed || current.Value != entry.Value
+	changeReason, err := r.maybePromptValueChangeReason(input.reason, input.jsonOut, valueChanged)
 	if err != nil {
 		return varPushFileResult{}, err
 	}
 	if err := input.repo.SetVariableWithOptions(input.environment, variableKey, entry.Value, store.VariableWriteOptions{
-		Reason:      input.reason,
+		Reason:      changeReason,
 		Commented:   &entry.Disabled,
 		VaporSecret: input.vaporSecretOverride,
 	}); err != nil {
@@ -373,7 +386,7 @@ func (r *Runner) runVarPromote(args []string) error {
 	to := fs.String("to", "", "Target environment name")
 	key := fs.String("key", "", "Variable name")
 	mode := fs.String("mode", "value", "Promotion mode: value or key-only")
-	reason := fs.String("reason", "", "Reason stored in signed local events")
+	reason := fs.String("reason", "", "Reason stored in signed value changes and local events")
 	jsonOut := fs.Bool("json", false, "Print promotion result as JSON")
 	modeProvided := hasFlag(args, "mode")
 	if _, err := cli.Parse(fs, args, cli.BoolFlags("json")); err != nil {
@@ -421,11 +434,24 @@ func (r *Runner) runVarPromote(args []string) error {
 	}
 
 	commented := variable.Commented
-	vaporSecret := variable.VaporSecret
+	var vaporSecret *bool
+	if variable.VaporSecret {
+		enabled := true
+		vaporSecret = &enabled
+	}
+	targetVariable, targetExists, err := repo.GetVariable(target, variableKey)
+	if err != nil {
+		return err
+	}
+	valueChanged := !targetExists || targetVariable.Value != variable.Value
+	changeReason, err := r.maybePromptValueChangeReason(*reason, *jsonOut, valueChanged)
+	if err != nil {
+		return err
+	}
 	if err := repo.SetVariableWithOptions(target, variableKey, variable.Value, store.VariableWriteOptions{
-		Reason:      *reason,
+		Reason:      changeReason,
 		Commented:   &commented,
-		VaporSecret: &vaporSecret,
+		VaporSecret: vaporSecret,
 	}); err != nil {
 		return err
 	}
@@ -531,6 +557,7 @@ func (r *Runner) runVarContext(args []string) error {
 	key := fs.String("key", "", "Variable name")
 	note := fs.String("note", "", "Replace the encrypted note for this variable")
 	jsonOut := fs.Bool("json", false, "Print decrypted context as JSON")
+	noteProvided := hasFlag(args, "note")
 	if _, err := cli.Parse(fs, args, cli.BoolFlags("json")); err != nil {
 		return err
 	}
@@ -546,7 +573,7 @@ func (r *Runner) runVarContext(args []string) error {
 	if err != nil {
 		return err
 	}
-	if *note != "" {
+	if noteProvided {
 		if err := repo.SetVariableNote(selected, variableKey, *note); err != nil {
 			return err
 		}
@@ -563,12 +590,55 @@ func (r *Runner) runVarContext(args []string) error {
 	if *jsonOut {
 		return printJSON(r.out, variable)
 	}
+	if r.interactive && !noteProvided {
+		note, err := r.maybeUpdateVariableNote(repo, selected, variableKey, variable.Note)
+		if err != nil {
+			return err
+		}
+		variable.Note = note
+	}
 	if variable.Note == "" {
 		fmt.Fprintln(r.out, warn(fmt.Sprintf("%s has no note.", variableKey)))
 	} else {
 		fmt.Fprintf(r.out, "%s note: %s\n", variableKey, variable.Note)
 	}
 	return nil
+}
+
+func (r *Runner) maybeUpdateVariableNote(repo store.Repository, env string, key string, currentNote string) (string, error) {
+	if currentNote == "" {
+		addNote, err := r.prompts.Confirm(fmt.Sprintf("%s has no note. Add one now?", key), false)
+		if err != nil {
+			return "", err
+		}
+		if !addNote {
+			return "", nil
+		}
+		return r.promptAndSaveVariableNote(repo, env, key, "")
+	}
+
+	action, err := r.prompts.Select("Variable note", []string{"View note", "Update note"}, 0)
+	if err != nil {
+		return "", err
+	}
+	if action != "Update note" {
+		return currentNote, nil
+	}
+	return r.promptAndSaveVariableNote(repo, env, key, currentNote)
+}
+
+func (r *Runner) promptAndSaveVariableNote(repo store.Repository, env string, key string, currentNote string) (string, error) {
+	note, err := r.prompts.Ask("Variable note", currentNote)
+	if err != nil {
+		return "", err
+	}
+	if note == currentNote {
+		return currentNote, nil
+	}
+	if err := repo.SetVariableNote(env, key, note); err != nil {
+		return "", err
+	}
+	return note, nil
 }
 
 func (r *Runner) selectVariableKeyForPush(repo store.Repository, env string, provided string, newVariableOnly bool) (string, error) {
@@ -623,47 +693,7 @@ func (r *Runner) askManualVariableKey() (string, error) {
 }
 
 func formatManualVariableKey(key string) (string, bool, error) {
-	original := strings.TrimSpace(key)
-	if original == "" {
-		return "", false, fmt.Errorf("variable key is required")
-	}
-
-	var builder strings.Builder
-	lastUnderscore := false
-	hasAlphaNumeric := false
-	for _, r := range original {
-		switch {
-		case unicode.IsLetter(r):
-			builder.WriteRune(unicode.ToUpper(r))
-			lastUnderscore = false
-			hasAlphaNumeric = true
-		case unicode.IsDigit(r):
-			builder.WriteRune(r)
-			lastUnderscore = false
-			hasAlphaNumeric = true
-		case r == '_':
-			if !lastUnderscore {
-				builder.WriteRune('_')
-				lastUnderscore = true
-			}
-		default:
-			if !lastUnderscore {
-				builder.WriteRune('_')
-				lastUnderscore = true
-			}
-		}
-	}
-	formatted := builder.String()
-	if formatted != "" && formatted[0] >= '0' && formatted[0] <= '9' {
-		formatted = "_" + formatted
-	}
-	if !hasAlphaNumeric {
-		return "", false, fmt.Errorf("variable key must include at least one letter or number")
-	}
-	if !manualVariableKeyPattern.MatchString(formatted) {
-		return "", false, fmt.Errorf("use letters, numbers, and underscores")
-	}
-	return formatted, formatted != original, nil
+	return dotenv.FormatKey(key)
 }
 
 func (r *Runner) selectVariableKey(repo store.Repository, env string, provided string) (string, error) {

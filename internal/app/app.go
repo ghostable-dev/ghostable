@@ -223,6 +223,18 @@ func (r *Runner) printProgress(enabled bool, message string) {
 	}
 }
 
+func (r *Runner) maybePromptValueChangeReason(reason string, jsonOut bool, valueChanged bool) (string, error) {
+	trimmedReason := strings.TrimSpace(reason)
+	if trimmedReason != "" || jsonOut || !r.interactive || !valueChanged {
+		return trimmedReason, nil
+	}
+	answer, err := r.prompts.Ask("Reason for this change", "")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(answer), nil
+}
+
 func isHelpArg(value string) bool {
 	switch value {
 	case "-h", "--help", "help":

@@ -135,6 +135,12 @@ func verifyChangedGhostableMetadata(repo store.Repository, files []ChangedFile) 
 			if err := repo.VerifyAccessGrantMetadataFile(file.Path); err != nil {
 				findings = append(findings, fileFinding(SeverityError, "access_grant_invalid", file.Path, 0, fmt.Sprintf("Ghostable access grant does not verify: %v", err)))
 			}
+			continue
+		}
+		if isGhostableKeyMetadataPath(file.Path) && file.Status != "deleted" {
+			if err := repo.VerifyKeyMetadataFile(file.Path); err != nil {
+				findings = append(findings, fileFinding(SeverityError, "key_metadata_invalid", file.Path, 0, fmt.Sprintf("Ghostable key metadata does not verify: %v", err)))
+			}
 		}
 	}
 	return findings
@@ -189,6 +195,13 @@ func isGhostableValuePath(path string) bool {
 	path = filepath.ToSlash(path)
 	return strings.HasPrefix(path, ".ghostable/environments/") &&
 		strings.Contains(path, "/values/") &&
+		strings.HasSuffix(path, ".json")
+}
+
+func isGhostableKeyMetadataPath(path string) bool {
+	path = filepath.ToSlash(path)
+	return strings.HasPrefix(path, ".ghostable/environments/") &&
+		strings.Contains(path, "/keys/") &&
 		strings.HasSuffix(path, ".json")
 }
 

@@ -90,7 +90,7 @@ func (r *Runner) runSetup(args []string) error {
 
 	var seedResult *store.PushResult
 	if dotenvSeed != nil && len(dotenvSeed.values) > 0 {
-		result, err := repo.PutVariables(domain.DefaultEnvName, dotenvSeed.values, store.PutOptions{Reason: "Seeded from .env during setup"})
+		result, err := repo.PutVariablesWithMetadata(domain.DefaultEnvName, dotenvSeed.values, store.PutOptions{Reason: "Seeded from .env during setup"})
 		if err != nil {
 			return err
 		}
@@ -141,7 +141,7 @@ func (r *Runner) printSetupResult(repo store.Repository, dotenvSeed *defaultDote
 
 type defaultDotenvSeed struct {
 	file   string
-	values map[string]string
+	values map[string]store.VariablePutInput
 }
 
 func (r *Runner) promptDefaultDotenvSeed(envs []domain.Environment, jsonOut bool) (*defaultDotenvSeed, error) {
@@ -169,7 +169,7 @@ func (r *Runner) promptDefaultDotenvSeed(envs []domain.Environment, jsonOut bool
 		return nil, nil
 	}
 
-	values, err := readDotenvFile(path)
+	values, err := readDotenvVariableInputs(path)
 	if err != nil {
 		return nil, err
 	}
