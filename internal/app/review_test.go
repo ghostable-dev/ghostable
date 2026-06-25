@@ -32,8 +32,7 @@ func TestRunReviewHelp(t *testing.T) {
 func TestRunReviewDefaultsToEnvAndSecretChecks(t *testing.T) {
 	root := setupReviewCommandRepo(t)
 	commitAllForReviewCommandTest(t, root, "baseline")
-	
-	
+
 	writeReviewCommandFile(t, root, "app/client.php", "<?php\n$secret = env('OPENAI_API_KEY');\n")
 	writeReviewCommandFile(t, root, "config.js", "console.log('sk-proj-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');\n")
 

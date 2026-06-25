@@ -8,9 +8,9 @@
 [![License](https://img.shields.io/github/license/ghostable-dev/beta)](LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-signed%20%26%20notarized-2ea44f)](https://github.com/ghostable-dev/beta/releases/latest)
 
-Ghostable is a server-less CLI for local-first environment management:
+Ghostable is a serverless CLI for local-first environment management:
 projects, environments, variables, devices, schema validation, agent guidance,
-and signed-style activity records.
+and signed activity records.
 
 Ghostable keeps environment management local-first and repository-backed.
 Encrypted value files, public device records, signed policy, signed activity,
@@ -151,7 +151,7 @@ rotation:
           rotationAfterDays: 60
 ```
 
-## Review
+## Review and Secret Scanning
 
 `ghostable review` scans changed lines for common ENV access patterns in
 PHP/Laravel, JavaScript/TypeScript/Node, Go, Python, Ruby/Rails, Java, C#,
@@ -159,6 +159,27 @@ Rust, Swift, and shell/deploy scripts. It compares those references with
 encrypted Ghostable values, schema files, `.env.example`, and signed
 `.ghostable/` records. GitHub Actions workflow references under
 `.github/` are ignored because those often come from GitHub Secrets or Vars.
+
+`ghostable review` also runs local hard-coded secret scanning by default. Use
+`ghostable review --secrets-only` when you only want the secret scan, or
+`ghostable review --env-only` when you only want the ENV metadata checks. The
+legacy `ghostable scan` command is still available as a direct secret-scan
+path.
+
+Secret scanning uses manifest ignores from:
+
+```yaml
+scan:
+  ignores:
+    - .git/**
+    - node_modules/**
+    - .ghostable/environments/**/values/**
+    - .ghostable/environments/**/keys/**
+```
+
+Findings are redacted by default. Use `--json` for machine-readable output.
+`--show-values` exists for explicit human debugging, but agents should avoid it
+unless the user asks.
 
 ## Deploy Scripts
 
@@ -174,7 +195,7 @@ ghostable deploy laravel-vapor production
 ghostable deploy laravel-cloud production
 ```
 
-Laravel Vapor deploys sync Ghostable values to Vapor environment variables:
+Laravel Vapor deploys selected Ghostable values to Vapor environment variables:
 
 ```sh
 ghostable deploy laravel-vapor production --dry-run
@@ -185,7 +206,7 @@ ghostable deploy laravel-vapor production
 `--dry-run` is used. Variables are merged into Vapor's temporary
 `.env.<environment>` file and pushed with `vapor env:push`.
 
-Laravel Cloud deploys sync Ghostable values to Laravel Cloud environment
+Laravel Cloud deploys selected Ghostable values to Laravel Cloud environment
 variables using the Laravel Cloud CLI:
 
 ```sh
@@ -200,8 +221,8 @@ keys are updated and missing keys are added. The Cloud environment defaults to
 the Ghostable environment name; use `--cloud-env` when Laravel Cloud uses a
 different environment ID or name.
 
-Laravel Forge deploys sync Ghostable values to a Forge site's environment file
-using the Laravel Forge CLI:
+Laravel Forge deploys selected Ghostable values to a Forge site's environment
+file using the Laravel Forge CLI:
 
 ```sh
 ghostable deploy laravel-forge production --dry-run --forge-site example.com
@@ -245,29 +266,6 @@ $FORGE_PHP artisan migrate --force
 
 For Laravel Cloud, run `ghostable deploy laravel-cloud` before starting a Cloud
 deployment when changed variables should be available to the next deploy.
-
-## Secret Scanning
-
-`ghostable review` runs encrypted ENV review and hard-coded secret scanning by
-default. Use `ghostable review --secrets-only` when you only want the local
-hard-coded secret scan, or `ghostable review --env-only` when you only want the
-ENV metadata checks. The legacy `ghostable scan` command is still available as
-a direct secret-scan path.
-
-Secret scanning uses manifest ignores from:
-
-```yaml
-scan:
-  ignores:
-    - .git/**
-    - node_modules/**
-    - .ghostable/environments/**/values/**
-    - .ghostable/environments/**/keys/**
-```
-
-Findings are redacted by default. Use `--json` for machine-readable output.
-`--show-values` exists for explicit human debugging, but agents should avoid it
-unless the user asks.
 
 ## Storage
 
@@ -316,7 +314,6 @@ are created with `0600` permissions.
 
 ## Implementation Notes
 
-This client intentionally does not include hosted Ghostable API behavior. Value
-writes use the Ghostable value schema (`ghostable.value.v1`) and the same core
+Value writes use the Ghostable value schema (`ghostable.value.v1`) and the core
 cryptographic model: Ed25519 device signatures, X25519 grants, HKDF-SHA256 key
 derivation, and XChaCha20-Poly1305 value encryption.
