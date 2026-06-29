@@ -647,6 +647,33 @@ func (r Repository) verifyKeyMetadata(record domain.EnvironmentKeyMetadataRecord
 	return nil
 }
 
+func (r Repository) verifyKeyMetadataWithReadContext(record domain.EnvironmentKeyMetadataRecord, ctx *variableReadContext) error {
+	if err := validateKeyMetadataRecordShape(record); err != nil {
+		return err
+	}
+	if record.ProjectID != r.Manifest.ID {
+		return fmt.Errorf("key metadata %s is not bound to this project", record.Key)
+	}
+	deviceID := record.SignerDeviceID
+	if deviceID == "" {
+		deviceID = record.UpdatedByDeviceID
+	}
+	if deviceID == "" || record.ClientSig == "" {
+		return fmt.Errorf("key metadata %s is missing a valid signature", record.Key)
+	}
+	device, err := ctx.readDevice(r, deviceID)
+	if err != nil {
+		return err
+	}
+	if !canWrite(ctx.policy, record.Environment, deviceID) {
+		return fmt.Errorf("key metadata %s was signed by a device without write access", record.Key)
+	}
+	if !security.VerifyCanonical(record, device.SigningKey.PublicKey, record.ClientSig) {
+		return fmt.Errorf("key metadata %s has an invalid device signature", record.Key)
+	}
+	return nil
+}
+
 func (r Repository) VerifyKeyMetadataFile(path string) error {
 	resolvedPath := r.resolveProjectPath(path)
 	var record domain.EnvironmentKeyMetadataRecord

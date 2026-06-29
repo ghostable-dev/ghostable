@@ -924,7 +924,14 @@ func (r *Runner) runEnvLayout(args []string) error {
 		if err != nil {
 			return err
 		}
+		entries := make([]dotenv.Entry, 0, len(parsed.Entries))
 		for _, entry := range parsed.Entries {
+			entries = append(entries, entry)
+		}
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i].Line < entries[j].Line
+		})
+		for _, entry := range entries {
 			keys = append(keys, entry.Key)
 		}
 	} else {

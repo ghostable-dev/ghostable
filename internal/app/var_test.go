@@ -60,6 +60,12 @@ func TestVarHelpShowsPromoteAndHidesCopy(t *testing.T) {
 	if strings.Contains(text, "copy") {
 		t.Fatalf("did not expect var help to show copy:\n%s", text)
 	}
+	stripped := stripAppColorCodes(text)
+	for _, hidden := range []string{"status", "enable", "disable"} {
+		if strings.Contains(stripped, "\n  "+hidden) {
+			t.Fatalf("did not expect var help to show hidden %s command:\n%s", hidden, text)
+		}
+	}
 }
 
 func TestRunVarPushSelectsVariableFromFile(t *testing.T) {
@@ -420,6 +426,77 @@ func TestRunVarPushStoresCommentedFileVariable(t *testing.T) {
 	}
 	if !strings.Contains(output.String(), `"commented": true`) {
 		t.Fatalf("expected JSON payload to include commented state, got:\n%s", output.String())
+	}
+}
+
+func TestRunVarStatusDisablesWithoutValueRewrite(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	before := readValueRecordForAppTest(t, repo, "default", "ALPHA")
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "status", "--env", "default", "--key", "ALPHA", "--disabled", "--json"}, strings.NewReader(""), &output, &output)
+	if err := runner.runVar(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, expected := range []string{
+		`"key": "ALPHA"`,
+		`"commented": true`,
+		`"enabled": false`,
+		`"updated": true`,
+	} {
+		if !strings.Contains(output.String(), expected) {
+			t.Fatalf("expected JSON output to contain %q, got:\n%s", expected, output.String())
+		}
+	}
+	variable, exists, err := repo.GetVariable("default", "ALPHA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || !variable.Commented {
+		t.Fatalf("expected disabled variable, got exists=%v variable=%#v", exists, variable)
+	}
+	after := readValueRecordForAppTest(t, repo, "default", "ALPHA")
+	if after.Version != before.Version || after.Secret.ClientSig != before.Secret.ClientSig {
+		t.Fatalf("expected status update not to rewrite value, before=%#v after=%#v", before, after)
+	}
+}
+
+func TestRunVarEnableAliasUpdatesStatus(t *testing.T) {
+	root := setupRepoForVarCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	commented := true
+	if err := repo.SetVariableWithOptions("default", "ALPHA", "one", store.VariableWriteOptions{
+		Reason:    "test",
+		Commented: &commented,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "enable", "--env", "default", "--key", "ALPHA", "--json"}, strings.NewReader(""), &output, &output)
+	if err := runner.runVar(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), `"commented": false`) || !strings.Contains(output.String(), `"updated": true`) {
+		t.Fatalf("expected enable alias JSON output, got:\n%s", output.String())
+	}
+	variable, exists, err := repo.GetVariable("default", "ALPHA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Commented {
+		t.Fatalf("expected enabled variable, got exists=%v variable=%#v", exists, variable)
 	}
 }
 

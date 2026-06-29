@@ -475,6 +475,48 @@ func TestRepositoryWritesSignedKeyMetadataForVariables(t *testing.T) {
 	}
 }
 
+func TestRepositorySetVariableWithOptionsUpdatesCommentedMetadataWithoutValueRewrite(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "APP_KEY", "super-secret-value", "test"); err != nil {
+		t.Fatal(err)
+	}
+	before := readValueRecordForTest(t, repo, "local", "APP_KEY")
+
+	commented := true
+	if err := repo.SetVariableWithOptions("local", "APP_KEY", "super-secret-value", VariableWriteOptions{
+		Reason:    "desktop toggle",
+		Commented: &commented,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	variable, exists, err := repo.GetVariable("local", "APP_KEY")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || !variable.Commented {
+		t.Fatalf("expected commented variable, got exists=%v variable=%#v", exists, variable)
+	}
+	after := readValueRecordForTest(t, repo, "local", "APP_KEY")
+	if after.Version != before.Version || after.Secret.ClientSig != before.Secret.ClientSig {
+		t.Fatalf("expected commented-only update not to rewrite value, before=%#v after=%#v", before, after)
+	}
+	metadata := readKeyMetadataRecordForTest(t, repo, "local", "APP_KEY")
+	if metadata.Status != domain.KeyStatusCommented {
+		t.Fatalf("expected commented key metadata, got %#v", metadata)
+	}
+}
+
 func TestRepositoryPutVariablesWithMetadataOrderedUsesProvidedOrder(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
@@ -576,6 +618,43 @@ func TestRepositoryReportsTamperedKeyMetadataSignature(t *testing.T) {
 	}
 	if _, err := repo.ReadVariables("local"); err == nil || !strings.Contains(err.Error(), "invalid device signature") {
 		t.Fatalf("expected ReadVariables to reject tampered key metadata, got %v", err)
+	}
+	if _, _, err := repo.GetVariable("local", "APP_KEY"); err == nil || !strings.Contains(err.Error(), "invalid device signature") {
+		t.Fatalf("expected GetVariable to reject tampered target key metadata, got %v", err)
+	}
+}
+
+func TestRepositoryGetVariableReadsOnlyTargetValue(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "test-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("local", "BETA", "two", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(repo.valuePath("local", "BETA"), []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	variable, exists, err := repo.GetVariable("local", "ALPHA")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists || variable.Value != "one" {
+		t.Fatalf("expected targeted read to return ALPHA, got exists=%v variable=%#v", exists, variable)
+	}
+	if _, err := repo.ReadVariables("local"); err == nil {
+		t.Fatal("expected full environment read to fail on unrelated broken value file")
 	}
 }
 
