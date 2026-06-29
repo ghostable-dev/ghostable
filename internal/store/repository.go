@@ -1815,6 +1815,44 @@ func (r Repository) decryptRecord(record domain.ValueRecord) (string, string, er
 	return value, "", nil
 }
 
+func (r Repository) decryptRecordWithReadContext(record domain.ValueRecord, ctx *variableReadContext) (string, string, error) {
+	if record.Schema == domain.LegacyValueSchema {
+		if r.legacyKey == nil {
+			return "", "", fmt.Errorf("legacy Go value %s requires the old local key", record.Key)
+		}
+		var legacy domain.LegacyValueRecord
+		encoded, _ := json.Marshal(record)
+		if err := json.Unmarshal(encoded, &legacy); err != nil {
+			return "", "", err
+		}
+		plaintext, err := gcrypto.Decrypt(r.legacyKey, legacy.EncryptedValue, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "value"}, "\n")))
+		if err != nil {
+			return "", "", err
+		}
+		note := ""
+		if legacy.EncryptedNote != nil {
+			noteBytes, err := gcrypto.Decrypt(r.legacyKey, *legacy.EncryptedNote, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "note"}, "\n")))
+			if err != nil {
+				return "", "", err
+			}
+			note = string(noteBytes)
+		}
+		return string(plaintext), note, nil
+	}
+	if err := r.verifyValueRecordWithReadContext(record, ctx); err != nil {
+		return "", "", err
+	}
+	_, environmentKey, err := ctx.loadEnvironmentKey(r, record.Environment)
+	if err != nil {
+		return "", "", err
+	}
+	value, err := security.DecryptSecret(record.Secret, environmentKey)
+	if err != nil {
+		return "", "", err
+	}
+	return value, "", nil
+}
+
 func (r Repository) ensureEnvironmentDirs(env string) error {
 	if err := validateEnvironmentName(env); err != nil {
 		return err
@@ -2260,6 +2298,14 @@ func (r Repository) loadEnvironmentDEK(env string) ([]byte, error) {
 }
 
 func (r Repository) loadEnvironmentKey(env string) (domain.EnvironmentKeyRecord, []byte, error) {
+	policy, err := r.readPolicy()
+	if err != nil {
+		return domain.EnvironmentKeyRecord{}, nil, err
+	}
+	return r.loadEnvironmentKeyWithPolicy(env, policy)
+}
+
+func (r Repository) loadEnvironmentKeyWithPolicy(env string, policy domain.Policy) (domain.EnvironmentKeyRecord, []byte, error) {
 	record, err := r.readEnvironmentKey(env)
 	if err != nil {
 		return record, nil, err
@@ -2270,10 +2316,6 @@ func (r Repository) loadEnvironmentKey(env string) (domain.EnvironmentKeyRecord,
 	}
 	if grant.EnvKeyFingerprint != record.Fingerprint {
 		return record, nil, fmt.Errorf("access grant for %s does not match environment key", env)
-	}
-	policy, err := r.readPolicy()
-	if err != nil {
-		return record, nil, err
 	}
 	if !canRead(policy, env, r.DeviceID()) {
 		return record, nil, fmt.Errorf("this device does not have read access to %s", env)
@@ -2321,6 +2363,39 @@ func (r Repository) verifyValueRecord(record domain.ValueRecord) error {
 		return err
 	}
 	if record.Secret.EnvKekVersion != envKey.Version || record.Secret.EnvKekFingerprint != envKey.Fingerprint {
+		return fmt.Errorf("value %s does not match current environment key", record.Key)
+	}
+	if !security.VerifySecretBody(record.Secret, device.SigningKey.PublicKey, record.Secret.ClientSig) {
+		return fmt.Errorf("value %s has an invalid device signature", record.Key)
+	}
+	return nil
+}
+
+func (r Repository) verifyValueRecordWithReadContext(record domain.ValueRecord, ctx *variableReadContext) error {
+	if record.Schema != domain.ValueSchema {
+		return nil
+	}
+	if record.ProjectID != r.Manifest.ID ||
+		record.Environment != record.Secret.Env ||
+		record.Key != record.Secret.Name ||
+		record.Secret.AAD.Org != domain.GhostableOrgScope ||
+		record.Secret.AAD.Project != record.ProjectID ||
+		record.Secret.AAD.Env != record.Environment ||
+		record.Secret.AAD.Name != record.Key {
+		return fmt.Errorf("value %s is not bound to its Ghostable storage path", record.Key)
+	}
+	device, err := ctx.readDevice(r, record.UpdatedByDeviceID)
+	if err != nil {
+		return err
+	}
+	if !canWrite(ctx.policy, record.Environment, record.UpdatedByDeviceID) {
+		return fmt.Errorf("value %s was signed by a device without write access", record.Key)
+	}
+	environmentKeyRecord, _, err := ctx.loadEnvironmentKey(r, record.Environment)
+	if err != nil {
+		return err
+	}
+	if record.Secret.EnvKekVersion != environmentKeyRecord.Version || record.Secret.EnvKekFingerprint != environmentKeyRecord.Fingerprint {
 		return fmt.Errorf("value %s does not match current environment key", record.Key)
 	}
 	if !security.VerifySecretBody(record.Secret, device.SigningKey.PublicKey, record.Secret.ClientSig) {

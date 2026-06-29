@@ -53,6 +53,14 @@ func (r *Runner) runVar(args []string) error {
 		return r.runVarPromote(args[1:])
 	case "delete":
 		return r.runVarDelete(args[1:])
+	case "status":
+		return r.runVarStatus(args[1:], nil)
+	case "enable":
+		commented := false
+		return r.runVarStatus(args[1:], &commented)
+	case "disable":
+		commented := true
+		return r.runVarStatus(args[1:], &commented)
 	case "history":
 		return r.runEnvHistory(args[1:])
 	case "context":
@@ -71,6 +79,127 @@ func (r *Runner) printVarHelp() {
 	fmt.Fprintln(r.out)
 	fmt.Fprintln(r.out, warn("Commands:"))
 	printCommandDescriptions(r.out, variableCommandOptions)
+}
+
+func (r *Runner) runVarStatus(args []string, defaultCommented *bool) error {
+	fs := newFlagSet("var status", r.errOut)
+	env := fs.String("env", "", "Environment name")
+	key := fs.String("key", "", "Variable name")
+	commented := fs.Bool("commented", false, "Store the variable as commented/disabled")
+	enabled := fs.Bool("enabled", false, "Store the variable as enabled")
+	disabled := fs.Bool("disabled", false, "Store the variable as disabled")
+	reason := fs.String("reason", "", "Reason stored in signed local events")
+	jsonOut := fs.Bool("json", false, "Print mutation result as JSON")
+	positionals, err := cli.Parse(fs, args, cli.BoolFlags("commented", "enabled", "disabled", "json"))
+	if err != nil {
+		return err
+	}
+	targetCommented, err := varStatusTargetCommented(varStatusInput{
+		defaultCommented: defaultCommented,
+		commented:        *commented,
+		commentedFlag:    hasFlag(args, "commented"),
+		enabled:          *enabled,
+		enabledFlag:      hasFlag(args, "enabled"),
+		disabled:         *disabled,
+		disabledFlag:     hasFlag(args, "disabled"),
+		positionals:      positionals,
+	})
+	if err != nil {
+		return err
+	}
+	repo, err := r.openRepo()
+	if err != nil {
+		return err
+	}
+	selected, err := r.selectEnvironment(repo, *env)
+	if err != nil {
+		return err
+	}
+	variableKey, err := r.selectVariableKey(repo, selected, *key)
+	if err != nil {
+		return err
+	}
+	result, err := repo.UpdateVariableCommented(selected, variableKey, targetCommented, *reason)
+	if err != nil {
+		return err
+	}
+	payload := map[string]interface{}{
+		"environment": result.Environment,
+		"key":         result.Key,
+		"commented":   result.Commented,
+		"enabled":     !result.Commented,
+		"updated":     result.Updated,
+	}
+	if *jsonOut {
+		return printJSON(r.out, payload)
+	}
+	statusLabel := "enabled"
+	statusVerb := "Enabled"
+	if result.Commented {
+		statusLabel = "disabled"
+		statusVerb = "Disabled"
+	}
+	if !result.Updated {
+		fmt.Fprintf(r.out, "%s is already %s in %s.\n", variableKey, statusLabel, selected)
+		return nil
+	}
+	fmt.Fprintln(r.out, success(fmt.Sprintf("%s %s in %s.", statusVerb, variableKey, selected)))
+	return nil
+}
+
+type varStatusInput struct {
+	defaultCommented *bool
+	commented        bool
+	commentedFlag    bool
+	enabled          bool
+	enabledFlag      bool
+	disabled         bool
+	disabledFlag     bool
+	positionals      []string
+}
+
+func varStatusTargetCommented(input varStatusInput) (bool, error) {
+	var selected []bool
+	if input.defaultCommented != nil {
+		selected = append(selected, *input.defaultCommented)
+	}
+	if input.commentedFlag {
+		selected = append(selected, input.commented)
+	}
+	if input.enabledFlag {
+		selected = append(selected, !input.enabled)
+	}
+	if input.disabledFlag {
+		selected = append(selected, input.disabled)
+	}
+	for _, value := range input.positionals {
+		commented, err := parseVarStatus(value)
+		if err != nil {
+			return false, err
+		}
+		selected = append(selected, commented)
+	}
+	if len(selected) == 0 {
+		return false, fmt.Errorf("pass --enabled or --disabled")
+	}
+	target := selected[0]
+	for _, value := range selected[1:] {
+		if value != target {
+			return false, fmt.Errorf("conflicting variable status options")
+		}
+	}
+	return target, nil
+}
+
+func parseVarStatus(value string) (bool, error) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "enabled", "enable", "active", "on":
+		return false, nil
+	case "disabled", "disable", "commented", "off":
+		return true, nil
+	default:
+		return false, fmt.Errorf("invalid variable status %q; use enabled or disabled", value)
+	}
 }
 
 func (r *Runner) runVarPush(args []string) error {

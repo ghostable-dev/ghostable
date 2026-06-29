@@ -195,32 +195,24 @@ func (r Repository) ReadVariables(env string) (map[string]domain.Variable, error
 	}
 
 	variables := make(map[string]domain.Variable)
+	var readContext *variableReadContext
 	for _, record := range records {
-		value, _, err := r.decryptRecord(record)
-		if err != nil {
-			return nil, err
-		}
 		metadata, ok := keyMetadata[record.Key]
 		if !ok {
 			return nil, fmt.Errorf("key metadata for %s was not found in %s", record.Key, env)
 		}
-		if err := r.verifyKeyMetadata(metadata); err != nil {
-			return nil, err
+		if readContext == nil {
+			ctx, err := r.newVariableReadContext(env)
+			if err != nil {
+				return nil, err
+			}
+			readContext = &ctx
 		}
-		note, err := r.decryptKeyMetadataNote(metadata)
+		variable, err := r.variableFromRecordsWithContext(record, metadata, readContext)
 		if err != nil {
 			return nil, err
 		}
-		variables[record.Key] = domain.Variable{
-			Key:         record.Key,
-			Value:       value,
-			HasValue:    true,
-			Sensitive:   record.Schema == domain.ValueSchema || record.Sensitive,
-			Commented:   metadata.Status == domain.KeyStatusCommented,
-			Note:        note,
-			UpdatedAt:   record.UpdatedAt,
-			Annotations: cloneKeyAnnotations(metadata.Annotations),
-		}
+		variables[record.Key] = variable
 	}
 
 	return variables, nil
@@ -236,6 +228,51 @@ type VariableMetadata struct {
 	ValidSignature    bool                  `json:"validSignature"`
 	SignatureError    string                `json:"signatureError,omitempty"`
 	Annotations       domain.KeyAnnotations `json:"annotations,omitempty"`
+}
+
+type variableReadContext struct {
+	policy               domain.Policy
+	environmentKeyRecord domain.EnvironmentKeyRecord
+	environmentKey       []byte
+	environmentKeyLoaded bool
+	devices              map[string]domain.DeviceRecord
+}
+
+func (r Repository) newVariableReadContext(env string) (variableReadContext, error) {
+	policy, err := r.readVerifiedPolicyMetadata()
+	if err != nil {
+		return variableReadContext{}, err
+	}
+	return variableReadContext{
+		policy:  policy,
+		devices: map[string]domain.DeviceRecord{},
+	}, nil
+}
+
+func (ctx *variableReadContext) readDevice(repo Repository, deviceID string) (domain.DeviceRecord, error) {
+	if device, ok := ctx.devices[deviceID]; ok {
+		return device, nil
+	}
+	device, err := repo.readDevice(deviceID)
+	if err != nil {
+		return domain.DeviceRecord{}, err
+	}
+	ctx.devices[deviceID] = device
+	return device, nil
+}
+
+func (ctx *variableReadContext) loadEnvironmentKey(repo Repository, env string) (domain.EnvironmentKeyRecord, []byte, error) {
+	if ctx.environmentKeyLoaded {
+		return ctx.environmentKeyRecord, ctx.environmentKey, nil
+	}
+	environmentKeyRecord, environmentKey, err := repo.loadEnvironmentKeyWithPolicy(env, ctx.policy)
+	if err != nil {
+		return domain.EnvironmentKeyRecord{}, nil, err
+	}
+	ctx.environmentKeyRecord = environmentKeyRecord
+	ctx.environmentKey = environmentKey
+	ctx.environmentKeyLoaded = true
+	return environmentKeyRecord, environmentKey, nil
 }
 
 func (r Repository) ReadVariableMetadata(env string) ([]VariableMetadata, error) {
@@ -311,25 +348,106 @@ func (r Repository) readEnvironmentValueRecords(env string) ([]domain.ValueRecor
 			return nil, fmt.Errorf("duplicate value record for %s in %s and %s", record.Key, existingFile, entry.Name())
 		}
 		seen[record.Key] = entry.Name()
-		if record.Environment != env {
-			return nil, fmt.Errorf("value %s belongs to environment %s, not %s", record.Key, record.Environment, env)
-		}
-		expectedName := filepath.Base(r.valuePath(env, record.Key))
-		if entry.Name() != expectedName {
-			return nil, fmt.Errorf("value %s is stored in %s but expected %s", record.Key, entry.Name(), expectedName)
+		if err := r.validateValueRecordStorageBinding(record, env, entry.Name()); err != nil {
+			return nil, err
 		}
 		records = append(records, record)
 	}
 	return records, nil
 }
 
+func (r Repository) readEnvironmentValueRecord(env string, key string) (domain.ValueRecord, bool, error) {
+	path := r.valuePath(env, key)
+	record, err := r.readValueRecord(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return domain.ValueRecord{}, false, nil
+		}
+		return domain.ValueRecord{}, false, err
+	}
+	if err := r.validateValueRecordStorageBinding(record, env, filepath.Base(path)); err != nil {
+		return domain.ValueRecord{}, true, err
+	}
+	return record, true, nil
+}
+
+func (r Repository) validateValueRecordStorageBinding(record domain.ValueRecord, env string, storageName string) error {
+	if record.Environment != env {
+		return fmt.Errorf("value %s belongs to environment %s, not %s", record.Key, record.Environment, env)
+	}
+	expectedName := filepath.Base(r.valuePath(env, record.Key))
+	if storageName != expectedName {
+		return fmt.Errorf("value %s is stored in %s but expected %s", record.Key, storageName, expectedName)
+	}
+	return nil
+}
+
+func (r Repository) variableFromRecords(record domain.ValueRecord, metadata domain.EnvironmentKeyMetadataRecord) (domain.Variable, error) {
+	ctx, err := r.newVariableReadContext(record.Environment)
+	if err != nil {
+		return domain.Variable{}, err
+	}
+	return r.variableFromRecordsWithContext(record, metadata, &ctx)
+}
+
+func (r Repository) variableFromRecordsWithContext(record domain.ValueRecord, metadata domain.EnvironmentKeyMetadataRecord, ctx *variableReadContext) (domain.Variable, error) {
+	value, _, err := r.decryptRecordWithReadContext(record, ctx)
+	if err != nil {
+		return domain.Variable{}, err
+	}
+	if err := r.verifyKeyMetadataWithReadContext(metadata, ctx); err != nil {
+		return domain.Variable{}, err
+	}
+	note, err := r.decryptKeyMetadataNoteWithReadContext(metadata, ctx)
+	if err != nil {
+		return domain.Variable{}, err
+	}
+	return domain.Variable{
+		Key:         record.Key,
+		Value:       value,
+		HasValue:    true,
+		Sensitive:   record.Schema == domain.ValueSchema || record.Sensitive,
+		Commented:   metadata.Status == domain.KeyStatusCommented,
+		Note:        note,
+		UpdatedAt:   record.UpdatedAt,
+		Annotations: cloneKeyAnnotations(metadata.Annotations),
+	}, nil
+}
+
+func (r Repository) decryptKeyMetadataNoteWithReadContext(record domain.EnvironmentKeyMetadataRecord, ctx *variableReadContext) (string, error) {
+	if record.EncryptedNote == nil {
+		return "", nil
+	}
+	_, environmentKey, err := ctx.loadEnvironmentKey(r, record.Environment)
+	if err != nil {
+		return "", err
+	}
+	return decryptKeyMetadataNoteWithKey(record, environmentKey)
+}
+
 func (r Repository) GetVariable(env string, key string) (domain.Variable, bool, error) {
-	values, err := r.ReadVariables(env)
+	if err := r.requireEnvironment(env); err != nil {
+		return domain.Variable{}, false, err
+	}
+	record, exists, err := r.readEnvironmentValueRecord(env, key)
 	if err != nil {
 		return domain.Variable{}, false, err
 	}
-	value, ok := values[key]
-	return value, ok, nil
+	if !exists {
+		return domain.Variable{}, false, nil
+	}
+	metadata, metadataExists, err := r.readKeyMetadata(env, key)
+	if err != nil {
+		return domain.Variable{}, false, err
+	}
+	if !metadataExists {
+		return domain.Variable{}, false, fmt.Errorf("key metadata for %s was not found in %s", key, env)
+	}
+	variable, err := r.variableFromRecords(record, metadata)
+	if err != nil {
+		return domain.Variable{}, false, err
+	}
+	return variable, true, nil
 }
 
 type VariableWriteOptions struct {
@@ -389,6 +507,17 @@ func (r Repository) SetVariableWithOptions(env string, key string, value string,
 	if options.Commented != nil {
 		commented = *options.Commented
 	}
+	valueChanged := !exists || current.Value != value
+	commentedChanged := exists && current.Commented != commented
+	if exists && !valueChanged {
+		if commentedChanged {
+			if _, err := r.UpdateVariableCommented(env, key, commented, options.Reason); err != nil {
+				return err
+			}
+			return nil
+		}
+		return nil
+	}
 	if err := r.writeVariableWithMetadata(writeVariableWithMetadataInput{
 		Environment: env,
 		Key:         key,
@@ -411,6 +540,70 @@ func (r Repository) SetVariableCommented(env string, key string, value string, c
 		Reason:    reason,
 		Commented: &commented,
 	})
+}
+
+type VariableStatusUpdateResult struct {
+	Environment string `json:"environment"`
+	Key         string `json:"key"`
+	Commented   bool   `json:"commented"`
+	Updated     bool   `json:"updated"`
+}
+
+func (r Repository) UpdateVariableCommented(env string, key string, commented bool, reason string) (VariableStatusUpdateResult, error) {
+	result := VariableStatusUpdateResult{
+		Environment: env,
+		Key:         key,
+		Commented:   commented,
+	}
+	if err := r.requireEnvironment(env); err != nil {
+		return result, err
+	}
+	if err := r.requireWrite(env); err != nil {
+		return result, err
+	}
+	if err := validateKey(key); err != nil {
+		return result, err
+	}
+	valueRecord, exists, err := r.readEnvironmentValueRecord(env, key)
+	if err != nil {
+		return result, err
+	}
+	if !exists {
+		return result, fmt.Errorf("variable %q was not found in %s", key, env)
+	}
+	if err := r.verifyValueRecordMetadata(valueRecord); err != nil {
+		return result, err
+	}
+	metadata, metadataExists, err := r.readKeyMetadata(env, key)
+	if err != nil {
+		return result, err
+	}
+	if !metadataExists {
+		return result, fmt.Errorf("key metadata for %s was not found in %s", key, env)
+	}
+	if err := r.verifyKeyMetadata(metadata); err != nil {
+		return result, err
+	}
+
+	status := domain.KeyStatusActive
+	if commented {
+		status = domain.KeyStatusCommented
+	}
+	if metadata.Status == status {
+		return result, nil
+	}
+	metadata.Status = status
+	if err := r.writeKeyMetadata(metadata); err != nil {
+		return result, err
+	}
+	result.Updated = true
+	if err := r.recordEvent("variable.status.updated", env, key, map[string]interface{}{
+		"commented": commented,
+		"reason":    reason,
+	}); err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func (r Repository) SetVariableNote(env string, key string, note string) error {
