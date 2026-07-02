@@ -65,7 +65,13 @@ func (r *Runner) runScanReport(args []string) error {
 		return err
 	}
 	if options.JSON {
-		return printJSON(r.out, result)
+		if err := printJSON(r.out, result); err != nil {
+			return err
+		}
+		if len(result.Findings) > 0 {
+			return scanFindingsError(result)
+		}
+		return nil
 	}
 	if len(result.Findings) == 0 {
 		fmt.Fprintln(r.out, success(fmt.Sprintf("No hard-coded secrets found. Scanned %d files.", result.Scanned)))
@@ -78,6 +84,10 @@ func (r *Runner) runScanReport(args []string) error {
 	if suppressed > 0 {
 		fmt.Fprintf(r.out, "%s %d finding%s suppressed.\n", warn("Suppressed:"), suppressed, plural(suppressed))
 	}
+	return scanFindingsError(result)
+}
+
+func scanFindingsError(result scanner.Result) error {
 	return fmt.Errorf("found %d possible secret%s", len(result.Findings), plural(len(result.Findings)))
 }
 
