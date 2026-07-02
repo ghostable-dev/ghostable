@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -92,5 +93,36 @@ func TestRunScanSuppressesOnlySelectedDuplicateFinding(t *testing.T) {
 	}
 	if !strings.Contains(text, "Suppressed:") || !strings.Contains(text, "1 finding suppressed.") {
 		t.Fatalf("expected only one duplicate to be suppressed, got:\n%s", text)
+	}
+}
+
+func TestRunScanJSONReturnsErrorWhenFindingsRemain(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	secretPath := filepath.Join(root, "config.env")
+	if err := os.WriteFile(secretPath, []byte("APP_SECRET=abc123!abc123!abc123!\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "scan", "--json", "config.env"}, strings.NewReader(""), &output, &output)
+	err := runner.Run()
+	if err == nil {
+		t.Fatalf("expected scan --json to fail when findings remain, got nil error:\n%s", output.String())
+	}
+	if !strings.Contains(err.Error(), "found 1 possible secret") {
+		t.Fatalf("expected finding count error, got %v", err)
+	}
+
+	var payload struct {
+		Findings []struct {
+			Path string `json:"path"`
+		} `json:"findings"`
+		HasSecrets bool `json:"hasSecrets"`
+	}
+	if jsonErr := json.Unmarshal(output.Bytes(), &payload); jsonErr != nil {
+		t.Fatalf("expected valid scan JSON, got %v:\n%s", jsonErr, output.String())
+	}
+	if !payload.HasSecrets || len(payload.Findings) != 1 || payload.Findings[0].Path != "config.env" {
+		t.Fatalf("expected one JSON finding for config.env, got %#v", payload)
 	}
 }

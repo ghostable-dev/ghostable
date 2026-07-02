@@ -24,6 +24,13 @@ jobs:
       - name: Run checks
         run: make check
 
+      - name: Run vulnerability check
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          go-package: ./...
+          repo-checkout: false
+
       - name: Check GoReleaser config
         if: github.event_name == 'push'
         uses: goreleaser/goreleaser-action@v7

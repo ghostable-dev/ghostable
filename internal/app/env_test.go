@@ -468,6 +468,101 @@ func TestRunEnvRunStrictValidatesSchemaBeforeRunning(t *testing.T) {
 	}
 }
 
+func TestRunEnvShellInjectsValuesAndInheritsByDefault(t *testing.T) {
+	root := setupRepoForEnvRunTest(t, map[string]string{
+		"GHOSTABLE_ENV_RUN_HELPER": "1",
+		"APP_NAME":                 "Ghostable",
+	})
+	t.Setenv("SHELL_ONLY", "from-shell")
+	withEnvShellCommandForTest(t, envRunHelperCommand())
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "shell", "--env", "default"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvShell(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{"APP_NAME=Ghostable", "SHELL_ONLY=from-shell"} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected env shell output to contain %q:\n%s", expected, text)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(root, ".env")); !os.IsNotExist(err) {
+		t.Fatalf("env shell should not write .env, stat err: %v", err)
+	}
+}
+
+func TestRunEnvShellNoInheritOmitsShellValues(t *testing.T) {
+	setupRepoForEnvRunTest(t, map[string]string{
+		"GHOSTABLE_ENV_RUN_HELPER": "1",
+		"APP_NAME":                 "Ghostable",
+	})
+	t.Setenv("SHELL_ONLY", "from-shell")
+	withEnvShellCommandForTest(t, envRunHelperCommand())
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "shell", "--env", "default", "--no-inherit"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvShell(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	if !strings.Contains(text, "APP_NAME=Ghostable") {
+		t.Fatalf("expected Ghostable value to be injected:\n%s", text)
+	}
+	if !strings.Contains(text, "SHELL_ONLY=") || strings.Contains(text, "SHELL_ONLY=from-shell") {
+		t.Fatalf("expected shell-only value to be omitted with --no-inherit:\n%s", text)
+	}
+}
+
+func TestRunEnvShellStrictValidatesSchemaBeforeStartingShell(t *testing.T) {
+	root := setupRepoForEnvRunTest(t, map[string]string{
+		"GHOSTABLE_ENV_RUN_HELPER": "1",
+	})
+	if err := os.WriteFile(filepath.Join(root, ".ghostable", "schema.yaml"), []byte("REQUIRED_KEY:\n  - required\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	withEnvShellCommandForTest(t, envRunHelperCommand())
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "shell", "--env", "default", "--strict"}, strings.NewReader(""), &output, &output)
+	err := runner.runEnvShell(runner.args[3:])
+	if err == nil {
+		t.Fatal("expected strict validation to fail")
+	}
+	if !strings.Contains(err.Error(), "strict validation failed") {
+		t.Fatalf("expected strict validation error, got %v", err)
+	}
+	text := output.String()
+	if !strings.Contains(text, "REQUIRED_KEY") {
+		t.Fatalf("expected validation output to mention REQUIRED_KEY, got:\n%s", text)
+	}
+	if strings.Contains(text, "APP_NAME=") || strings.Contains(text, "SHELL_ONLY=") {
+		t.Fatalf("expected shell command not to run, got output:\n%s", text)
+	}
+}
+
+func TestRunEnvShellHelp(t *testing.T) {
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "shell", "--help"}, strings.NewReader(""), &output, &output)
+	if err := runner.runEnvShell(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Usage: ghostable env shell --env <ENV> [options]",
+		"Open a shell with decrypted environment values without writing a .env file.",
+		"--no-inherit",
+		"--strict",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected env shell help to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
 func TestRunEnvRunPropagatesChildExitCode(t *testing.T) {
 	setupRepoForEnvRunTest(t, map[string]string{
 		"GHOSTABLE_ENV_RUN_HELPER": "1",
@@ -526,6 +621,9 @@ func TestEnvHelpHidesInternalCommands(t *testing.T) {
 	if strings.Contains(text, "\n  layout") || strings.Contains(text, "Manage environment key order") {
 		t.Fatalf("did not expect hidden env layout command in help:\n%s", text)
 	}
+	if !strings.Contains(text, "shell") || !strings.Contains(text, "Open a shell with decrypted environment values") {
+		t.Fatalf("expected env help to include shell command:\n%s", text)
+	}
 }
 
 func setupRepoForEnvRunTest(t *testing.T, values map[string]string) string {
@@ -556,6 +654,17 @@ func envRunHelperCommandLine() string {
 
 func windowsCommandLineQuote(value string) string {
 	return `"` + strings.ReplaceAll(value, `"`, `\"`) + `"`
+}
+
+func withEnvShellCommandForTest(t *testing.T, command []string) {
+	t.Helper()
+	original := resolveEnvShellCommand
+	resolveEnvShellCommand = func() ([]string, error) {
+		return command, nil
+	}
+	t.Cleanup(func() {
+		resolveEnvShellCommand = original
+	})
 }
 
 func TestEnvRunHelperProcess(t *testing.T) {
