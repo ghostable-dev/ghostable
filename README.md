@@ -43,6 +43,18 @@ Other platforms can download the matching archive from the
 [latest release](https://github.com/ghostable-dev/beta/releases/latest) and put
 the `ghostable` binary on `PATH`.
 
+## Platform Support and CI
+
+Ghostable release builds target macOS, Linux, and Windows on both `amd64` and
+`arm64`. CI runs the full Linux check suite, native macOS and Windows test,
+vet, build, and CLI smoke jobs, and cross-builds every release target from the
+GoReleaser matrix.
+
+Hosted CI verifies non-interactive protected-access behavior and the
+platform-specific user-confirmation glue. It does not perform a live Touch ID,
+Windows Hello, or PAM-backed `sudo` prompt, because those require an interactive
+local user session.
+
 ## Getting Started
 
 From your project directory:

@@ -16,10 +16,13 @@ func verifyPlatformUserPresence(request Request) error {
 	_ = exec.Command(sudoPath, "-k").Run()
 	defer exec.Command(sudoPath, "-k").Run()
 
-	prompt := confirmationMessage(request) + " Password: "
-	cmd := exec.Command(sudoPath, "-p", prompt, "-v")
+	cmd := exec.Command(sudoPath, "-p", sudoPrompt(request), "-v")
 	cmd.Stdin = request.In
 	cmd.Stdout = request.Out
 	cmd.Stderr = request.ErrOut
 	return cmd.Run()
+}
+
+func sudoPrompt(request Request) string {
+	return confirmationMessage(request) + " Password: "
 }
