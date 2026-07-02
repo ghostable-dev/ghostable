@@ -647,7 +647,7 @@ func envRunHelperCommand() []string {
 
 func envRunHelperCommandLine() string {
 	if runtime.GOOS == "windows" {
-		return windowsCommandLineQuote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
+		return "call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
 	}
 	return strconv.Quote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
 }

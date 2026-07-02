@@ -35,3 +35,22 @@ func prependPathForTest(t *testing.T, dir string) {
 	t.Helper()
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
+
+func helperProcessArgs() []string {
+	for index, arg := range os.Args {
+		if arg == "--" {
+			return os.Args[index+1:]
+		}
+	}
+	return nil
+}
+
+func appendTextFileForTest(path string, text string) error {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(text)
+	return err
+}

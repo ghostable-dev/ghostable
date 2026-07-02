@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,26 +69,9 @@ func TestRunDeployVaporInvokesVaporCLI(t *testing.T) {
 		"if [ \"$1\" = \"env:push\" ]; then cat \"$file\" >> \"$VAPOR_LOG\"; fi\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
-		"setlocal enabledelayedexpansion\r\n" +
-		"set \"file=\"\r\n" +
-		"set \"command=%~1\"\r\n" +
-		"echo %* >> \"%VAPOR_LOG%\"\r\n" +
-		":parse_args\r\n" +
-		"if \"%~1\"==\"\" goto parsed_args\r\n" +
-		"set \"arg=%~1\"\r\n" +
-		"if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
-		"shift\r\n" +
-		"goto parse_args\r\n" +
-		":parsed_args\r\n" +
-		"if \"!command!\"==\"env:pull\" (\r\n" +
-		"  type nul > \"!file!\"\r\n" +
-		"  exit /b 0\r\n" +
-		")\r\n" +
-		"if \"!command!\"==\"env:push\" (\r\n" +
-		"  type \"!file!\" >> \"%VAPOR_LOG%\"\r\n" +
-		"  exit /b 0\r\n" +
-		")\r\n" +
-		"exit /b 0\r\n"
+		"set GHOSTABLE_FAKE_VAPOR_CLI=1\r\n" +
+		"call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestFakeVaporCLIHelperProcess -- %*\r\n" +
+		"exit /b %ERRORLEVEL%\r\n"
 	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
 	t.Setenv("VAPOR_LOG", logPath)
@@ -178,18 +162,9 @@ func TestRunDeployVaporDoesNotUseRepoLocalEnvironmentFile(t *testing.T) {
 		"if [ \"$1\" = \"env:pull\" ]; then : > \"$file\"; fi\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
-		"setlocal enabledelayedexpansion\r\n" +
-		"set \"file=\"\r\n" +
-		"set \"command=%~1\"\r\n" +
-		":parse_args\r\n" +
-		"if \"%~1\"==\"\" goto parsed_args\r\n" +
-		"set \"arg=%~1\"\r\n" +
-		"if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
-		"shift\r\n" +
-		"goto parse_args\r\n" +
-		":parsed_args\r\n" +
-		"if \"!command!\"==\"env:pull\" type nul > \"!file!\"\r\n" +
-		"exit /b 0\r\n"
+		"set GHOSTABLE_FAKE_VAPOR_CLI=1\r\n" +
+		"call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestFakeVaporCLIHelperProcess -- %*\r\n" +
+		"exit /b %ERRORLEVEL%\r\n"
 	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
 
@@ -224,4 +199,51 @@ func vaporEnvironmentFileArgs(logText string, prefix string) []string {
 		}
 	}
 	return files
+}
+
+func TestFakeVaporCLIHelperProcess(t *testing.T) {
+	if os.Getenv("GHOSTABLE_FAKE_VAPOR_CLI") != "1" {
+		return
+	}
+	args := helperProcessArgs()
+	logPath := os.Getenv("VAPOR_LOG")
+	if logPath == "" {
+		fmt.Fprintln(os.Stderr, "VAPOR_LOG is required")
+		os.Exit(1)
+	}
+	if err := appendTextFileForTest(logPath, strings.Join(args, " ")+"\n"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	file := ""
+	for _, arg := range args {
+		if value, ok := strings.CutPrefix(arg, "--file="); ok {
+			file = value
+			break
+		}
+	}
+	if file == "" {
+		fmt.Fprintln(os.Stderr, "--file is required")
+		os.Exit(1)
+	}
+
+	switch {
+	case len(args) > 0 && args[0] == "env:pull":
+		if err := os.WriteFile(file, nil, 0o600); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	case len(args) > 0 && args[0] == "env:push":
+		content, err := os.ReadFile(file)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		if err := appendTextFileForTest(logPath, string(content)); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+	os.Exit(0)
 }
