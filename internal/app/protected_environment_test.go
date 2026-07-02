@@ -112,6 +112,34 @@ func TestDefaultEnvPullDoesNotRequireLocalVerifier(t *testing.T) {
 	}
 }
 
+func TestProtectedProductionEnvShellUsesLocalVerifier(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo := createProtectedProductionEnvironmentForTest(t, root)
+	if err := repo.SetVariable("production", "GHOSTABLE_ENV_RUN_HELPER", "1", "test"); err != nil {
+		t.Fatal(err)
+	}
+	withEnvShellCommandForTest(t, envRunHelperCommand())
+
+	called := false
+	withProtectedEnvironmentVerifierForTest(t, func(request userpresence.Request) error {
+		called = true
+		if request.Environment != "production" || request.Operation != protectedOperationEnvRun {
+			return fmt.Errorf("unexpected user-presence request: %#v", request)
+		}
+		return nil
+	})
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "shell", "--env", "production"}, strings.NewReader(""), &output, &output)
+	runner.interactive = true
+	if err := runner.runEnvShell(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !called {
+		t.Fatal("expected protected production env shell to call the user-presence verifier")
+	}
+}
+
 func TestProductionDeployDryRunDoesNotRequireLocalVerifier(t *testing.T) {
 	root := setupRepoForEnvCommandTest(t)
 	repo := createProtectedProductionEnvironmentForTest(t, root)

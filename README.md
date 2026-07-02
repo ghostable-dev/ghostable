@@ -86,7 +86,7 @@ Automation and agents should pass flags, use `--seed-dotenv` or
 - `setup` initializes `.ghostable/`, a local device record, policy, key metadata files,
   and a private local device identity.
 - `status` prints project, environment, device, and value counts.
-- `env list|create|delete|push|sync|pull|clean|diff|history`
+- `env list|create|delete|push|sync|pull|clean|run|shell|diff|history`
   manages environment-level workflows.
 - `validate` checks environment values against schema rules.
 - `review` runs changed-code ENV checks and local hard-coded secret scanning.
@@ -201,6 +201,7 @@ Protected local-device commands include:
 ```sh
 ghostable env pull --env production
 ghostable env run --env production -- <command>
+ghostable env shell --env production
 ghostable var pull --env production --key APP_KEY --show-values
 ghostable deploy production
 ghostable deploy laravel-forge production --forge-site example.com

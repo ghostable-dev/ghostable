@@ -24,6 +24,7 @@ var envCommandOptions = []commandOption{
 	{Label: "pull", Description: "Write stored values to an env file"},
 	{Label: "clean", Description: "Remove local env files from the project root"},
 	{Label: "run", Description: "Run a command with decrypted environment values"},
+	{Label: "shell", Description: "Open a shell with decrypted environment values"},
 	{Label: "diff", Description: "Compare an env file or environment"},
 	{Label: "history", Description: "Show signed change history"},
 	{Label: "rename", Description: "Rename an environment"},
@@ -111,6 +112,8 @@ func (r *Runner) runEnv(args []string) error {
 		return r.runEnvClean(args[1:])
 	case "run":
 		return r.runEnvRun(args[1:])
+	case "shell":
+		return r.runEnvShell(args[1:])
 	case "diff":
 		return r.runEnvDiff(args[1:])
 	case "history":
