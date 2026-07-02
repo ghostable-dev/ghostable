@@ -19,6 +19,22 @@ be committed to git. Private device keys are stored outside the repository in
 the platform's native secret store when available, or in a restrictive
 file-backed identity store otherwise.
 
+## Security Status
+
+Ghostable is beta security software and has not completed an external security
+audit. The repository includes a public [security policy](SECURITY.md), a
+[threat model](docs/security/threat-model.md), and stable
+[test vectors](docs/security/test-vectors.md) so developers can inspect the
+claims and reproduce the critical cryptographic checks.
+
+In Ghostable, "zero-knowledge" has a narrow product meaning: plaintext secret
+values are encrypted locally before Ghostable writes repository-backed state.
+Ghostable does not run a hosted service that receives plaintext project secrets.
+This does not mean the local machine, local device identity, shell history,
+plaintext `.env` files, deploy providers, or everyone with repository write
+access are automatically trusted or harmless. Review `.ghostable/` changes with
+the same care as code changes.
+
 ## Install
 
 Install Ghostable once, then run it inside each project you want to manage.

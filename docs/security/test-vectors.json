@@ -1,0 +1,39 @@
+{
+  "canonicalJSON": {
+    "description": "Object keys are sorted and null fields are omitted before signing.",
+    "expected": "{\"a\":\"first\",\"items\":[\"one\",2],\"nested\":{\"a\":7,\"b\":true},\"z\":\"last\"}",
+    "input": {
+      "a": "first",
+      "empty": null,
+      "items": [
+        "one",
+        2
+      ],
+      "nested": {
+        "a": 7,
+        "b": true
+      },
+      "z": "last"
+    }
+  },
+  "ed25519CanonicalSignature": {
+    "canonical": "{\"device_id\":\"dev_fixture\",\"name\":\"fixture\",\"schema\":\"ghostable.test.v1\"}",
+    "publicKeyB64": "JUO5L/EJVRFHatyDadtt3JM2ZaEZeN2hQE7hBmypVZ0=",
+    "seedB64": "QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8=",
+    "signatureB64": "d4g++eoglLHSiSgtufRVRlXK8nW/3HUtWSQhb7eWO3ckVpKoiBgbpNGEq3NfMFGA6dn49nyhLt5Qdsvprf65Bg=="
+  },
+  "hkdf": {
+    "encryptionKeyB64": "NCx0FwTh+ZudWBolAM0tS54H8tuWExu+znI6Af50HIo=",
+    "hmacKeyB64": "CLow0vzg42Z0G1DDnXzqGxg6aCIrV3czg5i3TMPMg2Q=",
+    "masterB64": "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
+    "scope": "ghostable/project-fixture/production"
+  },
+  "version": "ghostable.security-test-vectors.v1",
+  "xchacha20poly1305": {
+    "aadB64": "eyJvcmciOiJnaG9zdGFibGUiLCJwcm9qZWN0IjoicHJvamVjdC1maXh0dXJlIiwiZW52IjoicHJvZHVjdGlvbiIsIm5hbWUiOiJBUFBfS0VZIn0=",
+    "ciphertextB64": "ezA1vw5FcaZL2zPPLTMsp1w5pFmT3RV88oVAnpviDHMNfrn8",
+    "keyB64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+    "nonceB64": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3",
+    "plaintextB64": "Zml4dHVyZS1zZWNyZXQtdmFsdWU="
+  }
+}
