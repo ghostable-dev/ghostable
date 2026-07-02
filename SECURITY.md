@@ -13,6 +13,28 @@ and are intended to be committed to git. Private device keys are stored outside
 the repository in the platform's native secret store when available, or in a
 restrictive file-backed identity store otherwise.
 
+## Security Status
+
+Ghostable is beta software and has not completed an external security audit.
+The current assurance evidence is repository-visible: focused security tests,
+documented test vectors, and the public threat model in
+`docs/security/threat-model.md`. Do not treat the current release as formally
+audited or certified.
+
+The zero-knowledge claim is scoped to Ghostable's local-first storage model:
+Ghostable does not run a hosted service that receives plaintext project secret
+values, and committed Ghostable value records are encrypted locally before they
+are written. The claim does not cover a compromised local device, plaintext
+`.env` files created for local or deploy workflows, shell history, terminal
+logs, third-party deploy providers, CI systems that receive decrypted values, or
+malicious repository changes that are accepted by reviewers.
+
+Security-sensitive compatibility fixtures are documented in
+`docs/security/test-vectors.md` and stored in
+`docs/security/test-vectors.json`. Changes to cryptographic record handling
+should update those fixtures only when the compatibility impact is deliberate
+and reviewed.
+
 ## Cryptographic Model
 
 - Device identity uses Ed25519 for signatures and X25519 for key exchange.
@@ -35,6 +57,8 @@ and keeping repository metadata honest.
 - Revoke access for lost, retired, or compromised devices.
 - Review policy, device, and access grant changes with the same care as code
   changes.
+- Treat CI tokens, deploy-provider credentials, and local plaintext env files as
+  out-of-band secrets that need their own controls.
 - Keep Ghostable updated so you receive security fixes and cryptographic model
   improvements.
 

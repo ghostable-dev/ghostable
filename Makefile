@@ -1,4 +1,4 @@
-.PHONY: dev build fmt check-fmt test vet check clean
+.PHONY: dev build fmt check-fmt test vet security-check check clean
 
 dev:
 	mkdir -p ./tmp
@@ -22,6 +22,10 @@ test:
 
 vet:
 	go vet ./...
+
+security-check:
+	go test -cover ./internal/crypto ./internal/security ./internal/userpresence
+	go run golang.org/x/vuln/cmd/govulncheck@v1.5.0 ./...
 
 check: check-fmt test vet
 
