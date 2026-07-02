@@ -36,3 +36,6 @@ go.work.sum
 
 # macOS metadata
 .DS_Store
+
+# Agents
+.codex/
