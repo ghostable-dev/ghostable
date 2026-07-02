@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -547,7 +548,14 @@ func envRunHelperCommand() []string {
 }
 
 func envRunHelperCommandLine() string {
+	if runtime.GOOS == "windows" {
+		return windowsCommandLineQuote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
+	}
 	return strconv.Quote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
+}
+
+func windowsCommandLineQuote(value string) string {
+	return `"` + strings.ReplaceAll(value, `"`, `\"`) + `"`
 }
 
 func TestEnvRunHelperProcess(t *testing.T) {

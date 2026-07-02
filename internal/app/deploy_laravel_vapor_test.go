@@ -70,16 +70,20 @@ func TestRunDeployVaporInvokesVaporCLI(t *testing.T) {
 	windowsScript := "@echo off\r\n" +
 		"setlocal enabledelayedexpansion\r\n" +
 		"set \"file=\"\r\n" +
-		"for %%A in (%*) do (\r\n" +
-		"  set \"arg=%%~A\"\r\n" +
-		"  if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
-		")\r\n" +
-		"echo %*>>\"%VAPOR_LOG%\"\r\n" +
-		"if \"%~1\"==\"env:pull\" (\r\n" +
+		"set \"command=%~1\"\r\n" +
+		"echo %* >> \"%VAPOR_LOG%\"\r\n" +
+		":parse_args\r\n" +
+		"if \"%~1\"==\"\" goto parsed_args\r\n" +
+		"set \"arg=%~1\"\r\n" +
+		"if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
+		"shift\r\n" +
+		"goto parse_args\r\n" +
+		":parsed_args\r\n" +
+		"if \"!command!\"==\"env:pull\" (\r\n" +
 		"  type nul > \"!file!\"\r\n" +
 		"  exit /b 0\r\n" +
 		")\r\n" +
-		"if \"%~1\"==\"env:push\" (\r\n" +
+		"if \"!command!\"==\"env:push\" (\r\n" +
 		"  type \"!file!\" >> \"%VAPOR_LOG%\"\r\n" +
 		"  exit /b 0\r\n" +
 		")\r\n" +
@@ -176,11 +180,15 @@ func TestRunDeployVaporDoesNotUseRepoLocalEnvironmentFile(t *testing.T) {
 	windowsScript := "@echo off\r\n" +
 		"setlocal enabledelayedexpansion\r\n" +
 		"set \"file=\"\r\n" +
-		"for %%A in (%*) do (\r\n" +
-		"  set \"arg=%%~A\"\r\n" +
-		"  if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
-		")\r\n" +
-		"if \"%~1\"==\"env:pull\" type nul > \"!file!\"\r\n" +
+		"set \"command=%~1\"\r\n" +
+		":parse_args\r\n" +
+		"if \"%~1\"==\"\" goto parsed_args\r\n" +
+		"set \"arg=%~1\"\r\n" +
+		"if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
+		"shift\r\n" +
+		"goto parse_args\r\n" +
+		":parsed_args\r\n" +
+		"if \"!command!\"==\"env:pull\" type nul > \"!file!\"\r\n" +
 		"exit /b 0\r\n"
 	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
 	prependPathForTest(t, binDir)

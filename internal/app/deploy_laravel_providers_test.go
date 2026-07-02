@@ -30,7 +30,7 @@ func TestRunDeployCloudInvokesLaravelCloudCLI(t *testing.T) {
 		"echo \"$@\" >> \"$CLOUD_LOG\"\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
-		"echo %*>>\"%CLOUD_LOG%\"\r\n" +
+		"echo %* >> \"%CLOUD_LOG%\"\r\n" +
 		"exit /b 0\r\n"
 	writeFakeExecutable(t, binDir, "cloud", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
@@ -274,7 +274,7 @@ func TestRunDeployForgeInvokesLaravelForgeCLI(t *testing.T) {
 		"if [ \"$1\" = \"env:push\" ]; then cat \"$3\" >> \"$FORGE_LOG\"; exit 0; fi\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
-		"echo %*>>\"%FORGE_LOG%\"\r\n" +
+		"echo %* >> \"%FORGE_LOG%\"\r\n" +
 		"if \"%~1\"==\"env:pull\" (\r\n" +
 		"  >\"%~3\" echo EXISTING=1\r\n" +
 		"  exit /b 0\r\n" +
