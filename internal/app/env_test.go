@@ -191,7 +191,7 @@ func TestRunEnvRunInteractivePromptsForCommandAndOptions(t *testing.T) {
 	})
 	t.Setenv("SHELL_ONLY", "from-shell")
 
-	input := &oneByteReader{reader: strings.NewReader(envRunHelperCommandLine() + "\n1\nn\nn\ny\n")}
+	input := &oneByteReader{reader: strings.NewReader(envRunInteractiveHelperCommandLine(t) + "\n1\nn\nn\ny\n")}
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "env", "run"}, input, &output, &output)
 	runner.interactive = true
@@ -223,7 +223,7 @@ func TestRunEnvRunInteractiveCanSelectKeys(t *testing.T) {
 		"SECRET_TOKEN":             "super-secret-value",
 	})
 
-	input := &oneByteReader{reader: strings.NewReader(envRunHelperCommandLine() + "\n2\nAPP_NAME,GHOSTABLE_ENV_RUN_HELPER\nn\nn\ny\n")}
+	input := &oneByteReader{reader: strings.NewReader(envRunInteractiveHelperCommandLine(t) + "\n2\nAPP_NAME,GHOSTABLE_ENV_RUN_HELPER\nn\nn\ny\n")}
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "env", "run"}, input, &output, &output)
 	runner.interactive = true
@@ -253,7 +253,7 @@ func TestRunEnvRunInteractiveSuggestsProjectCommands(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	input := &oneByteReader{reader: strings.NewReader("Custom command\n" + envRunHelperCommandLine() + "\n1\nn\nn\ny\n")}
+	input := &oneByteReader{reader: strings.NewReader("Custom command\n" + envRunInteractiveHelperCommandLine(t) + "\n1\nn\nn\ny\n")}
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "env", "run"}, input, &output, &output)
 	runner.interactive = true
@@ -296,7 +296,7 @@ func TestRunEnvRunInteractiveHidesRiskySuggestionsForProduction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	input := &oneByteReader{reader: strings.NewReader("Custom command\n" + envRunHelperCommandLine() + "\n1\nn\nn\ny\n")}
+	input := &oneByteReader{reader: strings.NewReader("Custom command\n" + envRunInteractiveHelperCommandLine(t) + "\n1\nn\nn\ny\n")}
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "env", "run", "--env", "production"}, input, &output, &output)
 	runner.interactive = true
@@ -650,6 +650,20 @@ func envRunHelperCommandLine() string {
 		return "call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
 	}
 	return strconv.Quote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess"
+}
+
+func envRunInteractiveHelperCommandLine(t *testing.T) string {
+	t.Helper()
+	if runtime.GOOS != "windows" {
+		return envRunHelperCommandLine()
+	}
+	binDir := t.TempDir()
+	windowsScript := "@echo off\r\n" +
+		"call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestEnvRunHelperProcess\r\n" +
+		"exit /b %ERRORLEVEL%\r\n"
+	writeFakeExecutable(t, binDir, "envrunhelper", "", windowsScript)
+	prependPathForTest(t, binDir)
+	return "envrunhelper"
 }
 
 func windowsCommandLineQuote(value string) string {

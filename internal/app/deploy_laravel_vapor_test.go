@@ -207,13 +207,11 @@ func TestFakeVaporCLIHelperProcess(t *testing.T) {
 	}
 	args := helperProcessArgs()
 	logPath := os.Getenv("VAPOR_LOG")
-	if logPath == "" {
-		fmt.Fprintln(os.Stderr, "VAPOR_LOG is required")
-		os.Exit(1)
-	}
-	if err := appendTextFileForTest(logPath, strings.Join(args, " ")+"\n"); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	if logPath != "" {
+		if err := appendTextFileForTest(logPath, strings.Join(args, " ")+"\n"); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 
 	file := ""
@@ -235,6 +233,9 @@ func TestFakeVaporCLIHelperProcess(t *testing.T) {
 			os.Exit(1)
 		}
 	case len(args) > 0 && args[0] == "env:push":
+		if logPath == "" {
+			break
+		}
 		content, err := os.ReadFile(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
