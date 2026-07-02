@@ -219,7 +219,7 @@ func laravelRunCommandSuggestions(root string) []string {
 	return []string{
 		"php artisan about",
 		"php artisan route:list",
-		"php artisan serve",
+		"php artisan serve --no-reload",
 		"php artisan migrate",
 		"php artisan queue:work",
 	}
