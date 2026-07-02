@@ -2,11 +2,13 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/manifest"
 	"github.com/ghostable-dev/beta/internal/prompt"
 	"github.com/ghostable-dev/beta/internal/store"
@@ -177,6 +179,26 @@ func TestRunSetupSeedsDefaultEnvironmentFromDotenvFlag(t *testing.T) {
 	if !strings.Contains(output.String(), `"seededFrom"`) {
 		t.Fatalf("expected setup JSON to include seeded result, got:\n%s", output.String())
 	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal(output.Bytes(), &payload); err != nil {
+		t.Fatalf("parse setup JSON: %v\n%s", err, output.String())
+	}
+	project := jsonObjectForTest(t, payload, "project")
+	if _, exists := project["Schema"]; exists {
+		t.Fatalf("setup JSON should not expose raw ProjectManifest fields: %#v", project)
+	}
+	if _, exists := project["ID"]; exists {
+		t.Fatalf("setup JSON should not expose raw ProjectManifest fields: %#v", project)
+	}
+	if project["schema"] != domain.ProjectSchema {
+		t.Fatalf("expected lower-camel project schema, got %#v", project)
+	}
+	if project["name"] != "Test Project" {
+		t.Fatalf("expected lower-camel project name, got %#v", project)
+	}
+	if _, exists := project["packageManager"]; !exists {
+		t.Fatalf("expected lower-camel packageManager field, got %#v", project)
+	}
 }
 
 func TestRunStatusPrintsBannerAndInventory(t *testing.T) {
@@ -262,6 +284,43 @@ func TestRunStatusJSONDoesNotPrintBanner(t *testing.T) {
 	if !strings.Contains(text, `"project"`) {
 		t.Fatalf("expected status JSON payload:\n%s", text)
 	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal(output.Bytes(), &payload); err != nil {
+		t.Fatalf("parse status JSON: %v\n%s", err, text)
+	}
+	project := jsonObjectForTest(t, payload, "project")
+	if _, exists := project["Schema"]; exists {
+		t.Fatalf("status JSON should not expose raw ProjectManifest fields: %#v", project)
+	}
+	if project["schema"] != domain.ProjectSchema {
+		t.Fatalf("expected lower-camel project schema, got %#v", project)
+	}
+	devices, ok := payload["devices"].([]interface{})
+	if !ok || len(devices) != 1 {
+		t.Fatalf("expected one status device, got %#v", payload["devices"])
+	}
+	device, ok := devices[0].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected status device object, got %#v", devices[0])
+	}
+	if _, exists := device["device_id"]; exists {
+		t.Fatalf("status JSON should not expose device_id compatibility field: %#v", device)
+	}
+	if _, exists := device["client_sig"]; exists {
+		t.Fatalf("status JSON should not expose client_sig signature field: %#v", device)
+	}
+	if device["schema"] != domain.DeviceSchema || device["id"] == "" {
+		t.Fatalf("expected stable device JSON fields, got %#v", device)
+	}
+}
+
+func jsonObjectForTest(t *testing.T, payload map[string]interface{}, key string) map[string]interface{} {
+	t.Helper()
+	object, ok := payload[key].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected %s object, got %#v", key, payload[key])
+	}
+	return object
 }
 
 func setupTempWorkdir(t *testing.T) string {

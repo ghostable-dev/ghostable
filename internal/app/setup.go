@@ -115,7 +115,7 @@ func (r *Runner) runSetup(args []string) error {
 
 func setupResultPayload(repo store.Repository, created bool, seedResult *store.PushResult) map[string]interface{} {
 	payload := map[string]interface{}{
-		"project":      repo.Manifest,
+		"project":      jsonProjectManifestFromDomain(repo.Manifest),
 		"manifestPath": repo.ManifestPath,
 		"keyPath":      repo.KeyPath(),
 		"deviceId":     repo.DeviceID(),
@@ -125,6 +125,135 @@ func setupResultPayload(repo store.Repository, created bool, seedResult *store.P
 		payload["seededFrom"] = seedResult
 	}
 	return payload
+}
+
+type jsonProjectManifest struct {
+	Schema         string                        `json:"schema"`
+	ID             string                        `json:"id"`
+	Name           string                        `json:"name"`
+	Language       string                        `json:"language"`
+	Framework      string                        `json:"framework"`
+	PackageManager string                        `json:"packageManager"`
+	DeployTarget   string                        `json:"deployTarget"`
+	ActivityMode   string                        `json:"activityMode"`
+	AuditEnvs      []string                      `json:"auditEnvs"`
+	Environments   map[string]domain.Environment `json:"environments"`
+	ScanLevel      string                        `json:"scanLevel"`
+	ScanIgnores    []string                      `json:"scanIgnores"`
+}
+
+type jsonDeviceRecord struct {
+	Schema        string                 `json:"schema"`
+	ID            string                 `json:"id"`
+	Name          string                 `json:"name,omitempty"`
+	Platform      string                 `json:"platform,omitempty"`
+	Status        string                 `json:"status"`
+	CreatedAt     string                 `json:"createdAt"`
+	SigningKey    domain.PublicKeyRecord `json:"signingKey"`
+	EncryptionKey domain.PublicKeyRecord `json:"encryptionKey"`
+}
+
+type jsonAccessRequest struct {
+	Schema      string `json:"schema"`
+	ProjectID   string `json:"projectId"`
+	ID          string `json:"id"`
+	DeviceID    string `json:"deviceId"`
+	Environment string `json:"environment"`
+	Role        string `json:"role"`
+	Reason      string `json:"reason,omitempty"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+type jsonAccessRequestEntry struct {
+	Request     jsonAccessRequest `json:"request"`
+	Device      jsonDeviceRecord  `json:"device"`
+	AccessState string            `json:"accessState"`
+}
+
+type jsonInvalidAccessRequestEntry struct {
+	Request jsonAccessRequest `json:"request"`
+	Error   string            `json:"error"`
+}
+
+type jsonAccessRequestList struct {
+	Valid   []jsonAccessRequestEntry        `json:"valid"`
+	Invalid []jsonInvalidAccessRequestEntry `json:"invalid"`
+}
+
+func jsonProjectManifestFromDomain(project domain.ProjectManifest) jsonProjectManifest {
+	environments := map[string]domain.Environment{}
+	for name, env := range project.Environments {
+		environments[name] = env
+	}
+	return jsonProjectManifest{
+		Schema:         project.Schema,
+		ID:             project.ID,
+		Name:           project.Name,
+		Language:       project.Language,
+		Framework:      project.Framework,
+		PackageManager: project.PackageManager,
+		DeployTarget:   project.DeployTarget,
+		ActivityMode:   project.ActivityMode,
+		AuditEnvs:      append([]string{}, project.AuditEnvs...),
+		Environments:   environments,
+		ScanLevel:      project.ScanLevel,
+		ScanIgnores:    append([]string{}, project.ScanIgnores...),
+	}
+}
+
+func jsonDeviceRecordFromDomain(device domain.DeviceRecord) jsonDeviceRecord {
+	return jsonDeviceRecord{
+		Schema:        device.Schema,
+		ID:            device.ID,
+		Name:          device.Name,
+		Platform:      device.Platform,
+		Status:        device.Status,
+		CreatedAt:     device.CreatedAt,
+		SigningKey:    device.SigningKey,
+		EncryptionKey: device.EncryptionKey,
+	}
+}
+
+func jsonDeviceRecordsFromDomain(devices []domain.DeviceRecord) []jsonDeviceRecord {
+	result := make([]jsonDeviceRecord, 0, len(devices))
+	for _, device := range devices {
+		result = append(result, jsonDeviceRecordFromDomain(device))
+	}
+	return result
+}
+
+func jsonAccessRequestFromDomain(request domain.AccessRequest) jsonAccessRequest {
+	return jsonAccessRequest{
+		Schema:      request.Schema,
+		ProjectID:   request.ProjectID,
+		ID:          request.ID,
+		DeviceID:    request.DeviceID,
+		Environment: request.Environment,
+		Role:        request.Role,
+		Reason:      request.Reason,
+		CreatedAt:   request.CreatedAt,
+	}
+}
+
+func jsonAccessRequestListFromStore(requests store.AccessRequestList) jsonAccessRequestList {
+	result := jsonAccessRequestList{
+		Valid:   make([]jsonAccessRequestEntry, 0, len(requests.Valid)),
+		Invalid: make([]jsonInvalidAccessRequestEntry, 0, len(requests.Invalid)),
+	}
+	for _, entry := range requests.Valid {
+		result.Valid = append(result.Valid, jsonAccessRequestEntry{
+			Request:     jsonAccessRequestFromDomain(entry.Request),
+			Device:      jsonDeviceRecordFromDomain(entry.Device),
+			AccessState: entry.AccessState,
+		})
+	}
+	for _, entry := range requests.Invalid {
+		result.Invalid = append(result.Invalid, jsonInvalidAccessRequestEntry{
+			Request: jsonAccessRequestFromDomain(entry.Request),
+			Error:   entry.Error,
+		})
+	}
+	return result
 }
 
 func (r *Runner) printSetupResult(repo store.Repository, dotenvSeed *defaultDotenvSeed, seedResult *store.PushResult) {
@@ -236,14 +365,14 @@ func (r *Runner) runStatus(args []string) error {
 	}
 
 	payload := map[string]interface{}{
-		"project":        repo.Manifest,
+		"project":        jsonProjectManifestFromDomain(repo.Manifest),
 		"root":           repo.Root,
 		"manifestPath":   repo.ManifestPath,
 		"keyPath":        repo.KeyPath(),
 		"deviceId":       repo.DeviceID(),
-		"devices":        devices,
+		"devices":        jsonDeviceRecordsFromDomain(devices),
 		"valueCounts":    counts,
-		"accessRequests": accessRequests,
+		"accessRequests": jsonAccessRequestListFromStore(accessRequests),
 	}
 	if *jsonOut {
 		return printJSON(r.out, payload)
