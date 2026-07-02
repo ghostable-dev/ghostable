@@ -60,18 +60,32 @@ func TestRunDeployVaporInvokesVaporCLI(t *testing.T) {
 
 	binDir := t.TempDir()
 	logPath := filepath.Join(t.TempDir(), "vapor.log")
-	vaporPath := filepath.Join(binDir, "vapor")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"file=\"\"\n" +
 		"for arg in \"$@\"; do case \"$arg\" in --file=*) file=\"${arg#--file=}\" ;; esac; done\n" +
 		"echo \"$@\" >> \"$VAPOR_LOG\"\n" +
 		"if [ \"$1\" = \"env:pull\" ]; then : > \"$file\"; fi\n" +
 		"if [ \"$1\" = \"env:push\" ]; then cat \"$file\" >> \"$VAPOR_LOG\"; fi\n" +
 		"exit 0\n"
-	if err := os.WriteFile(vaporPath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"setlocal enabledelayedexpansion\r\n" +
+		"set \"file=\"\r\n" +
+		"for %%A in (%*) do (\r\n" +
+		"  set \"arg=%%~A\"\r\n" +
+		"  if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
+		")\r\n" +
+		"echo %*>>\"%VAPOR_LOG%\"\r\n" +
+		"if \"%~1\"==\"env:pull\" (\r\n" +
+		"  type nul > \"!file!\"\r\n" +
+		"  exit /b 0\r\n" +
+		")\r\n" +
+		"if \"%~1\"==\"env:push\" (\r\n" +
+		"  type \"!file!\" >> \"%VAPOR_LOG%\"\r\n" +
+		"  exit /b 0\r\n" +
+		")\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 	t.Setenv("VAPOR_LOG", logPath)
 
 	var output bytes.Buffer
@@ -133,11 +147,8 @@ func TestRunDeployVaporRejectsProjectLocalVaporCLI(t *testing.T) {
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	vaporPath := filepath.Join(binDir, "vapor")
-	if err := os.WriteFile(vaporPath, []byte("#!/bin/sh\nexit 0\n"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	writeFakeExecutable(t, binDir, "vapor", "", "")
+	prependPathForTest(t, binDir)
 
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "deploy", "laravel-vapor", "production"}, strings.NewReader(""), &output, &output)
@@ -157,16 +168,22 @@ func TestRunDeployVaporDoesNotUseRepoLocalEnvironmentFile(t *testing.T) {
 	}
 
 	binDir := t.TempDir()
-	vaporPath := filepath.Join(binDir, "vapor")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"file=\"\"\n" +
 		"for arg in \"$@\"; do case \"$arg\" in --file=*) file=\"${arg#--file=}\" ;; esac; done\n" +
 		"if [ \"$1\" = \"env:pull\" ]; then : > \"$file\"; fi\n" +
 		"exit 0\n"
-	if err := os.WriteFile(vaporPath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"setlocal enabledelayedexpansion\r\n" +
+		"set \"file=\"\r\n" +
+		"for %%A in (%*) do (\r\n" +
+		"  set \"arg=%%~A\"\r\n" +
+		"  if \"!arg:~0,7!\"==\"--file=\" set \"file=!arg:~7!\"\r\n" +
+		")\r\n" +
+		"if \"%~1\"==\"env:pull\" type nul > \"!file!\"\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 
 	outside := filepath.Join(t.TempDir(), "outside.env")
 	if err := os.WriteFile(outside, []byte("EXISTING=1\n"), 0o600); err != nil {

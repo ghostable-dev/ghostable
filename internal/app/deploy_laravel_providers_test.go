@@ -26,14 +26,14 @@ func TestRunDeployCloudInvokesLaravelCloudCLI(t *testing.T) {
 
 	binDir := t.TempDir()
 	logPath := filepath.Join(t.TempDir(), "cloud.log")
-	cloudPath := filepath.Join(binDir, "cloud")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"echo \"$@\" >> \"$CLOUD_LOG\"\n" +
 		"exit 0\n"
-	if err := os.WriteFile(cloudPath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"echo %*>>\"%CLOUD_LOG%\"\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "cloud", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 	t.Setenv("CLOUD_LOG", logPath)
 
 	var output bytes.Buffer
@@ -101,14 +101,14 @@ func TestRunDeployCloudRedactsValueFromCLIError(t *testing.T) {
 	}
 
 	binDir := t.TempDir()
-	cloudPath := filepath.Join(binDir, "cloud")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"echo \"failed with $@\" >&2\n" +
 		"exit 1\n"
-	if err := os.WriteFile(cloudPath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"echo failed with %* 1>&2\r\n" +
+		"exit /b 1\r\n"
+	writeFakeExecutable(t, binDir, "cloud", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "deploy", "laravel-cloud", "production"}, strings.NewReader(""), &output, &output)
@@ -138,11 +138,8 @@ func TestRunDeployCloudRejectsProjectLocalCloudCLI(t *testing.T) {
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	cloudPath := filepath.Join(binDir, "cloud")
-	if err := os.WriteFile(cloudPath, []byte("#!/bin/sh\nexit 0\n"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	writeFakeExecutable(t, binDir, "cloud", "", "")
+	prependPathForTest(t, binDir)
 
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "deploy", "laravel-cloud", "production"}, strings.NewReader(""), &output, &output)
@@ -271,16 +268,24 @@ func TestRunDeployForgeInvokesLaravelForgeCLI(t *testing.T) {
 
 	binDir := t.TempDir()
 	logPath := filepath.Join(t.TempDir(), "forge.log")
-	forgePath := filepath.Join(binDir, "forge")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"echo \"$@\" >> \"$FORGE_LOG\"\n" +
 		"if [ \"$1\" = \"env:pull\" ]; then printf 'EXISTING=1\\n' > \"$3\"; exit 0; fi\n" +
 		"if [ \"$1\" = \"env:push\" ]; then cat \"$3\" >> \"$FORGE_LOG\"; exit 0; fi\n" +
 		"exit 0\n"
-	if err := os.WriteFile(forgePath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"echo %*>>\"%FORGE_LOG%\"\r\n" +
+		"if \"%~1\"==\"env:pull\" (\r\n" +
+		"  >\"%~3\" echo EXISTING=1\r\n" +
+		"  exit /b 0\r\n" +
+		")\r\n" +
+		"if \"%~1\"==\"env:push\" (\r\n" +
+		"  type \"%~3\" >> \"%FORGE_LOG%\"\r\n" +
+		"  exit /b 0\r\n" +
+		")\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "forge", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 	t.Setenv("FORGE_LOG", logPath)
 
 	var output bytes.Buffer
@@ -351,11 +356,8 @@ func TestRunDeployForgeRejectsProjectLocalForgeCLI(t *testing.T) {
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	forgePath := filepath.Join(binDir, "forge")
-	if err := os.WriteFile(forgePath, []byte("#!/bin/sh\nexit 0\n"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	writeFakeExecutable(t, binDir, "forge", "", "")
+	prependPathForTest(t, binDir)
 
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "deploy", "laravel-forge", "production", "--forge-site", "example.com"}, strings.NewReader(""), &output, &output)
@@ -386,14 +388,14 @@ func TestRunDeployForgeRedactsValuesFromCLIError(t *testing.T) {
 	}
 
 	binDir := t.TempDir()
-	forgePath := filepath.Join(binDir, "forge")
-	script := "#!/bin/sh\n" +
+	unixScript := "#!/bin/sh\n" +
 		"echo \"failed with Ghostable\" >&2\n" +
 		"exit 1\n"
-	if err := os.WriteFile(forgePath, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	windowsScript := "@echo off\r\n" +
+		"echo failed with Ghostable 1>&2\r\n" +
+		"exit /b 1\r\n"
+	writeFakeExecutable(t, binDir, "forge", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
 
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "deploy", "laravel-forge", "production", "--forge-site", "example.com"}, strings.NewReader(""), &output, &output)

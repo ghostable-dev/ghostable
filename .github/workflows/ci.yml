@@ -24,9 +24,6 @@ jobs:
       - name: Run checks
         run: make check
 
-      - name: Compile Windows security package
-        run: GOOS=windows GOARCH=amd64 go test -c ./internal/security -o /tmp/ghostable-security.test.exe
-
       - name: Check GoReleaser config
         if: github.event_name == 'push'
         uses: goreleaser/goreleaser-action@v7
@@ -36,3 +33,101 @@ jobs:
           args: check
         env:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+
+  release-target-builds:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Cross-build release target
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          set -euo pipefail
+          mkdir -p "tmp/cross/${GOOS}_${GOARCH}"
+          output="tmp/cross/${GOOS}_${GOARCH}/ghostable"
+          if [ "$GOOS" = "windows" ]; then
+            output="${output}.exe"
+          fi
+          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/beta/internal/app.version=ci" -o "$output" ./cmd/ghostable
+
+  native-platform-smoke:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macos
+          - os: windows-latest
+            platform: windows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run native tests
+        run: go test ./...
+
+      - name: Run native vet
+        run: go vet ./...
+
+      - name: Build and smoke test CLI
+        run: |
+          set -euo pipefail
+          mkdir -p tmp
+          binary="$(pwd)/tmp/ghostable"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            binary="${binary}.exe"
+          fi
+
+          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/beta/internal/app.version=ci" -o "$binary" ./cmd/ghostable
+          "$binary" --help
+          "$binary" version
+
+          runner_temp="${RUNNER_TEMP:-/tmp}"
+          if command -v cygpath >/dev/null 2>&1; then
+            runner_temp="$(cygpath -u "$runner_temp")"
+          fi
+
+          project="$runner_temp/ghostable-smoke-project"
+          keys="$runner_temp/ghostable-smoke-keys"
+          rm -rf "$project" "$keys"
+          mkdir -p "$project" "$keys"
+          cd "$project"
+
+          GHOSTABLE_KEYSTORE="$keys" "$binary" setup --name Smoke --device-name ci --platform "${{ matrix.platform }}" --env default --env production --no-seed-dotenv --json
+          GHOSTABLE_KEYSTORE="$keys" "$binary" status --json
+          GHOSTABLE_KEYSTORE="$keys" "$binary" env list --json
+          GHOSTABLE_KEYSTORE="$keys" "$binary" deploy production --dry-run --json
