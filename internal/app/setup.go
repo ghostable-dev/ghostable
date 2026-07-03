@@ -35,9 +35,11 @@ func (r *Runner) runSetup(args []string) error {
 	exampleValues := fs.String("example-values", exampleValuesNonSensitive, "Example value mode: blank, non-sensitive, or all")
 	agentInstructions := fs.Bool("agent-instructions", false, "Add Ghostable guidance to AGENTS.md")
 	noAgentInstructions := fs.Bool("no-agent-instructions", false, "Do not add Ghostable guidance to AGENTS.md")
+	adoptPrompt := fs.Bool("adopt-prompt", false, "Print a Ghostable adoption prompt after setup")
+	noAdoptPrompt := fs.Bool("no-adopt-prompt", false, "Do not print a Ghostable adoption prompt after setup")
 	fs.Bool("no-metadata", false, "Deprecated; metadata prompts are not used by this client")
 	jsonOut := fs.Bool("json", false, "Print setup result as JSON")
-	if _, err := cli.Parse(fs, args, cli.BoolFlags("force", "seed-dotenv", "no-seed-dotenv", "create-example", "no-create-example", "agent-instructions", "no-agent-instructions", "no-metadata", "json")); err != nil {
+	if _, err := cli.Parse(fs, args, cli.BoolFlags("force", "seed-dotenv", "no-seed-dotenv", "create-example", "no-create-example", "agent-instructions", "no-agent-instructions", "adopt-prompt", "no-adopt-prompt", "no-metadata", "json")); err != nil {
 		return err
 	}
 	if *seedDotenv && *noSeedDotenv {
@@ -48,6 +50,12 @@ func (r *Runner) runSetup(args []string) error {
 	}
 	if *agentInstructions && *noAgentInstructions {
 		return fmt.Errorf("pass --agent-instructions or --no-agent-instructions, not both")
+	}
+	if *adoptPrompt && *noAdoptPrompt {
+		return fmt.Errorf("pass --adopt-prompt or --no-adopt-prompt, not both")
+	}
+	if *jsonOut && *adoptPrompt {
+		return fmt.Errorf("pass --adopt-prompt without --json; adoption prompts are plain text output")
 	}
 	selectedExampleValueMode, err := normalizeExampleValueMode(*exampleValues)
 	if err != nil {
@@ -135,6 +143,11 @@ func (r *Runner) runSetup(args []string) error {
 		NoAdd: *noAgentInstructions,
 		JSON:  *jsonOut,
 	}
+	setupAdoptOptions := setupAdoptPromptOptions{
+		Print:   *adoptPrompt,
+		NoPrint: *noAdoptPrompt,
+		JSON:    *jsonOut,
+	}
 	considerSetupAgentInstructions := r.shouldConsiderSetupAgentInstructions(setupAgentOptions)
 	var setupExampleResult *setupExampleCreationResult
 	var setupAgentInstructionsResult *setupAgentInstructionsResult
@@ -166,6 +179,9 @@ func (r *Runner) runSetup(args []string) error {
 		if _, err := r.finishSetupAgentInstructions(setupAgentOptions); err != nil {
 			return err
 		}
+	}
+	if err := r.finishSetupAdoptPrompt(setupAdoptOptions); err != nil {
+		return err
 	}
 	return nil
 }
@@ -554,6 +570,47 @@ func writeSetupAgentInstructions() (setupAgentInstructionsResult, error) {
 func (r *Runner) printSkippedSetupAgentInstructions() {
 	fmt.Fprintln(r.out, warn("Skipped AGENTS.md."))
 	fmt.Fprintln(r.out, warn("You can add it later with `ghostable agent init`."))
+}
+
+type setupAdoptPromptOptions struct {
+	Print   bool
+	NoPrint bool
+	JSON    bool
+}
+
+func (r *Runner) finishSetupAdoptPrompt(options setupAdoptPromptOptions) error {
+	if options.JSON || options.NoPrint {
+		return nil
+	}
+
+	shouldPrint := options.Print
+	if !shouldPrint {
+		if !r.interactive {
+			return nil
+		}
+		fmt.Fprintln(r.out)
+		label := "Generate a Ghostable adoption prompt for your AI coding assistant now?"
+		confirmed, err := r.prompts.Confirm(label, true)
+		if err != nil {
+			return err
+		}
+		r.printPromptAnswer(label, yesNo(confirmed))
+		shouldPrint = confirmed
+	}
+	if !shouldPrint {
+		fmt.Fprintln(r.out, "You can generate it later with `ghostable adopt`.")
+		return nil
+	}
+
+	selection := defaultAdoptSections()
+	if r.interactive {
+		var err error
+		selection, err = r.promptAdoptSections()
+		if err != nil {
+			return err
+		}
+	}
+	return printAdoptPrompt(r.out, selection)
 }
 
 type defaultDotenvSeed struct {
