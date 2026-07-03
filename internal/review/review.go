@@ -87,6 +87,7 @@ func Review(ctx context.Context, input ReviewInput) (Report, error) {
 	environments := resolveReviewEnvironments(repo, input.Environments)
 	references := findChangedReferences(changes.AddedLines, changes.Files)
 	referenceKeys := referenceKeyMap(references)
+	requiredReferenceKeys := requiredReferenceKeyMap(references)
 
 	reportStatus(input, "Reading encrypted ENV metadata")
 	inventories, inventoryFindings := readInventories(repo, environments)
@@ -116,15 +117,16 @@ func Review(ctx context.Context, input ReviewInput) (Report, error) {
 
 	reportStatus(input, "Checking ENV review rules")
 	runChecks(&report, checkContext{
-		Files:            changes.Files,
-		References:       references,
-		ReferenceKeys:    referenceKeys,
-		Inventories:      inventories,
-		ChangedVariables: changedVariables,
-		SchemaKeys:       schemaKeys,
-		ExampleKeys:      exampleKeys,
-		ExampleExists:    exampleExists,
-		Root:             repo.Root,
+		Files:                 changes.Files,
+		References:            references,
+		ReferenceKeys:         referenceKeys,
+		RequiredReferenceKeys: requiredReferenceKeys,
+		Inventories:           inventories,
+		ChangedVariables:      changedVariables,
+		SchemaKeys:            schemaKeys,
+		ExampleKeys:           exampleKeys,
+		ExampleExists:         exampleExists,
+		Root:                  repo.Root,
 	})
 
 	sortReport(&report)
