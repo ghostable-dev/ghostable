@@ -507,6 +507,8 @@ func TestRunSetupInteractiveAdoptPromptUsesSectionWizard(t *testing.T) {
 		"Generate Ghostable adoption prompt",
 		"[1/6] Schema rule recommendations",
 		"Recommend validation rules such as required, nullable, boolean, url, integer, in, starts_with, and provider prefixes.",
+		"[2/6] Key annotation recommendations",
+		"Recommend only evidence-backed non-secret metadata; move unknown ownership, deploy, visibility, and rotation questions to open questions.",
 		"[6/6] Optional CI recommendations",
 		"Schema rule recommendations:",
 		"Optional CI recommendations:",

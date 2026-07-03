@@ -34,13 +34,15 @@ var adoptSections = []adoptSection{
 	{
 		ID:              "annotations",
 		Title:           "Key annotation recommendations",
-		Description:     "Recommend non-secret metadata such as owner/team, service, purpose, deploy-managed, and agent visibility.",
+		Description:     "Recommend only evidence-backed non-secret metadata; move unknown ownership, deploy, visibility, and rotation questions to open questions.",
 		ConfirmLabel:    "Include key annotation recommendations?",
 		DefaultIncluded: true,
 		Body: strings.Join([]string{
 			"Key annotation recommendations:",
-			"Recommend non-secret annotations such as owner/team, service/provider, purpose,",
-			"deploy-managed status, agent visibility, and operational notes. Never put secret",
+			"Recommend only non-secret annotations supported by evidence from Ghostable metadata,",
+			"repo files, deployment config, CI config, framework config, or user-provided context.",
+			"Do not invent owner/team, provider, deploy-managed status, agent visibility, or rotation policy.",
+			"Move unknown annotation fields into open questions instead of proposed writes. Never put secret",
 			"values in annotations.",
 		}, "\n"),
 	},
@@ -59,14 +61,17 @@ var adoptSections = []adoptSection{
 	{
 		ID:              "hygiene",
 		Title:           "Hygiene recommendations",
-		Description:     "Recommend rotation policy, stale-variable follow-up, unused-variable follow-up, and production readiness checks.",
+		Description:     "Recommend stale-variable follow-up, heuristic unused-variable review, and production readiness checks.",
 		ConfirmLabel:    "Include hygiene recommendations?",
 		DefaultIncluded: true,
 		Body: strings.Join([]string{
 			"Hygiene recommendations:",
-			"Recommend rotation policy for sensitive keys, stale or unused variable follow-up,",
-			"and any keys that should be reviewed before production use. Do not create suppressions",
-			"unless there is a clear reason.",
+			"Recommend stale-variable follow-up and any keys that should be reviewed before production use.",
+			"Treat `ghostable hygiene report --env <env> --unused --json` findings as heuristic:",
+			"stored-but-unreferenced means not referenced by scanned app-owned code/schema/example,",
+			"not necessarily safe to delete. For framework-conventional keys such as Laravel defaults,",
+			"recommend review or documentation rather than deletion unless stronger evidence proves the key is unused.",
+			"Do not create suppressions unless there is a clear reason.",
 		}, "\n"),
 	},
 	{
@@ -78,7 +83,8 @@ var adoptSections = []adoptSection{
 		Body: strings.Join([]string{
 			"Missing or stale key findings:",
 			"List keys referenced in code but missing from Ghostable/schema/example, and keys stored",
-			"in Ghostable that appear unused or undocumented.",
+			"in Ghostable that are not referenced by scanned app-owned code/schema/example or are undocumented.",
+			"Do not treat stored-but-unreferenced keys as safe to delete without stronger project evidence.",
 		}, "\n"),
 	},
 	{
@@ -258,6 +264,9 @@ func renderAdoptPrompt(selection map[string]bool) string {
 		"- `ghostable review --env-only --json`",
 		"- `ghostable example generate --dry-run --json`",
 		"- `ghostable agent capabilities --json`",
+		"",
+		"If `ghostable review --env-only --json` fails because the target directory is not a git repository",
+		"or Ghostable cannot infer a base ref, report that limitation and continue with other read-only checks.",
 	}, "\n"))
 	builder.WriteString("\n\n")
 
