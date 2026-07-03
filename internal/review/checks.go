@@ -16,15 +16,16 @@ const (
 )
 
 type checkContext struct {
-	Files            []ChangedFile
-	References       []Reference
-	ReferenceKeys    map[string][]Reference
-	Inventories      inventoryByEnvironment
-	ChangedVariables []ChangedVariable
-	SchemaKeys       map[string]map[string]bool
-	ExampleKeys      map[string]bool
-	ExampleExists    bool
-	Root             string
+	Files                 []ChangedFile
+	References            []Reference
+	ReferenceKeys         map[string][]Reference
+	RequiredReferenceKeys map[string][]Reference
+	Inventories           inventoryByEnvironment
+	ChangedVariables      []ChangedVariable
+	SchemaKeys            map[string]map[string]bool
+	ExampleKeys           map[string]bool
+	ExampleExists         bool
+	Root                  string
 }
 
 var sensitiveKeyPattern = regexp.MustCompile(`(?i)(^APP_KEY$|API[_-]?KEY|SECRET|TOKEN|PASSWORD|PRIVATE[_-]?KEY|CLIENT[_-]?SECRET|ACCESS[_-]?KEY)`)
@@ -39,7 +40,7 @@ func runChecks(report *Report, context checkContext) {
 }
 
 func checkMissingEncryptedValues(report *Report, context checkContext) {
-	for key, references := range context.ReferenceKeys {
+	for key, references := range context.RequiredReferenceKeys {
 		location := firstReferenceLocation(references)
 		for _, env := range report.Environments {
 			if _, ok := context.Inventories[env][key]; ok {
@@ -80,7 +81,7 @@ func checkInvalidValueSignatures(report *Report, context checkContext) {
 }
 
 func checkMissingSchemaRules(report *Report, context checkContext) {
-	for key, references := range context.ReferenceKeys {
+	for key, references := range context.RequiredReferenceKeys {
 		if schemaRuleExistsForAnyEnvironment(key, context.SchemaKeys, report.Environments) {
 			continue
 		}
@@ -100,7 +101,7 @@ func checkMissingDotenvExampleKeys(report *Report, context checkContext) {
 	if !context.ExampleExists {
 		return
 	}
-	for key, references := range context.ReferenceKeys {
+	for key, references := range context.RequiredReferenceKeys {
 		if context.ExampleKeys[key] {
 			continue
 		}
@@ -223,6 +224,17 @@ func looksPlaceholderValue(value string) bool {
 func referenceKeyMap(references []Reference) map[string][]Reference {
 	result := map[string][]Reference{}
 	for _, reference := range references {
+		result[reference.Key] = append(result[reference.Key], reference)
+	}
+	return result
+}
+
+func requiredReferenceKeyMap(references []Reference) map[string][]Reference {
+	result := map[string][]Reference{}
+	for _, reference := range references {
+		if reference.Default {
+			continue
+		}
 		result[reference.Key] = append(result[reference.Key], reference)
 	}
 	return result

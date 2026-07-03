@@ -33,6 +33,101 @@ func TestReviewErrorsWhenReferencedKeyIsMissingFromEnvironment(t *testing.T) {
 	}
 }
 
+func TestReviewDoesNotRequireDefaultedEnvReferences(t *testing.T) {
+	root, _ := setupReviewGitRepo(t)
+	writeReviewFile(t, root, ".ghostable/schema.yaml", "REQUIRED_SECRET:\n  - required\n")
+	writeReviewFile(t, root, ".env.example", "REQUIRED_SECRET=\n")
+	commitAll(t, root, "baseline")
+
+	writeReviewFile(t, root, "config/cashier.php", strings.Join([]string{
+		"<?php",
+		"return [",
+		"    'path' => env('CASHIER_PATH', 'stripe/webhook'),",
+		"    'currency' => env('CASHIER_CURRENCY', 'usd'),",
+		"    'secret' => env('REQUIRED_SECRET'),",
+		"];",
+		"",
+	}, "\n"))
+	writeReviewFile(t, root, "settings.py", strings.Join([]string{
+		"import os",
+		`python_optional = os.getenv("PYTHON_OPTIONAL", "fallback")`,
+		`python_environ_optional = os.environ.get("PYTHON_ENVIRON_OPTIONAL", "fallback")`,
+		"",
+	}, "\n"))
+	writeReviewFile(t, root, "config/initializers/env.rb", strings.Join([]string{
+		`ruby_optional = ENV.fetch("RUBY_OPTIONAL", "fallback")`,
+		"",
+	}, "\n"))
+
+	report, err := Review(context.Background(), ReviewInput{
+		Root:         root,
+		BaseRef:      "HEAD",
+		Environments: []string{"production"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	optionalKeys := []string{
+		"CASHIER_PATH",
+		"CASHIER_CURRENCY",
+		"PYTHON_OPTIONAL",
+		"PYTHON_ENVIRON_OPTIONAL",
+		"RUBY_OPTIONAL",
+	}
+	for _, key := range optionalKeys {
+		if hasFinding(report.Errors, "missing_encrypted_value", key) {
+			t.Fatalf("did not expect defaulted %s to require an encrypted value, errors=%#v", key, report.Errors)
+		}
+		if hasFinding(report.Warnings, "missing_schema_rule", key) {
+			t.Fatalf("did not expect defaulted %s to require a schema rule, warnings=%#v", key, report.Warnings)
+		}
+		if hasFinding(report.Warnings, "missing_env_example_key", key) {
+			t.Fatalf("did not expect defaulted %s to require .env.example, warnings=%#v", key, report.Warnings)
+		}
+	}
+	if !hasFinding(report.Errors, "missing_encrypted_value", "REQUIRED_SECRET") {
+		t.Fatalf("expected plain env reference to still require encrypted value, errors=%#v", report.Errors)
+	}
+}
+
+func TestFindChangedReferencesMarksExplicitDefaults(t *testing.T) {
+	lines := []ChangedLine{
+		{Path: "config/app.php", Line: 1, Text: `'path' => env('CASHIER_PATH', 'stripe/webhook'),`},
+		{Path: "settings.py", Line: 2, Text: `python_optional = os.getenv("PYTHON_OPTIONAL", "fallback")`},
+		{Path: "settings.py", Line: 3, Text: `python_environ_optional = os.environ.get("PYTHON_ENVIRON_OPTIONAL", "fallback")`},
+		{Path: "config/initializers/env.rb", Line: 4, Text: `ruby_optional = ENV.fetch("RUBY_OPTIONAL", "fallback")`},
+		{Path: "config/app.php", Line: 5, Text: `'secret' => env('REQUIRED_SECRET'),`},
+	}
+	files := []ChangedFile{
+		{Path: "config/app.php", Category: FileCategoryConfig},
+		{Path: "settings.py", Category: FileCategoryAppCode},
+		{Path: "config/initializers/env.rb", Category: FileCategoryAppCode},
+	}
+
+	references := findChangedReferences(lines, files)
+	defaults := map[string]bool{}
+	required := requiredReferenceKeyMap(references)
+	for _, reference := range references {
+		defaults[reference.Key] = defaults[reference.Key] || reference.Default
+	}
+
+	for _, key := range []string{"CASHIER_PATH", "PYTHON_OPTIONAL", "PYTHON_ENVIRON_OPTIONAL", "RUBY_OPTIONAL"} {
+		if !defaults[key] {
+			t.Fatalf("expected %s to be marked defaulted, references=%#v", key, references)
+		}
+		if _, ok := required[key]; ok {
+			t.Fatalf("did not expect defaulted %s to be required, references=%#v", key, references)
+		}
+	}
+	if defaults["REQUIRED_SECRET"] {
+		t.Fatalf("did not expect REQUIRED_SECRET to be marked defaulted, references=%#v", references)
+	}
+	if _, ok := required["REQUIRED_SECRET"]; !ok {
+		t.Fatalf("expected REQUIRED_SECRET to remain required, references=%#v", references)
+	}
+}
+
 func TestReviewDetectsCaseInsensitivePhpEnvAndLowercaseKey(t *testing.T) {
 	root, _ := setupReviewGitRepo(t)
 	commitAll(t, root, "baseline")

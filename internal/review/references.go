@@ -12,29 +12,31 @@ type Reference struct {
 	Path    string `json:"path"`
 	Line    int    `json:"line"`
 	Pattern string `json:"pattern"`
+	Default bool   `json:"default,omitempty"`
 }
 
 type referencePattern struct {
-	name      string
-	expr      *regexp.Regexp
-	group     int
-	shellOnly bool
+	name                   string
+	expr                   *regexp.Regexp
+	group                  int
+	shellOnly              bool
+	optionalSecondArgument bool
 }
 
 var referencePatterns = []referencePattern{
-	{name: "php env", expr: regexp.MustCompile(`(?i)\benv\(\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]`), group: 1},
-	{name: "php getenv", expr: regexp.MustCompile(`(?i)\bgetenv\(\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]`), group: 1},
+	{name: "php env", expr: regexp.MustCompile(`(?i)\benv\(\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]`), group: 1, optionalSecondArgument: true},
+	{name: "php getenv", expr: regexp.MustCompile(`(?i)(?:^|[^A-Za-z0-9_$.>])getenv\(\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]`), group: 1},
 	{name: "php $_ENV", expr: regexp.MustCompile(`\$_ENV\s*\[\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\]`), group: 1},
 	{name: "javascript process.env", expr: regexp.MustCompile(`\bprocess\.env\.([A-Za-z_][A-Za-z0-9_]*)\b`), group: 1},
 	{name: "javascript process.env[]", expr: regexp.MustCompile(`\bprocess\.env\s*\[\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\]`), group: 1},
 	{name: "go os env", expr: regexp.MustCompile(`\bos\.(?:Getenv|LookupEnv)\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)`), group: 1},
 	{name: "python os.environ[]", expr: regexp.MustCompile(`\bos\.environ\s*\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]`), group: 1},
-	{name: "python os.environ.get", expr: regexp.MustCompile(`\bos\.environ\.get\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1},
-	{name: "python os.getenv", expr: regexp.MustCompile(`\bos\.getenv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1},
+	{name: "python os.environ.get", expr: regexp.MustCompile(`\bos\.environ\.get\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1, optionalSecondArgument: true},
+	{name: "python os.getenv", expr: regexp.MustCompile(`\bos\.getenv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1, optionalSecondArgument: true},
 	{name: "python environ[]", expr: regexp.MustCompile(`\benviron\s*\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]`), group: 1},
-	{name: "python environ.get", expr: regexp.MustCompile(`\benviron\.get\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1},
+	{name: "python environ.get", expr: regexp.MustCompile(`\benviron\.get\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1, optionalSecondArgument: true},
 	{name: "ruby ENV[]", expr: regexp.MustCompile(`\bENV\s*\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]`), group: 1},
-	{name: "ruby ENV.fetch", expr: regexp.MustCompile(`\bENV\.fetch\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1},
+	{name: "ruby ENV.fetch", expr: regexp.MustCompile(`\bENV\.fetch\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1, optionalSecondArgument: true},
 	{name: "java System.getenv", expr: regexp.MustCompile(`\bSystem\.getenv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)`), group: 1},
 	{name: "csharp Environment.GetEnvironmentVariable", expr: regexp.MustCompile(`\b(?:System\.)?Environment\.GetEnvironmentVariable\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']`), group: 1},
 	{name: "rust env var", expr: regexp.MustCompile(`\b(?:std::)?env::var(?:_os)?\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)`), group: 1},
@@ -63,15 +65,18 @@ func findChangedReferences(lines []ChangedLine, files []ChangedFile) []Reference
 			if pattern.shellOnly && !isShellReferenceContext(line.Path, category) {
 				continue
 			}
-			for _, match := range pattern.expr.FindAllStringSubmatch(line.Text, -1) {
-				if len(match) <= pattern.group {
+			for _, match := range pattern.expr.FindAllStringSubmatchIndex(line.Text, -1) {
+				groupStart := pattern.group * 2
+				groupEnd := groupStart + 1
+				if len(match) <= groupEnd || match[groupStart] < 0 || match[groupEnd] < 0 {
 					continue
 				}
-				key := strings.TrimSpace(match[pattern.group])
+				key := strings.TrimSpace(line.Text[match[groupStart]:match[groupEnd]])
 				if !isReviewEnvironmentKey(key, pattern.shellOnly) {
 					continue
 				}
-				id := referenceID(line.Path, line.Line, key, pattern.name)
+				hasDefault := pattern.optionalSecondArgument && matchHasSecondArgument(line.Text, match)
+				id := referenceID(line.Path, line.Line, key, pattern.name, hasDefault)
 				if seen[id] {
 					continue
 				}
@@ -81,6 +86,7 @@ func findChangedReferences(lines []ChangedLine, files []ChangedFile) []Reference
 					Path:    line.Path,
 					Line:    line.Line,
 					Pattern: pattern.name,
+					Default: hasDefault,
 				})
 			}
 		}
@@ -134,8 +140,25 @@ func ignoredReferenceKey(key string) bool {
 	}
 }
 
-func referenceID(path string, line int, key string, pattern string) string {
-	return path + ":" + strconv.Itoa(line) + ":" + key + ":" + pattern
+func matchHasSecondArgument(text string, match []int) bool {
+	if len(match) < 2 || match[1] < 0 || match[1] >= len(text) {
+		return false
+	}
+	for index := match[1]; index < len(text); index++ {
+		switch text[index] {
+		case ' ', '\t', '\r', '\n':
+			continue
+		case ',':
+			return true
+		default:
+			return false
+		}
+	}
+	return false
+}
+
+func referenceID(path string, line int, key string, pattern string, hasDefault bool) string {
+	return path + ":" + strconv.Itoa(line) + ":" + key + ":" + pattern + ":" + strconv.FormatBool(hasDefault)
 }
 
 func filepathSlash(path string) string {
