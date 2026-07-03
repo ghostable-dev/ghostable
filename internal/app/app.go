@@ -105,6 +105,8 @@ func (r *Runner) Run() error {
 		return r.runSetup(args[2:])
 	case "status":
 		return r.runStatus(args[2:])
+	case "adopt":
+		return r.runAdopt(args[2:])
 	case "env", "environment":
 		return r.runEnv(args[2:])
 	case "var", "variable":
@@ -189,6 +191,7 @@ type commandOption struct {
 var rootCommandOptions = []commandOption{
 	{Label: "setup", Description: "Initialize .ghostable for this project"},
 	{Label: "status", Description: "Show local project status"},
+	{Label: "adopt", Description: "Generate an AI adoption prompt"},
 	{Label: "env", Description: "Manage environments and encrypted values"},
 	{Label: "var", Description: "Manage individual variables"},
 	{Label: "validate", Description: "Check values against schema rules"},
@@ -285,6 +288,7 @@ func (r *Runner) printRootHelp() {
 	fmt.Fprintln(r.out, warn("Usage:"))
 	fmt.Fprintln(r.out, "  ghostable setup [options]")
 	fmt.Fprintln(r.out, "  ghostable status [--json]")
+	fmt.Fprintln(r.out, "  ghostable adopt [options]")
 	fmt.Fprintln(r.out, "  ghostable env <command> [options]")
 	fmt.Fprintln(r.out, "  ghostable var <command> [options]")
 	fmt.Fprintln(r.out, "  ghostable validate [options]")

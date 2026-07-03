@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -454,6 +455,97 @@ func TestRunSetupDoesNotCreateAgentInstructionsNonInteractivelyByDefault(t *test
 	}
 }
 
+func TestRunSetupCanPrintAdoptPrompt(t *testing.T) {
+	setupTempWorkdir(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--no-agent-instructions",
+		"--adopt-prompt",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"--- BEGIN GHOSTABLE ADOPTION PROMPT ---",
+		renderAdoptPrompt(defaultAdoptSections()),
+		"--- END GHOSTABLE ADOPTION PROMPT ---",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected setup output to contain %q:\n%s", expected, text)
+		}
+	}
+}
+
+func TestRunSetupInteractiveAdoptPromptUsesSectionWizard(t *testing.T) {
+	setupTempWorkdir(t)
+
+	input := newSingleByteReader("y\ny\nn\nn\nn\nn\ny\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--no-agent-instructions",
+	}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	text := output.String()
+	for _, expected := range []string{
+		"Generate a Ghostable adoption prompt for your AI coding assistant now?",
+		"Generate Ghostable adoption prompt",
+		"[1/6] Schema rule recommendations",
+		"Recommend validation rules such as required, nullable, boolean, url, integer, in, starts_with, and provider prefixes.",
+		"[6/6] Optional CI recommendations",
+		"Schema rule recommendations:",
+		"Optional CI recommendations:",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected interactive setup adopt prompt to contain %q:\n%s", expected, text)
+		}
+	}
+	for _, unexpected := range []string{
+		"Key annotation recommendations:",
+		".env.example review:",
+		"Hygiene recommendations:",
+		"Missing or stale key findings:",
+	} {
+		if strings.Contains(text, unexpected) {
+			t.Fatalf("did not expect declined section %q in generated prompt:\n%s", unexpected, text)
+		}
+	}
+}
+
+func TestRunSetupDoesNotPrintAdoptPromptNonInteractivelyByDefault(t *testing.T) {
+	setupTempWorkdir(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(output.String(), "--- BEGIN GHOSTABLE ADOPTION PROMPT ---") {
+		t.Fatalf("did not expect setup to print adopt prompt by default in noninteractive mode:\n%s", output.String())
+	}
+}
+
 func TestRunSetupAgentInstructionsFlagWorksWithJSON(t *testing.T) {
 	root := setupTempWorkdir(t)
 
@@ -685,4 +777,22 @@ func setupTempWorkdir(t *testing.T) string {
 	})
 	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
 	return root
+}
+
+type singleByteReader struct {
+	value  string
+	offset int
+}
+
+func newSingleByteReader(value string) *singleByteReader {
+	return &singleByteReader{value: value}
+}
+
+func (reader *singleByteReader) Read(p []byte) (int, error) {
+	if reader.offset >= len(reader.value) {
+		return 0, io.EOF
+	}
+	p[0] = reader.value[reader.offset]
+	reader.offset++
+	return 1, nil
 }

@@ -55,8 +55,11 @@ func TestRootHelpIncludesSchemaCommand(t *testing.T) {
 	text := output.String()
 	for _, expected := range []string{
 		"ghostable schema <command> [options]",
+		"ghostable adopt [options]",
 		"ghostable validate [options]",
 		"ghostable agent <command> [options]",
+		"adopt",
+		"Generate an AI adoption prompt",
 		"schema",
 		"Manage validation schema files and rules",
 		"validate",
