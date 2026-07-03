@@ -30,13 +30,28 @@ func (r *Runner) runSetup(args []string) error {
 	force := fs.Bool("force", false, "Overwrite an existing Ghostable manifest")
 	seedDotenv := fs.Bool("seed-dotenv", false, "Import values from .env into the default environment")
 	noSeedDotenv := fs.Bool("no-seed-dotenv", false, "Do not import values from .env during setup")
+	createExample := fs.Bool("create-example", false, "Create .env.example after importing .env")
+	noCreateExample := fs.Bool("no-create-example", false, "Do not create .env.example during setup")
+	exampleValues := fs.String("example-values", exampleValuesNonSensitive, "Example value mode: blank, non-sensitive, or all")
+	agentInstructions := fs.Bool("agent-instructions", false, "Add Ghostable guidance to AGENTS.md")
+	noAgentInstructions := fs.Bool("no-agent-instructions", false, "Do not add Ghostable guidance to AGENTS.md")
 	fs.Bool("no-metadata", false, "Deprecated; metadata prompts are not used by this client")
 	jsonOut := fs.Bool("json", false, "Print setup result as JSON")
-	if _, err := cli.Parse(fs, args, cli.BoolFlags("force", "seed-dotenv", "no-seed-dotenv", "no-metadata", "json")); err != nil {
+	if _, err := cli.Parse(fs, args, cli.BoolFlags("force", "seed-dotenv", "no-seed-dotenv", "create-example", "no-create-example", "agent-instructions", "no-agent-instructions", "no-metadata", "json")); err != nil {
 		return err
 	}
 	if *seedDotenv && *noSeedDotenv {
 		return fmt.Errorf("pass --seed-dotenv or --no-seed-dotenv, not both")
+	}
+	if *createExample && *noCreateExample {
+		return fmt.Errorf("pass --create-example or --no-create-example, not both")
+	}
+	if *agentInstructions && *noAgentInstructions {
+		return fmt.Errorf("pass --agent-instructions or --no-agent-instructions, not both")
+	}
+	selectedExampleValueMode, err := normalizeExampleValueMode(*exampleValues)
+	if err != nil {
+		return err
 	}
 
 	if !*force {
@@ -105,15 +120,57 @@ func (r *Runner) runSetup(args []string) error {
 		seedResult = &result
 	}
 
+	setupExampleOptions := setupExampleOptions{
+		Create:    *createExample,
+		NoCreate:  *noCreateExample,
+		ValueMode: selectedExampleValueMode,
+		JSON:      *jsonOut,
+	}
+	considerSetupExample, err := r.shouldConsiderSetupExample(repo, dotenvSeed, seedResult, setupExampleOptions)
+	if err != nil {
+		return err
+	}
+	setupAgentOptions := setupAgentInstructionsOptions{
+		Add:   *agentInstructions,
+		NoAdd: *noAgentInstructions,
+		JSON:  *jsonOut,
+	}
+	considerSetupAgentInstructions := r.shouldConsiderSetupAgentInstructions(setupAgentOptions)
+	var setupExampleResult *setupExampleCreationResult
+	var setupAgentInstructionsResult *setupAgentInstructionsResult
 	if *jsonOut {
-		return printJSON(r.out, setupResultPayload(repo, created, seedResult))
+		if considerSetupExample && *createExample {
+			result, err := createSetupExample(repo, dotenvSeed, setupExampleOptions)
+			if err != nil {
+				return err
+			}
+			setupExampleResult = &result
+		}
+		if considerSetupAgentInstructions && *agentInstructions {
+			result, err := writeSetupAgentInstructions()
+			if err != nil {
+				return err
+			}
+			setupAgentInstructionsResult = &result
+		}
+		return printJSON(r.out, setupResultPayload(repo, created, seedResult, setupExampleResult, setupAgentInstructionsResult))
 	}
 
-	r.printSetupResult(repo, dotenvSeed, seedResult)
+	r.printSetupResult(repo, dotenvSeed, seedResult, considerSetupExample)
+	if considerSetupExample {
+		if _, err := r.finishSetupExample(repo, dotenvSeed, setupExampleOptions); err != nil {
+			return err
+		}
+	}
+	if considerSetupAgentInstructions {
+		if _, err := r.finishSetupAgentInstructions(setupAgentOptions); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func setupResultPayload(repo store.Repository, created bool, seedResult *store.PushResult) map[string]interface{} {
+func setupResultPayload(repo store.Repository, created bool, seedResult *store.PushResult, setupExampleResult *setupExampleCreationResult, setupAgentInstructionsResult *setupAgentInstructionsResult) map[string]interface{} {
 	payload := map[string]interface{}{
 		"project":      jsonProjectManifestFromDomain(repo.Manifest),
 		"manifestPath": repo.ManifestPath,
@@ -123,6 +180,12 @@ func setupResultPayload(repo store.Repository, created bool, seedResult *store.P
 	}
 	if seedResult != nil {
 		payload["seededFrom"] = seedResult
+	}
+	if setupExampleResult != nil {
+		payload["example"] = setupExampleResult
+	}
+	if setupAgentInstructionsResult != nil {
+		payload["agentInstructions"] = setupAgentInstructionsResult
 	}
 	return payload
 }
@@ -256,7 +319,7 @@ func jsonAccessRequestListFromStore(requests store.AccessRequestList) jsonAccess
 	return result
 }
 
-func (r *Runner) printSetupResult(repo store.Repository, dotenvSeed *defaultDotenvSeed, seedResult *store.PushResult) {
+func (r *Runner) printSetupResult(repo store.Repository, dotenvSeed *defaultDotenvSeed, seedResult *store.PushResult, deferSeedNext bool) {
 	fmt.Fprintln(r.out, strings.TrimRight(renderGhostableBanner(), "\n"))
 	fmt.Fprintln(r.out)
 	fmt.Fprintln(r.out, "------------------------------------------------------------")
@@ -266,13 +329,231 @@ func (r *Runner) printSetupResult(repo store.Repository, dotenvSeed *defaultDote
 	fmt.Fprintf(r.out, "%s %s\n", warn("Local key:"), repo.KeyPath())
 	if seedResult != nil {
 		fmt.Fprintln(r.out, success(fmt.Sprintf("Imported %d variables from %s into default.", len(dotenvSeed.values), dotenvSeed.file)))
-		fmt.Fprintln(r.out, warn("Next: review with `ghostable env diff --env default --file .env`."))
+		if !deferSeedNext {
+			fmt.Fprintln(r.out, warn("Next: review with `ghostable env diff --env default --file .env`."))
+		}
 	} else if dotenvSeed != nil {
 		fmt.Fprintln(r.out, warn(fmt.Sprintf("No variables found in %s.", dotenvSeed.file)))
 		fmt.Fprintln(r.out, warn("Next: add variables with `ghostable env push --env default --file .env`."))
 	} else {
 		fmt.Fprintln(r.out, warn("Next: add variables with `ghostable env push --env default --file .env`."))
 	}
+}
+
+type setupExampleOptions struct {
+	Create    bool
+	NoCreate  bool
+	ValueMode string
+	JSON      bool
+}
+
+type setupExampleCreationResult struct {
+	File          string   `json:"file"`
+	ValueMode     string   `json:"valueMode"`
+	Keys          []string `json:"keys"`
+	KeptValues    int      `json:"keptValues"`
+	BlankedValues int      `json:"blankedValues"`
+	Written       bool     `json:"written"`
+}
+
+func (r *Runner) shouldConsiderSetupExample(repo store.Repository, dotenvSeed *defaultDotenvSeed, seedResult *store.PushResult, options setupExampleOptions) (bool, error) {
+	if dotenvSeed == nil || seedResult == nil || len(dotenvSeed.values) == 0 {
+		return false, nil
+	}
+	missing, err := setupExampleFileMissing(repo)
+	if err != nil || !missing {
+		return false, err
+	}
+	if options.JSON {
+		return options.Create, nil
+	}
+	if options.Create {
+		return true, nil
+	}
+	if options.NoCreate {
+		return r.interactive, nil
+	}
+	return r.interactive, nil
+}
+
+func setupExampleFileMissing(repo store.Repository) (bool, error) {
+	path, err := resolveEnvFileSavePath(repo.Root, ".env.example")
+	if err != nil {
+		return false, err
+	}
+	if _, err := os.Stat(path); err == nil {
+		return false, nil
+	} else if os.IsNotExist(err) {
+		return true, nil
+	} else {
+		return false, err
+	}
+}
+
+func (r *Runner) finishSetupExample(repo store.Repository, dotenvSeed *defaultDotenvSeed, options setupExampleOptions) (*setupExampleCreationResult, error) {
+	if options.NoCreate {
+		r.printSkippedSetupExample()
+		return nil, nil
+	}
+
+	fmt.Fprintln(r.out)
+	fmt.Fprintln(r.out, warn("No .env.example file was found."))
+	shouldCreate := options.Create
+	if !shouldCreate {
+		label := "Create .env.example from the imported keys? Sensitive-looking values will be blank."
+		confirmed, err := r.prompts.Confirm(label, true)
+		if err != nil {
+			return nil, err
+		}
+		r.printPromptAnswer(label, yesNo(confirmed))
+		shouldCreate = confirmed
+	}
+	if !shouldCreate {
+		r.printSkippedSetupExample()
+		return nil, nil
+	}
+
+	result, err := createSetupExample(repo, dotenvSeed, options)
+	if err != nil {
+		return nil, err
+	}
+	r.printCreatedSetupExample(result)
+	return &result, nil
+}
+
+func createSetupExample(repo store.Repository, dotenvSeed *defaultDotenvSeed, options setupExampleOptions) (setupExampleCreationResult, error) {
+	_, result, err := generateExampleFile(repo, exampleGenerateOptions{
+		File:         ".env.example",
+		Environments: []string{domain.DefaultEnvName},
+		Replace:      true,
+		Write:        true,
+		ValueMode:    options.ValueMode,
+	})
+	if err != nil {
+		return setupExampleCreationResult{}, err
+	}
+	kept, blanked := setupExampleValueCounts(dotenvSeed, result.Keys, options.ValueMode)
+	return setupExampleCreationResult{
+		File:          result.File,
+		ValueMode:     result.ValueMode,
+		Keys:          append([]string{}, result.Keys...),
+		KeptValues:    kept,
+		BlankedValues: blanked,
+		Written:       result.Written,
+	}, nil
+}
+
+func setupExampleValueCounts(dotenvSeed *defaultDotenvSeed, keys []string, valueMode string) (int, int) {
+	kept := 0
+	blanked := 0
+	for _, key := range keys {
+		input, ok := dotenvSeed.values[key]
+		if !ok {
+			blanked++
+			continue
+		}
+		switch valueMode {
+		case exampleValuesAll:
+			if input.Value == "" {
+				blanked++
+			} else {
+				kept++
+			}
+		case exampleValuesBlank:
+			blanked++
+		default:
+			if input.Value != "" && exampleVariableValueAllowed(domain.Variable{Key: key, Value: input.Value}, valueMode) {
+				kept++
+			} else {
+				blanked++
+			}
+		}
+	}
+	return kept, blanked
+}
+
+func (r *Runner) printCreatedSetupExample(result setupExampleCreationResult) {
+	fmt.Fprintln(r.out, success(fmt.Sprintf("Created .env.example with %s.", keyCountText(len(result.Keys)))))
+	switch result.ValueMode {
+	case exampleValuesAll:
+		fmt.Fprintf(r.out, "%s\n", success(fmt.Sprintf("Kept example values for %s.", keyCountText(result.KeptValues))))
+		if result.BlankedValues > 0 {
+			fmt.Fprintf(r.out, "%s\n", warn(fmt.Sprintf("Left %s blank because their imported values were empty.", keyCountText(result.BlankedValues))))
+		}
+	case exampleValuesBlank:
+		fmt.Fprintf(r.out, "%s\n", warn(fmt.Sprintf("Blanked %d value%s.", result.BlankedValues, plural(result.BlankedValues))))
+	default:
+		fmt.Fprintf(r.out, "%s\n", success(fmt.Sprintf("Kept example values for %d non-sensitive key%s.", result.KeptValues, plural(result.KeptValues))))
+		fmt.Fprintf(r.out, "%s\n", warn(fmt.Sprintf("Blanked %d sensitive-looking value%s.", result.BlankedValues, plural(result.BlankedValues))))
+	}
+	fmt.Fprintln(r.out)
+	fmt.Fprintln(r.out, warn("Next: review with `ghostable env diff --env default --file .env`."))
+}
+
+func (r *Runner) printSkippedSetupExample() {
+	fmt.Fprintln(r.out, warn("Skipped .env.example."))
+	fmt.Fprintln(r.out, warn("You can create one later with `ghostable example generate`."))
+}
+
+type setupAgentInstructionsOptions struct {
+	Add   bool
+	NoAdd bool
+	JSON  bool
+}
+
+type setupAgentInstructionsResult struct {
+	File    string `json:"file"`
+	Written bool   `json:"written"`
+}
+
+func (r *Runner) shouldConsiderSetupAgentInstructions(options setupAgentInstructionsOptions) bool {
+	if options.JSON {
+		return options.Add
+	}
+	if options.Add {
+		return true
+	}
+	if options.NoAdd {
+		return r.interactive && !agentInstructionsManagedBlockExists("AGENTS.md")
+	}
+	return r.interactive && !agentInstructionsManagedBlockExists("AGENTS.md")
+}
+
+func (r *Runner) finishSetupAgentInstructions(options setupAgentInstructionsOptions) (*setupAgentInstructionsResult, error) {
+	if options.NoAdd {
+		r.printSkippedSetupAgentInstructions()
+		return nil, nil
+	}
+	shouldAdd := options.Add
+	if !shouldAdd {
+		label := "Add Ghostable guidance to AGENTS.md for AI coding assistants?"
+		confirmed, err := r.prompts.Confirm(label, true)
+		if err != nil {
+			return nil, err
+		}
+		r.printPromptAnswer(label, yesNo(confirmed))
+		shouldAdd = confirmed
+	}
+	if !shouldAdd {
+		r.printSkippedSetupAgentInstructions()
+		return nil, nil
+	}
+	if err := r.runAgentInit(nil); err != nil {
+		return nil, err
+	}
+	return &setupAgentInstructionsResult{File: "AGENTS.md", Written: true}, nil
+}
+
+func writeSetupAgentInstructions() (setupAgentInstructionsResult, error) {
+	if err := writeAgentInstructionsFile("AGENTS.md"); err != nil {
+		return setupAgentInstructionsResult{}, err
+	}
+	return setupAgentInstructionsResult{File: "AGENTS.md", Written: true}, nil
+}
+
+func (r *Runner) printSkippedSetupAgentInstructions() {
+	fmt.Fprintln(r.out, warn("Skipped AGENTS.md."))
+	fmt.Fprintln(r.out, warn("You can add it later with `ghostable agent init`."))
 }
 
 type defaultDotenvSeed struct {

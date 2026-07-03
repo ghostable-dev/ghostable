@@ -19,7 +19,7 @@ func TestRunSetupDefaultsEnvironmentWithoutPrompt(t *testing.T) {
 
 	input := strings.NewReader("")
 	var output bytes.Buffer
-	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device"}, input, &output, &output)
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device", "--no-agent-instructions"}, input, &output, &output)
 	runner.interactive = true
 	runner.prompts = prompt.New(input, &output)
 
@@ -51,7 +51,7 @@ func TestRunSetupDefaultsEnvironmentWithoutPrompt(t *testing.T) {
 func TestRunSetupPrintsBannerAfterPrompts(t *testing.T) {
 	setupTempWorkdir(t)
 
-	input := strings.NewReader("Prompted Project\nPrompted Device\n")
+	input := strings.NewReader("Prompted Project\nPrompted Device\nn\n")
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "setup"}, input, &output, &output)
 	runner.interactive = true
@@ -97,7 +97,7 @@ func TestRunSetupSeedsDefaultEnvironmentFromDotenvWhenConfirmed(t *testing.T) {
 
 	input := strings.NewReader("y\n")
 	var output bytes.Buffer
-	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device"}, input, &output, &output)
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device", "--no-create-example", "--no-agent-instructions"}, input, &output, &output)
 	runner.interactive = true
 	runner.prompts = prompt.New(input, &output)
 
@@ -137,6 +137,351 @@ func TestRunSetupSeedsDefaultEnvironmentFromDotenvWhenConfirmed(t *testing.T) {
 	}
 	if _, exists := values["app-key"]; exists {
 		t.Fatalf("did not expect raw app-key to be stored: %#v", values)
+	}
+}
+
+func TestRunSetupPromptsToCreateExampleAfterDotenvImport(t *testing.T) {
+	root := setupTempWorkdir(t)
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_NAME=Ghostable\nAPP_DEBUG=false\nAPP_KEY=base64:secret\nOPENAI_API_KEY=sk-test\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	input := strings.NewReader("y\ny\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device", "--no-agent-instructions"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, ".env.example"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(content)
+	for _, expected := range []string{
+		"APP_DEBUG=false",
+		"APP_KEY=",
+		"APP_NAME=Ghostable",
+		"OPENAI_API_KEY=",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected .env.example to contain %q:\n%s", expected, text)
+		}
+	}
+	if strings.Contains(text, "base64:secret") || strings.Contains(text, "sk-test") {
+		t.Fatalf("expected sensitive values to be blanked:\n%s", text)
+	}
+
+	outputText := output.String()
+	for _, expected := range []string{
+		"No .env.example file was found.",
+		"Create .env.example from the imported keys? Sensitive-looking values will be blank.",
+		"Created .env.example with 4 keys.",
+		"Kept example values for 2 non-sensitive keys.",
+		"Blanked 2 sensitive-looking values.",
+		"Next: review with `ghostable env diff --env default --file .env`.",
+	} {
+		if !strings.Contains(outputText, expected) {
+			t.Fatalf("expected setup output to contain %q:\n%s", expected, outputText)
+		}
+	}
+}
+
+func TestRunSetupSkipsExamplePromptWhenExampleAlreadyExists(t *testing.T) {
+	root := setupTempWorkdir(t)
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_NAME=Ghostable\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".env.example"), []byte("EXISTING=value\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	input := strings.NewReader("y\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device", "--no-agent-instructions"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, ".env.example"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != "EXISTING=value\n" {
+		t.Fatalf("expected existing .env.example to stay unchanged, got:\n%s", string(content))
+	}
+	if strings.Contains(output.String(), "Create .env.example from the imported keys") {
+		t.Fatalf("did not expect setup example prompt when .env.example exists:\n%s", output.String())
+	}
+}
+
+func TestRunSetupCreateExampleFlagWorksNonInteractively(t *testing.T) {
+	root := setupTempWorkdir(t)
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_NAME=Ghostable\nAPP_KEY=base64:secret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--seed-dotenv",
+		"--create-example",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, ".env.example"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(content)
+	if !strings.Contains(text, "APP_NAME=Ghostable") || !strings.Contains(text, "APP_KEY=") || strings.Contains(text, "base64:secret") {
+		t.Fatalf("expected generated non-sensitive .env.example, got:\n%s", text)
+	}
+	if strings.Contains(output.String(), "Create .env.example from the imported keys") {
+		t.Fatalf("did not expect prompt in noninteractive create-example mode:\n%s", output.String())
+	}
+}
+
+func TestRunSetupCreateExampleFlagSupportsAllValuesMode(t *testing.T) {
+	root := setupTempWorkdir(t)
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_NAME=Ghostable\nAPP_KEY=base64:secret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--seed-dotenv",
+		"--create-example",
+		"--example-values", "all",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, ".env.example"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(content)
+	if !strings.Contains(text, "APP_NAME=Ghostable") || !strings.Contains(text, "APP_KEY=base64:secret") {
+		t.Fatalf("expected all values to be kept in .env.example, got:\n%s", text)
+	}
+}
+
+func TestRunSetupDoesNotCreateExampleNonInteractivelyByDefault(t *testing.T) {
+	root := setupTempWorkdir(t)
+	if err := os.WriteFile(filepath.Join(root, ".env"), []byte("APP_NAME=Ghostable\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--seed-dotenv",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(root, ".env.example")); !os.IsNotExist(err) {
+		t.Fatalf("expected .env.example not to be created by default, err=%v", err)
+	}
+	if strings.Contains(output.String(), "No .env.example file was found.") {
+		t.Fatalf("did not expect setup example messaging by default in noninteractive mode:\n%s", output.String())
+	}
+}
+
+func TestRunSetupPromptsToAddAgentInstructionsAtEnd(t *testing.T) {
+	root := setupTempWorkdir(t)
+
+	input := strings.NewReader("y\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, "AGENTS.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(content)
+	for _, expected := range []string{
+		agentsBlockStart,
+		"# Ghostable",
+		"ghostable agent capabilities --json",
+		agentsBlockEnd,
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("expected AGENTS.md to contain %q:\n%s", expected, text)
+		}
+	}
+
+	outputText := output.String()
+	promptIndex := strings.Index(outputText, "Add Ghostable guidance to AGENTS.md for AI coding assistants?")
+	initializedIndex := strings.Index(outputText, "Initialized Ghostable")
+	if promptIndex < 0 {
+		t.Fatalf("expected AGENTS.md prompt, got:\n%s", outputText)
+	}
+	if initializedIndex < 0 || promptIndex < initializedIndex {
+		t.Fatalf("expected AGENTS.md prompt after setup summary:\n%s", outputText)
+	}
+	if !strings.Contains(outputText, "Updated AGENTS.md.") {
+		t.Fatalf("expected agent init output, got:\n%s", outputText)
+	}
+}
+
+func TestRunSetupCanDeclineAgentInstructions(t *testing.T) {
+	root := setupTempWorkdir(t)
+
+	input := strings.NewReader("n\n")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(root, "AGENTS.md")); !os.IsNotExist(err) {
+		t.Fatalf("expected AGENTS.md not to be created, err=%v", err)
+	}
+	outputText := output.String()
+	for _, expected := range []string{
+		"Skipped AGENTS.md.",
+		"You can add it later with `ghostable agent init`.",
+	} {
+		if !strings.Contains(outputText, expected) {
+			t.Fatalf("expected setup output to contain %q:\n%s", expected, outputText)
+		}
+	}
+}
+
+func TestRunSetupSkipsAgentPromptWhenManagedBlockExists(t *testing.T) {
+	root := setupTempWorkdir(t)
+	existing := "Team notes.\n\n" + agentsBlockStart + "\nold\n" + agentsBlockEnd + "\n"
+	if err := os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(existing), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	input := strings.NewReader("")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "setup", "--name", "Test Project", "--device-name", "test-device"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, "AGENTS.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != existing {
+		t.Fatalf("expected existing AGENTS.md managed block to stay unchanged, got:\n%s", string(content))
+	}
+	if strings.Contains(output.String(), "Add Ghostable guidance to AGENTS.md") {
+		t.Fatalf("did not expect AGENTS.md prompt when managed block exists:\n%s", output.String())
+	}
+}
+
+func TestRunSetupAgentInstructionsFlagWorksNonInteractively(t *testing.T) {
+	root := setupTempWorkdir(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--agent-instructions",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(root, "AGENTS.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(content), agentsBlockStart) || !strings.Contains(string(content), "# Ghostable") {
+		t.Fatalf("expected AGENTS.md to contain Ghostable managed block, got:\n%s", string(content))
+	}
+	if strings.Contains(output.String(), "Add Ghostable guidance to AGENTS.md") {
+		t.Fatalf("did not expect prompt in noninteractive agent-instructions mode:\n%s", output.String())
+	}
+}
+
+func TestRunSetupDoesNotCreateAgentInstructionsNonInteractivelyByDefault(t *testing.T) {
+	root := setupTempWorkdir(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(root, "AGENTS.md")); !os.IsNotExist(err) {
+		t.Fatalf("expected AGENTS.md not to be created by default, err=%v", err)
+	}
+}
+
+func TestRunSetupAgentInstructionsFlagWorksWithJSON(t *testing.T) {
+	root := setupTempWorkdir(t)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{
+		"ghostable", "setup",
+		"--name", "Test Project",
+		"--device-name", "test-device",
+		"--agent-instructions",
+		"--json",
+	}, strings.NewReader(""), &output, &output)
+
+	if err := runner.runSetup(runner.args[2:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(root, "AGENTS.md")); err != nil {
+		t.Fatal(err)
+	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal(output.Bytes(), &payload); err != nil {
+		t.Fatalf("parse setup JSON: %v\n%s", err, output.String())
+	}
+	if _, ok := payload["agentInstructions"].(map[string]interface{}); !ok {
+		t.Fatalf("expected setup JSON to include agentInstructions result, got %#v", payload)
+	}
+	if strings.Contains(output.String(), "Updated AGENTS.md.") {
+		t.Fatalf("did not expect agent init text in JSON output:\n%s", output.String())
 	}
 }
 

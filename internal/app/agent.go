@@ -126,19 +126,38 @@ func (r *Runner) runAgentInit(args []string) error {
 		return err
 	}
 	path := "AGENTS.md"
-	existingBytes, _ := os.ReadFile(path)
-	existing := string(existingBytes)
-	block := agentsBlockStart + "\n" + agentInstructions() + agentsBlockEnd + "\n"
-	next := upsertBlock(existing, block)
+	next := renderAgentInstructionsFile(path)
 	if *dryRun {
 		fmt.Fprint(r.out, next)
 		return nil
 	}
-	if err := os.WriteFile(path, []byte(next), 0o644); err != nil {
+	if err := writeAgentInstructionsFile(path); err != nil {
 		return err
 	}
 	fmt.Fprintln(r.out, success("Updated AGENTS.md."))
 	return nil
+}
+
+func writeAgentInstructionsFile(path string) error {
+	return os.WriteFile(path, []byte(renderAgentInstructionsFile(path)), 0o644)
+}
+
+func renderAgentInstructionsFile(path string) string {
+	existingBytes, _ := os.ReadFile(path)
+	existing := string(existingBytes)
+	block := agentsBlockStart + "\n" + agentInstructions() + agentsBlockEnd + "\n"
+	return upsertBlock(existing, block)
+}
+
+func agentInstructionsManagedBlockExists(path string) bool {
+	existingBytes, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	existing := string(existingBytes)
+	start := strings.Index(existing, agentsBlockStart)
+	end := strings.Index(existing, agentsBlockEnd)
+	return start >= 0 && end > start
 }
 
 func (r *Runner) runAutomationCredentialCreate(args []string, defaultKind string, commandName string) error {
