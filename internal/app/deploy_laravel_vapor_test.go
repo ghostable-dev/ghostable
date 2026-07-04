@@ -233,13 +233,17 @@ func TestFakeVaporCLIHelperProcess(t *testing.T) {
 			os.Exit(1)
 		}
 	case len(args) > 0 && args[0] == "env:push":
-		if logPath == "" {
-			break
-		}
 		content, err := os.ReadFile(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
+		}
+		if os.Getenv("GHOSTABLE_FAKE_VAPOR_PUSH_STDERR") == "1" {
+			fmt.Fprint(os.Stderr, string(content))
+			os.Exit(1)
+		}
+		if logPath == "" {
+			break
 		}
 		if err := appendTextFileForTest(logPath, string(content)); err != nil {
 			fmt.Fprintln(os.Stderr, err)

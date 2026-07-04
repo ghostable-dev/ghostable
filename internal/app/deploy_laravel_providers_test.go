@@ -193,17 +193,10 @@ func TestRunDeployVaporRedactsValueFromCLIError(t *testing.T) {
 		"if [ \"$1\" = \"env:push\" ]; then cat \"$file\" >&2; exit 1; fi\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
-		"set FILEARG=%~3\r\n" +
-		"set FILEPATH=%FILEARG:--file=%\r\n" +
-		"if \"%~1\"==\"env:pull\" (\r\n" +
-		"  >\"%FILEPATH%\" echo EXISTING=1\r\n" +
-		"  exit /b 0\r\n" +
-		")\r\n" +
-		"if \"%~1\"==\"env:push\" (\r\n" +
-		"  type \"%FILEPATH%\" 1>&2\r\n" +
-		"  exit /b 1\r\n" +
-		")\r\n" +
-		"exit /b 0\r\n"
+		"set GHOSTABLE_FAKE_VAPOR_CLI=1\r\n" +
+		"set GHOSTABLE_FAKE_VAPOR_PUSH_STDERR=1\r\n" +
+		"call " + windowsCommandLineQuote(os.Args[0]) + " -test.run=TestFakeVaporCLIHelperProcess -- %*\r\n" +
+		"exit /b %ERRORLEVEL%\r\n"
 	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
 
