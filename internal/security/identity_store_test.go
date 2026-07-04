@@ -2,6 +2,8 @@ package security
 
 import (
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/ghostable-dev/beta/internal/domain"
@@ -27,6 +29,27 @@ func TestMacOSSecurityPathIgnoresPATH(t *testing.T) {
 
 	if path := macOSSecurityPath(); path != macOSSecurityExecutable {
 		t.Fatalf("expected trusted security path %s, got %s", macOSSecurityExecutable, path)
+	}
+}
+
+func TestNewIdentityStoreUsesFileBackedStoreOnMacOS(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("macOS-only identity store behavior")
+	}
+	t.Setenv("GHOSTABLE_KEYSTORE", "")
+
+	store, err := NewIdentityStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if store.usesKeychain() {
+		t.Fatal("expected new macOS identity store to avoid Keychain argv writes")
+	}
+	if strings.Contains(store.Path("project-1"), "Keychain") {
+		t.Fatalf("expected file-backed identity path, got %s", store.Path("project-1"))
+	}
+	if !store.keychainFallback {
+		t.Fatal("expected macOS identity store to retain read fallback for existing Keychain entries")
 	}
 }
 

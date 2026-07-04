@@ -1,6 +1,8 @@
 package hygiene
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -87,5 +89,41 @@ func TestRemoveRotationRulesPrunesEmptyPolicySections(t *testing.T) {
 	}
 	if got := Format(policy); got != "" {
 		t.Fatalf("expected empty policy after removals, got:\n%s", got)
+	}
+}
+
+func TestWriteFileRejectsSymlinkedPolicyTarget(t *testing.T) {
+	root := t.TempDir()
+	policyPath := filepath.Join(root, ".ghostable", "hygiene.yaml")
+	if err := os.MkdirAll(filepath.Dir(policyPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "outside.yaml")
+	if err := os.Symlink(outside, policyPath); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+
+	err := WriteFile(policyPath, Policy{})
+	if err == nil || !strings.Contains(err.Error(), "symlinked path") {
+		t.Fatalf("expected symlinked policy target to be rejected, got %v", err)
+	}
+	if _, statErr := os.Stat(outside); !os.IsNotExist(statErr) {
+		t.Fatalf("expected outside target to remain unwritten, stat err: %v", statErr)
+	}
+}
+
+func TestWriteFileRejectsSymlinkedGhostableDirectory(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	if err := os.Symlink(outside, filepath.Join(root, ".ghostable")); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+
+	err := WriteFile(filepath.Join(root, ".ghostable", "hygiene.yaml"), Policy{})
+	if err == nil || !strings.Contains(err.Error(), "symlinked path") {
+		t.Fatalf("expected symlinked .ghostable directory to be rejected, got %v", err)
+	}
+	if _, statErr := os.Stat(filepath.Join(outside, "hygiene.yaml")); !os.IsNotExist(statErr) {
+		t.Fatalf("expected outside hygiene policy to remain unwritten, stat err: %v", statErr)
 	}
 }

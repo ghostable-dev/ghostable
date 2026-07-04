@@ -67,7 +67,7 @@ func Review(ctx context.Context, input ReviewInput) (Report, error) {
 	input = normalizeReviewInput(input)
 
 	reportStatus(input, "Opening Ghostable project")
-	repo, err := store.OpenProject(input.Root)
+	repo, err := store.Open(input.Root)
 	if err != nil {
 		return Report{}, err
 	}

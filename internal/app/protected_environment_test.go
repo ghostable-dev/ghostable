@@ -112,6 +112,39 @@ func TestDefaultEnvPullDoesNotRequireLocalVerifier(t *testing.T) {
 	}
 }
 
+func TestNeutralEnvironmentNameRequiresLocalVerifierDespiteDevelopmentType(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateEnvironment("primary", "development"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("primary", "APP_NAME", "Ghostable", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	called := false
+	withProtectedEnvironmentVerifierForTest(t, func(request userpresence.Request) error {
+		called = true
+		if request.Environment != "primary" || request.Operation != protectedOperationEnvPull {
+			return fmt.Errorf("unexpected user-presence request: %#v", request)
+		}
+		return nil
+	})
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "pull", "--env", "primary", "--file", ".env.primary"}, strings.NewReader(""), &output, &output)
+	runner.interactive = true
+	if err := runner.runEnvPull(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+	if !called {
+		t.Fatal("expected neutral environment to require local user presence")
+	}
+}
+
 func TestProtectedProductionEnvShellUsesLocalVerifier(t *testing.T) {
 	root := setupRepoForEnvCommandTest(t)
 	repo := createProtectedProductionEnvironmentForTest(t, root)

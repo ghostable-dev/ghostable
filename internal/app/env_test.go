@@ -273,6 +273,47 @@ func TestRunEnvRunInteractiveSuggestsProjectCommands(t *testing.T) {
 	}
 }
 
+func TestRunEnvRunInteractiveSuggestionUsesLiteralArgs(t *testing.T) {
+	root := setupRepoForEnvRunTest(t, map[string]string{
+		"GHOSTABLE_ENV_RUN_HELPER": "1",
+	})
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"scripts":{"dev;touch pwned":"echo safe"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	binDir := t.TempDir()
+	argsPath := filepath.Join(t.TempDir(), "npm-args.log")
+	unixScript := "#!/bin/sh\n" +
+		"printf '%s\\n' \"$@\" > \"$NPM_ARGS_LOG\"\n" +
+		"exit 0\n"
+	windowsScript := "@echo off\r\n" +
+		"echo %* > \"%NPM_ARGS_LOG%\"\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "npm", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
+	t.Setenv("NPM_ARGS_LOG", argsPath)
+
+	input := &oneByteReader{reader: strings.NewReader("npm run dev;touch pwned\n1\nn\nn\ny\n")}
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "env", "run"}, input, &output, &output)
+	runner.interactive = true
+	runner.prompts = prompt.New(input, &output)
+	if err := runner.runEnvRun(runner.args[3:]); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(root, "pwned")); !os.IsNotExist(err) {
+		t.Fatalf("expected shell metacharacters in suggested script name to remain literal, stat err: %v", err)
+	}
+	argsContent, err := os.ReadFile(argsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(argsContent), "dev;touch pwned") {
+		t.Fatalf("expected fake npm to receive literal script name, got:\n%s", string(argsContent))
+	}
+}
+
 func TestRunEnvRunInteractiveHidesRiskySuggestionsForProduction(t *testing.T) {
 	allowProtectedEnvironmentAccessForTest(t)
 	root := setupRepoForEnvRunTest(t, map[string]string{})

@@ -28,6 +28,20 @@ func (r *Runner) runValidate(args []string) error {
 	if err != nil {
 		return err
 	}
+	if *file == "" {
+		if err := r.requireProtectedEnvironmentAccess(repo, selected, protectedOperationValidate); err != nil {
+			return err
+		}
+	}
+	referencedEnvironments, err := validation.ReferencedEnvironments(repo.Root, selected)
+	if err != nil {
+		return err
+	}
+	for _, referenced := range referencedEnvironments {
+		if err := r.requireProtectedEnvironmentAccess(repo, referenced, protectedOperationValidate); err != nil {
+			return err
+		}
+	}
 	values := map[string]string{}
 	if *file != "" {
 		values, err = readDotenvFile(repoFilePath(repo.Root, *file))

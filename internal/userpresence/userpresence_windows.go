@@ -5,7 +5,9 @@ package userpresence
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"unicode/utf16"
 )
@@ -30,11 +32,13 @@ func verifyPlatformUserPresence(request Request) error {
 }
 
 func windowsPowerShellPath() (string, error) {
-	for _, name := range []string{"powershell.exe", "pwsh.exe"} {
-		path, err := exec.LookPath(name)
-		if err == nil {
-			return path, nil
-		}
+	systemRoot := strings.TrimSpace(os.Getenv("SystemRoot"))
+	if systemRoot == "" {
+		systemRoot = `C:\Windows`
+	}
+	path := filepath.Join(systemRoot, "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+	if info, err := os.Stat(path); err == nil && !info.IsDir() {
+		return path, nil
 	}
 	return "", fmt.Errorf("PowerShell was not found; install PowerShell or use a scoped GHOSTABLE_CI_TOKEN automation credential")
 }

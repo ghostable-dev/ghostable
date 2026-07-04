@@ -14,21 +14,25 @@ import (
 )
 
 type IdentityStore struct {
-	fileRoot string
+	fileRoot         string
+	keychainFallback bool
 }
 
 func NewIdentityStore() (IdentityStore, error) {
 	if override := strings.TrimSpace(os.Getenv("GHOSTABLE_KEYSTORE")); override != "" {
 		return IdentityStore{fileRoot: override}, nil
 	}
-	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" {
 		return IdentityStore{}, nil
 	}
 	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return IdentityStore{}, err
 	}
-	return IdentityStore{fileRoot: filepath.Join(configDir, "ghostable", "identities")}, nil
+	return IdentityStore{
+		fileRoot:         filepath.Join(configDir, "ghostable", "identities"),
+		keychainFallback: runtime.GOOS == "darwin",
+	}, nil
 }
 
 func (s IdentityStore) Load(projectID string) (domain.LocalIdentityRecord, error) {
@@ -38,7 +42,11 @@ func (s IdentityStore) Load(projectID string) (domain.LocalIdentityRecord, error
 	if s.usesWindowsCredentialManager() {
 		return s.loadWindowsCredential(projectID)
 	}
-	return s.loadFile(projectID)
+	identity, err := s.loadFile(projectID)
+	if err != nil && os.IsNotExist(err) && s.keychainFallback {
+		return s.loadKeychain(projectID)
+	}
+	return identity, err
 }
 
 func (s IdentityStore) Save(identity domain.LocalIdentityRecord) error {
@@ -152,21 +160,7 @@ func (s IdentityStore) loadKeychain(projectID string) (domain.LocalIdentityRecor
 }
 
 func (s IdentityStore) saveKeychain(identity domain.LocalIdentityRecord) error {
-	content, err := json.Marshal(identity)
-	if err != nil {
-		return err
-	}
-	encoded := base64.StdEncoding.EncodeToString(content)
-	service := keychainService(identity.ProjectID)
-	account := keychainAccount(identity.ProjectID)
-	if err := s.deleteKeychain(identity.ProjectID); err != nil {
-		return err
-	}
-	cmd := exec.Command(macOSSecurityPath(), "add-generic-password", "-U", "-s", service, "-a", account, "-w", encoded)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("unable to save Ghostable identity in macOS Keychain: %s", strings.TrimSpace(string(output)))
-	}
-	return nil
+	return fmt.Errorf("saving new Ghostable identities to macOS Keychain is disabled; use the file-backed identity store")
 }
 
 func (s IdentityStore) deleteKeychain(projectID string) error {

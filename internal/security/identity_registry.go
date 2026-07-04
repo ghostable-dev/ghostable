@@ -106,6 +106,26 @@ func (s IdentityStore) ListProjectIdentities() ([]IdentityRegistryEntry, error) 
 	return entries, nil
 }
 
+func (s IdentityStore) ProjectIdentity(projectID string) (IdentityRegistryEntry, bool, error) {
+	projectID = strings.TrimSpace(projectID)
+	if projectID == "" {
+		return IdentityRegistryEntry{}, false, nil
+	}
+	registry, err := s.loadIdentityRegistry()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return IdentityRegistryEntry{}, false, nil
+		}
+		return IdentityRegistryEntry{}, false, err
+	}
+	for _, entry := range registry.Entries {
+		if entry.ProjectID == projectID {
+			return entry, true, nil
+		}
+	}
+	return IdentityRegistryEntry{}, false, nil
+}
+
 func (s IdentityStore) RegistryPath() (string, error) {
 	if strings.TrimSpace(s.fileRoot) != "" {
 		return filepath.Join(s.fileRoot, "identity-registry.json"), nil

@@ -128,6 +128,7 @@ const envRunCustomCommandChoice = "Custom command"
 
 type envRunCommandSuggestion struct {
 	Command string
+	Args    []string
 }
 
 func (r *Runner) askEnvRunCommand(repo store.Repository, env string) ([]string, error) {
@@ -135,8 +136,10 @@ func (r *Runner) askEnvRunCommand(repo store.Repository, env string) ([]string, 
 	suggestions := envRunCommandSuggestions(repo, env)
 	if len(suggestions) > 0 {
 		choices := make([]string, 0, len(suggestions)+1)
+		commands := map[string][]string{}
 		for _, suggestion := range suggestions {
 			choices = append(choices, suggestion.Command)
+			commands[suggestion.Command] = append([]string(nil), suggestion.Args...)
 		}
 		choices = append(choices, envRunCustomCommandChoice)
 		selected, err := r.prompts.Select("Command to run", choices, 0)
@@ -145,7 +148,7 @@ func (r *Runner) askEnvRunCommand(repo store.Repository, env string) ([]string, 
 		}
 		r.printPromptAnswer("Command to run", selected)
 		if selected != envRunCustomCommandChoice {
-			return shellCommand(selected), nil
+			return commands[selected], nil
 		}
 	}
 
@@ -185,7 +188,7 @@ func (r *Runner) confirmRiskyEnvRunCommand(env string) error {
 
 func envRunCommandSuggestions(repo store.Repository, env string) []envRunCommandSuggestion {
 	productionLike := isProductionLikeEnvironment(repo, env)
-	commands := []string{}
+	commands := []envRunCommandSuggestion{}
 	commands = append(commands, laravelRunCommandSuggestions(repo.Root)...)
 	commands = append(commands, symfonyRunCommandSuggestions(repo.Root)...)
 	commands = append(commands, composerRunCommandSuggestions(repo.Root)...)
@@ -195,16 +198,16 @@ func envRunCommandSuggestions(repo store.Repository, env string) []envRunCommand
 
 	seen := map[string]bool{}
 	suggestions := []envRunCommandSuggestion{}
-	for _, command := range commands {
-		command = strings.TrimSpace(command)
-		if command == "" || seen[command] {
+	for _, suggestion := range commands {
+		suggestion.Command = strings.TrimSpace(suggestion.Command)
+		if suggestion.Command == "" || len(suggestion.Args) == 0 || seen[suggestion.Command] {
 			continue
 		}
-		if productionLike && isRiskyRunCommand(command) {
+		if productionLike && isRiskyRunCommand(suggestion.Command) {
 			continue
 		}
-		seen[command] = true
-		suggestions = append(suggestions, envRunCommandSuggestion{Command: command})
+		seen[suggestion.Command] = true
+		suggestions = append(suggestions, suggestion)
 		if len(suggestions) >= 12 {
 			break
 		}
@@ -212,75 +215,80 @@ func envRunCommandSuggestions(repo store.Repository, env string) []envRunCommand
 	return suggestions
 }
 
-func laravelRunCommandSuggestions(root string) []string {
+func newEnvRunCommandSuggestion(args ...string) envRunCommandSuggestion {
+	copied := append([]string(nil), args...)
+	return envRunCommandSuggestion{Command: strings.Join(copied, " "), Args: copied}
+}
+
+func laravelRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	if !fileExists(filepath.Join(root, "artisan")) {
 		return nil
 	}
-	return []string{
-		"php artisan about",
-		"php artisan route:list",
-		"php artisan serve --no-reload",
-		"php artisan migrate",
-		"php artisan queue:work",
+	return []envRunCommandSuggestion{
+		newEnvRunCommandSuggestion("php", "artisan", "about"),
+		newEnvRunCommandSuggestion("php", "artisan", "route:list"),
+		newEnvRunCommandSuggestion("php", "artisan", "serve", "--no-reload"),
+		newEnvRunCommandSuggestion("php", "artisan", "migrate"),
+		newEnvRunCommandSuggestion("php", "artisan", "queue:work"),
 	}
 }
 
-func symfonyRunCommandSuggestions(root string) []string {
+func symfonyRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	if !fileExists(filepath.Join(root, "bin", "console")) {
 		return nil
 	}
-	return []string{
-		"php bin/console about",
-		"php bin/console debug:router",
-		"php bin/console doctrine:migrations:migrate",
+	return []envRunCommandSuggestion{
+		newEnvRunCommandSuggestion("php", "bin/console", "about"),
+		newEnvRunCommandSuggestion("php", "bin/console", "debug:router"),
+		newEnvRunCommandSuggestion("php", "bin/console", "doctrine:migrations:migrate"),
 	}
 }
 
-func composerRunCommandSuggestions(root string) []string {
+func composerRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	scripts := readJSONScriptNames(filepath.Join(root, "composer.json"))
 	if len(scripts) == 0 {
 		return nil
 	}
 	scripts = orderScriptNames(scripts, []string{"test", "pest", "phpunit", "lint", "pint", "stan", "analyse", "analyze", "dev", "start", "build", "migrate", "deploy"})
-	commands := []string{}
+	commands := []envRunCommandSuggestion{}
 	for _, script := range scripts {
 		if isComposerEventScript(script) {
 			continue
 		}
-		commands = append(commands, "composer "+script)
+		commands = append(commands, newEnvRunCommandSuggestion("composer", script))
 	}
 	return commands
 }
 
-func packageJSONRunCommandSuggestions(root string) []string {
+func packageJSONRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	scripts := readJSONScriptNames(filepath.Join(root, "package.json"))
 	if len(scripts) == 0 {
 		return nil
 	}
 	scripts = orderScriptNames(scripts, []string{"dev", "start", "serve", "build", "test", "lint", "typecheck", "check", "preview", "migrate", "deploy"})
-	commands := make([]string, 0, len(scripts))
+	commands := make([]envRunCommandSuggestion, 0, len(scripts))
 	for _, script := range scripts {
-		commands = append(commands, "npm run "+script)
+		commands = append(commands, newEnvRunCommandSuggestion("npm", "run", script))
 	}
 	return commands
 }
 
-func goRunCommandSuggestions(root string) []string {
+func goRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	if !fileExists(filepath.Join(root, "go.mod")) {
 		return nil
 	}
-	return []string{"go test ./..."}
+	return []envRunCommandSuggestion{newEnvRunCommandSuggestion("go", "test", "./...")}
 }
 
-func makeRunCommandSuggestions(root string) []string {
+func makeRunCommandSuggestions(root string) []envRunCommandSuggestion {
 	targets := readMakeTargets(root)
 	if len(targets) == 0 {
 		return nil
 	}
 	targets = orderScriptNames(targets, []string{"test", "lint", "build", "dev", "serve", "start", "migrate", "deploy"})
-	commands := make([]string, 0, len(targets))
+	commands := make([]envRunCommandSuggestion, 0, len(targets))
 	for _, target := range targets {
-		commands = append(commands, "make "+target)
+		commands = append(commands, newEnvRunCommandSuggestion("make", target))
 	}
 	return commands
 }
@@ -372,7 +380,10 @@ func isComposerEventScript(name string) bool {
 
 func isProductionLikeEnvironment(repo store.Repository, env string) bool {
 	environment := repo.Manifest.Environments[env]
-	return hasProductionToken(env) || hasProductionToken(environment.Type)
+	if hasProductionToken(env) || hasProductionToken(environment.Type) {
+		return true
+	}
+	return !hasLocalDevelopmentToken(env)
 }
 
 func hasProductionToken(value string) bool {
@@ -381,6 +392,18 @@ func hasProductionToken(value string) bool {
 	}) {
 		switch token {
 		case "prod", "production", "live":
+			return true
+		}
+	}
+	return false
+}
+
+func hasLocalDevelopmentToken(value string) bool {
+	for _, token := range strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9')
+	}) {
+		switch token {
+		case "default", "local", "dev", "development", "test", "testing", "ci":
 			return true
 		}
 	}

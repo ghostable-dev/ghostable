@@ -73,6 +73,9 @@ func (r Repository) CreateSuppression(input CreateSuppressionInput) (Suppression
 			return SuppressionEntry{}, err
 		}
 	}
+	if err := r.requireSuppressionSigningAccess(env, r.DeviceID()); err != nil {
+		return SuppressionEntry{}, err
+	}
 	key := strings.TrimSpace(input.Key)
 	if key != "" {
 		if err := validateKey(key); err != nil {
@@ -205,6 +208,26 @@ func (r Repository) verifySuppression(record domain.SuppressionRecord) error {
 	}
 	if !security.VerifyCanonical(record, device.SigningKey.PublicKey, record.ClientSig) {
 		return fmt.Errorf("suppression signature could not be verified")
+	}
+	if err := r.requireSuppressionSigningAccess(record.Environment, signerID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Repository) requireSuppressionSigningAccess(env string, deviceID string) error {
+	policy, err := r.readPolicy()
+	if err != nil {
+		return err
+	}
+	if env == "" {
+		if contains(policy.Owners, deviceID) && !policyDeviceRevoked(policy, deviceID) {
+			return nil
+		}
+		return fmt.Errorf("suppression signer %s does not have owner access", deviceID)
+	}
+	if !canGrant(policy, env, deviceID) {
+		return fmt.Errorf("suppression signer %s does not have grant access to %s", deviceID, env)
 	}
 	return nil
 }

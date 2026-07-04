@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -79,6 +81,31 @@ func TestRunAgentCredentialCommandIsUnknown(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), `unknown agent command "credential"`) {
 		t.Fatalf("expected agent credential command to be unknown, got %v", err)
+	}
+}
+
+func TestRunAgentInitRejectsSymlinkedAgentsFile(t *testing.T) {
+	setupTempWorkdir(t)
+	outside := filepath.Join(t.TempDir(), "AGENTS.md")
+	if err := os.WriteFile(outside, []byte("outside\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, "AGENTS.md"); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "agent", "init"}, strings.NewReader(""), &output, &output)
+	err := runner.Run()
+	if err == nil || !strings.Contains(err.Error(), "symlinked path") {
+		t.Fatalf("expected symlinked AGENTS.md to be rejected, got %v", err)
+	}
+	content, err := os.ReadFile(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != "outside\n" {
+		t.Fatalf("expected outside AGENTS.md target to remain unchanged, got:\n%s", string(content))
 	}
 }
 

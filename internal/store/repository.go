@@ -17,7 +17,6 @@ import (
 	"strings"
 	"time"
 
-	gcrypto "github.com/ghostable-dev/beta/internal/crypto"
 	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/manifest"
 	"github.com/ghostable-dev/beta/internal/security"
@@ -36,7 +35,6 @@ type Repository struct {
 
 	identityStore security.IdentityStore
 	identityPath  string
-	legacyKey     []byte
 }
 
 type SetupOptions struct {
@@ -1768,7 +1766,7 @@ func (r Repository) readValueRecord(path string) (domain.ValueRecord, error) {
 	if err := readJSON(path, &record); err != nil {
 		return record, err
 	}
-	if record.Schema != domain.ValueSchema && record.Schema != domain.LegacyValueSchema {
+	if record.Schema != domain.ValueSchema {
 		return record, fmt.Errorf("%s uses unsupported value schema %q", path, record.Schema)
 	}
 	if record.ProjectID != r.Manifest.ID {
@@ -1778,29 +1776,6 @@ func (r Repository) readValueRecord(path string) (domain.ValueRecord, error) {
 }
 
 func (r Repository) decryptRecord(record domain.ValueRecord) (string, string, error) {
-	if record.Schema == domain.LegacyValueSchema {
-		if r.legacyKey == nil {
-			return "", "", fmt.Errorf("legacy Go value %s requires the old local key", record.Key)
-		}
-		var legacy domain.LegacyValueRecord
-		encoded, _ := json.Marshal(record)
-		if err := json.Unmarshal(encoded, &legacy); err != nil {
-			return "", "", err
-		}
-		plaintext, err := gcrypto.Decrypt(r.legacyKey, legacy.EncryptedValue, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "value"}, "\n")))
-		if err != nil {
-			return "", "", err
-		}
-		note := ""
-		if legacy.EncryptedNote != nil {
-			noteBytes, err := gcrypto.Decrypt(r.legacyKey, *legacy.EncryptedNote, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "note"}, "\n")))
-			if err != nil {
-				return "", "", err
-			}
-			note = string(noteBytes)
-		}
-		return string(plaintext), note, nil
-	}
 	if err := r.verifyValueRecord(record); err != nil {
 		return "", "", err
 	}
@@ -1816,29 +1791,6 @@ func (r Repository) decryptRecord(record domain.ValueRecord) (string, string, er
 }
 
 func (r Repository) decryptRecordWithReadContext(record domain.ValueRecord, ctx *variableReadContext) (string, string, error) {
-	if record.Schema == domain.LegacyValueSchema {
-		if r.legacyKey == nil {
-			return "", "", fmt.Errorf("legacy Go value %s requires the old local key", record.Key)
-		}
-		var legacy domain.LegacyValueRecord
-		encoded, _ := json.Marshal(record)
-		if err := json.Unmarshal(encoded, &legacy); err != nil {
-			return "", "", err
-		}
-		plaintext, err := gcrypto.Decrypt(r.legacyKey, legacy.EncryptedValue, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "value"}, "\n")))
-		if err != nil {
-			return "", "", err
-		}
-		note := ""
-		if legacy.EncryptedNote != nil {
-			noteBytes, err := gcrypto.Decrypt(r.legacyKey, *legacy.EncryptedNote, []byte(strings.Join([]string{r.Manifest.ID, legacy.Environment, legacy.Key, "note"}, "\n")))
-			if err != nil {
-				return "", "", err
-			}
-			note = string(noteBytes)
-		}
-		return string(plaintext), note, nil
-	}
 	if err := r.verifyValueRecordWithReadContext(record, ctx); err != nil {
 		return "", "", err
 	}
@@ -2061,6 +2013,9 @@ func (r Repository) verifyPolicySignature(policy domain.Policy) (string, error) 
 	}
 	if !contains(policy.Owners, policy.DeviceID) {
 		return "", fmt.Errorf("policy was signed by non-owner device %s", policy.DeviceID)
+	}
+	if policyDeviceRevoked(policy, policy.DeviceID) {
+		return "", fmt.Errorf("policy was signed by revoked device %s", policy.DeviceID)
 	}
 	device, err := r.readDevice(policy.DeviceID)
 	if err != nil {
@@ -2476,11 +2431,8 @@ func (r Repository) verifyAccessGrantMetadata(grant domain.AccessGrantRecord) er
 }
 
 func (r Repository) readVerifiedPolicyMetadata() (domain.Policy, error) {
-	policy, err := r.readPolicyFile()
+	policy, err := r.readPolicy()
 	if err != nil {
-		return policy, err
-	}
-	if _, err := r.verifyPolicySignature(policy); err != nil {
 		return policy, err
 	}
 	if policy.Version < 1 {

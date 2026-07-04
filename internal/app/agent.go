@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/ghostable-dev/beta/internal/cli"
@@ -126,7 +127,10 @@ func (r *Runner) runAgentInit(args []string) error {
 		return err
 	}
 	path := "AGENTS.md"
-	next := renderAgentInstructionsFile(path)
+	next, err := renderAgentInstructionsFile(path)
+	if err != nil {
+		return err
+	}
 	if *dryRun {
 		fmt.Fprint(r.out, next)
 		return nil
@@ -139,17 +143,67 @@ func (r *Runner) runAgentInit(args []string) error {
 }
 
 func writeAgentInstructionsFile(path string) error {
-	return os.WriteFile(path, []byte(renderAgentInstructionsFile(path)), 0o644)
+	next, err := renderAgentInstructionsFile(path)
+	if err != nil {
+		return err
+	}
+	if err := ensureAgentInstructionsPath(path); err != nil {
+		return err
+	}
+	dir := filepath.Dir(path)
+	temp, err := os.CreateTemp(dir, "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write([]byte(next)); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
 }
 
-func renderAgentInstructionsFile(path string) string {
-	existingBytes, _ := os.ReadFile(path)
+func renderAgentInstructionsFile(path string) (string, error) {
+	if err := ensureAgentInstructionsPath(path); err != nil {
+		return "", err
+	}
+	existingBytes, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return "", err
+	}
 	existing := string(existingBytes)
 	block := agentsBlockStart + "\n" + agentInstructions() + agentsBlockEnd + "\n"
-	return upsertBlock(existing, block)
+	return upsertBlock(existing, block), nil
+}
+
+func ensureAgentInstructionsPath(path string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to write AGENTS.md through symlinked path %s", path)
+	}
+	if info.IsDir() {
+		return fmt.Errorf("AGENTS.md path %s is a directory", path)
+	}
+	return nil
 }
 
 func agentInstructionsManagedBlockExists(path string) bool {
+	if err := ensureAgentInstructionsPath(path); err != nil {
+		return false
+	}
 	existingBytes, err := os.ReadFile(path)
 	if err != nil {
 		return false

@@ -409,16 +409,21 @@ func (r *Runner) runVarPull(args []string) error {
 	}
 
 	if *file != "" {
-		path := repoFilePath(repo.Root, *file)
+		path, err := resolveEnvFileSavePath(repo.Root, *file)
+		if err != nil {
+			return err
+		}
 		existing := ""
 		if content, err := os.ReadFile(path); err == nil {
 			existing = string(content)
+		} else if !os.IsNotExist(err) {
+			return err
 		}
 		next, err := dotenv.Merge(existing, map[string]string{variableKey: variable.Value}, []string{variableKey}, false)
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(path, []byte(next), 0o600); err != nil {
+		if err := writeEnvFileSave(path, []byte(next)); err != nil {
 			return err
 		}
 	}

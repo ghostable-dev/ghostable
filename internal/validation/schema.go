@@ -107,6 +107,32 @@ func LoadRules(root string, env string) (map[string][]Rule, []string, error) {
 	return rules, warnings, nil
 }
 
+func ReferencedEnvironments(root string, env string) ([]string, error) {
+	rules, _, err := LoadRules(root, env)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]bool{}
+	for _, keyRules := range rules {
+		for _, rule := range keyRules {
+			if rule.Name != "different_from" {
+				continue
+			}
+			referenced := strings.TrimSpace(rule.Argument)
+			if referenced == "" || referenced == env || seen[referenced] {
+				continue
+			}
+			seen[referenced] = true
+		}
+	}
+	environments := make([]string, 0, len(seen))
+	for envName := range seen {
+		environments = append(environments, envName)
+	}
+	sort.Strings(environments)
+	return environments, nil
+}
+
 func ParseFile(path string) (map[string][]Rule, error) {
 	file, err := os.Open(path)
 	if err != nil {

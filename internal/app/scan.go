@@ -128,25 +128,21 @@ func (r *Runner) scanProject(options scanOptions, progress bool) (scanner.Result
 		"build",
 		".ghostable/environments/**/values/**",
 	}
-	manifestIgnores := []string{}
 	scanLevel := scanner.DefaultLevel
 	suppressions := []domain.SuppressionRecord{}
-	if repo, err := store.OpenProject("."); err == nil {
+	if repo, err := store.Open("."); err == nil {
 		root = repo.Root
-		if len(repo.Manifest.ScanIgnores) > 0 {
-			manifestIgnores = repo.Manifest.ScanIgnores
-		}
-		scanLevel = scanner.NormalizeLevel(repo.Manifest.ScanLevel)
 		suppressions, err = activeSuppressionRecords(repo)
 		if err != nil {
 			return scanner.Result{}, 0, err
 		}
+	} else if repo, err := store.OpenProject("."); err == nil {
+		root = repo.Root
 	}
 	if strings.TrimSpace(options.Level) != "" {
 		scanLevel = scanner.NormalizeLevel(options.Level)
 	}
 	allIgnores := append([]string{}, defaultIgnores...)
-	allIgnores = append(allIgnores, manifestIgnores...)
 	allIgnores = append(allIgnores, options.Ignores...)
 
 	r.printProgress(progress, "Scanning project files")

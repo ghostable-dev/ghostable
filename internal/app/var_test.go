@@ -901,7 +901,7 @@ func TestRunVarPromotePromptsForKeyOnlyPromotion(t *testing.T) {
 }
 
 func TestRunVarPullAcceptsAbsoluteFilePath(t *testing.T) {
-	setupRepoForVarCommandTest(t)
+	root := setupRepoForVarCommandTest(t)
 	repo, err := store.Open(".")
 	if err != nil {
 		t.Fatal(err)
@@ -910,7 +910,7 @@ func TestRunVarPullAcceptsAbsoluteFilePath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	envFile := filepath.Join(t.TempDir(), ".env.out")
+	envFile := filepath.Join(root, ".env.out")
 	var output bytes.Buffer
 	runner := NewRunner([]string{"ghostable", "var", "pull", "--env", "default", "--key", "ALPHA", "--file", envFile, "--json"}, strings.NewReader(""), &output, &output)
 
@@ -924,6 +924,29 @@ func TestRunVarPullAcceptsAbsoluteFilePath(t *testing.T) {
 	}
 	if !strings.Contains(string(content), "ALPHA=one") {
 		t.Fatalf("expected absolute output file to contain ALPHA, got:\n%s", string(content))
+	}
+}
+
+func TestRunVarPullRejectsFileOutsideProject(t *testing.T) {
+	setupRepoForVarCommandTest(t)
+	repo, err := store.Open(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("default", "ALPHA", "one", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	envFile := filepath.Join(t.TempDir(), ".env.out")
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "pull", "--env", "default", "--key", "ALPHA", "--file", envFile}, strings.NewReader(""), &output, &output)
+
+	err = runner.runVarPull(runner.args[3:])
+	if err == nil || !strings.Contains(err.Error(), "must stay inside the project") {
+		t.Fatalf("expected outside-project file to be rejected, got %v", err)
+	}
+	if _, statErr := os.Stat(envFile); !os.IsNotExist(statErr) {
+		t.Fatalf("expected outside-project file to remain unwritten, stat err: %v", statErr)
 	}
 }
 

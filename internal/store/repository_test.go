@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/dotenv"
@@ -343,7 +344,7 @@ func TestRepositoryReadsVariableMetadataWithoutDecrypting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	projectRepo, err := OpenProject(root)
+	projectRepo, err := Open(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -402,7 +403,7 @@ func TestRepositoryReportsTamperedVariableMetadataSignature(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	projectRepo, err := OpenProject(root)
+	projectRepo, err := Open(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -599,7 +600,7 @@ func TestRepositoryReportsTamperedKeyMetadataSignature(t *testing.T) {
 	record.Status = domain.KeyStatusCommented
 	writeKeyMetadataRecordForTest(t, repo, record)
 
-	projectRepo, err := OpenProject(root)
+	projectRepo, err := Open(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1441,6 +1442,71 @@ func TestRepositoryRejectsRolledBackPolicyVersion(t *testing.T) {
 	}
 }
 
+func TestOpenRejectsLocalIdentityRegisteredToDifferentRoot(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	if _, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "owner-device",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	copiedRoot := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(copiedRoot, ".ghostable"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	manifestContent, err := os.ReadFile(filepath.Join(root, ".ghostable", "ghostable.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(copiedRoot, ".ghostable", "ghostable.yaml"), manifestContent, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := Open(copiedRoot); err == nil || !strings.Contains(err.Error(), "registered to") {
+		t.Fatalf("expected copied project root to be rejected, got %v", err)
+	}
+}
+
+func TestRepositoryRejectsPolicySignedByRevokedOwner(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "owner-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	policy := readPolicyForTest(t, root)
+	policy.Version++
+	policy.UpdatedAt = security.Now()
+	policy.Revoked = map[string]domain.DeviceRevocation{
+		repo.DeviceID(): {
+			DeviceID:          repo.DeviceID(),
+			RevokedAt:         security.Now(),
+			RevokedByDeviceID: repo.DeviceID(),
+		},
+	}
+	policy.ClientSig = ""
+	signature, err := security.SignCanonical(policy, repo.Identity)
+	if err != nil {
+		t.Fatal(err)
+	}
+	policy.ClientSig = signature
+	writePolicyForTest(t, root, policy)
+
+	if _, err := repo.readPolicy(); err == nil || !strings.Contains(err.Error(), "signed by revoked device") {
+		t.Fatalf("expected revoked policy signer to be rejected, got %v", err)
+	}
+}
+
 func TestReaderDeviceCannotWriteVariables(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
@@ -1550,6 +1616,107 @@ func TestRepositoryRejectsAccessRequestReviewByUnauthorizedDevice(t *testing.T) 
 	}
 	if len(requests.Invalid) != 1 || !strings.Contains(requests.Invalid[0].Error, "not authorized to review access requests") {
 		t.Fatalf("expected unauthorized review to be invalid, got %#v", requests.Invalid)
+	}
+}
+
+func TestRepositoryRejectsSuppressionCreatedByReader(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "owner-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	credential, err := repo.CreateAutomationCredential("reader-device", "access", []AutomationCredentialGrant{{EnvironmentName: "local", Role: "reader"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Setenv("GHOSTABLE_CI_TOKEN", credential.Token)
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "empty-keys"))
+	readerRepo, err := Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = readerRepo.CreateSuppression(CreateSuppressionInput{
+		Source:      "hygiene",
+		Code:        "stale_value",
+		Environment: "local",
+		Key:         "APP_KEY",
+		Reason:      "reader should not be able to suppress",
+	})
+	if err == nil || !strings.Contains(err.Error(), "grant access") {
+		t.Fatalf("expected reader suppression creation to be rejected, got %v", err)
+	}
+}
+
+func TestRepositoryMarksReaderSignedSuppressionInvalid(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	ownerRepo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "owner-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	credential, err := ownerRepo.CreateAutomationCredential("reader-device", "access", []AutomationCredentialGrant{{EnvironmentName: "local", Role: "reader"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Setenv("GHOSTABLE_CI_TOKEN", credential.Token)
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "empty-keys"))
+	readerRepo, err := Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := domain.SuppressionRecord{
+		Schema:            domain.SuppressionSchema,
+		ProjectID:         ownerRepo.Manifest.ID,
+		ID:                "reader-suppression",
+		Source:            "hygiene",
+		Code:              "stale_value",
+		Environment:       "local",
+		Key:               "APP_KEY",
+		Reason:            "reader should not be trusted",
+		CreatedByDeviceID: readerRepo.DeviceID(),
+		CreatedAt:         security.Now(),
+		SignerDeviceID:    readerRepo.DeviceID(),
+	}
+	signature, err := security.SignCanonical(record, readerRepo.Identity)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record.ClientSig = signature
+	if err := os.MkdirAll(filepath.Join(root, ".ghostable", "suppressions"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeJSONAtomic(filepath.Join(root, ".ghostable", "suppressions", idFileName(record.ID)), record, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Setenv("GHOSTABLE_CI_TOKEN", "")
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+	ownerRepo, err = Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	entries, err := ownerRepo.Suppressions(time.Now().UTC())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected one suppression, got %#v", entries)
+	}
+	if entries[0].ValidSignature || !strings.Contains(entries[0].SignatureError, "grant access") {
+		t.Fatalf("expected reader-signed suppression to be invalid, got %#v", entries[0])
 	}
 }
 
@@ -1774,6 +1941,36 @@ func TestRepositoryRejectsValueRecordFromDifferentEnvironmentDirectory(t *testin
 
 	if _, err := repo.ReadVariables("local"); err == nil || !strings.Contains(err.Error(), "belongs to environment production, not local") {
 		t.Fatalf("expected cross-environment value record to be rejected, got %v", err)
+	}
+}
+
+func TestRepositoryRejectsLegacyValueRecordSchema(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("GHOSTABLE_KEYSTORE", filepath.Join(root, "keys"))
+
+	repo, _, err := Setup(root, SetupOptions{
+		Name:         "Test Project",
+		Environments: []domain.Environment{{Name: "local", Type: "local"}},
+		DeviceName:   "owner-device",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := domain.ValueRecord{
+		Schema:      domain.LegacyValueSchema,
+		ProjectID:   repo.Manifest.ID,
+		Environment: "local",
+		Key:         "APP_KEY",
+	}
+	if err := os.MkdirAll(repo.valuesDir("local"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeJSONAtomic(repo.valuePath("local", "APP_KEY"), record, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := repo.ReadVariables("local"); err == nil || !strings.Contains(err.Error(), "unsupported value schema") {
+		t.Fatalf("expected legacy value schema to be rejected, got %v", err)
 	}
 }
 
