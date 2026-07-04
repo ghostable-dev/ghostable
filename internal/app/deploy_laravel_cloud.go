@@ -183,8 +183,9 @@ func syncCloudEnvironmentVariable(cloudPath string, cloudEnv string, key string,
 		"--no-interaction",
 		"--action=set",
 		"--key="+key,
-		"--value="+value,
+		"--value-stdin",
 	)
+	cmd.Stdin = strings.NewReader(value)
 	output, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
 		return fmt.Errorf("sync Laravel Cloud variable %s: Cloud CLI timed out", key)

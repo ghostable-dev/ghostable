@@ -192,7 +192,7 @@ func (r *Runner) reviewProjectChecks(options reviewOptions, progress bool) (revi
 		if err != nil {
 			return reviewRunResult{}, err
 		}
-		repo, err := store.OpenProject(envReport.Root)
+		repo, err := store.Open(envReport.Root)
 		if err != nil {
 			return reviewRunResult{}, err
 		}

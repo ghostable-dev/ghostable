@@ -4,17 +4,19 @@ package userpresence
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 )
 
+const osascriptExecutable = "/usr/bin/osascript"
+
 func verifyPlatformUserPresence(request Request) error {
-	osascriptPath, err := exec.LookPath("osascript")
-	if err != nil {
+	if info, err := os.Stat(osascriptExecutable); err != nil || info.IsDir() || info.Mode()&0o111 == 0 {
 		return fmt.Errorf("osascript was not found; macOS biometric confirmation is unavailable")
 	}
 
-	cmd := exec.Command(osascriptPath, "-l", "JavaScript", "-e", macOSBiometricVerificationScript(confirmationMessage(request)))
+	cmd := exec.Command(osascriptExecutable, "-l", "JavaScript", "-e", macOSBiometricVerificationScript(confirmationMessage(request)))
 	cmd.Stdin = request.In
 	cmd.Stdout = request.Out
 	cmd.Stderr = request.ErrOut

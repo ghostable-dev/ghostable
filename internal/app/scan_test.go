@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/ghostable-dev/beta/internal/manifest"
+	"github.com/ghostable-dev/beta/internal/store"
 )
 
 func TestRunScanAppliesSignedSuppression(t *testing.T) {
@@ -124,5 +127,42 @@ func TestRunScanJSONReturnsErrorWhenFindingsRemain(t *testing.T) {
 	}
 	if !payload.HasSecrets || len(payload.Findings) != 1 || payload.Findings[0].Path != "config.env" {
 		t.Fatalf("expected one JSON finding for config.env, got %#v", payload)
+	}
+}
+
+func TestRunScanDoesNotHonorManifestIgnoresByDefault(t *testing.T) {
+	root := setupRepoForEnvCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	project := repo.Manifest
+	project.ScanIgnores = []string{"config.env"}
+	project.ScanLevel = "relaxed"
+	manifestFile, err := os.Create(filepath.Join(root, ".ghostable", "ghostable.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := manifest.Write(manifestFile, project); err != nil {
+		_ = manifestFile.Close()
+		t.Fatal(err)
+	}
+	if err := manifestFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	secretPath := filepath.Join(root, "config.env")
+	if err := os.WriteFile(secretPath, []byte("APP_SECRET=abc123!abc123!abc123!\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "scan", "config.env"}, strings.NewReader(""), &output, &output)
+	err = runner.Run()
+	if err == nil {
+		t.Fatalf("expected scan to report config.env despite manifest ignore, got nil error:\n%s", output.String())
+	}
+	if !strings.Contains(output.String(), "config.env") {
+		t.Fatalf("expected ignored file to be scanned, got:\n%s", output.String())
 	}
 }

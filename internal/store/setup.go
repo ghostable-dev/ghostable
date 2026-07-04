@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	gcrypto "github.com/ghostable-dev/beta/internal/crypto"
 	"github.com/ghostable-dev/beta/internal/domain"
 	"github.com/ghostable-dev/beta/internal/manifest"
 	"github.com/ghostable-dev/beta/internal/security"
@@ -173,6 +172,9 @@ func Open(start string) (Repository, error) {
 		return Repository{}, err
 	}
 	if !loadedFromToken {
+		if err := requireRegisteredProjectRoot(identityStore, project.manifest.ID, project.root); err != nil {
+			return Repository{}, err
+		}
 		identity, err = loadLocalIdentity(identityStore, project.manifest.ID)
 		if err != nil {
 			return Repository{}, err
@@ -189,8 +191,44 @@ func Open(start string) (Repository, error) {
 		Identity:      identity,
 		identityStore: identityStore,
 		identityPath:  identityPath,
-		legacyKey:     loadLegacyKey(project.manifest.ID),
 	}, nil
+}
+
+func requireRegisteredProjectRoot(identityStore security.IdentityStore, projectID string, root string) error {
+	entry, ok, err := identityStore.ProjectIdentity(projectID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return nil
+	}
+	currentRoot, err := canonicalProjectRoot(root)
+	if err != nil {
+		return err
+	}
+	registeredRoot, err := canonicalProjectRoot(entry.Root)
+	if err != nil {
+		registeredRoot, err = filepath.Abs(entry.Root)
+		if err != nil {
+			return err
+		}
+	}
+	if currentRoot != registeredRoot {
+		return fmt.Errorf("local identity for project %s is registered to %s, not %s; run `ghostable device join` for this checkout", projectID, entry.Root, root)
+	}
+	return nil
+}
+
+func canonicalProjectRoot(root string) (string, error) {
+	absoluteRoot, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	realRoot, err := filepath.EvalSymlinks(absoluteRoot)
+	if err != nil {
+		return "", err
+	}
+	return realRoot, nil
 }
 
 func OpenProject(start string) (Repository, error) {
@@ -260,17 +298,4 @@ func loadLocalIdentity(identityStore security.IdentityStore, projectID string) (
 		return domain.LocalIdentityRecord{}, err
 	}
 	return identity, nil
-}
-
-func loadLegacyKey(projectID string) []byte {
-	keyStore, err := gcrypto.NewKeyStore()
-	if err != nil {
-		return nil
-	}
-
-	_, key, err := keyStore.Load(projectID)
-	if err != nil {
-		return nil
-	}
-	return key
 }

@@ -118,10 +118,71 @@ func Parse(reader io.Reader) (Policy, error) {
 }
 
 func WriteFile(path string, policy Policy) error {
+	if err := ensurePolicyWritePath(path); err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(path, []byte(Format(policy)), 0o644)
+	if err := ensurePolicyWritePath(path); err != nil {
+		return err
+	}
+	return writePolicyFileAtomic(path, []byte(Format(policy)), 0o644)
+}
+
+func ensurePolicyWritePath(path string) error {
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	stopAt := policyWriteCheckBase(absolutePath)
+	for current := absolutePath; ; current = filepath.Dir(current) {
+		info, err := os.Lstat(current)
+		if err == nil {
+			if info.Mode()&os.ModeSymlink != 0 {
+				return fmt.Errorf("refusing to write hygiene policy through symlinked path %s", path)
+			}
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+		if current == stopAt {
+			break
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			break
+		}
+	}
+	return nil
+}
+
+func policyWriteCheckBase(absolutePath string) string {
+	separator := string(os.PathSeparator)
+	marker := separator + ".ghostable" + separator
+	if index := strings.LastIndex(absolutePath, marker); index >= 0 {
+		return absolutePath[:index+len(separator+".ghostable")]
+	}
+	return absolutePath
+}
+
+func writePolicyFileAtomic(path string, content []byte, mode os.FileMode) error {
+	temp, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".*")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	if _, err := temp.Write(content); err != nil {
+		_ = temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tempPath, mode); err != nil {
+		return err
+	}
+	return os.Rename(tempPath, path)
 }
 
 func Format(policy Policy) string {

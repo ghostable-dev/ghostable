@@ -28,9 +28,11 @@ func TestRunDeployCloudInvokesLaravelCloudCLI(t *testing.T) {
 	logPath := filepath.Join(t.TempDir(), "cloud.log")
 	unixScript := "#!/bin/sh\n" +
 		"echo \"$@\" >> \"$CLOUD_LOG\"\n" +
+		"cat >/dev/null\n" +
 		"exit 0\n"
 	windowsScript := "@echo off\r\n" +
 		"echo %* >> \"%CLOUD_LOG%\"\r\n" +
+		"set /p CLOUD_VALUE=\r\n" +
 		"exit /b 0\r\n"
 	writeFakeExecutable(t, binDir, "cloud", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
@@ -48,11 +50,14 @@ func TestRunDeployCloudInvokesLaravelCloudCLI(t *testing.T) {
 	}
 	logText := string(logContent)
 	for _, expected := range []string{
-		"environment:variables cloud-prod --json --no-interaction --action=set --key=APP_NAME --value=Ghostable",
+		"environment:variables cloud-prod --json --no-interaction --action=set --key=APP_NAME --value-stdin",
 	} {
 		if !strings.Contains(logText, expected) {
 			t.Fatalf("expected Laravel Cloud CLI log to contain %q, got:\n%s", expected, logText)
 		}
+	}
+	if strings.Contains(logText, "Ghostable") {
+		t.Fatalf("did not expect Laravel Cloud value to be passed in argv, got:\n%s", logText)
 	}
 	if strings.Contains(logText, "API_KEY") {
 		t.Fatalf("did not expect --only filtered key to be synced, got:\n%s", logText)
@@ -102,10 +107,12 @@ func TestRunDeployCloudRedactsValueFromCLIError(t *testing.T) {
 
 	binDir := t.TempDir()
 	unixScript := "#!/bin/sh\n" +
-		"echo \"failed with $@\" >&2\n" +
+		"value=$(cat)\n" +
+		"echo \"failed with $@ value=$value\" >&2\n" +
 		"exit 1\n"
 	windowsScript := "@echo off\r\n" +
-		"echo failed with %* 1>&2\r\n" +
+		"set /p CLOUD_VALUE=\r\n" +
+		"echo failed with %* value=%CLOUD_VALUE% 1>&2\r\n" +
 		"exit /b 1\r\n"
 	writeFakeExecutable(t, binDir, "cloud", unixScript, windowsScript)
 	prependPathForTest(t, binDir)
@@ -166,6 +173,51 @@ func TestRunDeployLaravelVaporUsesVaporTarget(t *testing.T) {
 
 	if !strings.Contains(output.String(), "👻 Ghostable Vapor deploy plan.") {
 		t.Fatalf("expected laravel-vapor route to use Vapor deploy path, got:\n%s", output.String())
+	}
+}
+
+func TestRunDeployVaporRedactsValueFromCLIError(t *testing.T) {
+	root := setupDeployCommandTest(t)
+	repo, err := store.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetVariable("production", "APP_NAME", "Ghostable", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	binDir := t.TempDir()
+	unixScript := "#!/bin/sh\n" +
+		"file=${3#--file=}\n" +
+		"if [ \"$1\" = \"env:pull\" ]; then printf 'EXISTING=1\\n' > \"$file\"; exit 0; fi\n" +
+		"if [ \"$1\" = \"env:push\" ]; then cat \"$file\" >&2; exit 1; fi\n" +
+		"exit 0\n"
+	windowsScript := "@echo off\r\n" +
+		"set FILEARG=%~3\r\n" +
+		"set FILEPATH=%FILEARG:--file=%\r\n" +
+		"if \"%~1\"==\"env:pull\" (\r\n" +
+		"  >\"%FILEPATH%\" echo EXISTING=1\r\n" +
+		"  exit /b 0\r\n" +
+		")\r\n" +
+		"if \"%~1\"==\"env:push\" (\r\n" +
+		"  type \"%FILEPATH%\" 1>&2\r\n" +
+		"  exit /b 1\r\n" +
+		")\r\n" +
+		"exit /b 0\r\n"
+	writeFakeExecutable(t, binDir, "vapor", unixScript, windowsScript)
+	prependPathForTest(t, binDir)
+
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "deploy", "laravel-vapor", "production"}, strings.NewReader(""), &output, &output)
+	err = runner.Run()
+	if err == nil {
+		t.Fatal("expected Vapor CLI failure")
+	}
+	if strings.Contains(err.Error(), "Ghostable") {
+		t.Fatalf("expected Vapor CLI error to redact variable value, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "[redacted]") {
+		t.Fatalf("expected Vapor CLI error to include redaction marker, got %v", err)
 	}
 }
 

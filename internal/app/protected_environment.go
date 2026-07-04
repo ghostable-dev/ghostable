@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	protectedOperationDeploy  = "deploy"
-	protectedOperationEnvPull = "env.pull"
-	protectedOperationEnvRun  = "env.run"
-	protectedOperationVarPull = "var.pull"
+	protectedOperationDeploy   = "deploy"
+	protectedOperationEnvPull  = "env.pull"
+	protectedOperationEnvRun   = "env.run"
+	protectedOperationValidate = "validate"
+	protectedOperationVarPull  = "var.pull"
 )
 
 var verifyProtectedEnvironmentUserPresence = userpresence.Verify

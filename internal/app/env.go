@@ -1025,9 +1025,6 @@ func resolveEnvFileSavePath(root string, file string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !pathInsideDirectory(absoluteRoot, absolutePath) {
-		return "", fmt.Errorf("env file save path %q must stay inside the project", file)
-	}
 	realRoot, err := filepath.EvalSymlinks(absoluteRoot)
 	if err != nil {
 		return "", err

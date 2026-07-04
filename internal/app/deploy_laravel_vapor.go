@@ -177,7 +177,7 @@ func syncVaporEnvironmentVariables(vaporPath string, vaporEnv string, variables 
 		return err
 	}
 
-	if err := runVaporCommand(vaporPath, "push Vapor environment", "env:push", vaporEnv, "--file="+envPath); err != nil {
+	if err := runVaporCommandWithRedaction(vaporPath, "push Vapor environment", vaporSensitiveValues(variables), "env:push", vaporEnv, "--file="+envPath); err != nil {
 		return err
 	}
 	return removeVaporEnvironmentFile(envPath)
@@ -300,6 +300,10 @@ func pathInsideDirectory(root string, target string) bool {
 }
 
 func runVaporCommand(vaporPath string, action string, args ...string) error {
+	return runVaporCommandWithRedaction(vaporPath, action, nil, args...)
+}
+
+func runVaporCommandWithRedaction(vaporPath string, action string, sensitiveValues []string, args ...string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), vaporCommandTimeout)
 	defer cancel()
 
@@ -309,13 +313,45 @@ func runVaporCommand(vaporPath string, action string, args ...string) error {
 		return fmt.Errorf("%s: Vapor CLI timed out", action)
 	}
 	if err != nil {
-		detail := strings.TrimSpace(string(output))
+		detail := sanitizeVaporCommandOutput(string(output), sensitiveValues)
 		if detail == "" {
 			detail = err.Error()
 		}
 		return fmt.Errorf("%s: %s", action, detail)
 	}
 	return nil
+}
+
+func sanitizeVaporCommandOutput(output string, sensitiveValues []string) string {
+	detail := strings.TrimSpace(output)
+	if detail == "" {
+		return detail
+	}
+	for _, value := range sensitiveValues {
+		if value != "" {
+			detail = strings.ReplaceAll(detail, value, "[redacted]")
+		}
+	}
+	return detail
+}
+
+func vaporSensitiveValues(variables map[string]string) []string {
+	values := make([]string, 0, len(variables))
+	seen := map[string]bool{}
+	for _, value := range variables {
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		values = append(values, value)
+	}
+	sort.Slice(values, func(i int, j int) bool {
+		if len(values[i]) == len(values[j]) {
+			return values[i] < values[j]
+		}
+		return len(values[i]) > len(values[j])
+	})
+	return values
 }
 
 func (r *Runner) printVaporDeployPlan(plan vaporDeployPlan) {
