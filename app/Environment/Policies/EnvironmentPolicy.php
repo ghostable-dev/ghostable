@@ -19,7 +19,8 @@ class EnvironmentPolicy
      */
     public function view(User $user, Environment $environment): bool
     {
-        return $user->organizationMembership()->belongsToOrganization($environment->owningOrganization());
+        return $environment->owningOrganization()->usesLegacyProjectExperience()
+            && $user->organizationMembership()->belongsToOrganization($environment->owningOrganization());
     }
 
     /**
@@ -31,10 +32,11 @@ class EnvironmentPolicy
      */
     public function manageSettings(User $user, Environment $environment): bool
     {
-        return $user->organizationMembership()->hasOrganizationPermission(
-            permission: OrganizationPermission::ManageEnvironmentSettings,
-            organization: $environment->project->organization
-        );
+        return $environment->owningOrganization()->usesLegacyProjectExperience()
+            && $user->organizationMembership()->hasOrganizationPermission(
+                permission: OrganizationPermission::ManageEnvironmentSettings,
+                organization: $environment->project->organization
+            );
     }
 
     /**
@@ -43,7 +45,8 @@ class EnvironmentPolicy
      */
     public function manageTokens(User $user, Environment $environment): bool
     {
-        return $user->isOrganizationAdmin($environment->owningOrganization());
+        return $environment->owningOrganization()->usesLegacyProjectExperience()
+            && $user->isOrganizationAdmin($environment->owningOrganization());
     }
 
     /**
@@ -57,6 +60,10 @@ class EnvironmentPolicy
         Environment $environment,
         OrganizationPermission $permission
     ): bool {
+        if (! $environment->owningOrganization()->usesLegacyProjectExperience()) {
+            return false;
+        }
+
         return $this->hasPermission($user, $environment, $permission);
     }
 }

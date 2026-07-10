@@ -45,6 +45,10 @@ final class ApiServiceProvider extends ServiceProvider
             ->middleware(['api', Sample::rate(1.0)])
             ->group(__DIR__.'/Routes/v2.php');
 
+        Route::prefix('api/v3')
+            ->middleware(['api', Sample::rate(1.0)])
+            ->group(__DIR__.'/Routes/v3.php');
+
         Route::prefix('integrations/oauth')
             ->middleware(['api', Sample::rate(1.0)])
             ->group(__DIR__.'/Routes/integrations-oauth.php');

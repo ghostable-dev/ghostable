@@ -7,12 +7,14 @@ namespace App\Crypto\Models;
 use App\Account\Models\User;
 use App\Crypto\Enums\DeviceClientType;
 use App\Crypto\Enums\DevicePlatform;
+use App\Licensing\Models\LicenseActivation;
 use Database\Factories\DeviceFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Device extends Model
 {
@@ -55,6 +57,11 @@ class Device extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function licenseActivations(): HasMany
+    {
+        return $this->hasMany(LicenseActivation::class);
     }
 
     protected function platform(): Attribute

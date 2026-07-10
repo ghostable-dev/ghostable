@@ -20,7 +20,8 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        return $user->organizationMembership()->belongsToOrganization($project->owningOrganization());
+        return $project->owningOrganization()->usesLegacyProjectExperience()
+            && $user->organizationMembership()->belongsToOrganization($project->owningOrganization());
     }
 
     /**
@@ -28,10 +29,11 @@ class ProjectPolicy
      */
     public function create(User $user, Organization $organization): bool
     {
-        return $user->organizationMembership()->hasOrganizationPermission(
-            permission: OrganizationPermission::CreateProjects,
-            organization: $organization
-        );
+        return $organization->usesLegacyProjectExperience()
+            && $user->organizationMembership()->hasOrganizationPermission(
+                permission: OrganizationPermission::CreateProjects,
+                organization: $organization
+            );
     }
 
     /**
@@ -39,10 +41,11 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return $user->organizationMembership()->hasOrganizationPermission(
-            permission: OrganizationPermission::DeleteProjects,
-            organization: $project->owningOrganization()
-        );
+        return $project->owningOrganization()->usesLegacyProjectExperience()
+            && $user->organizationMembership()->hasOrganizationPermission(
+                permission: OrganizationPermission::DeleteProjects,
+                organization: $project->owningOrganization()
+            );
     }
 
     /**
@@ -56,6 +59,10 @@ class ProjectPolicy
         Project $project,
         OrganizationPermission $permission
     ): bool {
+        if (! $project->owningOrganization()->usesLegacyProjectExperience()) {
+            return false;
+        }
+
         return $this->hasPermission($user, $project, $permission);
     }
 }

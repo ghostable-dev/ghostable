@@ -13,6 +13,7 @@ use App\Integration\Integrations\Drata\DrataServiceProvider;
 use App\Integration\Integrations\Slack\SlackServiceProvider;
 use App\Integration\Integrations\Vanta\VantaServiceProvider;
 use App\Integration\IntegrationServiceProvider;
+use App\Licensing\LicensingServiceProvider;
 use App\Messaging\MessagingServiceProvider;
 use App\Organization\OrganizationAuditWebhookServiceProvider;
 use App\Organization\OrganizationServiceProvider;
@@ -31,6 +32,7 @@ return [
     DrataServiceProvider::class,
     SlackServiceProvider::class,
     VantaServiceProvider::class,
+    LicensingServiceProvider::class,
     OrganizationServiceProvider::class,
     OrganizationAuditWebhookServiceProvider::class,
     ProjectServiceProvider::class,

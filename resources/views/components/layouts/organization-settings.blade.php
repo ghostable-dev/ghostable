@@ -1,14 +1,21 @@
 <x-slot name="subheader">
     @if(auth()->check() && auth()->user()->organizations->count())
+        @php
+            $currentOrganization = auth()->user()->currentOrganization();
+            $usesLegacyProjectExperience = $currentOrganization?->usesLegacyProjectExperience() ?? false;
+        @endphp
+
         <div class="w-full bg-white pt-2">
             <div class="w-full px-6 lg:px-8">
                 <flux:navbar>
                     <flux:navbar.item :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         Overview
                     </flux:navbar.item>
-                    <flux:navbar.item :href="route('projects')" :current="request()->routeIs('projects')" wire:navigate>
-                        Projects
-                    </flux:navbar.item>
+                    @if($usesLegacyProjectExperience)
+                        <flux:navbar.item :href="route('projects')" :current="request()->routeIs('projects')" wire:navigate>
+                            Projects
+                        </flux:navbar.item>
+                    @endif
                     <flux:navbar.item
                         :href="route('organization.settings.general')"
                         :current="request()->routeIs('organization.settings.*')"
@@ -34,7 +41,7 @@
                     ['route' => 'organization.settings.notifications', 'label' => 'Notifications'],
                 ];
                 
-                if (\Laravel\Pennant\Feature::active('integrations')) {
+                if ($this->organization->usesLegacyProjectExperience() && \Laravel\Pennant\Feature::active('integrations')) {
                     array_push($links, [
                         'route' => 'organization.settings.integrations', 
                         'label' => 'Integrations', 'feature' => 'integrations'

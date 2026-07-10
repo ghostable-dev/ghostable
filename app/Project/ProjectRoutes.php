@@ -2,6 +2,7 @@
 
 namespace App\Project;
 
+use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use App\Project\Livewire\ProjectAccessManager;
 use App\Project\Livewire\ProjectActivity;
 use App\Project\Livewire\ProjectEnvironmentsManager;
@@ -13,7 +14,7 @@ class ProjectRoutes
 {
     public static function web(): void
     {
-        Route::middleware(['auth', 'verified'])
+        Route::middleware(['auth', 'verified', EnsureLegacyOrganizationExperience::class])
             ->prefix('projects/{project}/')
             ->name('project.')
             ->group(function () {

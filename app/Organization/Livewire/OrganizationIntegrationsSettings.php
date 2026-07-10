@@ -27,6 +27,11 @@ class OrganizationIntegrationsSettings extends Component
 
     protected ?IntegrationManager $integrationManager = null;
 
+    public function mount(): void
+    {
+        abort_if($this->organization->usesDesktopLicensing(), 403);
+    }
+
     #[Computed]
     public function organization(): Organization
     {

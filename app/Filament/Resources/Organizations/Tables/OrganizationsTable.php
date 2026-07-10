@@ -31,6 +31,10 @@ class OrganizationsTable
                     ->label('Partner')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
+                IconColumn::make('desktop_licensing_enabled')
+                    ->label('Licensing')
+                    ->boolean()
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

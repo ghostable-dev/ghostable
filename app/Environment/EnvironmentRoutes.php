@@ -7,13 +7,14 @@ use App\Environment\Livewire\EnvironmentActivity;
 use App\Environment\Livewire\EnvironmentGeneralSettings;
 use App\Environment\Livewire\EnvironmentNotificationsManager;
 use App\Environment\Livewire\EnvironmentSecretManager;
+use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use Illuminate\Support\Facades\Route;
 
 class EnvironmentRoutes
 {
     public static function web(): void
     {
-        Route::middleware(['auth', 'verified'])
+        Route::middleware(['auth', 'verified', EnsureLegacyOrganizationExperience::class])
             ->prefix('environments/{environment}/')
             ->name('environment.')
             ->group(function () {

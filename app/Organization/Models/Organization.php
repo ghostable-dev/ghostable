@@ -11,6 +11,7 @@ use App\Core\Attributes\On;
 use App\Core\Concerns\HandlesModelEventsWithAttributes;
 use App\Integration\Models\Integration;
 use App\Integration\Models\IntegrationClient;
+use App\Licensing\Models\License;
 use App\Organization\Actions\CreateNonConflictingSlug;
 use App\Organization\Builders\OrganizationBuilder;
 use App\Organization\Casts\OrganizationFeaturesCast;
@@ -53,6 +54,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $slack_webhook_url
  * @property bool $slack_enabled
  * @property bool $is_partner
+ * @property bool $desktop_licensing_enabled
  * @property OrganizationFeatures|null $features
  * @property OrganizationLimits|null $limits
  * @property Carbon|null $created_at
@@ -64,6 +66,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $api_usages_count
  * @property-read Collection<int, Invite> $invites
  * @property-read int|null $invites_count
+ * @property-read Collection<int, License> $licenses
+ * @property-read int|null $licenses_count
  * @property-read int|null $notifications_count
  * @property-read User|null $owner
  * @property-read mixed $plan
@@ -86,6 +90,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static OrganizationBuilder<static>|Organization whereDeletedAt($value)
  * @method static OrganizationBuilder<static>|Organization whereFeatures($value)
  * @method static OrganizationBuilder<static>|Organization whereId($value)
+ * @method static OrganizationBuilder<static>|Organization whereDesktopLicensingEnabled($value)
  * @method static OrganizationBuilder<static>|Organization whereLimits($value)
  * @method static OrganizationBuilder<static>|Organization whereName($value)
  * @method static OrganizationBuilder<static>|Organization whereNotifications($value)
@@ -126,11 +131,13 @@ class Organization extends Model
         'billing_policy',
         'plan_override',
         'is_partner',
+        'desktop_licensing_enabled',
     ];
 
     protected $attributes = [
         'slack_enabled' => false,
         'is_partner' => false,
+        'desktop_licensing_enabled' => false,
     ];
 
     protected $casts = [
@@ -142,6 +149,7 @@ class Organization extends Model
         'billing_policy' => BillingPolicy::class,
         'plan_override' => Plan::class,
         'is_partner' => 'boolean',
+        'desktop_licensing_enabled' => 'boolean',
     ];
 
     public static function newFactory(): OrganizationFactory
@@ -198,6 +206,21 @@ class Organization extends Model
     public function integrationClients(): HasMany
     {
         return $this->hasMany(IntegrationClient::class, 'owner_organization_id');
+    }
+
+    public function licenses(): HasMany
+    {
+        return $this->hasMany(License::class);
+    }
+
+    public function usesDesktopLicensing(): bool
+    {
+        return $this->desktop_licensing_enabled;
+    }
+
+    public function usesLegacyProjectExperience(): bool
+    {
+        return ! $this->usesDesktopLicensing();
     }
 
     public function apiUsages(): HasMany

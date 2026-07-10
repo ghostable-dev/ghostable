@@ -103,6 +103,10 @@ class InboundOauthTokenController extends Controller
             return $this->invalidGrant('PKCE verification failed.');
         }
 
+        if ($authorizationCode->organization?->usesDesktopLicensing()) {
+            return $this->invalidGrant('This organization uses the desktop licensing experience.');
+        }
+
         $authorizationCode->forceFill(['consumed_at' => Carbon::now()])->save();
 
         $integration = Integration::withTrashed()->firstOrNew([
@@ -147,6 +151,10 @@ class InboundOauthTokenController extends Controller
 
         if ($token->refresh_token_expires_at && $token->refresh_token_expires_at->isPast()) {
             return $this->invalidGrant('Refresh token has expired.');
+        }
+
+        if ($token->organization?->usesDesktopLicensing()) {
+            return $this->invalidGrant('This organization uses the desktop licensing experience.');
         }
 
         $tokens = $this->rotateTokens($token);

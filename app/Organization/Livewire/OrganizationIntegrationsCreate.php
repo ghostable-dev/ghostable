@@ -39,6 +39,11 @@ class OrganizationIntegrationsCreate extends Component
 
     public string $statusLevel = 'info';
 
+    public function mount(): void
+    {
+        abort_if($this->organization->usesDesktopLicensing(), 403);
+    }
+
     #[Computed]
     public function organization(): Organization
     {

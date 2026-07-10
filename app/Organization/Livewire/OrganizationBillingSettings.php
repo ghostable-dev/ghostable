@@ -3,6 +3,7 @@
 namespace App\Organization\Livewire;
 
 use App\Billing\Enums\Plan;
+use App\Licensing\Actions\RevealLicenseKey;
 use App\Organization\Models\Organization;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,11 @@ use Livewire\Component;
 
 class OrganizationBillingSettings extends Component
 {
+    /**
+     * @var array<string, string>
+     */
+    public array $revealedLicenseKeys = [];
+
     #[Computed]
     public function organization(): Organization
     {
@@ -23,6 +29,22 @@ class OrganizationBillingSettings extends Component
         $this->authorize('manageBilling', $this->organization);
 
         return $this->organization->invoices();
+    }
+
+    #[Computed]
+    public function licenses(): Collection
+    {
+        $this->authorize('manageBilling', $this->organization);
+
+        if (! $this->organization->usesDesktopLicensing()) {
+            return collect();
+        }
+
+        return $this->organization
+            ->licenses()
+            ->withCount('activeActivations')
+            ->latest()
+            ->get();
     }
 
     /**
@@ -104,6 +126,29 @@ class OrganizationBillingSettings extends Component
         return response()->streamDownload(function () use ($invoice) {
             echo $invoice->download();
         }, 'ghostable-invoice-'.str($invoice->date(timezone())).'.pdf');
+    }
+
+    public function revealLicenseKey(string $licenseId): void
+    {
+        $this->authorize('manageBilling', $this->organization);
+
+        abort_unless($this->organization->usesDesktopLicensing(), 404);
+
+        $license = $this->organization
+            ->licenses()
+            ->whereKey($licenseId)
+            ->firstOrFail();
+
+        $licenseKey = app(RevealLicenseKey::class)->execute($license, 'organization_billing');
+
+        if ($licenseKey !== null) {
+            $this->revealedLicenseKeys[$license->getKey()] = $licenseKey;
+        }
+    }
+
+    public function hideLicenseKey(string $licenseId): void
+    {
+        unset($this->revealedLicenseKeys[$licenseId]);
     }
 
     public function render()

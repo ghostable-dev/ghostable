@@ -11,6 +11,11 @@ use Livewire\Component;
 
 class OrganizationProjects extends Component
 {
+    public function mount(): void
+    {
+        abort_if($this->organization->usesDesktopLicensing(), 403);
+    }
+
     #[Computed]
     public function projects(): LengthAwarePaginator
     {

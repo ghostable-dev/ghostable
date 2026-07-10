@@ -14,7 +14,10 @@ final class GetOwnedOrganizations
      */
     public function __invoke(Request $request)
     {
-        $organizations = $request->user()->ownedOrganizations;
+        $organizations = $request->user()
+            ->ownedOrganizations()
+            ->where('desktop_licensing_enabled', false)
+            ->get();
 
         return OrganizationResource::collection($organizations);
     }

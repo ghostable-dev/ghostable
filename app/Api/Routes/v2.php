@@ -83,6 +83,7 @@ use App\Api\V2\Http\Controllers\Project\UpdateProject;
 use App\Api\V2\Http\Controllers\User\GetCurrentUser;
 use App\Api\V2\Http\Controllers\User\ListUserDevices;
 use App\Api\V2\Http\Controllers\User\UpdateCurrentUser;
+use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -108,7 +109,7 @@ Route::middleware('api.version:v2')->group(function () {
         });
     });
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', EnsureLegacyOrganizationExperience::class])->group(function () {
         Route::get('user', GetCurrentUser::class);
         Route::patch('user', UpdateCurrentUser::class);
         Route::get('user/devices', ListUserDevices::class);

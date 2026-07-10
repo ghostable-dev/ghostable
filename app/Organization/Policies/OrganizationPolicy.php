@@ -10,10 +10,11 @@ class OrganizationPolicy
 {
     public function createProjects(User $user, Organization $organization): bool
     {
-        return $user->organizationMembership()->hasOrganizationPermission(
-            permission: OrganizationPermission::CreateProjects,
-            organization: $organization
-        );
+        return $organization->usesLegacyProjectExperience()
+            && $user->organizationMembership()->hasOrganizationPermission(
+                permission: OrganizationPermission::CreateProjects,
+                organization: $organization
+            );
     }
 
     /**

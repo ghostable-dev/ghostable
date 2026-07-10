@@ -17,6 +17,7 @@ class OrganizationFactory extends Factory
         return [
             'name' => fake()->unique()->company(),
             'is_partner' => false,
+            'desktop_licensing_enabled' => false,
         ];
     }
 }

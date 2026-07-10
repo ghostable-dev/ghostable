@@ -2,6 +2,7 @@
 
 namespace App\Organization;
 
+use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use App\Organization\Livewire\OrganizationBillingSettings;
 use App\Organization\Livewire\OrganizationGeneralSettings;
 use App\Organization\Livewire\OrganizationIntegrationsCreate;
@@ -24,9 +25,11 @@ class OrganizationRoutes
                 Route::get('members', OrganizationMemberSettings::class)->name('members');
                 Route::get('notifications', OrganizationNotificationsSettings::class)->name('notifications');
                 Route::get('billing', OrganizationBillingSettings::class)->name('billing');
-                Route::get('integrations', OrganizationIntegrationsSettings::class)->name('integrations');
-                Route::get('integrations/create', OrganizationIntegrationsCreate::class)->name('integrations.create');
-                Route::get('integrations/{client}/edit', OrganizationIntegrationsEdit::class)->name('integrations.edit');
+                Route::middleware(EnsureLegacyOrganizationExperience::class)->group(function (): void {
+                    Route::get('integrations', OrganizationIntegrationsSettings::class)->name('integrations');
+                    Route::get('integrations/create', OrganizationIntegrationsCreate::class)->name('integrations.create');
+                    Route::get('integrations/{client}/edit', OrganizationIntegrationsEdit::class)->name('integrations.edit');
+                });
             });
     }
 }

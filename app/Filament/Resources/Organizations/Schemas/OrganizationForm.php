@@ -40,6 +40,9 @@ class OrganizationForm
                             ->visible(fn ($record) => $record?->billing_policy->isManualOverride()),
                         Toggle::make('is_partner')
                             ->label('Partner organization'),
+                        Toggle::make('desktop_licensing_enabled')
+                            ->label('Desktop licensing experience')
+                            ->helperText('Checked organizations use the new license-based desktop flow. Unchecked organizations keep the legacy projects, integrations, and V2 API experience.'),
                     ]),
             ]);
     }

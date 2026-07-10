@@ -22,6 +22,7 @@ use App\Environment\EnvironmentRoutes;
 use App\Integration\Http\Controllers\LocalOauthTestController;
 use App\Integration\IntegrationRoutes;
 use App\Organization\Http\Controllers\LocalAuditWebhookReceiverController;
+use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use App\Organization\OrganizationRoutes;
 use App\Project\ProjectRoutes;
 use Illuminate\Support\Facades\Route;
@@ -39,7 +40,9 @@ Route::post('desktop/update-events', ReportDesktopUpdateEvent::class)
     ->name('desktop.update-events');
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
-Route::view('projects', 'projects')->middleware(['auth', 'verified'])->name('projects');
+Route::view('projects', 'projects')
+    ->middleware(['auth', 'verified', EnsureLegacyOrganizationExperience::class])
+    ->name('projects');
 
 Route::middleware('auth')->get('cli-login/{browserToken}', ApproveCliLogin::class)->name('cli-login.approve');
 

@@ -27,7 +27,38 @@
 
     <x-layouts.organization-settings>
         @can('manageBilling', $this->organization)
-            @if($this->organization->billing_policy->isManualOverride())
+            @if($this->organization->usesDesktopLicensing())
+                <div class="space-y-6">
+                    @if(request()->query('license_checkout') === 'success')
+                        <flux:callout icon="check-circle" color="green">
+                            <flux:callout.heading>License checkout complete</flux:callout.heading>
+                            <flux:callout.text>
+                                Your license is available below. The full license key has been emailed to the purchaser.
+                            </flux:callout.text>
+                        </flux:callout>
+                    @elseif(request()->query('license_checkout') === 'pending')
+                        <flux:callout icon="clock" color="amber">
+                            <flux:callout.heading>License checkout is processing</flux:callout.heading>
+                            <flux:callout.text>
+                                Stripe confirmed the checkout redirect, and the license will appear here as soon as the payment webhook is processed.
+                            </flux:callout.text>
+                        </flux:callout>
+                    @endif
+
+                    <flux:callout icon="key" color="blue">
+                        <flux:callout.heading>Desktop licensing is enabled</flux:callout.heading>
+                        <flux:callout.text>
+                            This organization uses license-based desktop access instead of the legacy project subscription plans.
+                        </flux:callout.text>
+                    </flux:callout>
+
+                    <x-billing.license-pricing-plan :organization="$this->organization" />
+
+                    <x-billing.organization-licenses
+                        :licenses="$this->licenses"
+                        :revealed-license-keys="$this->revealedLicenseKeys" />
+                </div>
+            @elseif($this->organization->billing_policy->isManualOverride())
                 <div class="flex flex-col items-center justify-center py-8">
                     <x-app-logo-icon class="size-16 mb-4" />
                     <p class="text-lg font-semibold">Friends of Crypto</p>

@@ -13,6 +13,8 @@ use App\Auth\Models\PersonalAccessToken;
 use App\Auth\Notifications\ResetPasswordNotification;
 use App\Auth\Notifications\VerifyEmailNotification;
 use App\Crypto\Models\Device;
+use App\Licensing\Models\License;
+use App\Licensing\Models\LicenseActivation;
 use App\Messaging\Concerns\ReceivesMessages;
 use App\Messaging\Models\Message;
 use App\Organization\Concerns\BelongsToOrganizations;
@@ -64,6 +66,8 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read int|null $activities_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $history
  * @property-read int|null $history_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LicenseActivation> $licenseActivations
+ * @property-read int|null $license_activations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Message> $messages
  * @property-read int|null $messages_count
  * @property-read int|null $notifications_count
@@ -72,6 +76,8 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read int|null $organizations_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Organization> $ownedOrganizations
  * @property-read int|null $owned_organizations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, License> $purchasedLicenses
+ * @property-read int|null $purchased_licenses_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  *
@@ -216,6 +222,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);
+    }
+
+    public function purchasedLicenses(): HasMany
+    {
+        return $this->hasMany(License::class, 'purchaser_user_id');
+    }
+
+    public function licenseActivations(): HasMany
+    {
+        return $this->hasMany(LicenseActivation::class);
     }
 
     public function inboxNotifications(): HasMany

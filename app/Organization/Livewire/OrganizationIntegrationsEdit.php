@@ -52,6 +52,8 @@ class OrganizationIntegrationsEdit extends Component
 
     public function mount(string $client): void
     {
+        abort_if($this->organization->usesDesktopLicensing(), 403);
+
         $this->integrationClient = IntegrationClient::query()
             ->where('owner_organization_id', $this->organization->id)
             ->whereKey($client)

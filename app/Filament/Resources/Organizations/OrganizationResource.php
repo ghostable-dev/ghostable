@@ -6,6 +6,7 @@ use App\Filament\Resources\Organizations\Pages\EditOrganization;
 use App\Filament\Resources\Organizations\Pages\ListOrganizations;
 use App\Filament\Resources\Organizations\Pages\ViewOrganization;
 use App\Filament\Resources\Organizations\RelationManagers\ApiUsagesRelationManager;
+use App\Filament\Resources\Organizations\RelationManagers\LicensesRelationManager;
 use App\Filament\Resources\Organizations\Schemas\OrganizationForm;
 use App\Filament\Resources\Organizations\Tables\OrganizationsTable;
 use App\Organization\Models\Organization;
@@ -45,6 +46,7 @@ class OrganizationResource extends Resource
     public static function getRelations(): array
     {
         return [
+            LicensesRelationManager::class,
             ApiUsagesRelationManager::class,
         ];
     }

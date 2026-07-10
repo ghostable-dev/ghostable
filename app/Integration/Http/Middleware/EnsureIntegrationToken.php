@@ -36,6 +36,10 @@ class EnsureIntegrationToken
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
 
+        if ($record->organization?->usesDesktopLicensing()) {
+            return response()->json(['message' => 'This organization uses the desktop licensing experience.'], 403);
+        }
+
         $record->forceFill(['last_used_at' => Carbon::now()])->save();
 
         $request->attributes->set('integrationToken', $record);
