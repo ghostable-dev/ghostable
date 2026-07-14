@@ -250,7 +250,7 @@ it('fulfills stripe desktop checkout sessions once', function () {
 
             return $channels === ['mail']
                 && ($notifiable->routes['mail'] ?? null) === 'buyer@example.com'
-                && $mail->subject === 'Your Ghostable license for Buyer Org'
+                && $mail->subject === 'Your Ghostable license is ready'
                 && $mail->view === 'mail.licensing.license-purchased'
                 && ($mail->viewData['license_id'] ?? null) === (string) $license->getKey()
                 && str_starts_with((string) ($mail->viewData['license_key'] ?? ''), 'GHST-PERS-');

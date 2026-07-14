@@ -31,6 +31,23 @@ test('new users can register', function () {
     $this->assertAuthenticated();
 });
 
+test('new users return to an intended license claim after registration', function () {
+    $claimUrl = 'https://ghostable.test/licenses/example/claim?signature=test';
+
+    $this->withSession(['url.intended' => $claimUrl]);
+
+    Livewire::test(Register::class)
+        ->set('email', 'license-claim@example.com')
+        ->set('password', 'aComplexP@ssw0rd')
+        ->set('password_confirmation', 'aComplexP@ssw0rd')
+        ->set('terms', 1)
+        ->call('register')
+        ->assertHasNoErrors()
+        ->assertRedirect($claimUrl);
+
+    $this->assertAuthenticated();
+});
+
 test('embedded registrations infer a name from the email address when the field is hidden', function () {
     $response = Livewire::test(Register::class)
         ->set('showNameField', false)

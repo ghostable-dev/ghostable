@@ -153,3 +153,15 @@ test('homepage exposes the new seo metadata and faq schema', function () {
     $response->assertSee('IntersectionObserver', false);
     $response->assertSeeText('Do I need the CLI?');
 });
+
+test('homepage footer offers license purchase and management', function () {
+    $response = $this->get(route('home'));
+
+    $response->assertSuccessful();
+    $response->assertSeeText('Licensing');
+    $response->assertSeeText('Purchase');
+    $response->assertSee(route('licenses'), false);
+    $response->assertSeeText('Manage licenses');
+    $response->assertSeeText('Purchase email');
+    $response->assertSee(route('licenses.manage.request'), false);
+});

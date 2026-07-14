@@ -24,6 +24,8 @@ return [
     ],
 
     'recovery' => [
+        'link_ttl_minutes' => (int) env('GHOSTABLE_LICENSE_RECOVERY_LINK_TTL_MINUTES', 30),
+        'session_ttl_minutes' => (int) env('GHOSTABLE_LICENSE_MANAGEMENT_SESSION_TTL_MINUTES', 60),
         'window_days' => (int) env('GHOSTABLE_LICENSE_RECOVERY_WINDOW_DAYS', 30),
         'single_device_deactivations_per_window' => (int) env('GHOSTABLE_LICENSE_SINGLE_DEVICE_DEACTIVATIONS_PER_WINDOW', 5),
         'all_device_deactivations_per_window' => (int) env('GHOSTABLE_LICENSE_ALL_DEVICE_DEACTIVATIONS_PER_WINDOW', 2),

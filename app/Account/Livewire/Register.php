@@ -68,7 +68,7 @@ class Register extends Component
 
         $this->attachCliTicket($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 
     protected function fillMissingNameFromEmail(): void

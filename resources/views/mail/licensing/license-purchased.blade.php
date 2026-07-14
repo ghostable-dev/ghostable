@@ -3,7 +3,7 @@
 @section('title', 'Your Ghostable license')
 
 @section('preheader')
-    Your Ghostable {{ $plan_label }} license for {{ $organization_name }} is ready.
+    Your Ghostable {{ $plan_label }} license is ready.
 @endsection
 
 @section('content')
@@ -11,7 +11,7 @@
     <x-mail.simple.title>Your Ghostable license is ready</x-mail.simple.title>
 
     <x-mail.simple.paragraph>
-        Thanks for purchasing a Ghostable license for <strong>{{ $organization_name }}</strong>.
+        Thanks for purchasing a Ghostable license. Copy the key below into Ghostable Desktop to activate it.
     </x-mail.simple.paragraph>
 
     <x-mail.simple.paragraph>
@@ -22,10 +22,14 @@
         {{ $license_key }}
     </div>
 
-    <x-mail.simple.button href="{{ $billing_url }}">View licenses</x-mail.simple.button>
+    @if($is_guest_purchase)
+        <x-mail.simple.button href="{{ $claim_url }}">Save license to an account</x-mail.simple.button>
+    @else
+        <x-mail.simple.button href="{{ $billing_url }}">View licenses</x-mail.simple.button>
+    @endif
 
     <x-mail.simple.paragraph>
-        Use this key in the Ghostable desktop app when activating your license. For security, the web app only shows a masked version after this email.
+        You do not need an account to use this license. Saving it to an account is optional and makes team management and future recovery easier.
     </x-mail.simple.paragraph>
 
 @endsection

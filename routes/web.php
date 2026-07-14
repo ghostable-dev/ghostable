@@ -21,6 +21,13 @@ use App\Core\Http\Middleware\IsFounder;
 use App\Environment\EnvironmentRoutes;
 use App\Integration\Http\Controllers\LocalOauthTestController;
 use App\Integration\IntegrationRoutes;
+use App\Licensing\Http\Controllers\ClaimLicense;
+use App\Licensing\Http\Controllers\CompleteGuestLicenseCheckout;
+use App\Licensing\Http\Controllers\RequestLicenseRecovery;
+use App\Licensing\Http\Controllers\ShowLicenseClaim;
+use App\Licensing\Http\Controllers\ShowLicenseManagement;
+use App\Licensing\Http\Controllers\ShowLicenseRecovery;
+use App\Licensing\Http\Controllers\StartGuestLicenseCheckout;
 use App\Organization\Http\Controllers\LocalAuditWebhookReceiverController;
 use App\Organization\Http\Middleware\EnsureLegacyOrganizationExperience;
 use App\Organization\OrganizationRoutes;
@@ -38,6 +45,34 @@ Route::get('desktop/download', RedirectDesktopDownload::class)->name('desktop.do
 Route::post('desktop/update-events', ReportDesktopUpdateEvent::class)
     ->middleware('throttle:api')
     ->name('desktop.update-events');
+
+Route::post('licenses/checkout/{plan}', StartGuestLicenseCheckout::class)
+    ->middleware('throttle:10,1')
+    ->name('licenses.checkout.start');
+Route::get('licenses/checkout/success', CompleteGuestLicenseCheckout::class)
+    ->middleware('throttle:30,1')
+    ->name('licenses.checkout.success');
+Route::get('licenses/{license}/claim', ShowLicenseClaim::class)
+    ->middleware(['signed', 'throttle:30,1'])
+    ->name('licenses.claim.show');
+Route::post('licenses/{license}/claim', ClaimLicense::class)
+    ->middleware(['auth', 'verified', 'signed', 'throttle:10,1'])
+    ->name('licenses.claim.store');
+Route::post('licenses/manage', RequestLicenseRecovery::class)
+    ->middleware('throttle:5,1')
+    ->name('licenses.manage.request');
+Route::get('licenses/manage/verify', ShowLicenseRecovery::class)
+    ->middleware(['signed', 'throttle:30,1'])
+    ->name('licenses.manage.verify');
+Route::get('licenses/manage', ShowLicenseManagement::class)
+    ->middleware('throttle:60,1')
+    ->name('licenses.manage');
+Route::post('licenses/recovery', RequestLicenseRecovery::class)
+    ->middleware('throttle:5,1')
+    ->name('licenses.recovery.request');
+Route::get('licenses/recovery', ShowLicenseRecovery::class)
+    ->middleware(['signed', 'throttle:30,1'])
+    ->name('licenses.recovery.show');
 
 Route::view('dashboard', 'dashboard')->middleware(['auth', 'verified'])->name('dashboard');
 Route::view('projects', 'projects')
@@ -83,6 +118,7 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
     Route::get('/', fn () => view('site.home'))->name('home');
     Route::view('start-free', 'site.start-free')->name('start-free');
     Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
+    Route::view('licenses', 'site.licenses')->name('licenses');
     Route::view('trust', 'site.trust')->name('trust');
     Route::view('openclaw-environment-variables', 'site.openclaw-environment-variables')->name('openclaw-environment-variables');
     Route::get('contact', [ContactController::class, 'create'])->name('contact');

@@ -46,7 +46,25 @@
             </div>
 
             <!-- Right: Links -->
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div class="flex flex-col items-center gap-3 sm:items-end">
+                <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm sm:justify-end">
+                    <span class="font-medium text-white/50">Licensing</span>
+                    <flux:link href="{{ route('licenses') }}" variant="subtle">Purchase</flux:link>
+                    @php
+                        $licenseManagementAccess = session('license_management_access');
+                        $hasLicenseManagementAccess = is_array($licenseManagementAccess)
+                            && is_string($licenseManagementAccess['email'] ?? null)
+                            && is_int($licenseManagementAccess['expires_at'] ?? null)
+                            && $licenseManagementAccess['expires_at'] > now()->getTimestamp();
+                    @endphp
+                    @if(auth()->check() || $hasLicenseManagementAccess)
+                        <flux:link href="{{ route('licenses.manage') }}" variant="subtle">Manage licenses</flux:link>
+                    @else
+                        <flux:modal.trigger name="license-management">
+                            <flux:link as="button" variant="subtle">Manage licenses</flux:link>
+                        </flux:modal.trigger>
+                    @endif
+                </div>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-sm">
                     <flux:link href="{{ route('terms')}}" variant="subtle">Terms</flux:link>
                     <flux:link href="{{ route('privacy')}}" variant="subtle">Privacy</flux:link>
@@ -57,6 +75,59 @@
 
         </div>
     </div>
+
+    <flux:modal
+        name="license-management"
+        :show="$errors->licenseManagement->isNotEmpty() || session()->has('license_management_link_sent') || session()->has('license_management_required')"
+        class="dark md:w-md">
+        @if(session()->has('license_management_link_sent'))
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <flux:heading size="lg">Check your email</flux:heading>
+                    <flux:text>
+                        If that address has an active Ghostable license, we've sent a secure management link. It may take a few minutes to arrive.
+                    </flux:text>
+                </div>
+                <div class="flex justify-end">
+                    <flux:modal.close>
+                        <flux:button variant="primary">Done</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        @else
+            <form method="POST" action="{{ route('licenses.manage.request') }}" class="space-y-6">
+                @csrf
+
+                <div class="space-y-2">
+                    <flux:heading size="lg">Manage licenses</flux:heading>
+                    <flux:text>
+                        Enter the email address used for your purchase. We'll send a temporary link to view your active licenses.
+                    </flux:text>
+                </div>
+
+                <flux:field>
+                    <flux:label>Purchase email</flux:label>
+                    <flux:input
+                        name="email"
+                        type="email"
+                        value="{{ old('email') }}"
+                        autocomplete="email"
+                        :invalid="$errors->licenseManagement->has('email')"
+                        required
+                    />
+                    <flux:error name="email" bag="licenseManagement" />
+                </flux:field>
+
+                <div class="flex justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">Email management link</flux:button>
+                </div>
+            </form>
+        @endif
+    </flux:modal>
+
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('ghostableStatus', () => ({

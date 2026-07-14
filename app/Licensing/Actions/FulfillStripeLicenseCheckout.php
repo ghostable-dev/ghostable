@@ -12,6 +12,7 @@ use App\Organization\Enums\OrganizationPermission;
 use App\Organization\Models\Organization;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Cashier\Cashier;
 
@@ -37,7 +38,10 @@ class FulfillStripeLicenseCheckout
      */
     public function executeFromWebhookPayload(array $payload): ?array
     {
-        if (($payload['type'] ?? null) !== 'checkout.session.completed') {
+        if (! in_array($payload['type'] ?? null, [
+            'checkout.session.completed',
+            'checkout.session.async_payment_succeeded',
+        ], true)) {
             return null;
         }
 
@@ -53,13 +57,22 @@ class FulfillStripeLicenseCheckout
     {
         $session = $this->sessionToArray($session);
         $metadata = Arr::wrap($session['metadata'] ?? []);
+        $checkoutType = $metadata['ghostable_checkout'] ?? null;
 
-        if (($metadata['ghostable_checkout'] ?? null) !== 'desktop_license') {
+        if (! in_array($checkoutType, ['desktop_license', 'desktop_license_guest'], true)) {
             return null;
         }
 
         if (($session['payment_status'] ?? null) !== 'paid') {
             return null;
+        }
+
+        if ($checkoutType === 'desktop_license_guest') {
+            if ($expectedUser instanceof User) {
+                throw new AuthorizationException('Guest checkout cannot be completed as an account checkout.');
+            }
+
+            return $this->executeGuestCheckout($session, $metadata);
         }
 
         if ($expectedUser instanceof User && (string) ($metadata['purchaser_user_id'] ?? '') !== (string) $expectedUser->getKey()) {
@@ -134,21 +147,116 @@ class FulfillStripeLicenseCheckout
             ],
         ]);
 
-        if ($result['created']) {
-            Notification::route('mail', $email)
-                ->notify(new LicensePurchasedNotification($result['license']));
-
-            $result['license']->events()->create([
-                'type' => 'license.stripe_checkout_email_dispatched',
-                'metadata' => [
-                    'stripe_checkout_id' => $checkoutId,
-                    'recipient_email' => $email,
-                    'source' => 'stripe_checkout',
-                ],
-            ]);
-        }
+        $this->dispatchPurchaseEmailIfNeeded($result, $email, $checkoutId, 'stripe_checkout');
 
         return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $session
+     * @param  array<string, mixed>  $metadata
+     * @return array{license: License, license_key: ?string, created: bool}|null
+     */
+    private function executeGuestCheckout(array $session, array $metadata): ?array
+    {
+        $plan = LicensePlan::tryFrom((string) ($metadata['plan'] ?? ''));
+        $email = strtolower(trim((string) Arr::get($session, 'customer_details.email', '')));
+        $checkoutId = $this->nullableString($session['id'] ?? null);
+
+        if (! $plan instanceof LicensePlan || ! $plan->isPurchasable() || $email === '' || $checkoutId === null) {
+            return null;
+        }
+
+        $result = DB::transaction(function () use ($session, $metadata, $plan, $email, $checkoutId): array {
+            $existingLicense = License::query()
+                ->where('provider', 'stripe')
+                ->where('provider_checkout_id', $checkoutId)
+                ->first();
+
+            if ($existingLicense instanceof License) {
+                return [
+                    'license' => $existingLicense,
+                    'license_key' => null,
+                    'created' => false,
+                ];
+            }
+
+            $organization = Organization::query()->create([
+                'name' => "Ghostable {$plan->label()} License",
+                'desktop_licensing_enabled' => true,
+            ]);
+
+            $result = $this->createLicense->execute([
+                'organization' => $organization,
+                'purchaser_user' => null,
+                'plan' => $plan,
+                'email' => $email,
+                'provider' => 'stripe',
+                'provider_customer_id' => $this->nullableString($session['customer'] ?? null),
+                'provider_checkout_id' => $checkoutId,
+                'provider_subscription_id' => $this->nullableString($session['subscription'] ?? null),
+                'provider_metadata' => [
+                    'source' => 'stripe_guest_checkout',
+                    'stripe_payment_intent' => $this->nullableString($session['payment_intent'] ?? null),
+                    'stripe_price_id' => $this->nullableString($metadata['stripe_price_id'] ?? null),
+                    'stripe_mode' => $this->nullableString($session['mode'] ?? null),
+                    'organization_id' => (string) $organization->getKey(),
+                    'guest_checkout' => true,
+                ],
+            ]);
+
+            if (! $result['created']) {
+                $organization->forceDelete();
+            }
+
+            return $result;
+        }, 3);
+
+        $result['license']->events()->create([
+            'type' => $result['created']
+                ? 'license.stripe_guest_checkout_fulfilled'
+                : 'license.stripe_guest_checkout_already_fulfilled',
+            'metadata' => [
+                'stripe_checkout_id' => $checkoutId,
+                'stripe_customer_id' => $this->nullableString($session['customer'] ?? null),
+                'stripe_payment_status' => $this->nullableString($session['payment_status'] ?? null),
+                'source' => 'stripe_guest_checkout',
+            ],
+        ]);
+
+        $this->dispatchPurchaseEmailIfNeeded($result, $email, $checkoutId, 'stripe_guest_checkout');
+
+        return $result;
+    }
+
+    /**
+     * @param  array{license: License, license_key: ?string, created: bool}  $result
+     */
+    private function dispatchPurchaseEmailIfNeeded(
+        array $result,
+        string $email,
+        string $checkoutId,
+        string $source,
+    ): void {
+        $emailWasDispatched = $result['license']->events()
+            ->where('type', 'license.stripe_checkout_email_dispatched')
+            ->exists();
+
+        if (! $result['created'] && $emailWasDispatched) {
+            return;
+        }
+
+        Notification::route('mail', $email)
+            ->notify(new LicensePurchasedNotification($result['license']));
+
+        $result['license']->events()->create([
+            'type' => 'license.stripe_checkout_email_dispatched',
+            'metadata' => [
+                'stripe_checkout_id' => $checkoutId,
+                'recipient_email' => $email,
+                'source' => $source,
+            ],
+        ]);
     }
 
     /**

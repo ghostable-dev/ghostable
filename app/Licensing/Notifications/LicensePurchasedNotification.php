@@ -6,6 +6,7 @@ use App\Licensing\Models\License;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\URL;
 
 class LicensePurchasedNotification extends Notification
 {
@@ -42,12 +43,7 @@ class LicensePurchasedNotification extends Notification
 
     protected function subject(): string
     {
-        $this->license->loadMissing('organization');
-
-        return sprintf(
-            'Your Ghostable license for %s',
-            $this->license->organization->name,
-        );
+        return 'Your Ghostable license is ready';
     }
 
     /**
@@ -63,6 +59,11 @@ class LicensePurchasedNotification extends Notification
             'plan_label' => $this->license->plan->label(),
             'license_key' => (string) $this->license->encrypted_license_key,
             'billing_url' => route('organization.settings.billing'),
+            'claim_url' => URL::signedRoute(
+                'licenses.claim.show',
+                ['license' => $this->license],
+            ),
+            'is_guest_purchase' => $this->license->purchaser_user_id === null,
         ];
     }
 }
