@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/ghostable/internal/prompt"
+	"github.com/ghostable-dev/ghostable/v3/internal/prompt"
 	"github.com/manifoldco/promptui"
 )
 

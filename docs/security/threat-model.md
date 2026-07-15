@@ -1,6 +1,6 @@
 # Ghostable Threat Model
 
-This threat model documents the current beta security design. It is not a
+This threat model documents the current security design. It is not a
 substitute for an external audit.
 
 ## Assets

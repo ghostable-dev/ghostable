@@ -15,7 +15,7 @@ restrictive file-backed identity store otherwise.
 
 ## Security Status
 
-Ghostable is beta software and has not completed an external security audit.
+Ghostable has not completed an external security audit.
 The current assurance evidence is repository-visible: focused security tests,
 documented test vectors, and the public threat model in
 `docs/security/threat-model.md`. Do not treat the current release as formally

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/ghostable/internal/manifest"
-	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/manifest"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
 )
 
 func TestRunScanAppliesSignedSuppression(t *testing.T) {

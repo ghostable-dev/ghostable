@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
-	"github.com/ghostable-dev/ghostable/internal/prompt"
-	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/prompt"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
 )
 
 var version = "dev"

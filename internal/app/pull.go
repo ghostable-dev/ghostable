@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
 )
 
 type environmentPullRequest struct {

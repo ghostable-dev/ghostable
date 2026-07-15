@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/cli"
-	hygienepolicy "github.com/ghostable-dev/ghostable/internal/hygiene"
-	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/cli"
+	hygienepolicy "github.com/ghostable-dev/ghostable/v3/internal/hygiene"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
 )
 
 var hygieneRotationCommandOptions = []commandOption{

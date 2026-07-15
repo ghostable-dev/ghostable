@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
 	"golang.org/x/crypto/chacha20poly1305"
 )
 

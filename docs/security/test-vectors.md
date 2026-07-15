@@ -2,7 +2,7 @@
 
 The fixture file `docs/security/test-vectors.json` contains deterministic
 vectors for security-sensitive compatibility checks. These vectors are public
-evidence for developers reviewing the beta security design; they are not an
+evidence for developers reviewing the security design; they are not an
 external audit.
 
 The vectors cover:
