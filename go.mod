@@ -1,4 +1,4 @@
-module github.com/ghostable-dev/ghostable
+module github.com/ghostable-dev/ghostable/v3
 
 go 1.25.10
 

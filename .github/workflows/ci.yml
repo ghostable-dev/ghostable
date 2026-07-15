@@ -83,7 +83,7 @@ jobs:
           if [ "$GOOS" = "windows" ]; then
             output="${output}.exe"
           fi
-          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/ghostable/internal/app.version=ci" -o "$output" ./cmd/ghostable
+          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/ghostable/v3/internal/app.version=ci" -o "$output" ./cmd/ghostable
 
   native-platform-smoke:
     runs-on: ${{ matrix.os }}
@@ -122,7 +122,7 @@ jobs:
             binary="${binary}.exe"
           fi
 
-          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/ghostable/internal/app.version=ci" -o "$binary" ./cmd/ghostable
+          go build -trimpath -ldflags "-s -w -X github.com/ghostable-dev/ghostable/v3/internal/app.version=ci" -o "$binary" ./cmd/ghostable
           "$binary" --help
           "$binary" version
 

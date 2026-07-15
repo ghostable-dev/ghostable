@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/v3/internal/cli"
 )
 
 type adoptSection struct {

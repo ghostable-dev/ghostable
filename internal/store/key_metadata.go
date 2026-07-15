@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
-	"github.com/ghostable-dev/ghostable/internal/security"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/security"
 )
 
 type keyMetadataUpdate func(*domain.EnvironmentKeyMetadataRecord) error

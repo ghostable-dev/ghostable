@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ghostable-dev/ghostable/internal/cli"
-	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/cli"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
 )
 
 type envCleanResult struct {

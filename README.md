@@ -2,8 +2,8 @@
 
 [![Release](https://img.shields.io/github/v/release/ghostable-dev/ghostable?sort=semver)](https://github.com/ghostable-dev/ghostable/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/ghostable-dev/ghostable/total?label=downloads)](https://github.com/ghostable-dev/ghostable/releases)
-[![npm](https://img.shields.io/npm/v/@ghostable/beta?label=npm)](https://www.npmjs.com/package/@ghostable/beta)
-[![npm downloads](https://img.shields.io/npm/dm/@ghostable/beta?label=npm%20downloads)](https://www.npmjs.com/package/@ghostable/beta)
+[![npm](https://img.shields.io/npm/v/@ghostable/cli?label=npm)](https://www.npmjs.com/package/@ghostable/cli)
+[![npm downloads](https://img.shields.io/npm/dm/@ghostable/cli?label=npm%20downloads)](https://www.npmjs.com/package/@ghostable/cli)
 [![CI](https://img.shields.io/github/actions/workflow/status/ghostable-dev/ghostable/ci.yml?branch=main&label=ci)](https://github.com/ghostable-dev/ghostable/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/ghostable-dev/ghostable)](LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-signed%20%26%20notarized-2ea44f)](https://github.com/ghostable-dev/ghostable/releases/latest)
@@ -21,8 +21,8 @@ file-backed identity store otherwise.
 
 ## Security Status
 
-Ghostable is beta security software and has not completed an external security
-audit. The repository includes a public [security policy](SECURITY.md), a
+Ghostable has not completed an external security audit. The repository includes
+a public [security policy](SECURITY.md), a
 [threat model](docs/security/threat-model.md), and stable
 [test vectors](docs/security/test-vectors.md) so developers can inspect the
 claims and reproduce the critical cryptographic checks.
@@ -49,11 +49,17 @@ brew install --cask ghostable
 Node/npm projects:
 
 ```sh
-npm install @ghostable/beta
+npm install @ghostable/cli
 ```
 
 This installs a project-local `ghostable` binary at
 `node_modules/.bin/ghostable`.
+
+When available, release candidates use npm's `next` tag:
+
+```sh
+npm install @ghostable/cli@next
+```
 
 Other platforms can download the matching archive from the
 [latest release](https://github.com/ghostable-dev/ghostable/releases/latest) and put

@@ -5,7 +5,7 @@ package security
 import (
 	"fmt"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
 )
 
 func (s IdentityStore) loadWindowsCredential(projectID string) (domain.LocalIdentityRecord, error) {

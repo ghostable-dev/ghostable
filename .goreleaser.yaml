@@ -25,7 +25,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/ghostable-dev/ghostable/internal/app.version={{ .Version }}
+      - -s -w -X github.com/ghostable-dev/ghostable/v3/internal/app.version={{ .Version }}
 
 archives:
   - id: ghostable
@@ -86,9 +86,12 @@ release:
   github:
     owner: ghostable-dev
     name: ghostable
+  name_template: "{{ .Tag }} Release"
+  prerelease: auto
+  make_latest: '{{ if .Prerelease }}false{{ else }}true{{ end }}'
 
 npms:
-  - name: "@ghostable/beta"
+  - name: "@ghostable/cli"
     ids:
       - ghostable-npm
     description: "Local-first encrypted environment management CLI"
@@ -105,7 +108,7 @@ npms:
     repository: "https://github.com/ghostable-dev/ghostable"
     bugs: "https://github.com/ghostable-dev/ghostable/issues"
     access: public
-    tag: latest
+    tag: '{{ if .Prerelease }}next{{ else }}latest{{ end }}'
     format: tar.gz
     disable: '{{ not (isEnvSet "NPM_TOKEN") }}'
 
@@ -127,3 +130,4 @@ homebrew_casks:
       name: ghostable-release-bot
       email: release-bot@ghostable.dev
     commit_msg_template: "Update ghostable Homebrew cask to {{ .Tag }}"
+    skip_upload: auto

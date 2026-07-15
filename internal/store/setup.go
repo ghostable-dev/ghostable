@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
-	"github.com/ghostable-dev/ghostable/internal/manifest"
-	"github.com/ghostable-dev/ghostable/internal/security"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/manifest"
+	"github.com/ghostable-dev/ghostable/v3/internal/security"
 )
 
 func Setup(root string, options SetupOptions) (Repository, bool, error) {

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/ghostable/internal/domain"
-	"github.com/ghostable-dev/ghostable/internal/dotenv"
+	"github.com/ghostable-dev/ghostable/v3/internal/domain"
+	"github.com/ghostable-dev/ghostable/v3/internal/dotenv"
 )
 
 func (r Repository) PutVariables(env string, values map[string]string, options PutOptions) (PushResult, error) {

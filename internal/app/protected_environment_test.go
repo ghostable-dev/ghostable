@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/ghostable/internal/store"
-	"github.com/ghostable-dev/ghostable/internal/userpresence"
+	"github.com/ghostable-dev/ghostable/v3/internal/store"
+	"github.com/ghostable-dev/ghostable/v3/internal/userpresence"
 )
 
 func TestProtectedProductionEnvPullRequiresLocalUserPresence(t *testing.T) {
