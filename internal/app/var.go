@@ -67,8 +67,6 @@ func (r *Runner) runVar(args []string) error {
 		return r.runVarContext(args[1:])
 	case "annotation", "annotations", "annotate":
 		return r.runVarAnnotation(args[1:])
-	case "rollback":
-		return fmt.Errorf("variable rollback is not implemented in the Go client yet; use git history to recover the value file or restore from backup")
 	default:
 		return fmt.Errorf("unknown var command %q", args[0])
 	}

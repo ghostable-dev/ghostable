@@ -68,6 +68,16 @@ func TestVarHelpShowsPromoteAndHidesCopy(t *testing.T) {
 	}
 }
 
+func TestRunVarRejectsUnsupportedRollbackCommand(t *testing.T) {
+	var output bytes.Buffer
+	runner := NewRunner([]string{"ghostable", "var", "rollback"}, strings.NewReader(""), &output, &output)
+
+	err := runner.runVar(runner.args[2:])
+	if err == nil || err.Error() != `unknown var command "rollback"` {
+		t.Fatalf("expected rollback to be unsupported, got %v", err)
+	}
+}
+
 func TestRunVarPushSelectsVariableFromFile(t *testing.T) {
 	root := setupRepoForVarCommandTest(t)
 	envFile := filepath.Join(root, ".env.seed")
