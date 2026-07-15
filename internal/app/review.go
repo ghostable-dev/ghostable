@@ -6,12 +6,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/domain"
-	"github.com/ghostable-dev/beta/internal/prompt"
-	"github.com/ghostable-dev/beta/internal/review"
-	"github.com/ghostable-dev/beta/internal/scanner"
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/prompt"
+	"github.com/ghostable-dev/ghostable/internal/review"
+	"github.com/ghostable-dev/ghostable/internal/scanner"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 var reviewCommandOptions = []commandOption{

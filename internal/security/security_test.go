@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/beta/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/domain"
 )
 
 type securityVectors struct {

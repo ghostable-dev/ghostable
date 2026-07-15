@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ghostable-dev/beta/internal/domain"
-	"github.com/ghostable-dev/beta/internal/dotenv"
-	"github.com/ghostable-dev/beta/internal/security"
+	"github.com/ghostable-dev/ghostable/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/dotenv"
+	"github.com/ghostable-dev/ghostable/internal/security"
 )
 
 func TestRepositoryEncryptsAndPullsVariables(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/beta/internal/prompt"
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/prompt"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 func TestRunAccessCreateCreatesToken(t *testing.T) {

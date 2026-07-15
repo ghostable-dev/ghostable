@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/dotenv"
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/dotenv"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 const forgeCommandTimeout = 2 * time.Minute

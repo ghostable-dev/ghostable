@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 func TestRunDeployVaporDryRunUsesEnvironmentVariables(t *testing.T) {

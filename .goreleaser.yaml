@@ -25,7 +25,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/ghostable-dev/beta/internal/app.version={{ .Version }}
+      - -s -w -X github.com/ghostable-dev/ghostable/internal/app.version={{ .Version }}
 
 archives:
   - id: ghostable
@@ -85,14 +85,14 @@ changelog:
 release:
   github:
     owner: ghostable-dev
-    name: beta
+    name: ghostable
 
 npms:
   - name: "@ghostable/beta"
     ids:
       - ghostable-npm
     description: "Local-first encrypted environment management CLI"
-    homepage: "https://github.com/ghostable-dev/beta"
+    homepage: "https://github.com/ghostable-dev/ghostable"
     keywords:
       - ghostable
       - cli
@@ -102,8 +102,8 @@ npms:
       - forge
     license: MIT
     author: "Ghostable LLC"
-    repository: "https://github.com/ghostable-dev/beta"
-    bugs: "https://github.com/ghostable-dev/beta/issues"
+    repository: "https://github.com/ghostable-dev/ghostable"
+    bugs: "https://github.com/ghostable-dev/ghostable/issues"
     access: public
     tag: latest
     format: tar.gz
@@ -115,7 +115,7 @@ homebrew_casks:
       - ghostable
     binaries:
       - ghostable
-    homepage: "https://github.com/ghostable-dev/beta"
+    homepage: "https://github.com/ghostable-dev/ghostable"
     description: "Local-first encrypted environment management CLI"
     directory: Casks
     repository:

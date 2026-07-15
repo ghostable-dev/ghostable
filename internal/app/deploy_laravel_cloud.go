@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 const cloudCommandTimeout = 2 * time.Minute
