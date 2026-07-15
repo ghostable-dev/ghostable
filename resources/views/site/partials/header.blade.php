@@ -1,5 +1,5 @@
 @php
-    $showPromoBanner = $showPromoBanner ?? true;
+    $showPromoBanner = $showPromoBanner ?? false;
     $bannerMessage = $bannerMessage ?? 'Vanta integration is live';
     $bannerColors = array_merge([
         'primary' => '#AC55FF',
@@ -112,9 +112,10 @@
             
             <flux:button
                 variant="primary"
-                class="bg-white text-black hover:bg-gray-100"
-                href="{{ route('register') }}">
-                Sign up
+                icon="arrow-down-tray"
+                class="bg-white text-black hover:bg-gray-100 max-sm:px-3"
+                href="{{ route('download') }}">
+                Download
             </flux:button>
         </div>
     </div>

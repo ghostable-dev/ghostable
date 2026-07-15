@@ -115,9 +115,12 @@ if (config('audit_webhook_receiver.local_routes_enabled') || app()->environment(
 
 // Site pages
 Route::middleware(ProvideMarkdownResponse::class)->group(function () {
-    Route::get('/', fn () => view('site.home'))->name('home');
+    Route::get('/', fn () => view('site.home-v3'))->name('home');
+    Route::view('v2', 'site.home')->name('home.v2');
+    Route::view('download', 'site.downloads')->name('download');
     Route::view('start-free', 'site.start-free')->name('start-free');
-    Route::get('pricing', fn () => view('site.pricing'))->name('pricing');
+    Route::get('pricing', fn () => view('site.pricing-v3'))->name('pricing');
+    Route::view('pricing/v2', 'site.pricing')->name('pricing.v2');
     Route::view('licenses', 'site.licenses')->name('licenses');
     Route::view('trust', 'site.trust')->name('trust');
     Route::view('openclaw-environment-variables', 'site.openclaw-environment-variables')->name('openclaw-environment-variables');

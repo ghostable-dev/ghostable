@@ -8,7 +8,7 @@
     'containerClass' => 'mx-auto max-w-6xl',
     'mainColumnClass' => 'max-w-3xl space-y-8',
     'showHeaderSummary' => true,
-    'showPromoBanner' => true,
+    'showPromoBanner' => false,
     'showFooterAction' => true,
     'showMailingListSignup' => true,
     'outerWrapperClass' => 'px-6 pt-16 pb-20 lg:px-8',

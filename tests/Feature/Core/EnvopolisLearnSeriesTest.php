@@ -23,6 +23,7 @@ test('envopolis works on my machine renders with shared series framing', functio
     $response->assertSee('A short story about the most common config mistake in software teams', false);
     $response->assertSee('works on my machine,environment variables,config drift,developer workflows,secrets management,deployment risk', false);
     $response->assertSee('envopolis-ep01-panel-06-lesson-card-alt.jpg', false);
+    $response->assertDontSeeText('Vanta integration is live');
 });
 
 test('learn sitemap includes envopolis series pages', function () {

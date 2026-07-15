@@ -1,7 +1,7 @@
 <?php
 
-test('homepage renders the desktop-first concept without the promo banner', function () {
-    $response = $this->get(route('home'));
+test('legacy v2 homepage renders the desktop-first concept without the promo banner', function () {
+    $response = $this->get(route('home.v2'));
     $content = $response->getContent();
     $viewSource = file_get_contents(resource_path('views/site/home.blade.php'));
 
@@ -139,8 +139,8 @@ test('homepage renders the desktop-first concept without the promo banner', func
     expect(substr_count($content, 'Stop babysitting .env files'))->toBe(1);
 });
 
-test('homepage exposes the new seo metadata and faq schema', function () {
-    $response = $this->get(route('home'));
+test('legacy v2 homepage exposes its seo metadata and faq schema', function () {
+    $response = $this->get(route('home.v2'));
 
     $response->assertSuccessful();
     $response->assertSee('<title>Desktop-First Environment Management | Ghostable</title>', false);
@@ -152,6 +152,24 @@ test('homepage exposes the new seo metadata and faq schema', function () {
     $response->assertSee('FAQPage', false);
     $response->assertSee('IntersectionObserver', false);
     $response->assertSeeText('Do I need the CLI?');
+});
+
+test('homepage presents the serverless git-controlled v3 product with download as the primary action', function () {
+    $response = $this->get(route('home'));
+
+    $response->assertSuccessful();
+    $response->assertViewIs('site.home-v3');
+    $response->assertSeeText('Ghostable V3 · Serverless by default');
+    $response->assertSeeText('Environment configuration, controlled in Git.');
+    $response->assertSeeText('Git-controlled');
+    $response->assertSeeText('Serverless by default');
+    $response->assertSeeText('Private by construction');
+    $response->assertSeeText('Download');
+    $response->assertSee(route('download'), false);
+    $response->assertSee(route('pricing'), false);
+    $response->assertSee('environment-variables-main-dark.png', false);
+    $response->assertDontSeeText('Sign up');
+    $response->assertDontSeeText('Vanta integration is live');
 });
 
 test('homepage footer offers license purchase and management', function () {

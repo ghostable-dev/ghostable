@@ -16,6 +16,11 @@ return [
         'prune_after_days' => (int) env('DESKTOP_UPDATE_TRACKING_PRUNE_AFTER_DAYS', 90),
     ],
 
+    'downloads' => [
+        'windows' => env('DESKTOP_DOWNLOAD_WINDOWS_URL'),
+        'linux' => env('DESKTOP_DOWNLOAD_LINUX_URL'),
+    ],
+
     'channels' => [
         'stable' => [
             'version' => env('DESKTOP_UPDATE_STABLE_VERSION'),

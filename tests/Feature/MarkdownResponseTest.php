@@ -8,9 +8,13 @@ it('serves the pricing page as markdown to ai agents without guest chrome', func
     $response->assertSuccessful();
     $response->assertHeader('Content-Type', 'text/markdown; charset=UTF-8');
     $response->assertHeader('X-Robots-Tag', 'noindex');
-    $response->assertSeeText('Pricing that scales with you');
-    $response->assertSeeText('Encrypted Backups');
-    $response->assertSeeText('Signed Audit Webhooks');
+    $response->assertSeeText('Own your environment workflow.');
+    $response->assertSeeText('Personal');
+    $response->assertSeeText('Team 5');
+    $response->assertSeeText('Team 10');
+    $response->assertSeeText('$49');
+    $response->assertSeeText('$249');
+    $response->assertSeeText('$499');
     $response->assertDontSeeText('Sign in');
     $response->assertDontSeeText('Resources');
     $response->assertDontSeeText('Terms');

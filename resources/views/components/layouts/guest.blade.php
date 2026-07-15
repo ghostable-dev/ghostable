@@ -3,7 +3,7 @@
     'withFooter' => true,
     'withGoogleTag' => true,
     'withXTag' => true,
-    'showPromoBanner' => true,
+    'showPromoBanner' => false,
     'bannerMessage' => 'Vanta integration is live',
     'bannerColors' => [
         'primary' => '#AC55FF',

@@ -13,6 +13,7 @@ class GeneratePagesSitemap extends Controller
     {
         return Sitemap::create()
             ->add($this->home())
+            ->add($this->download())
             ->add($this->pricing())
             ->add($this->licenses())
             ->add($this->trust())
@@ -41,6 +42,14 @@ class GeneratePagesSitemap extends Controller
     {
         return Url::create(route('pricing'))
             ->setLastModificationDate($this->modifiedOn(2026, 4, 9))
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(0.9);
+    }
+
+    private function download(): Url
+    {
+        return Url::create(route('download'))
+            ->setLastModificationDate($this->modifiedOn(2026, 7, 15))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.9);
     }
