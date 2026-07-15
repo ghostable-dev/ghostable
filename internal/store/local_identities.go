@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/manifest"
-	"github.com/ghostable-dev/beta/internal/security"
+	"github.com/ghostable-dev/ghostable/internal/manifest"
+	"github.com/ghostable-dev/ghostable/internal/security"
 )
 
 type LocalIdentityCleanupEntry struct {

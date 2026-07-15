@@ -12,10 +12,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/domain"
-	"github.com/ghostable-dev/beta/internal/store"
-	"github.com/ghostable-dev/beta/internal/validation"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/validation"
 )
 
 type envRunRequest struct {

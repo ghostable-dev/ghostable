@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/cli"
 )
 
 func (r *Runner) runDeploy(args []string) error {

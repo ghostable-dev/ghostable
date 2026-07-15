@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/ghostable-dev/beta/internal/store"
-	"github.com/ghostable-dev/beta/internal/userpresence"
+	"github.com/ghostable-dev/ghostable/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/userpresence"
 )
 
 const (

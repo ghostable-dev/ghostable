@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/domain"
 )
 
 type Rule struct {

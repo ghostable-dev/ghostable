@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/validation"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/validation"
 )
 
 func (r *Runner) runValidate(args []string) error {

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/dotenv"
+	"github.com/ghostable-dev/ghostable/internal/dotenv"
 )
 
 const (

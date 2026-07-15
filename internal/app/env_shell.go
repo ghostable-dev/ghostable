@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ghostable-dev/beta/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/cli"
 )
 
 var resolveEnvShellCommand = defaultEnvShellCommand

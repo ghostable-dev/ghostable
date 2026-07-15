@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/beta/internal/cli"
-	"github.com/ghostable-dev/beta/internal/domain"
-	hygienepolicy "github.com/ghostable-dev/beta/internal/hygiene"
-	"github.com/ghostable-dev/beta/internal/prompt"
-	"github.com/ghostable-dev/beta/internal/review"
-	"github.com/ghostable-dev/beta/internal/store"
+	"github.com/ghostable-dev/ghostable/internal/cli"
+	"github.com/ghostable-dev/ghostable/internal/domain"
+	hygienepolicy "github.com/ghostable-dev/ghostable/internal/hygiene"
+	"github.com/ghostable-dev/ghostable/internal/prompt"
+	"github.com/ghostable-dev/ghostable/internal/review"
+	"github.com/ghostable-dev/ghostable/internal/store"
 )
 
 const hygieneReportSchema = "ghostable.hygiene-report.v1"

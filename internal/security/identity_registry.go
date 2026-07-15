@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghostable-dev/beta/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/domain"
 )
 
 const identityRegistrySchema = "ghostable.identity-registry.v1"

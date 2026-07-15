@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghostable-dev/beta/internal/domain"
+	"github.com/ghostable-dev/ghostable/internal/domain"
 )
 
 func TestManifestScanSettingsRoundTrip(t *testing.T) {

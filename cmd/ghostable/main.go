@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/ghostable-dev/beta/internal/app"
+	"github.com/ghostable-dev/ghostable/internal/app"
 )
 
 func main() {
