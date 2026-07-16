@@ -37,8 +37,10 @@
     <link href="https://fonts.bunny.net/css?family=albert-sans:200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
-    
-    {{-- Appearance switching is intentionally disabled; server app is light-mode only. --}}
+
+    @if($withAppearance)
+        @fluxAppearance
+    @endif
 
     @if($withTracking && $withXTag && filled($xTagId))
         @include('components.x-tag.script', ['id' => $xTagId])

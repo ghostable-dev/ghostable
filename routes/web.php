@@ -129,6 +129,26 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
     Route::view('privacy', 'site.privacy')->name('privacy');
     Route::view('terms', 'site.terms')->name('terms');
 
+    Route::prefix('docs')
+        ->name('docs.')
+        ->group(function () {
+            Route::get('/', fn () => to_route('docs.cli.index'))->name('index');
+
+            Route::prefix('3.x')
+                ->name('cli.')
+                ->group(function () {
+                    Route::view('/', 'docs.cli.index')->name('index');
+                    Route::view('installation', 'docs.cli.installation')->name('installation');
+                });
+
+            Route::prefix('desktop')
+                ->name('desktop.')
+                ->group(function () {
+                    Route::view('/', 'docs.desktop.index')->name('index');
+                    Route::view('getting-started/installation', 'docs.desktop.installation')->name('installation');
+                });
+        });
+
     Route::prefix('integrations')
         ->name('integrations.')
         ->group(function () {
