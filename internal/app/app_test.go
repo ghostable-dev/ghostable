@@ -33,7 +33,7 @@ func TestRunInteractiveRootShowsHeadingBeforeStandardMenu(t *testing.T) {
 	if !(heading < instructions && instructions < menu) {
 		t.Fatalf("expected heading, instructions, then menu label, got:\n%s", text)
 	}
-	if !strings.Contains(text, accent(version)) {
+	if !strings.Contains(text, accent(currentVersion())) {
 		t.Fatalf("expected accented version in heading, got:\n%s", text)
 	}
 	if !strings.Contains(text, "2. status") {
@@ -41,6 +41,28 @@ func TestRunInteractiveRootShowsHeadingBeforeStandardMenu(t *testing.T) {
 	}
 	if !strings.Contains(text, "Show local project status") {
 		t.Fatalf("expected command descriptions, got:\n%s", text)
+	}
+}
+
+func TestResolveVersion(t *testing.T) {
+	tests := []struct {
+		name          string
+		injected      string
+		moduleVersion string
+		expected      string
+	}{
+		{name: "linker version wins", injected: "3.0.0", moduleVersion: "v3.0.0-rc.1", expected: "3.0.0"},
+		{name: "module version is fallback", injected: "dev", moduleVersion: "v3.0.0-rc.1", expected: "3.0.0-rc.1"},
+		{name: "local development stays dev", injected: "dev", moduleVersion: "(devel)", expected: "dev"},
+		{name: "missing build info stays dev", injected: "dev", moduleVersion: "", expected: "dev"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if actual := resolveVersion(test.injected, test.moduleVersion); actual != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, actual)
+			}
+		})
 	}
 }
 
