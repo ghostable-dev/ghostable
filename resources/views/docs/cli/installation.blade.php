@@ -1,35 +1,67 @@
-<x-layouts.docs
-    title="Install Ghostable CLI 3.x"
-    :canonical="route('docs.cli.installation')"
+<x-docs.page
+    route-name="docs.cli.installation"
+    title="Installation"
+    section="Getting Started"
+    description="Install Ghostable CLI 3.x on macOS, Linux, or Windows, then verify which binary your project is using."
     :on-this-page="[
-        ['label' => 'Installation guide', 'href' => '#installation-guide'],
-        ['label' => 'Verify the version', 'href' => '#verify-the-version'],
+        ['label' => 'macOS', 'href' => '#macos'],
+        ['label' => 'npm projects', 'href' => '#npm'],
+        ['label' => 'Linux and Windows', 'href' => '#release-archives'],
+        ['label' => 'Verify the installation', 'href' => '#verify'],
+        ['label' => 'Updating', 'href' => '#updating'],
     ]"
 >
-    <article>
-        <header class="border-b border-gray-200 pb-10 dark:border-white/10">
-            <p class="text-sm font-semibold text-brand-dark dark:text-brand-light">Get started</p>
-            <h1 class="mt-3 text-4xl font-semibold tracking-tight text-gray-950 sm:text-5xl dark:text-white">Installation</h1>
-            <p class="mt-5 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-                Install Ghostable CLI 3.x and verify the version used by your terminal or Ghostable Desktop.
-            </p>
-        </header>
+    <x-docs.section id="macos" title="macOS">
+        <p>The Homebrew cask installs the signed and notarized macOS release:</p>
+        <x-docs.terminal
+            title="Homebrew"
+            :commands="[
+                'brew tap ghostable-dev/ghostable',
+                'brew install --cask ghostable',
+            ]"
+        />
+        <p>The global binary is available as <code>ghostable</code> from any project directory.</p>
+    </x-docs.section>
 
-        <section id="installation-guide" class="scroll-mt-36 border-b border-gray-200 py-10 dark:border-white/10">
-            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">Installation guide</h2>
-            <p class="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                The complete Ghostable CLI 3.x installation instructions will live at this versioned URL.
-            </p>
-            <div class="mt-6 rounded-xl border border-gray-200 bg-gray-950 p-5 font-mono text-sm text-white dark:border-white/10">
-                <span class="text-white/50">$</span> ghostable --version
-            </div>
-        </section>
+    <x-docs.section id="npm" title="npm projects">
+        <p>
+            Install the CLI as a project dependency when you want every developer and CI job to use the version declared by the repository:
+        </p>
+        <x-docs.terminal title="npm" :commands="['npm install @ghostable/cli']" />
+        <p>
+            npm places the binary at <code>node_modules/.bin/ghostable</code>. npm scripts resolve that binary automatically; outside a script, use <code>npx ghostable</code> or invoke the binary directly.
+        </p>
+        <x-docs.callout type="info" title="Release candidates">
+            When a v3 release candidate is available, install it with <code>npm install @ghostable/cli@next</code>. Pin release candidates deliberately in shared repositories.
+        </x-docs.callout>
+    </x-docs.section>
 
-        <section id="verify-the-version" class="scroll-mt-36 py-10">
-            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">Verify the version</h2>
-            <p class="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                A 3.x release uses this documentation set. Ghostable Desktop will expose both its application version and bundled CLI version in its diagnostics.
-            </p>
-        </section>
-    </article>
-</x-layouts.docs>
+    <x-docs.section id="release-archives" title="Linux and Windows">
+        <p>
+            Ghostable publishes release archives for macOS, Linux, and Windows on both <code>amd64</code> and <code>arm64</code>. Download the archive matching your operating system and architecture from the <a href="https://github.com/ghostable-dev/ghostable/releases/latest">latest GitHub release</a>, extract the binary, and place it on <code>PATH</code>.
+        </p>
+        <p>
+            On Linux and other Unix systems, make the extracted file executable before moving it to a directory on <code>PATH</code>. On Windows, place <code>ghostable.exe</code> in a directory included in the user or system <code>PATH</code>.
+        </p>
+    </x-docs.section>
+
+    <x-docs.section id="verify" title="Verify the installation">
+        <x-docs.terminal title="Verify Ghostable" :commands="['ghostable --version', 'ghostable --help']" :output="['3.x.x']" />
+        <p>
+            If multiple copies are installed, confirm the executable resolved by your shell with <code>which ghostable</code> on macOS/Linux or <code>where ghostable</code> on Windows. A project-local npm installation may intentionally differ from a global installation.
+        </p>
+    </x-docs.section>
+
+    <x-docs.section id="updating" title="Updating" :border="false">
+        <x-docs.terminal
+            title="Update Ghostable"
+            :commands="[
+                '# Homebrew',
+                'brew upgrade --cask ghostable',
+                '# npm',
+                'npm install @ghostable/cli@latest',
+            ]"
+        />
+        <p>Commit npm lockfile changes so the team and CI resolve the same CLI release.</p>
+    </x-docs.section>
+</x-docs.page>

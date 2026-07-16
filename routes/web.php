@@ -139,6 +139,40 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
                 ->group(function () {
                     Route::view('/', 'docs.cli.index')->name('index');
                     Route::view('installation', 'docs.cli.installation')->name('installation');
+                    Route::view('getting-started/new-projects', 'docs.cli.new-projects')->name('new-projects');
+                    Route::view('getting-started/existing-projects', 'docs.cli.existing-projects')->name('existing-projects');
+                    Route::view('getting-started/team-onboarding', 'docs.cli.team-onboarding')->name('team-onboarding');
+
+                    Route::prefix('workflows')
+                        ->name('workflows.')
+                        ->group(function () {
+                            Route::view('projects', 'docs.cli.repository-storage')->name('projects');
+                            Route::view('environments', 'docs.cli.environments')->name('environments');
+                            Route::view('variable-promotions', 'docs.cli.variables')->name('variable-promotions');
+                            Route::view('devices', 'docs.cli.access-devices')->name('devices');
+                            Route::view('deploy-tokens', 'docs.cli.automation-credentials')->name('deploy-tokens');
+                            Route::view('daily-development', 'docs.cli.daily-workflow')->name('daily-development');
+                            Route::view('review-and-secret-scanning', 'docs.cli.review')->name('review');
+                            Route::view('hygiene-and-rotation', 'docs.cli.hygiene')->name('hygiene');
+                        });
+
+                    Route::prefix('automation-and-ci')
+                        ->name('automation.')
+                        ->group(function () {
+                            Route::view('continuous-integration', 'docs.cli.continuous-integration')->name('continuous-integration');
+                            Route::view('deployments', 'docs.cli.deployments')->name('deployments');
+                        });
+
+                    Route::prefix('reference')
+                        ->name('reference.')
+                        ->group(function () {
+                            Route::view('validation', 'docs.cli.validation')->name('validation');
+                            Route::view('commands', 'docs.cli.command-reference')->name('commands');
+                            Route::view('configuration', 'docs.cli.configuration')->name('configuration');
+                            Route::view('security', 'docs.cli.security')->name('security');
+                            Route::view('backups', 'docs.cli.backups')->name('backups');
+                            Route::view('agent-integration', 'docs.cli.agent-integration')->name('agents');
+                        });
                 });
 
             Route::prefix('desktop')

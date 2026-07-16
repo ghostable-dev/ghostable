@@ -1,50 +1,72 @@
-<x-layouts.docs
-    title="Ghostable CLI 3.x Documentation"
-    :canonical="route('docs.cli.index')"
+<x-docs.page
+    route-name="docs.cli.index"
+    title="Ghostable CLI 3.x"
+    section="Documentation"
+    description="Local-first environment management for teams that want encrypted, reviewable configuration without sending plaintext secrets to a hosted secrets service."
     :on-this-page="[
+        ['label' => 'What Ghostable does', 'href' => '#what-ghostable-does'],
+        ['label' => 'How it works', 'href' => '#how-it-works'],
+        ['label' => 'A typical workflow', 'href' => '#typical-workflow'],
         ['label' => 'CLI and Desktop', 'href' => '#cli-and-desktop'],
-        ['label' => 'Start with the CLI', 'href' => '#start-with-the-cli'],
+        ['label' => 'Where to begin', 'href' => '#where-to-begin'],
     ]"
 >
-    <article>
-        <header class="border-b border-gray-200 pb-10 dark:border-white/10">
-            <p class="text-sm font-semibold text-brand-dark dark:text-brand-light">Get started</p>
-            <h1 class="mt-3 text-4xl font-semibold tracking-tight text-gray-950 sm:text-5xl dark:text-white">Ghostable CLI 3.x</h1>
-            <p class="mt-5 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-                Versioned documentation for the CLI and the core behavior shared with Ghostable Desktop.
-            </p>
-        </header>
+    <x-docs.section id="what-ghostable-does" title="What Ghostable does">
+        <p>
+            Ghostable stores encrypted environment values and the signed records needed to manage them inside your project repository. The CLI creates environments, encrypts and decrypts values, validates configuration, reviews code for environment drift and hard-coded secrets, and prepares values for local processes or deployment providers.
+        </p>
+        <p>
+            There is no Ghostable login and no hosted Ghostable vault in the v3 architecture. Your repository carries the encrypted project state; each authorized device keeps its private identity outside the repository.
+        </p>
+        <x-docs.callout type="security" title="A precise zero-knowledge claim">
+            Ghostable encrypts plaintext values locally before writing repository-backed state, and Ghostable does not run a hosted service that receives those plaintext values. Local machines, CI runners, generated <code>.env</code> files, and deployment providers are separate trust boundaries.
+        </x-docs.callout>
+    </x-docs.section>
 
-        <section id="cli-and-desktop" class="scroll-mt-36 border-b border-gray-200 py-10 dark:border-white/10">
-            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">CLI and Desktop</h2>
-            <div class="mt-4 flex flex-col gap-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                <p>
-                    The CLI is Ghostable's core engine. It owns the versioned behavior for reading, validating, encrypting, and materializing environment configuration.
-                </p>
-                <p>
-                    Ghostable Desktop provides a macOS interface around that engine. Desktop-specific setup and interface guidance lives in the separate Desktop section.
-                </p>
-            </div>
-        </section>
+    <x-docs.section id="how-it-works" title="How it works">
+        <ol>
+            <li><strong>Initialize a repository.</strong> <code>ghostable setup</code> creates a project manifest, the first device identity, environment keys, policy, and signed activity state.</li>
+            <li><strong>Commit encrypted state.</strong> The <code>.ghostable/</code> directory is designed to travel through Git and code review. Plaintext <code>.env</code> files are not.</li>
+            <li><strong>Grant access by device.</strong> New team members create their own device identities and request a role for one or more environments.</li>
+            <li><strong>Work locally.</strong> Pull to a file only when necessary, or inject values directly into a command with <code>env run</code>.</li>
+            <li><strong>Review every change.</strong> Signed value history, validation, hygiene reports, and secret scanning make environment changes visible without disclosing secret contents.</li>
+        </ol>
+    </x-docs.section>
 
-        <section id="start-with-the-cli" class="scroll-mt-36 py-10">
-            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">Start with the CLI</h2>
-            <p class="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                Install Ghostable CLI 3.x, confirm the installed version, and then open your first Ghostable-enabled repository.
-            </p>
+    <x-docs.section id="typical-workflow" title="A typical workflow">
+        <p>A normal development loop is intentionally small:</p>
+        <x-docs.terminal
+            title="Project workflow"
+            :commands="[
+                'ghostable status',
+                'ghostable env diff --env default --file .env',
+                'ghostable env push --env default --file .env --reason &quot;Update local configuration&quot;',
+                'ghostable validate --env default',
+                'ghostable review',
+                'git add .ghostable && git commit -m &quot;Update encrypted environment&quot;',
+            ]"
+        />
+        <p>
+            Commands prompt for missing choices in an interactive terminal. Scripts, CI jobs, and coding agents should pass explicit flags and prefer <code>--json</code> output.
+        </p>
+    </x-docs.section>
 
-            <a
-                href="{{ route('docs.cli.installation') }}"
-                class="group mt-7 block rounded-xl border border-gray-200 bg-gray-50 p-6 transition hover:border-brand hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-brand dark:hover:bg-white/[0.07]"
-            >
-                <p class="text-sm font-semibold text-brand-dark dark:text-brand-light">Getting started</p>
-                <h3 class="mt-1 text-xl font-semibold text-gray-950 dark:text-white">Installation</h3>
-                <p class="mt-2 text-gray-600 dark:text-gray-300">Install Ghostable CLI 3.x and confirm it is ready to use.</p>
-                <span class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-white">
-                    Continue to installation
-                    <span aria-hidden="true" class="transition group-hover:translate-x-1">&rarr;</span>
-                </span>
-            </a>
-        </section>
-    </article>
-</x-layouts.docs>
+    <x-docs.section id="cli-and-desktop" title="CLI and Desktop">
+        <p>
+            The CLI is Ghostable's versioned engine and the source of truth for project behavior. Ghostable Desktop is a paid macOS interface that runs the CLI underneath, so encryption, repository formats, access rules, and command behavior remain consistent between both products.
+        </p>
+        <p>
+            Use these versioned 3.x docs for the shared engine. Use the <a href="{{ route('docs.desktop.index') }}">Desktop documentation</a> for installation, application diagnostics, and interface-specific guidance.
+        </p>
+    </x-docs.section>
+
+    <x-docs.section id="where-to-begin" title="Where to begin" :border="false">
+        <ul>
+            <li>Install the CLI using the <a href="{{ route('docs.cli.installation') }}">installation guide</a>.</li>
+            <li>Use <a href="{{ route('docs.cli.new-projects') }}">New Projects</a> when no Ghostable state exists yet.</li>
+            <li>Use <a href="{{ route('docs.cli.existing-projects') }}">Existing Projects</a> to adopt a repository that already has one or more <code>.env</code> files.</li>
+            <li>Read <a href="{{ route('docs.cli.team-onboarding') }}">Team Onboarding</a> before adding a second developer.</li>
+            <li>Review the <a href="{{ route('docs.cli.reference.security') }}">Security</a> page before using Ghostable for production credentials.</li>
+        </ul>
+    </x-docs.section>
+</x-docs.page>
