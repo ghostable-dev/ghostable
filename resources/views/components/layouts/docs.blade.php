@@ -11,10 +11,32 @@
     $navigationGroups = $isDesktopDocumentation
         ? [
             [
-                'label' => 'Desktop',
+                'label' => 'Getting Started',
                 'items' => [
                     ['label' => 'Overview', 'route' => 'docs.desktop.index'],
                     ['label' => 'Installation', 'route' => 'docs.desktop.installation'],
+                    ['label' => 'Projects & Setup', 'route' => 'docs.desktop.projects'],
+                    ['label' => 'Interface Tour', 'route' => 'docs.desktop.interface'],
+                ],
+            ],
+            [
+                'label' => 'Workflows',
+                'items' => [
+                    ['label' => 'Environments & Variables', 'route' => 'docs.desktop.workflows.environments'],
+                    ['label' => 'Local Environment Files', 'route' => 'docs.desktop.workflows.local-files'],
+                    ['label' => 'Validation & Review', 'route' => 'docs.desktop.workflows.validation-review'],
+                    ['label' => 'Activity', 'route' => 'docs.desktop.workflows.activity'],
+                    ['label' => 'Access & Automation', 'route' => 'docs.desktop.workflows.access'],
+                ],
+            ],
+            [
+                'label' => 'Reference',
+                'items' => [
+                    ['label' => 'Project Settings', 'route' => 'docs.desktop.reference.project-settings'],
+                    ['label' => 'Application Settings', 'route' => 'docs.desktop.reference.application-settings'],
+                    ['label' => 'Licensing & Updates', 'route' => 'docs.desktop.reference.licensing'],
+                    ['label' => 'Security & Storage', 'route' => 'docs.desktop.reference.security'],
+                    ['label' => 'Troubleshooting', 'route' => 'docs.desktop.reference.troubleshooting'],
                 ],
             ],
         ]
@@ -90,6 +112,18 @@
         ['label' => 'Agent integration', 'section' => 'Reference', 'route' => 'docs.cli.reference.agents', 'icon' => 'cpu-chip'],
         ['label' => 'Ghostable Desktop overview', 'section' => 'Desktop', 'route' => 'docs.desktop.index', 'icon' => 'computer-desktop'],
         ['label' => 'Installation', 'section' => 'Desktop', 'route' => 'docs.desktop.installation', 'icon' => 'arrow-down-tray'],
+        ['label' => 'Projects and setup', 'section' => 'Desktop', 'route' => 'docs.desktop.projects', 'icon' => 'folder-plus'],
+        ['label' => 'Interface tour', 'section' => 'Desktop', 'route' => 'docs.desktop.interface', 'icon' => 'window'],
+        ['label' => 'Environments and variables', 'section' => 'Desktop', 'route' => 'docs.desktop.workflows.environments', 'icon' => 'circle-stack'],
+        ['label' => 'Local environment files', 'section' => 'Desktop', 'route' => 'docs.desktop.workflows.local-files', 'icon' => 'document-text'],
+        ['label' => 'Validation and review', 'section' => 'Desktop', 'route' => 'docs.desktop.workflows.validation-review', 'icon' => 'shield-check'],
+        ['label' => 'Activity', 'section' => 'Desktop', 'route' => 'docs.desktop.workflows.activity', 'icon' => 'clock'],
+        ['label' => 'Access and automation', 'section' => 'Desktop', 'route' => 'docs.desktop.workflows.access', 'icon' => 'key'],
+        ['label' => 'Project settings', 'section' => 'Desktop', 'route' => 'docs.desktop.reference.project-settings', 'icon' => 'adjustments-horizontal'],
+        ['label' => 'Application settings', 'section' => 'Desktop', 'route' => 'docs.desktop.reference.application-settings', 'icon' => 'cog-6-tooth'],
+        ['label' => 'Licensing and updates', 'section' => 'Desktop', 'route' => 'docs.desktop.reference.licensing', 'icon' => 'credit-card'],
+        ['label' => 'Security and storage', 'section' => 'Desktop', 'route' => 'docs.desktop.reference.security', 'icon' => 'lock-closed'],
+        ['label' => 'Troubleshooting', 'section' => 'Desktop', 'route' => 'docs.desktop.reference.troubleshooting', 'icon' => 'wrench-screwdriver'],
     ];
     $socialLinks = array_values(array_filter([
         ['label' => 'GitHub', 'icon' => 'github', 'url' => config('contact.social.github')],

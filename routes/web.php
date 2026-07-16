@@ -180,6 +180,28 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
                 ->group(function () {
                     Route::view('/', 'docs.desktop.index')->name('index');
                     Route::view('getting-started/installation', 'docs.desktop.installation')->name('installation');
+                    Route::view('getting-started/projects-and-setup', 'docs.desktop.projects')->name('projects');
+                    Route::view('getting-started/interface', 'docs.desktop.interface')->name('interface');
+
+                    Route::prefix('workflows')
+                        ->name('workflows.')
+                        ->group(function () {
+                            Route::view('environments-and-variables', 'docs.desktop.environments')->name('environments');
+                            Route::view('local-environment-files', 'docs.desktop.local-files')->name('local-files');
+                            Route::view('validation-and-review', 'docs.desktop.validation-review')->name('validation-review');
+                            Route::view('activity', 'docs.desktop.activity')->name('activity');
+                            Route::view('access-and-automation', 'docs.desktop.access')->name('access');
+                        });
+
+                    Route::prefix('reference')
+                        ->name('reference.')
+                        ->group(function () {
+                            Route::view('project-settings', 'docs.desktop.project-settings')->name('project-settings');
+                            Route::view('application-settings', 'docs.desktop.application-settings')->name('application-settings');
+                            Route::view('licensing-and-updates', 'docs.desktop.licensing')->name('licensing');
+                            Route::view('security-and-storage', 'docs.desktop.security')->name('security');
+                            Route::view('troubleshooting', 'docs.desktop.troubleshooting')->name('troubleshooting');
+                        });
                 });
         });
 

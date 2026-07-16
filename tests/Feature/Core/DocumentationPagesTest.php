@@ -27,6 +27,18 @@ it('uses versioned CLI paths and unversioned Desktop paths', function (string $r
     'agent integration' => ['docs.cli.reference.agents', '/docs/3.x/reference/agent-integration'],
     'Desktop introduction' => ['docs.desktop.index', '/docs/desktop'],
     'Desktop installation' => ['docs.desktop.installation', '/docs/desktop/getting-started/installation'],
+    'Desktop projects' => ['docs.desktop.projects', '/docs/desktop/getting-started/projects-and-setup'],
+    'Desktop interface' => ['docs.desktop.interface', '/docs/desktop/getting-started/interface'],
+    'Desktop environments' => ['docs.desktop.workflows.environments', '/docs/desktop/workflows/environments-and-variables'],
+    'Desktop local files' => ['docs.desktop.workflows.local-files', '/docs/desktop/workflows/local-environment-files'],
+    'Desktop validation and review' => ['docs.desktop.workflows.validation-review', '/docs/desktop/workflows/validation-and-review'],
+    'Desktop activity' => ['docs.desktop.workflows.activity', '/docs/desktop/workflows/activity'],
+    'Desktop access' => ['docs.desktop.workflows.access', '/docs/desktop/workflows/access-and-automation'],
+    'Desktop project settings' => ['docs.desktop.reference.project-settings', '/docs/desktop/reference/project-settings'],
+    'Desktop application settings' => ['docs.desktop.reference.application-settings', '/docs/desktop/reference/application-settings'],
+    'Desktop licensing' => ['docs.desktop.reference.licensing', '/docs/desktop/reference/licensing-and-updates'],
+    'Desktop security' => ['docs.desktop.reference.security', '/docs/desktop/reference/security-and-storage'],
+    'Desktop troubleshooting' => ['docs.desktop.reference.troubleshooting', '/docs/desktop/reference/troubleshooting'],
 ]);
 
 it('redirects the documentation entry point to the current CLI docs', function () {
@@ -293,18 +305,77 @@ it('states the security posture without overclaiming', function () {
         ->assertSee('https://github.com/ghostable-dev/ghostable/blob/main/docs/security/threat-model.md', false);
 });
 
-it('serves the Desktop documentation foundation', function () {
-    $this->get(route('docs.desktop.index'))
-        ->assertSuccessful()
-        ->assertViewIs('docs.desktop.index')
-        ->assertSeeText('Documentation for the current Ghostable Desktop app')
-        ->assertSee(route('docs.desktop.installation'), false);
+it('groups and links the complete Desktop documentation', function () {
+    $response = $this->get(route('docs.desktop.index'));
 
-    $this->get(route('docs.desktop.installation'))
-        ->assertSuccessful()
-        ->assertViewIs('docs.desktop.installation')
-        ->assertSeeText('The installation guide for the current Ghostable Desktop app will live at this unversioned URL.');
+    $response->assertSuccessful();
+
+    foreach (['Getting Started', 'Workflows', 'Reference'] as $section) {
+        $response->assertSeeText($section);
+    }
+
+    foreach (desktopDocumentationPages() as [$routeName]) {
+        $response->assertSee('href="'.route($routeName).'"', false);
+    }
 });
+
+it('serves substantive source-backed Desktop documentation', function (string $routeName, string $view, string $text) {
+    $this->get(route($routeName))
+        ->assertSuccessful()
+        ->assertViewIs($view)
+        ->assertSeeText($text)
+        ->assertDontSeeText('will live at this unversioned URL');
+})->with([
+    'overview' => ['docs.desktop.index', 'docs.desktop.index', 'Desktop is unversioned documentation for the current paid client'],
+    'installation' => ['docs.desktop.installation', 'docs.desktop.installation', 'macOS 13 or newer'],
+    'projects' => ['docs.desktop.projects', 'docs.desktop.projects', 'The first device becomes owner'],
+    'interface' => ['docs.desktop.interface', 'docs.desktop.interface', 'every opened repository gets its own project window'],
+    'environments' => ['docs.desktop.workflows.environments', 'docs.desktop.environments', 'A shared environment is an encrypted'],
+    'local files' => ['docs.desktop.workflows.local-files', 'docs.desktop.local-files', 'A local .env file is plaintext'],
+    'validation and review' => ['docs.desktop.workflows.validation-review', 'docs.desktop.validation-review', 'Validation and Review differ'],
+    'activity' => ['docs.desktop.workflows.activity', 'docs.desktop.activity', 'A valid signature shows'],
+    'access' => ['docs.desktop.workflows.access', 'docs.desktop.access', 'Grantor and writer are intentionally separate'],
+    'project settings' => ['docs.desktop.reference.project-settings', 'docs.desktop.project-settings', 'Changing folders changes project scope'],
+    'application settings' => ['docs.desktop.reference.application-settings', 'docs.desktop.application-settings', 'Default device name'],
+    'licensing' => ['docs.desktop.reference.licensing', 'docs.desktop.licensing', 'one-time license'],
+    'security' => ['docs.desktop.reference.security', 'docs.desktop.security', 'does not operate a hosted service that receives those plaintext project secrets'],
+    'troubleshooting' => ['docs.desktop.reference.troubleshooting', 'docs.desktop.troubleshooting', 'Collect diagnostics first'],
+]);
+
+it('documents Desktop licensing boundaries and recovery', function () {
+    $this->get(route('docs.desktop.reference.licensing'))
+        ->assertSuccessful()
+        ->assertSeeText('Personal — $49')
+        ->assertSeeText('1 seat and up to 2 active device activations')
+        ->assertSeeText('Team 5 — $249')
+        ->assertSeeText('Team 10 — $499')
+        ->assertSeeText('The default entitlement window is seven days')
+        ->assertSeeText('renewal required')
+        ->assertSee(route('licenses.manage'), false);
+});
+
+it('renders generated light and dark Desktop screenshots', function (string $routeName, string $shotId) {
+    $response = $this->get(route($routeName));
+
+    $response->assertSuccessful();
+
+    foreach (['light', 'dark'] as $theme) {
+        $assetPath = "images/generated/screenshots/ghostable-desktop-v3/{$shotId}-{$theme}.png";
+
+        $response->assertSee(asset($assetPath), false);
+        expect(public_path($assetPath))->toBeFile();
+    }
+})->with([
+    'launcher' => ['docs.desktop.index', 'launcher-overview'],
+    'environment variables' => ['docs.desktop.workflows.environments', 'environment-variables'],
+    'variable detail' => ['docs.desktop.workflows.environments', 'variable-detail'],
+    'validation' => ['docs.desktop.workflows.validation-review', 'project-validation'],
+    'review' => ['docs.desktop.workflows.validation-review', 'project-review'],
+    'activity' => ['docs.desktop.workflows.activity', 'project-activity'],
+    'access' => ['docs.desktop.workflows.access', 'project-access'],
+    'project settings' => ['docs.desktop.reference.project-settings', 'project-settings'],
+    'license activation' => ['docs.desktop.reference.licensing', 'license-activation'],
+]);
 
 it('does not invent unsupported documentation versions', function () {
     $this->get('/docs/2.x')->assertNotFound();
@@ -339,5 +410,28 @@ function cliDocumentationPages(): array
         ['docs.cli.reference.security'],
         ['docs.cli.reference.backups'],
         ['docs.cli.reference.agents'],
+    ];
+}
+
+/**
+ * @return array<string, array{0: string}>
+ */
+function desktopDocumentationPages(): array
+{
+    return [
+        ['docs.desktop.index'],
+        ['docs.desktop.installation'],
+        ['docs.desktop.projects'],
+        ['docs.desktop.interface'],
+        ['docs.desktop.workflows.environments'],
+        ['docs.desktop.workflows.local-files'],
+        ['docs.desktop.workflows.validation-review'],
+        ['docs.desktop.workflows.activity'],
+        ['docs.desktop.workflows.access'],
+        ['docs.desktop.reference.project-settings'],
+        ['docs.desktop.reference.application-settings'],
+        ['docs.desktop.reference.licensing'],
+        ['docs.desktop.reference.security'],
+        ['docs.desktop.reference.troubleshooting'],
     ];
 }

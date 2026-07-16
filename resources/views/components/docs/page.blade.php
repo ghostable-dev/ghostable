@@ -4,10 +4,11 @@
     'section',
     'description',
     'onThisPage' => [],
+    'productName' => 'Ghostable CLI 3.x',
 ])
 
 @php
-    $documentTitle = $title === 'Ghostable CLI 3.x' ? $title : $title.' | Ghostable CLI 3.x';
+    $documentTitle = $title === $productName ? $title : $title.' | '.$productName;
 @endphp
 
 <x-layouts.docs
