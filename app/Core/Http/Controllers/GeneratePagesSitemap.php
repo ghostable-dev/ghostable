@@ -11,7 +11,7 @@ class GeneratePagesSitemap extends Controller
 {
     public function __invoke(): Response
     {
-        return Sitemap::create()
+        $sitemap = Sitemap::create()
             ->add($this->home())
             ->add($this->download())
             ->add($this->pricing())
@@ -26,8 +26,13 @@ class GeneratePagesSitemap extends Controller
             ->add($this->forgeIntegration())
             ->add($this->cloudIntegration())
             ->add($this->openclawIntegration())
-            ->add($this->vaporIntegration())
-            ->toResponse(request());
+            ->add($this->vaporIntegration());
+
+        foreach ($this->documentationRoutes() as $routeName) {
+            $sitemap->add($this->documentation($routeName));
+        }
+
+        return $sitemap->toResponse(request());
     }
 
     private function home(): Url
@@ -156,6 +161,59 @@ class GeneratePagesSitemap extends Controller
             ->setLastModificationDate($this->modifiedOn(2026, 3, 17))
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.7);
+    }
+
+    private function documentation(string $routeName): Url
+    {
+        return Url::create(route($routeName))
+            ->setLastModificationDate($this->modifiedOn(2026, 7, 16))
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+            ->setPriority(str_starts_with($routeName, 'docs.cli.') ? 0.8 : 0.7);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function documentationRoutes(): array
+    {
+        return [
+            'docs.cli.index',
+            'docs.cli.installation',
+            'docs.cli.new-projects',
+            'docs.cli.existing-projects',
+            'docs.cli.team-onboarding',
+            'docs.cli.workflows.projects',
+            'docs.cli.workflows.environments',
+            'docs.cli.workflows.variable-promotions',
+            'docs.cli.workflows.devices',
+            'docs.cli.workflows.deploy-tokens',
+            'docs.cli.workflows.daily-development',
+            'docs.cli.workflows.review',
+            'docs.cli.workflows.hygiene',
+            'docs.cli.automation.continuous-integration',
+            'docs.cli.automation.deployments',
+            'docs.cli.reference.validation',
+            'docs.cli.reference.commands',
+            'docs.cli.reference.configuration',
+            'docs.cli.reference.security',
+            'docs.cli.reference.backups',
+            'docs.cli.reference.agents',
+            'docs.cli.reference.troubleshooting',
+            'docs.desktop.index',
+            'docs.desktop.installation',
+            'docs.desktop.projects',
+            'docs.desktop.interface',
+            'docs.desktop.workflows.environments',
+            'docs.desktop.workflows.local-files',
+            'docs.desktop.workflows.validation-review',
+            'docs.desktop.workflows.activity',
+            'docs.desktop.workflows.access',
+            'docs.desktop.reference.project-settings',
+            'docs.desktop.reference.application-settings',
+            'docs.desktop.reference.licensing',
+            'docs.desktop.reference.security',
+            'docs.desktop.reference.troubleshooting',
+        ];
     }
 
     private function modifiedOn(int $year, int $month, int $day): Carbon

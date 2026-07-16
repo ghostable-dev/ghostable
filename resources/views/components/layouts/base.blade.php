@@ -9,7 +9,8 @@
     'googleTagId' => config('services.google_tag.id'),
     'xTagId' => config('services.x_tag.id'),
     'withAppearance' => false,
-    'canonical' => null
+    'canonical' => null,
+    'description' => null,
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -19,6 +20,10 @@
     <meta name="theme-color" content="{{ $themeColor }}">
     
     <title>{{ str()->of($title)->trim()->finish(' | Ghostable') }}</title>
+
+    @if(filled($description))
+        <x-seo-meta :title="$title" :description="$description" />
+    @endif
 
     @if($canonical)
     <link rel="canonical" href="{{ $canonical }}" />
@@ -37,8 +42,10 @@
     <link href="https://fonts.bunny.net/css?family=albert-sans:200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
-    
-    {{-- Appearance switching is intentionally disabled; server app is light-mode only. --}}
+
+    @if($withAppearance)
+        @fluxAppearance
+    @endif
 
     @if($withTracking && $withXTag && filled($xTagId))
         @include('components.x-tag.script', ['id' => $xTagId])

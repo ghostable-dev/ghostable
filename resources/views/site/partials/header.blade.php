@@ -27,7 +27,7 @@
             ];
 
             $links = [
-                ['label' => 'Docs', 'href' => 'https://docs.ghostable.dev', 'target' => '_blank', 'current' => false]
+                ['label' => 'Docs', 'href' => route('docs.index'), 'target' => '_self', 'current' => request()->route()->named('docs.*')]
             ];
         @endphp
 
