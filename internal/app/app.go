@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,6 +19,24 @@ import (
 )
 
 var version = "dev"
+
+func currentVersion() string {
+	moduleVersion := ""
+	if info, ok := debug.ReadBuildInfo(); ok {
+		moduleVersion = info.Main.Version
+	}
+	return resolveVersion(version, moduleVersion)
+}
+
+func resolveVersion(injected string, moduleVersion string) string {
+	if injected != "dev" {
+		return injected
+	}
+	if moduleVersion == "" || moduleVersion == "(devel)" {
+		return injected
+	}
+	return strings.TrimPrefix(moduleVersion, "v")
+}
 
 type Runner struct {
 	args        []string
@@ -100,7 +119,7 @@ func (r *Runner) Run() error {
 	case "-h", "--help", "help":
 		r.printRootHelp()
 	case "-v", "--version", "version":
-		fmt.Fprintln(r.out, version)
+		fmt.Fprintln(r.out, currentVersion())
 	case "setup":
 		return r.runSetup(args[2:])
 	case "status":
@@ -152,7 +171,7 @@ func unknownCommandError(command string) error {
 }
 
 func rootPromptHeading() string {
-	return fmt.Sprintf("Ghostable %s", accent(version))
+	return fmt.Sprintf("Ghostable %s", accent(currentVersion()))
 }
 
 func accent(value string) string {
@@ -281,7 +300,7 @@ func hasFlag(args []string, name string) bool {
 }
 
 func (r *Runner) printRootHelp() {
-	fmt.Fprintf(r.out, "Ghostable %s\n", version)
+	fmt.Fprintf(r.out, "Ghostable %s\n", currentVersion())
 	fmt.Fprintln(r.out)
 	fmt.Fprintln(r.out, "Manage server-less encrypted environment secrets with local storage and git.")
 	fmt.Fprintln(r.out)
