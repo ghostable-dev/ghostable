@@ -81,8 +81,72 @@ const initializeDocumentationOutline = () => {
     updateActiveSection();
 };
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeDocumentationOutline, { once: true });
-} else {
+const copyDocumentationText = async (content) => {
+    if (navigator.clipboard?.writeText) {
+        try {
+            await navigator.clipboard.writeText(content);
+
+            return true;
+        } catch {
+            // Fall through for browsers and embedded webviews without clipboard permission.
+        }
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = content;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.append(textarea);
+    textarea.select();
+
+    const copied = document.execCommand('copy');
+    textarea.remove();
+
+    return copied;
+};
+
+const initializeDocumentationCopyButtons = () => {
+    document.querySelectorAll('[data-docs-terminal-copy]').forEach((button) => {
+        if (button.hasAttribute('data-docs-terminal-copy-ready')) {
+            return;
+        }
+
+        button.setAttribute('data-docs-terminal-copy-ready', '');
+        button.addEventListener('click', async () => {
+            const terminal = button.closest('[data-docs-terminal]');
+            const label = button.querySelector('[data-docs-terminal-copy-label]');
+            const content = terminal?.dataset.copyContent;
+
+            if (! content || ! label) {
+                return;
+            }
+
+            if (! await copyDocumentationText(content)) {
+                label.textContent = 'Unable to copy';
+                button.setAttribute('aria-label', 'Unable to copy commands');
+
+                return;
+            }
+
+            label.textContent = 'Copied';
+            button.setAttribute('aria-label', 'Copied commands');
+
+            window.setTimeout(() => {
+                label.textContent = 'Copy';
+                button.setAttribute('aria-label', 'Copy commands');
+            }, 1500);
+        });
+    });
+};
+
+const initializeDocumentation = () => {
     initializeDocumentationOutline();
+    initializeDocumentationCopyButtons();
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeDocumentation, { once: true });
+} else {
+    initializeDocumentation();
 }

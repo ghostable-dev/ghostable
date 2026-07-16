@@ -172,6 +172,7 @@ Route::middleware(ProvideMarkdownResponse::class)->group(function () {
                             Route::view('security', 'docs.cli.security')->name('security');
                             Route::view('backups', 'docs.cli.backups')->name('backups');
                             Route::view('agent-integration', 'docs.cli.agent-integration')->name('agents');
+                            Route::view('troubleshooting', 'docs.cli.troubleshooting')->name('troubleshooting');
                         });
                 });
 

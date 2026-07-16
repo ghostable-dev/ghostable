@@ -25,6 +25,7 @@ it('uses versioned CLI paths and unversioned Desktop paths', function (string $r
     'security' => ['docs.cli.reference.security', '/docs/3.x/reference/security'],
     'backups' => ['docs.cli.reference.backups', '/docs/3.x/reference/backups'],
     'agent integration' => ['docs.cli.reference.agents', '/docs/3.x/reference/agent-integration'],
+    'CLI troubleshooting' => ['docs.cli.reference.troubleshooting', '/docs/3.x/reference/troubleshooting'],
     'Desktop introduction' => ['docs.desktop.index', '/docs/desktop'],
     'Desktop installation' => ['docs.desktop.installation', '/docs/desktop/getting-started/installation'],
     'Desktop projects' => ['docs.desktop.projects', '/docs/desktop/getting-started/projects-and-setup'],
@@ -63,12 +64,13 @@ it('uses dedicated documentation chrome throughout the docs', function (string $
     $response->assertSee('data-docs-sidebar-scroll', false);
     $response->assertSee('lg:grid-cols-[17.5rem_minmax(0,1fr)]', false);
     $response->assertSee('xl:grid-cols-[17.5rem_minmax(0,46rem)_13rem]', false);
-    $response->assertSee('sticky top-[7.5rem] h-[calc(100dvh-7.5rem)] w-[17.5rem] overflow-y-auto overscroll-contain', false);
+    $response->assertSee('sticky top-[7.5rem] w-[17.5rem] pt-12 pr-2 pb-16', false);
+    $response->assertDontSee('h-[calc(100dvh-7.5rem)]', false);
     $response->assertSee('rounded-lg px-3 py-1.5 text-sm transition', false);
     $response->assertDontSee('mb-8 inline-flex items-center gap-2 text-sm font-semibold', false);
     $response->assertSee('data-docs-on-this-page', false);
     $response->assertSee('data-docs-on-this-page-scroll', false);
-    $response->assertSee('sticky top-[7.5rem] h-[calc(100dvh-7.5rem)] w-52 overflow-y-auto overscroll-contain py-12', false);
+    $response->assertSee('sticky top-[7.5rem] w-52 pt-12 pb-16', false);
     $response->assertSee('data-docs-outline-heading class="flex items-center gap-2 text-sm font-semibold', false);
     $response->assertSee('data-docs-outline-icon="bars-3-bottom-left"', false);
     $response->assertSee('data-docs-outline-link', false);
@@ -104,6 +106,7 @@ it('uses dedicated documentation chrome throughout the docs', function (string $
     $response->assertSee('aria-label="Documentation"', false);
     $response->assertSee('aria-label="Preferred color scheme"', false);
     $response->assertSeeText('Documentation');
+    $response->assertSeeText('CLI 3.x');
     $response->assertSeeText('Desktop');
     $response->assertDontSee('>3.x</span>', false);
     $response->assertSeeText('Download');
@@ -137,7 +140,33 @@ it('uses a keyboard-ready Flux command palette for documentation search', functi
     $response->assertSee('data-docs-search-result', false);
     $response->assertSee('data-flux-command-item', false);
     $response->assertSee('data-url="'.route('docs.cli.installation').'"', false);
+    $response->assertSee('data-url="'.route('docs.cli.reference.validation').'#rules"', false);
+    $response->assertSeeText('GHOSTABLE_CI_TOKEN');
+    $response->assertSeeText('different_from');
     $response->assertSee('x-on:click="window.location.assign($el.dataset.url)"', false);
+});
+
+it('uses a product-specific primary documentation action', function () {
+    $this->get(route('docs.cli.index'))
+        ->assertSuccessful()
+        ->assertSee('data-docs-primary-action', false)
+        ->assertSee('href="'.route('docs.cli.installation').'"', false)
+        ->assertSeeText('Install CLI');
+
+    $this->get(route('docs.desktop.index'))
+        ->assertSuccessful()
+        ->assertSee('data-docs-primary-action', false)
+        ->assertSee('href="'.route('download').'"', false)
+        ->assertSeeText('Download');
+});
+
+it('describes concrete encryption boundaries without a zero-knowledge label', function () {
+    foreach (['docs.cli.index', 'docs.cli.reference.security'] as $routeName) {
+        $this->get(route($routeName))
+            ->assertSuccessful()
+            ->assertDontSeeText('zero-knowledge')
+            ->assertDontSeeText('zero knowledge');
+    }
 });
 
 it('highlights the current page in the mobile documentation drawer', function () {
@@ -233,11 +262,12 @@ it('serves substantive source-backed CLI documentation', function (string $route
     'continuous integration' => ['docs.cli.automation.continuous-integration', 'docs.cli.continuous-integration', 'Forked code is untrusted'],
     'deployments' => ['docs.cli.automation.deployments', 'docs.cli.deployments', 'The provider receives plaintext'],
     'validation' => ['docs.cli.reference.validation', 'docs.cli.validation', 'different_from'],
-    'command reference' => ['docs.cli.reference.commands', 'docs.cli.command-reference', 'complete map of the Ghostable CLI'],
+    'command reference' => ['docs.cli.reference.commands', 'docs.cli.command-reference', 'map of the Ghostable CLI'],
     'configuration' => ['docs.cli.reference.configuration', 'docs.cli.configuration', 'ghostable.project.v1'],
-    'security' => ['docs.cli.reference.security', 'docs.cli.security', 'has not completed an external security audit'],
+    'security' => ['docs.cli.reference.security', 'docs.cli.security', 'Security resources'],
     'backups' => ['docs.cli.reference.backups', 'docs.cli.backups', 'cannot decrypt values without at least one'],
     'agent integration' => ['docs.cli.reference.agents', 'docs.cli.agent-integration', 'recommended allowlist'],
+    'troubleshooting' => ['docs.cli.reference.troubleshooting', 'docs.cli.troubleshooting', 'Collect safe diagnostics'],
 ]);
 
 it('titles the installation page Installation', function () {
@@ -253,6 +283,9 @@ it('renders simple terminal cards with restrained shell syntax highlighting', fu
     $response->assertSuccessful();
     $response->assertSee('data-docs-terminal', false);
     $response->assertSee('data-docs-terminal-code', false);
+    $response->assertSee('data-docs-terminal-copy', false);
+    $response->assertSee('data-docs-terminal-copy-label', false);
+    $response->assertSee('aria-label="Copy commands"', false);
     $response->assertSee('rounded-none! bg-transparent! p-0! font-mono text-[1em]! font-normal!', false);
     $response->assertSee('text-slate-500', false);
     $response->assertSee('text-sky-300', false);
@@ -264,6 +297,26 @@ it('renders simple terminal cards with restrained shell syntax highlighting', fu
     $response->assertDontSee('shadow-xl', false);
     $response->assertSeeText('ghostable setup');
     $response->assertSeeText('--seed-dotenv');
+});
+
+it('renders CLI page navigation and source editing links', function () {
+    $response = $this->get(route('docs.cli.workflows.environments'));
+
+    $response->assertSuccessful();
+    $response->assertSee('data-docs-page-navigation', false);
+    $response->assertSee('data-docs-edit-link', false);
+    $response->assertSee('data-docs-previous-page', false);
+    $response->assertSee('data-docs-next-page', false);
+    $response->assertSee('https://github.com/ghostable-dev/ghostable/edit/main/resources/views/docs/cli/environments.blade.php', false);
+    $response->assertSee(route('docs.cli.workflows.projects'), false);
+    $response->assertSee(route('docs.cli.workflows.variable-promotions'), false);
+});
+
+it('publishes documentation descriptions as social and search metadata', function () {
+    $this->get(route('docs.cli.reference.troubleshooting'))
+        ->assertSuccessful()
+        ->assertSee('<meta name="description" content="Diagnose common project, identity, policy, user-presence, automation, provider, and Git-state failures without exposing plaintext values."/>', false)
+        ->assertSee('<meta property="og:title" content="Troubleshooting | Ghostable CLI 3.x"/>', false);
 });
 
 it('documents the complete public command families and advanced integration surfaces', function () {
@@ -294,11 +347,13 @@ it('documents the complete public command families and advanced integration surf
     }
 });
 
-it('states the security posture without overclaiming', function () {
+it('publishes security resources and concrete trust boundaries', function () {
     $this->get(route('docs.cli.reference.security'))
         ->assertSuccessful()
-        ->assertSeeText('has not completed an external security audit')
-        ->assertSeeText('does not operate a hosted service that receives those plaintext project secrets')
+        ->assertSeeText('Security resources')
+        ->assertDontSeeText('external security audit')
+        ->assertDontSeeText('formally audited')
+        ->assertSeeText('does not operate a hosted service that receives those values')
         ->assertSeeText('XChaCha20-Poly1305')
         ->assertSeeText('HKDF-SHA256')
         ->assertSeeText('security@ghostable.dev')
@@ -410,6 +465,7 @@ function cliDocumentationPages(): array
         ['docs.cli.reference.security'],
         ['docs.cli.reference.backups'],
         ['docs.cli.reference.agents'],
+        ['docs.cli.reference.troubleshooting'],
     ];
 }
 

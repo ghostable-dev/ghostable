@@ -11,6 +11,9 @@ test('pages sitemap is generated', function () {
     $response->assertSee(route('contact'));
     $response->assertSee(route('terms'));
     $response->assertSee(route('privacy'));
+    $response->assertSee(route('docs.cli.index'));
+    $response->assertSee(route('docs.cli.reference.troubleshooting'));
+    $response->assertSee(route('docs.desktop.index'));
 });
 
 test('pages sitemap exposes the manually managed pricing metadata for indexing', function () {

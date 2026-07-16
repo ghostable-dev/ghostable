@@ -62,13 +62,16 @@
         <x-docs.terminal
             title="Remove access"
             :commands="[
-                'ghostable access revoke --device-id &lt;device-id&gt; --env production',
+                'ghostable access revoke --device-id &lt;device-id&gt; --env all',
                 'ghostable access leave',
                 'ghostable access delete --device-id &lt;revoked-device-id&gt;',
             ]"
         />
         <p>
-            Revoke removes environment access. Leave removes the current machine's local project access. Delete removes an already-revoked public device record. The last owner cannot leave, preserving a path to project administration.
+            Revoke permanently marks the target identity as revoked, removes the selected grants, and automatically rotates keys for the affected environments. The <code>--env</code> option selects which grants and keys change; it does not make the identity reusable elsewhere. Use <code>--env all</code> for offboarding or compromise. A revoked device must join again with a new identity before it can receive access.
+        </p>
+        <p>
+            Leave removes the current machine's local project access. Delete removes an already-revoked public device record. Neither environment-key rotation nor record deletion erases secrets already seen by that device or rotates the credentials those values represent. The last owner cannot leave or be revoked, preserving a path to project administration.
         </p>
     </x-docs.section>
 

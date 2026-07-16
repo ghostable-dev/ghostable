@@ -5,6 +5,7 @@
     description="Materialize an exact local env file or sync decrypted values to Laravel Forge, Vapor, or Cloud with dry-run planning and scoped automation access."
     :on-this-page="[
         ['label' => 'Deployment safety', 'href' => '#safety'],
+        ['label' => 'Provider semantics', 'href' => '#provider-semantics'],
         ['label' => 'Local env files', 'href' => '#local'],
         ['label' => 'Laravel Forge', 'href' => '#forge'],
         ['label' => 'Laravel Vapor', 'href' => '#vapor'],
@@ -21,6 +22,18 @@
         <x-docs.callout type="security" title="The provider receives plaintext">
             Ghostable decrypts locally, then passes plaintext to the destination. Provider credentials, provider storage, deployment logs, temporary files, and the runner are outside Ghostable's repository-encryption boundary.
         </x-docs.callout>
+    </x-docs.section>
+
+    <x-docs.section id="provider-semantics" title="Provider semantics">
+        <x-docs.command-table :commands="[
+            ['command' => 'Dry run', 'description' => 'Builds a local plan from decrypted Ghostable state without invoking or querying the provider CLI. It cannot prove provider authentication, remote state, or a successful write.'],
+            ['command' => 'Forge and Vapor', 'description' => 'Pull the current remote env file, merge Ghostable values, and push it back. Remote keys absent from Ghostable are preserved; Ghostable does not prune them.'],
+            ['command' => 'Laravel Cloud', 'description' => 'Sets each selected key individually. Other remote keys are preserved, and no delete operation is performed.'],
+            ['command' => 'Temporary files', 'description' => 'Forge and Vapor use restrictive temporary env files scheduled for removal on success or error. A terminated process or host failure can still leave OS temporary storage behind.'],
+        ]" />
+        <p>
+            Before a real deployment, install and authenticate a trusted provider CLI outside the application repository. Confirm that its own list or authentication command works in the same shell or runner. A successful Ghostable dry run does not perform that provider preflight.
+        </p>
     </x-docs.section>
 
     <x-docs.section id="local" title="Local env files">
@@ -42,7 +55,7 @@
     </x-docs.section>
 
     <x-docs.section id="forge" title="Laravel Forge">
-        <p>Forge deployment requires the Laravel Forge CLI on <code>PATH</code> unless <code>--dry-run</code> is used:</p>
+        <p>Forge deployment requires an authenticated <a href="https://forge.laravel.com/docs/cli">Laravel Forge CLI</a> on <code>PATH</code> unless <code>--dry-run</code> is used:</p>
         <x-docs.terminal
             title="Deploy to Forge"
             :commands="[
@@ -56,7 +69,7 @@
     </x-docs.section>
 
     <x-docs.section id="vapor" title="Laravel Vapor">
-        <p>Vapor deployment requires the Vapor CLI on <code>PATH</code> unless dry-running:</p>
+        <p>Vapor deployment requires an authenticated Vapor CLI on <code>PATH</code> unless dry-running. Review Vapor's <a href="https://docs.vapor.build/projects/environments">environment-variable commands</a> before enabling the job:</p>
         <x-docs.terminal
             title="Deploy to Vapor"
             :commands="[
@@ -70,7 +83,7 @@
     </x-docs.section>
 
     <x-docs.section id="cloud" title="Laravel Cloud">
-        <p>Cloud deployment requires the Laravel Cloud CLI on <code>PATH</code> unless dry-running:</p>
+        <p>Cloud deployment requires an authenticated <a href="https://cloud.laravel.com/docs/api/cli">Laravel Cloud CLI</a> on <code>PATH</code> unless dry-running:</p>
         <x-docs.terminal
             title="Deploy to Laravel Cloud"
             :commands="[

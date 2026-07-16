@@ -9,7 +9,8 @@
     'googleTagId' => config('services.google_tag.id'),
     'xTagId' => config('services.x_tag.id'),
     'withAppearance' => false,
-    'canonical' => null
+    'canonical' => null,
+    'description' => null,
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -19,6 +20,10 @@
     <meta name="theme-color" content="{{ $themeColor }}">
     
     <title>{{ str()->of($title)->trim()->finish(' | Ghostable') }}</title>
+
+    @if(filled($description))
+        <x-seo-meta :title="$title" :description="$description" />
+    @endif
 
     @if($canonical)
     <link rel="canonical" href="{{ $canonical }}" />

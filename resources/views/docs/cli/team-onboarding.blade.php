@@ -47,6 +47,12 @@
         <p>
             Approval creates or updates signed policy and per-device environment grants. For a direct grant, an owner or grantor may use <code>ghostable access share --device-id &lt;device-id&gt; --env default --role writer</code> instead.
         </p>
+        <p>
+            The simplest review uses one pull request: the requester opens it, an authorized approver checks out or fetches that branch, adds the signed approval commit, and pushes it back to the same pull request. If branch permissions prevent that push, place the approval commit in a follow-up pull request and merge both before the requester attempts to decrypt values. Do not treat a request-only commit as completed access.
+        </p>
+        <x-docs.callout type="info" title="Git review and Ghostable authority are separate">
+            Ghostable verifies that the approving device is an owner or an environment grantor. It does not require that requester and approver are different people; use branch protection or repository review rules when a separate human approval is required.
+        </x-docs.callout>
     </x-docs.section>
 
     <x-docs.section id="verify" title="Verify access">
@@ -68,15 +74,19 @@
     </x-docs.section>
 
     <x-docs.section id="offboarding" title="Offboarding" :border="false">
-        <p>Revoke the device, commit the signed changes, then rotate affected environment keys:</p>
+        <p>For offboarding or a lost device, revoke the identity from every environment and commit all signed changes:</p>
         <x-docs.terminal
             title="Remove a device"
             :commands="[
                 'ghostable access revoke --device-id &lt;device-id&gt; --env all',
-                'ghostable hygiene rotate --env production --reason &quot;Team member offboarded&quot;',
-                'git add .ghostable && git commit -m &quot;Revoke device and rotate production key&quot;',
+                'git add .ghostable && git commit -m &quot;Revoke retired Ghostable device&quot;',
             ]"
         />
-        <p>A revoked device record can be deleted later with <code>ghostable access delete</code>. Ghostable prevents the last owner device from leaving the project.</p>
+        <p>
+            Revocation permanently marks that device identity as revoked and automatically rotates each affected environment key. The device cannot be granted access again; it must rejoin with a new identity. Although <code>--env</code> can name one environment, it controls which grants and environment keys are changed—not whether the identity is globally revoked—so use <code>all</code> for offboarding and compromise response.
+        </p>
+        <p>
+            Rotation blocks the revoked identity from decrypting future Ghostable values. It cannot erase plaintext the device already read or secrets recoverable from older Git history. If compromise is possible, also rotate the underlying database password, API key, or provider credential at its issuer. A revoked public device record can be deleted later with <code>ghostable access delete</code>. Ghostable prevents revoking or removing the last owner.
+        </p>
     </x-docs.section>
 </x-docs.page>

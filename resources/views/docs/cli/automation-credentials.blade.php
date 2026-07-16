@@ -27,7 +27,7 @@
 
     <x-docs.section id="store" title="Store the token">
         <p>
-            The command returns a credential token and writes its public device and grant records under <code>.ghostable/</code>. Store the token immediately in the CI or deployment platform's encrypted secret store as <code>GHOSTABLE_CI_TOKEN</code>, then commit the repository changes.
+            The command returns a credential token and writes its public device and grant records under <code>.ghostable/</code>. The token embeds that automation identity's private keys, is shown only once, cannot be recovered from the committed records, and has no built-in expiration. Store it immediately in the CI or deployment platform's encrypted secret store as <code>GHOSTABLE_CI_TOKEN</code>, then commit the repository changes.
         </p>
         <x-docs.callout type="security" title="The token is a secret">
             Never commit the token, place it in a deployment script, echo it in logs, or pass it as a CLI argument. Anyone holding it can exercise the grants encoded for that automation identity.
@@ -37,9 +37,17 @@
     <x-docs.section id="use" title="Use the credential">
         <p>Ghostable automatically loads the token from the environment:</p>
         <x-docs.terminal
-            title="Non-interactive access"
+            title="POSIX shells"
             :commands="[
                 'export GHOSTABLE_CI_TOKEN=&quot;&lt;secret supplied by platform&gt;&quot;',
+                'ghostable validate --env staging --json',
+                'ghostable deploy production --dry-run --json',
+            ]"
+        />
+        <x-docs.terminal
+            title="PowerShell"
+            :commands="[
+                '$env:GHOSTABLE_CI_TOKEN = &quot;&lt;secret supplied by platform&gt;&quot;',
                 'ghostable validate --env staging --json',
                 'ghostable deploy production --dry-run --json',
             ]"
@@ -61,6 +69,8 @@
     <x-docs.section id="revoke" title="Revoke and replace" :border="false">
         <p>Automation credentials appear as devices in access views. Revoke the credential's device ID and commit the signed policy change:</p>
         <x-docs.terminal title="Revoke automation" :commands="['ghostable access list --full', 'ghostable access revoke --device-id &lt;credential-device-id&gt; --env all']" />
-        <p>Delete the old platform secret, create a replacement credential when needed, and rotate environment keys after a suspected compromise.</p>
+        <p>
+            Revocation permanently disables that automation identity and automatically rotates affected environment keys. Delete the old platform secret, create and store a new credential, commit its public records, and update the job before removing the old secret. If compromise is possible, also rotate any database passwords, API keys, or provider credentials the automation identity could have decrypted; environment-key rotation only protects future Ghostable ciphertext.
+        </p>
     </x-docs.section>
 </x-docs.page>

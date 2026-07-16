@@ -18,9 +18,6 @@
         <p>
             There is no Ghostable login and no hosted Ghostable vault in the v3 architecture. Your repository carries the encrypted project state; each authorized device keeps its private identity outside the repository.
         </p>
-        <x-docs.callout type="security" title="A precise zero-knowledge claim">
-            Ghostable encrypts plaintext values locally before writing repository-backed state, and Ghostable does not run a hosted service that receives those plaintext values. Local machines, CI runners, generated <code>.env</code> files, and deployment providers are separate trust boundaries.
-        </x-docs.callout>
     </x-docs.section>
 
     <x-docs.section id="how-it-works" title="How it works">

@@ -31,9 +31,6 @@
         <p>
             npm places the binary at <code>node_modules/.bin/ghostable</code>. npm scripts resolve that binary automatically; outside a script, use <code>npx ghostable</code> or invoke the binary directly.
         </p>
-        <x-docs.callout type="info" title="Release candidates">
-            When a v3 release candidate is available, install it with <code>npm install @ghostable/cli@next</code>. Pin release candidates deliberately in shared repositories.
-        </x-docs.callout>
     </x-docs.section>
 
     <x-docs.section id="release-archives" title="Linux and Windows">

@@ -2,10 +2,9 @@
     route-name="docs.cli.reference.security"
     title="Security"
     section="Reference"
-    description="Ghostable's current security posture, cryptographic model, trust boundaries, protected production access, residual risks, and responsible disclosure process."
+    description="Ghostable's cryptographic model, trust boundaries, protected production access, residual risks, security resources, and responsible disclosure process."
     :on-this-page="[
-        ['label' => 'Security status', 'href' => '#status'],
-        ['label' => 'What zero-knowledge means', 'href' => '#zero-knowledge'],
+        ['label' => 'Security resources', 'href' => '#resources'],
         ['label' => 'Cryptographic model', 'href' => '#cryptography'],
         ['label' => 'Trust boundaries', 'href' => '#boundaries'],
         ['label' => 'Protected production access', 'href' => '#protected-access'],
@@ -14,21 +13,9 @@
         ['label' => 'Report a vulnerability', 'href' => '#report'],
     ]"
 >
-    <x-docs.section id="status" title="Security status">
-        <x-docs.callout type="warning" title="Ghostable has not completed an external security audit">
-            The current assurance evidence is repository-visible focused testing, stable cryptographic test vectors, and a public threat model. Do not represent Ghostable 3.x as formally audited, certified, or proven secure.
-        </x-docs.callout>
+    <x-docs.section id="resources" title="Security resources">
         <p>
-            Review the upstream <a href="https://github.com/ghostable-dev/ghostable/security/policy">security policy</a>, <a href="https://github.com/ghostable-dev/ghostable/blob/main/docs/security/threat-model.md">threat model</a>, and <a href="https://github.com/ghostable-dev/ghostable/blob/main/docs/security/test-vectors.md">test vectors</a> when evaluating Ghostable for a sensitive environment.
-        </p>
-    </x-docs.section>
-
-    <x-docs.section id="zero-knowledge" title="What zero-knowledge means">
-        <p>
-            In Ghostable, zero-knowledge has a narrow storage meaning: plaintext secret values are encrypted locally before Ghostable writes repository-backed value records, and Ghostable does not operate a hosted service that receives those plaintext project secrets.
-        </p>
-        <p>
-            It does not mean every component in a workflow is unable to see plaintext. Authorized local devices, process memory, generated env files, CI runners, shell or terminal tooling, and deployment providers may receive decrypted values when a user intentionally performs those operations.
+            Review the upstream <a href="https://github.com/ghostable-dev/ghostable/security/policy">security policy</a>, <a href="https://github.com/ghostable-dev/ghostable/blob/main/docs/security/threat-model.md">threat model</a>, and <a href="https://github.com/ghostable-dev/ghostable/blob/main/docs/security/test-vectors.md">test vectors</a> when evaluating Ghostable for a sensitive environment. They document the disclosure process, modeled threats and residual risks, and stable cryptographic behavior.
         </p>
     </x-docs.section>
 
@@ -44,6 +31,9 @@
     </x-docs.section>
 
     <x-docs.section id="boundaries" title="Trust boundaries">
+        <p>
+            Plaintext secret values are encrypted locally before Ghostable writes repository-backed value records. Ghostable does not operate a hosted service that receives those values. Authorized local devices, process memory, generated env files, CI runners, shell or terminal tooling, and deployment providers may receive decrypted values when a user intentionally performs those operations.
+        </p>
         <ul>
             <li><strong>Local machine:</strong> private device identities and decrypted process memory exist outside the repository boundary.</li>
             <li><strong>Repository:</strong> encrypted values and signed metadata are committed, but repository writers can propose malicious policy or grant changes.</li>
@@ -54,7 +44,10 @@
 
     <x-docs.section id="protected-access" title="Protected production access">
         <p>
-            Production-like local operations that write, print, inject, validate, or deploy decrypted values require user-presence verification. macOS uses LocalAuthentication with Touch ID biometric verification. Linux uses the local PAM-backed <code>sudo</code> confirmation, which may use fingerprint verification when configured. Windows requests Windows Hello or the machine's configured fallback.
+            Protected local operations that write, print, inject, validate, or deploy decrypted values require user-presence verification. Explicit production tokens are protected, and neutral names such as <code>preview</code>, <code>staging</code>, <code>qa</code>, and custom names are protected by default. Only names carrying a recognized local, development, test, or CI token use the unprotected fallback. See <a href="{{ route('docs.cli.workflows.environments') }}#types">environment types</a> for the exact classification.
+        </p>
+        <p>
+            macOS uses LocalAuthentication with Touch ID biometric verification. Linux uses the local PAM-backed <code>sudo</code> confirmation, which may use fingerprint verification when configured. Windows requests Windows Hello or the machine's configured fallback.
         </p>
         <p>
             A non-interactive local session cannot satisfy this prompt. CI and deployment jobs must use a scoped automation credential. Dry runs that neither write nor print decrypted values do not require confirmation.
@@ -83,7 +76,8 @@
             <li>Protect local identity stores, CI tokens, and provider credentials.</li>
             <li>Never commit plaintext env files or private identity records.</li>
             <li>Review device, policy, access, suppression, and encrypted-value changes like code.</li>
-            <li>Revoke lost or retired devices and rotate affected environment keys promptly.</li>
+            <li>Revoke lost or retired identities across all environments; Ghostable rotates the affected environment keys automatically.</li>
+            <li>Rotate the underlying database passwords, API keys, or provider credentials when an authorized device or token may have exposed their plaintext.</li>
             <li>Use <code>env clean</code> to reduce local plaintext after sensitive work.</li>
             <li>Keep the CLI updated and reassess the threat model when your workflow changes.</li>
         </ul>

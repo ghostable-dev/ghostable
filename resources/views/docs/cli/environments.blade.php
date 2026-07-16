@@ -8,6 +8,7 @@
         ['label' => 'Create and seed', 'href' => '#create'],
         ['label' => 'Push and sync', 'href' => '#push-sync'],
         ['label' => 'Pull values', 'href' => '#pull'],
+        ['label' => 'Supported dotenv syntax', 'href' => '#dotenv-syntax'],
         ['label' => 'Run without a file', 'href' => '#run'],
         ['label' => 'Compare and audit', 'href' => '#compare'],
         ['label' => 'Rename and delete', 'href' => '#lifecycle'],
@@ -18,8 +19,16 @@
             Every environment has a name and a type. Interactive creation offers <code>local</code>, <code>development</code>, <code>preview</code>, <code>staging</code>, <code>production</code>, or a custom type. Types document intent and participate in protected-environment detection.
         </p>
         <p>
-            Names or types containing <code>prod</code>, <code>production</code>, or <code>live</code> are treated as production-like and require local user confirmation before protected plaintext operations.
+            Protected-environment detection is intentionally conservative. A name or type containing the token <code>prod</code>, <code>production</code>, or <code>live</code> is protected. Otherwise, only environment names containing <code>default</code>, <code>local</code>, <code>dev</code>, <code>development</code>, <code>test</code>, <code>testing</code>, or <code>ci</code> are treated as local-development environments. Every other name is protected by default.
         </p>
+        <x-docs.command-table :commands="[
+            ['command' => 'default, local, dev, test, ci', 'description' => 'Not protected unless the environment type explicitly contains prod, production, or live.'],
+            ['command' => 'production, prod-us, live', 'description' => 'Protected because the name contains an explicit production token.'],
+            ['command' => 'preview, staging, qa, primary, custom names', 'description' => 'Protected by the conservative fallback, even when the type is development.'],
+        ]" />
+        <x-docs.callout type="info" title="Names determine the safe fallback">
+            A custom type such as <code>development</code> does not make a neutral environment name unprotected. Use an explicit local-development token in the environment name when that is the intended trust level.
+        </x-docs.callout>
         <x-docs.terminal title="List environments" :commands="['ghostable env list', 'ghostable env list --json']" />
     </x-docs.section>
 
@@ -63,6 +72,22 @@
         <p><code>--show-values</code> prints plaintext in command output. Avoid it in shared terminals, logs, CI, and agent sessions.</p>
     </x-docs.section>
 
+    <x-docs.section id="dotenv-syntax" title="Supported dotenv syntax">
+        <p>
+            Ghostable uses a line-oriented dotenv parser. It supports unquoted, single-quoted, and same-line double-quoted values; blank lines and comments; optional <code>export</code> prefixes; inline comments introduced by a space followed by <code>#</code>; and disabled entries written as <code># KEY=value</code>.
+        </p>
+        <x-docs.command-table :commands="[
+            ['command' => 'Comments and layout', 'description' => 'Merge operations preserve blank lines, comments, unrelated keys, and an existing export prefix.'],
+            ['command' => 'Duplicate keys', 'description' => 'The last occurrence wins when reading. Updating that key removes its earlier duplicate entries.'],
+            ['command' => 'Key normalization', 'description' => 'Imported keys are trimmed, uppercased, and normalized to letters, numbers, and underscores.'],
+            ['command' => 'Interpolation', 'description' => 'Values such as ${APP_URL} remain literal; Ghostable does not expand shell or dotenv references.'],
+            ['command' => 'Multiline values', 'description' => 'Quoted values must remain on one physical line. Use escaped newline sequences or another encoding for multiline data.'],
+        ]" />
+        <p>
+            Replacing a file renders a normalized snapshot and does not preserve its original comments or layout. Use merge behavior when those details matter, and inspect <code>env diff</code> before writing a file with unfamiliar syntax.
+        </p>
+    </x-docs.section>
+
     <x-docs.section id="run" title="Run without a file">
         <p>Inject decrypted values directly into a child process to reduce plaintext files on disk:</p>
         <x-docs.terminal
@@ -75,6 +100,9 @@
         />
         <p>
             The child inherits the current process environment by default. Pass <code>--no-inherit</code> to use only Ghostable values plus a minimal system environment, and <code>--strict</code> to validate injected values and fail when requested keys are missing.
+        </p>
+        <p>
+            <code>--mask-output</code> replaces exact injected values found in child stdout and stderr. It is best-effort log masking, not data-loss prevention: encoded, transformed, split, or file-written values are outside its protection.
         </p>
     </x-docs.section>
 

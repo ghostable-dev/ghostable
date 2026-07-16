@@ -2,12 +2,12 @@
     'title' => 'Documentation',
     'heading' => null,
     'canonical' => null,
+    'description' => null,
     'onThisPage' => [],
 ])
 
 @php
     $isDesktopDocumentation = request()->routeIs('docs.desktop.*');
-    $documentationLabel = $isDesktopDocumentation ? 'Desktop' : 'CLI 3.x';
     $navigationGroups = $isDesktopDocumentation
         ? [
             [
@@ -85,31 +85,33 @@
                     ['label' => 'Security', 'route' => 'docs.cli.reference.security'],
                     ['label' => 'Backups & Offline', 'route' => 'docs.cli.reference.backups'],
                     ['label' => 'Agent Integration', 'route' => 'docs.cli.reference.agents'],
+                    ['label' => 'Troubleshooting', 'route' => 'docs.cli.reference.troubleshooting'],
                 ],
             ],
         ];
     $searchPages = [
-        ['label' => 'CLI 3.x introduction', 'section' => 'Documentation', 'route' => 'docs.cli.index', 'icon' => 'command-line'],
-        ['label' => 'Installation', 'section' => 'Documentation', 'route' => 'docs.cli.installation', 'icon' => 'arrow-down-tray'],
-        ['label' => 'Start a new project', 'section' => 'Getting Started', 'route' => 'docs.cli.new-projects', 'icon' => 'sparkles'],
-        ['label' => 'Adopt an existing project', 'section' => 'Getting Started', 'route' => 'docs.cli.existing-projects', 'icon' => 'folder-plus'],
-        ['label' => 'Onboard a team member', 'section' => 'Getting Started', 'route' => 'docs.cli.team-onboarding', 'icon' => 'user-plus'],
-        ['label' => 'Repository and storage', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.projects', 'icon' => 'folder'],
-        ['label' => 'Environments', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.environments', 'icon' => 'circle-stack'],
-        ['label' => 'Variables and promotions', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.variable-promotions', 'icon' => 'arrows-right-left'],
-        ['label' => 'Access and devices', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.devices', 'icon' => 'computer-desktop'],
-        ['label' => 'Daily development workflow', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.daily-development', 'icon' => 'code-bracket'],
-        ['label' => 'Review and secret scanning', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.review', 'icon' => 'magnifying-glass'],
-        ['label' => 'Hygiene and rotation', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.hygiene', 'icon' => 'arrow-path-rounded-square'],
-        ['label' => 'Automation credentials', 'section' => 'Automation & CI', 'route' => 'docs.cli.workflows.deploy-tokens', 'icon' => 'key'],
-        ['label' => 'Continuous integration', 'section' => 'Automation & CI', 'route' => 'docs.cli.automation.continuous-integration', 'icon' => 'bolt'],
-        ['label' => 'Deployments', 'section' => 'Automation & CI', 'route' => 'docs.cli.automation.deployments', 'icon' => 'cloud-arrow-up'],
-        ['label' => 'Validation', 'section' => 'Reference', 'route' => 'docs.cli.reference.validation', 'icon' => 'check-circle'],
-        ['label' => 'Command reference', 'section' => 'Reference', 'route' => 'docs.cli.reference.commands', 'icon' => 'command-line'],
-        ['label' => 'Configuration', 'section' => 'Reference', 'route' => 'docs.cli.reference.configuration', 'icon' => 'cog-6-tooth'],
-        ['label' => 'Security', 'section' => 'Reference', 'route' => 'docs.cli.reference.security', 'icon' => 'shield-check'],
-        ['label' => 'Backups & Offline', 'section' => 'Reference', 'route' => 'docs.cli.reference.backups', 'icon' => 'archive-box'],
-        ['label' => 'Agent integration', 'section' => 'Reference', 'route' => 'docs.cli.reference.agents', 'icon' => 'cpu-chip'],
+        ['label' => 'CLI 3.x introduction', 'section' => 'Documentation', 'route' => 'docs.cli.index', 'icon' => 'command-line', 'keywords' => 'local first no login encrypted repository plaintext hosted service'],
+        ['label' => 'Installation', 'section' => 'Documentation', 'route' => 'docs.cli.installation', 'icon' => 'arrow-down-tray', 'keywords' => 'brew homebrew npm npx linux windows PATH version update'],
+        ['label' => 'Start a new project', 'section' => 'Getting Started', 'route' => 'docs.cli.new-projects', 'icon' => 'sparkles', 'keywords' => 'setup seed dotenv owner initialize'],
+        ['label' => 'Adopt an existing project', 'section' => 'Getting Started', 'route' => 'docs.cli.existing-projects', 'icon' => 'folder-plus', 'keywords' => 'existing env import authoritative source adopt'],
+        ['label' => 'Onboard a team member', 'section' => 'Getting Started', 'route' => 'docs.cli.team-onboarding', 'icon' => 'user-plus', 'keywords' => 'join request approve roles offboarding pull request'],
+        ['label' => 'Repository and storage', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.projects', 'icon' => 'folder', 'keywords' => '.ghostable git conflict merge worktree private identity metadata', 'anchor' => '#git-conflicts'],
+        ['label' => 'Environments', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.environments', 'icon' => 'circle-stack', 'keywords' => 'protected production preview staging push sync pull replace run mask-output', 'anchor' => '#types'],
+        ['label' => 'Variables and promotions', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.variable-promotions', 'icon' => 'arrows-right-left', 'keywords' => 'var promote copy context annotation key'],
+        ['label' => 'Access and devices', 'section' => 'Core Concepts', 'route' => 'docs.cli.workflows.devices', 'icon' => 'computer-desktop', 'keywords' => 'identity reader writer grantor owner revoke rotate leave delete'],
+        ['label' => 'Daily development workflow', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.daily-development', 'icon' => 'code-bracket', 'keywords' => 'pull diff validate review clean daily'],
+        ['label' => 'Review and secret scanning', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.review', 'icon' => 'magnifying-glass', 'keywords' => 'scan sarif github suppress secrets drift'],
+        ['label' => 'Hygiene and rotation', 'section' => 'Workflows', 'route' => 'docs.cli.workflows.hygiene', 'icon' => 'arrow-path-rounded-square', 'keywords' => 'rotation stale unused suppression environment key'],
+        ['label' => 'Automation credentials', 'section' => 'Automation & CI', 'route' => 'docs.cli.workflows.deploy-tokens', 'icon' => 'key', 'keywords' => 'GHOSTABLE_CI_TOKEN ci deploy credential powershell revoke replace', 'anchor' => '#use'],
+        ['label' => 'Continuous integration', 'section' => 'Automation & CI', 'route' => 'docs.cli.automation.continuous-integration', 'icon' => 'bolt', 'keywords' => 'GitHub Actions fork pull request JSON stdout stderr exit codes mask-output', 'anchor' => '#contract'],
+        ['label' => 'Deployments', 'section' => 'Automation & CI', 'route' => 'docs.cli.automation.deployments', 'icon' => 'cloud-arrow-up', 'keywords' => 'Forge Vapor Cloud provider CLI dry-run preserve remote keys temporary files'],
+        ['label' => 'Validation', 'section' => 'Reference', 'route' => 'docs.cli.reference.validation', 'icon' => 'check-circle', 'keywords' => 'schema required nullable regex min max different_from', 'anchor' => '#rules'],
+        ['label' => 'Command reference', 'section' => 'Reference', 'route' => 'docs.cli.reference.commands', 'icon' => 'command-line', 'keywords' => '--help --json NO_COLOR flags aliases exit code automation', 'anchor' => '#automation-contract'],
+        ['label' => 'Configuration', 'section' => 'Reference', 'route' => 'docs.cli.reference.configuration', 'icon' => 'cog-6-tooth', 'keywords' => 'ghostable.yaml activity mode auditEnvironments scan ignores deployTarget dotenv syntax', 'anchor' => '#fields'],
+        ['label' => 'Security', 'section' => 'Reference', 'route' => 'docs.cli.reference.security', 'icon' => 'shield-check', 'keywords' => 'cryptography XChaCha20 Poly1305 HKDF user presence threat model'],
+        ['label' => 'Backups & Offline', 'section' => 'Reference', 'route' => 'docs.cli.reference.backups', 'icon' => 'archive-box', 'keywords' => 'recovery offline restore clone key identity'],
+        ['label' => 'Agent integration', 'section' => 'Reference', 'route' => 'docs.cli.reference.agents', 'icon' => 'cpu-chip', 'keywords' => 'AGENTS.md capabilities allowlist coding agent'],
+        ['label' => 'Troubleshooting', 'section' => 'Reference', 'route' => 'docs.cli.reference.troubleshooting', 'icon' => 'wrench-screwdriver', 'keywords' => 'no project found revoked identity stale policy user presence invalid CI token provider CLI git conflict diagnostics'],
         ['label' => 'Ghostable Desktop overview', 'section' => 'Desktop', 'route' => 'docs.desktop.index', 'icon' => 'computer-desktop'],
         ['label' => 'Installation', 'section' => 'Desktop', 'route' => 'docs.desktop.installation', 'icon' => 'arrow-down-tray'],
         ['label' => 'Projects and setup', 'section' => 'Desktop', 'route' => 'docs.desktop.projects', 'icon' => 'folder-plus'],
@@ -135,6 +137,7 @@
 <x-layouts.base
     :title="$title"
     :canonical="$canonical"
+    :description="$description"
     :with-appearance="true"
     theme-color="#ffffff"
     body-classes="flex min-h-dvh flex-col bg-white text-gray-950 dark:bg-gray-950 dark:text-white"
@@ -174,12 +177,13 @@
                     </flux:modal.trigger>
 
                     <flux:button
-                        href="{{ route('download') }}"
+                        data-docs-primary-action
+                        href="{{ $isDesktopDocumentation ? route('download') : route('docs.cli.installation') }}"
                         variant="primary"
                         icon:trailing="arrow-down-tray"
                         class="hidden sm:inline-flex"
                     >
-                        Download
+                        {{ $isDesktopDocumentation ? 'Download' : 'Install CLI' }}
                     </flux:button>
 
                     <flux:dropdown x-data align="end">
@@ -209,7 +213,7 @@
                         'border-transparent text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white' => $isDesktopDocumentation,
                     ])
                 >
-                    Documentation
+                    CLI 3.x
                 </a>
                 <a
                     href="{{ route('docs.desktop.index') }}"
@@ -239,7 +243,7 @@
 
         <div class="mx-auto max-w-[86rem] px-5 sm:px-6 lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:gap-10 lg:px-8 xl:grid-cols-[17.5rem_minmax(0,46rem)_13rem] xl:gap-12">
             <aside data-docs-sidebar class="hidden lg:block">
-                <div data-docs-sidebar-scroll class="sticky top-[7.5rem] h-[calc(100dvh-7.5rem)] w-[17.5rem] overflow-y-auto overscroll-contain py-12 pr-2">
+                <div data-docs-sidebar-scroll class="sticky top-[7.5rem] w-[17.5rem] pt-12 pr-2 pb-16">
                     <nav aria-label="Documentation pages" class="flex flex-col gap-7">
                         @foreach($navigationGroups as $group)
                             <div class="flex flex-col gap-1">
@@ -269,7 +273,7 @@
             </div>
 
             <aside data-docs-on-this-page class="hidden xl:block">
-                <div data-docs-on-this-page-scroll class="sticky top-[7.5rem] h-[calc(100dvh-7.5rem)] w-52 overflow-y-auto overscroll-contain py-12">
+                <div data-docs-on-this-page-scroll class="sticky top-[7.5rem] w-52 pt-12 pb-16">
                     <p data-docs-outline-heading class="flex items-center gap-2 text-sm font-semibold text-gray-400 dark:text-gray-500">
                         <flux:icon.bars-3-bottom-left data-docs-outline-icon="bars-3-bottom-left" variant="mini" class="size-4" />
                         On this page
@@ -323,7 +327,7 @@
                         icon:trailing="chevron-down"
                         class="mt-6 h-12 w-full justify-between rounded-xl border border-gray-200 bg-white px-4 text-base font-medium dark:border-white/10 dark:bg-gray-900"
                     >
-                        {{ $isDesktopDocumentation ? 'Desktop' : 'Documentation' }}
+                        {{ $isDesktopDocumentation ? 'Desktop' : 'CLI 3.x' }}
                     </flux:button>
                     <flux:menu class="w-64">
                         <flux:menu.item
@@ -331,7 +335,7 @@
                             icon="command-line"
                             :current="! $isDesktopDocumentation"
                         >
-                            Documentation
+                            CLI 3.x
                         </flux:menu.item>
                         <flux:menu.item
                             href="{{ route('docs.desktop.index') }}"
@@ -454,13 +458,16 @@
                 @foreach($searchPages as $page)
                     <flux:command.item
                         data-docs-search-result
-                        data-url="{{ route($page['route']) }}"
+                        data-url="{{ route($page['route']).($page['anchor'] ?? '') }}"
                         icon="{{ $page['icon'] }}"
                         x-on:click="window.location.assign($el.dataset.url)"
                     >
                         <span class="flex flex-col">
                             <span>{{ $page['label'] }}</span>
                             <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ $page['section'] }}</span>
+                            @if(filled($page['keywords'] ?? null))
+                                <span aria-hidden="true" hidden>{{ $page['keywords'] }}</span>
+                            @endif
                         </span>
                     </flux:command.item>
                 @endforeach

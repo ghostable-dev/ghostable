@@ -8,6 +8,7 @@
         ['label' => 'Local identity', 'href' => '#local-identity'],
         ['label' => 'Metadata visibility', 'href' => '#metadata'],
         ['label' => 'Git workflow', 'href' => '#git-workflow'],
+        ['label' => 'Resolve Git conflicts', 'href' => '#git-conflicts'],
         ['label' => 'Multiple checkouts', 'href' => '#multiple-checkouts'],
     ]"
 >
@@ -70,9 +71,34 @@
         </p>
     </x-docs.section>
 
+    <x-docs.section id="git-conflicts" title="Resolve Git conflicts">
+        <p>
+            Treat each signed JSON record as an indivisible unit. Never splice signatures, policy fields, wrapped keys, ciphertext, or event content from both sides of a conflict: the resulting record will not verify, and mixing environment-key generations can make state unreadable.
+        </p>
+        <ol>
+            <li>Stop Ghostable writes and identify every unresolved path under <code>.ghostable/</code>.</li>
+            <li>Choose one complete, reviewed version of each conflicted record. For rotations, keep the policy, environment key metadata, grants, and values from the same authoritative generation.</li>
+            <li>Finish the merge or rebase, then rerun the discarded Ghostable operation from the resolved branch instead of recreating its JSON by hand.</li>
+            <li>Run status, validation, review, and a normal Git diff before committing the resolution.</li>
+        </ol>
+        <x-docs.terminal
+            title="Inspect and verify a resolution"
+            :commands="[
+                'git diff --name-only --diff-filter=U -- .ghostable',
+                'ghostable status',
+                'ghostable validate --env staging',
+                'ghostable review',
+                'git diff -- .ghostable',
+            ]"
+        />
+        <x-docs.callout type="warning" title="Abort when the authoritative generation is unclear">
+            If a conflict spans policy, access grants, environment keys, and values and you cannot identify one consistent generation, abort the merge or rebase and ask an active owner to replay the changes from a clean branch.
+        </x-docs.callout>
+    </x-docs.section>
+
     <x-docs.section id="multiple-checkouts" title="Multiple checkouts" :border="false">
         <p>
-            Ghostable associates a local project identity with the canonical repository root. If the same project ID is opened from another checkout or worktree, Ghostable may require <code>ghostable access join</code> for that checkout instead of silently reusing an identity registered elsewhere. This prevents an unrelated path from borrowing a project's local private keys.
+            Ghostable registers one local identity against the project's canonical repository root. Opening the same project ID from a different checkout or worktree will require <code>ghostable access join</code> for that path instead of silently reusing the identity registered elsewhere. Treat the worktree as a separate device request, or perform Ghostable writes from the registered checkout and use the other worktree for code-only changes.
         </p>
     </x-docs.section>
 </x-docs.page>

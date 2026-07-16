@@ -6,5 +6,6 @@ test('sitemap index is generated', function () {
     $response->assertOk();
     $response->assertSee('sitemap-blog.xml');
     $response->assertSee('sitemap-pages.xml');
-    $response->assertSee('https://docs.ghostable.dev/sitemap.xml');
+    $response->assertSee('sitemap-learn.xml');
+    $response->assertDontSee('https://docs.ghostable.dev/sitemap.xml');
 });

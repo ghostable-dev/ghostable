@@ -2,7 +2,7 @@
     route-name="docs.cli.reference.commands"
     title="Command Reference"
     section="Reference"
-    description="A complete map of the Ghostable CLI 3.x command surface, including human workflows, automation output, aliases, and advanced integration commands."
+    description="A map of the Ghostable CLI 3.x command surface, including human workflows, automation output, aliases, and advanced integration commands."
     :on-this-page="[
         ['label' => 'Top-level commands', 'href' => '#top-level'],
         ['label' => 'Environment commands', 'href' => '#environment'],
@@ -11,6 +11,7 @@
         ['label' => 'Validation and review', 'href' => '#quality'],
         ['label' => 'Hygiene and deployment', 'href' => '#operations'],
         ['label' => 'Agent and advanced commands', 'href' => '#advanced'],
+        ['label' => 'Automation contract', 'href' => '#automation-contract'],
         ['label' => 'Automation conventions', 'href' => '#conventions'],
     ]"
 >
@@ -33,6 +34,7 @@
             ['command' => 'ghostable agent', 'description' => 'Emit agent guidance and the recommended safe capability list.'],
         ]" />
         <x-docs.terminal title="Command help" :commands="['ghostable --help', 'ghostable env --help', 'ghostable env pull --help']" />
+        <p>The installed command's <code>--help</code> output is authoritative for flags and formats in that release. This page maps the stable command families instead of duplicating every flag.</p>
     </x-docs.section>
 
     <x-docs.section id="environment" title="Environment commands">
@@ -84,7 +86,7 @@
             ['command' => 'access grants', 'description' => 'Advanced list of environment grant records.'],
             ['command' => 'access matrix', 'description' => 'Advanced role matrix by device and environment.'],
             ['command' => 'access create', 'description' => 'Create a scoped ci, deploy, or access automation credential.'],
-            ['command' => 'access revoke', 'description' => 'Remove a device or automation identity from an environment or all.'],
+            ['command' => 'access revoke', 'description' => 'Permanently revoke an identity; --env controls which grants are removed and which environment keys rotate automatically.'],
             ['command' => 'access leave', 'description' => 'Remove this machine\'s local access; the last owner cannot leave.'],
             ['command' => 'access cleanup', 'description' => 'Preview or remove orphaned local identities.'],
             ['command' => 'access delete', 'description' => 'Delete an already-revoked public device record.'],
@@ -128,6 +130,31 @@
             ['command' => 'setup --agent-instructions', 'description' => 'Initialize the project and add agent guidance in one workflow.'],
         ]" />
         <p>Commands omitted from the standard interactive menus are advanced integration surfaces. Prefer the documented primary workflow unless Desktop or another controlled tool requires them.</p>
+    </x-docs.section>
+
+    <x-docs.section id="automation-contract" title="Automation contract">
+        <x-docs.command-table :commands="[
+            ['command' => '--json', 'description' => 'Available only on commands that advertise it in --help. Writes one machine-readable result to stdout.'],
+            ['command' => '--format github', 'description' => 'Review-only workflow annotations suitable for GitHub Actions logs.'],
+            ['command' => '--sarif', 'description' => 'Hygiene-report output for code-scanning systems. Do not combine it with --json.'],
+            ['command' => 'stderr', 'description' => 'Receives usage, verification, runtime, and final failure messages. Keep it separate from structured stdout.'],
+            ['command' => 'Exit 0 / 1 / 130', 'description' => 'Success or passed checks / usage, runtime, verification, or validate, review, and scan finding failure / canceled prompt. Hygiene reports findings without failing by default; env run preserves a child failure code.'],
+        ]" />
+        <p>A failed validation still emits a complete result on stdout before exiting non-zero:</p>
+        <pre class="overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-5 font-mono text-sm leading-7 text-gray-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300"><code>{
+  "environment": "staging",
+  "passed": false,
+  "errors": [
+    {
+      "key": "APP_URL",
+      "rule": "url",
+      "message": "must be a valid URL"
+    }
+  ]
+}</code></pre>
+        <p>
+            Pin the CLI version used by an integration and ignore unknown JSON fields so additive output does not break it. Structured output is not automatically safe to publish: <code>access create --json</code> intentionally includes the newly created credential token, and flags that explicitly reveal values remain sensitive.
+        </p>
     </x-docs.section>
 
     <x-docs.section id="conventions" title="Automation conventions" :border="false">

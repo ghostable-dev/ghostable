@@ -37,7 +37,7 @@ SESSION_LIFETIME:
   - integer
   - min:1
   - max:1440</code></pre>
-        <p>Each top-level key maps to an ordered list of rules. Rules with arguments use <code>name:argument</code>.</p>
+        <p>Each top-level key maps to a list of rules. Rules with arguments use <code>name:argument</code>. The presence of <code>nullable</code> skips other rules for a missing or empty value regardless of where it appears in the list; <code>required</code> still wins when both are present.</p>
     </x-docs.section>
 
     <x-docs.section id="rules" title="Supported rules">
@@ -49,11 +49,22 @@ SESSION_LIFETIME:
             ['command' => 'boolean', 'description' => 'Accepts true, false, 1, 0, yes, or no, case-insensitively.'],
             ['command' => 'email / url', 'description' => 'Requires a valid email address or absolute URL.'],
             ['command' => 'starts_with / ends_with', 'description' => 'Requires the declared prefix or suffix.'],
-            ['command' => 'regex', 'description' => 'Requires a match against the supplied regular expression.'],
+            ['command' => 'regex', 'description' => 'Requires a match against a Go RE2-compatible expression. Use the schema command to avoid hand-escaping YAML.'],
             ['command' => 'in', 'description' => 'Requires one of a comma-separated set of exact values.'],
-            ['command' => 'min / max', 'description' => 'Compares numeric values numerically and other values by character length.'],
-            ['command' => 'different_from', 'description' => 'Requires this key to differ from the same key in another environment.'],
+            ['command' => 'min / max', 'description' => 'Compares parseable numeric values numerically and other values by UTF-8 byte length.'],
+            ['command' => 'different_from', 'description' => 'Compares the same key against stored values in another environment. It passes when that environment has no matching key.'],
         ]" />
+        <pre class="overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-5 font-mono text-sm leading-7 text-gray-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300"><code>REGION:
+  - required
+  - 'regex:^[A-Z]{2}$'
+
+API_KEY:
+  - required
+  - min:32
+  - different_from:staging</code></pre>
+        <p>
+            In this example, <code>REGION=US</code> passes while <code>REGION=us</code> fails. <code>API_KEY</code> must be at least 32 bytes and must not equal the stored <code>API_KEY</code> in staging.
+        </p>
     </x-docs.section>
 
     <x-docs.section id="environment-rules" title="Environment-specific rules">
@@ -95,6 +106,9 @@ APP_DEBUG:
         />
         <p>
             Without <code>--file</code>, validation reads stored encrypted values. With <code>--file</code>, it validates that local file against the selected environment's merged rules. A warning is emitted when no schema rules exist.
+        </p>
+        <p>
+            A <code>different_from</code> rule still reads the referenced environment even during file validation. If that environment is protected, the local device must satisfy user-presence verification; automation needs a credential with reader access to both environments.
         </p>
     </x-docs.section>
 </x-docs.page>
