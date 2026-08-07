@@ -645,6 +645,9 @@ func TestRunAccessRequestsCreateListAndApprove(t *testing.T) {
 	if len(pendingPayload.Valid) != 0 {
 		t.Fatalf("expected approved request to be hidden from pending list, got %#v", pendingPayload)
 	}
+	if len(pendingPayload.Invalid) != 0 {
+		t.Fatalf("expected approved request to remain valid, got %#v", pendingPayload)
+	}
 }
 
 func TestRunAccessRequestsListCanSelectAndApprove(t *testing.T) {

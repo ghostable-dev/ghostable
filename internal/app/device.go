@@ -738,7 +738,13 @@ func (r *Runner) runDeviceRequestsList(args []string) error {
 	if _, err := cli.Parse(fs, args, cli.BoolFlags("all", "json")); err != nil {
 		return err
 	}
-	repo, err := store.OpenProject(".")
+	repo, err := r.openRepo()
+	if err != nil {
+		if !isMissingLocalIdentityError(err) {
+			return err
+		}
+		repo, err = store.OpenProject(".")
+	}
 	if err != nil {
 		return err
 	}
