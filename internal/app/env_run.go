@@ -575,12 +575,14 @@ func environmentRunValues(variables map[string]domain.Variable, only []string) (
 	return values, missing
 }
 
+const lerdPassthroughEnv = "LERD_PASSTHROUGH_ENV"
+
 func commandEnvironment(inherit bool, values map[string]string) []string {
 	env := map[string]string{}
 	if inherit {
 		for _, entry := range os.Environ() {
 			key, value, ok := strings.Cut(entry, "=")
-			if ok {
+			if ok && !isLerdPassthroughEnv(key) {
 				env[key] = value
 			}
 		}
@@ -591,9 +593,19 @@ func commandEnvironment(inherit bool, values map[string]string) []string {
 			}
 		}
 	}
+	injectedKeys := make([]string, 0, len(values))
 	for key, value := range values {
+		if isLerdPassthroughEnv(key) {
+			continue
+		}
 		env[key] = value
+		injectedKeys = append(injectedKeys, key)
 	}
+	// Describe only this invocation's selected values, including empty values.
+	// Replace inherited or stored lists so they cannot broaden --only's scope.
+	// Emit metadata for every child so wrappers and env shell also work with Lerd.
+	sort.Strings(injectedKeys)
+	env[lerdPassthroughEnv] = strings.Join(injectedKeys, ",")
 
 	keys := make([]string, 0, len(env))
 	for key := range env {
@@ -606,6 +618,10 @@ func commandEnvironment(inherit bool, values map[string]string) []string {
 		result = append(result, key+"="+env[key])
 	}
 	return result
+}
+
+func isLerdPassthroughEnv(key string) bool {
+	return key == lerdPassthroughEnv || (runtime.GOOS == "windows" && strings.EqualFold(key, lerdPassthroughEnv))
 }
 
 func minimalEnvironmentKeys() []string {

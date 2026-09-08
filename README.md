@@ -138,6 +138,39 @@ Automation and agents should pass flags, use `--seed-dotenv` or
 - `agent init|instructions|capabilities` emits safe instructions and a
   recommended read-only/dry-run command allowlist for coding agents.
 
+## Running Lerd commands
+
+Run a Lerd command with a decrypted Ghostable environment without first writing
+a project `.env` file:
+
+```sh
+ghostable env run --env local -- lerd php artisan migrate
+ghostable env run --env local --only APP_KEY,DB_HOST,DB_PASSWORD -- lerd php artisan migrate
+```
+
+This requires a Lerd version containing
+[the external environment passthrough contract](https://github.com/lerd-env/lerd/pull/1676).
+Older versions of Lerd will not forward these values into the container.
+
+`env run` and `env shell` automatically set `LERD_PASSTHROUGH_ENV` in the child
+environment to a sorted, comma-separated list of the Ghostable keys selected
+for that invocation. The list contains names only, includes keys whose values
+are explicitly empty, and respects `--only` and `--no-inherit`. It is generated
+for every child command, so Lerd can also be launched through a script or from
+a Ghostable shell.
+
+The generated list replaces any inherited or stored `LERD_PASSTHROUGH_ENV`
+value, excludes that control variable itself, and is empty when no application
+keys are selected. Ordinary inherited shell variables are not added to the
+list. Lerd still merges any explicitly configured `env_passthrough` entries
+from the site's `.lerd.yaml` and applies its own deny list for container-owned
+variables such as `PATH`, `HOME`, `COMPOSER_HOME`, `LD_*`, and `LERD_*`.
+
+Lerd forwards allowed names to Podman as `--env NAME`, keeping secret values
+out of the generated arguments and environment files. This covers commands
+invoked through Lerd; it does not configure PHP-FPM web requests or Lerd-managed
+background workers.
+
 ## Hygiene
 
 `ghostable hygiene report` checks stored variables and environment metadata for
