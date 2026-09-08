@@ -174,7 +174,11 @@ func TestRunEnvRunInjectsValuesAndInheritsByDefault(t *testing.T) {
 	}
 
 	text := output.String()
-	for _, expected := range []string{"APP_NAME=Ghostable", "SHELL_ONLY=from-shell"} {
+	for _, expected := range []string{
+		"APP_NAME=Ghostable",
+		"SHELL_ONLY=from-shell",
+		"LERD_PASSTHROUGH_ENV=APP_NAME,GHOSTABLE_ENV_RUN_HELPER\n",
+	} {
 		if !strings.Contains(text, expected) {
 			t.Fatalf("expected env run output to contain %q:\n%s", expected, text)
 		}
@@ -415,6 +419,9 @@ func TestRunEnvRunNoInheritOmitsShellValues(t *testing.T) {
 	if !strings.Contains(text, "SHELL_ONLY=") || strings.Contains(text, "SHELL_ONLY=from-shell") {
 		t.Fatalf("expected shell-only value to be omitted with --no-inherit:\n%s", text)
 	}
+	if !strings.Contains(text, "LERD_PASSTHROUGH_ENV=APP_NAME,GHOSTABLE_ENV_RUN_HELPER\n") {
+		t.Fatalf("expected Lerd metadata with --no-inherit:\n%s", text)
+	}
 }
 
 func TestRunEnvRunOnlyFiltersInjectedValues(t *testing.T) {
@@ -423,6 +430,8 @@ func TestRunEnvRunOnlyFiltersInjectedValues(t *testing.T) {
 		"APP_NAME":                 "Ghostable",
 		"SECRET_TOKEN":             "super-secret-value",
 	})
+	t.Setenv("LERD_PASSTHROUGH_ENV", "*")
+	t.Setenv("SHELL_ONLY", "from-shell")
 
 	var output bytes.Buffer
 	args := append([]string{"ghostable", "env", "run", "--env", "default", "--only", "GHOSTABLE_ENV_RUN_HELPER,APP_NAME", "--"}, envRunHelperCommand()...)
@@ -437,6 +446,12 @@ func TestRunEnvRunOnlyFiltersInjectedValues(t *testing.T) {
 	}
 	if !strings.Contains(text, "SECRET_TOKEN=") || strings.Contains(text, "super-secret-value") {
 		t.Fatalf("expected unselected value to be omitted:\n%s", text)
+	}
+	if !strings.Contains(text, "LERD_PASSTHROUGH_ENV=APP_NAME,GHOSTABLE_ENV_RUN_HELPER\n") {
+		t.Fatalf("expected only selected keys in the Lerd metadata:\n%s", text)
+	}
+	if os.Getenv("LERD_PASSTHROUGH_ENV") != "*" {
+		t.Fatal("env run changed the parent's Lerd metadata")
 	}
 }
 
@@ -524,7 +539,11 @@ func TestRunEnvShellInjectsValuesAndInheritsByDefault(t *testing.T) {
 	}
 
 	text := output.String()
-	for _, expected := range []string{"APP_NAME=Ghostable", "SHELL_ONLY=from-shell"} {
+	for _, expected := range []string{
+		"APP_NAME=Ghostable",
+		"SHELL_ONLY=from-shell",
+		"LERD_PASSTHROUGH_ENV=APP_NAME,GHOSTABLE_ENV_RUN_HELPER\n",
+	} {
 		if !strings.Contains(text, expected) {
 			t.Fatalf("expected env shell output to contain %q:\n%s", expected, text)
 		}
@@ -729,6 +748,7 @@ func TestEnvRunHelperProcess(t *testing.T) {
 	fmt.Fprintf(os.Stdout, "APP_NAME=%s\n", os.Getenv("APP_NAME"))
 	fmt.Fprintf(os.Stdout, "SECRET_TOKEN=%s\n", os.Getenv("SECRET_TOKEN"))
 	fmt.Fprintf(os.Stdout, "SHELL_ONLY=%s\n", os.Getenv("SHELL_ONLY"))
+	fmt.Fprintf(os.Stdout, "LERD_PASSTHROUGH_ENV=%s\n", os.Getenv("LERD_PASSTHROUGH_ENV"))
 	if os.Getenv("EXIT_CODE") == "7" {
 		os.Exit(7)
 	}
